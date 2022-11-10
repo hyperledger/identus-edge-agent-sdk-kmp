@@ -3,7 +3,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
 version = rootProject.version
-val currentModuleName: String = "wallet-sdk"
+val currentModuleName: String = "wallet-core-sdk"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
@@ -76,7 +76,7 @@ kotlin {
 
     if (os.isMacOsX) {
         cocoapods {
-            this.summary = "Wallet-SDK - DIDComm V2 operation"
+            this.summary = "Wallet-Core-SDK"
             this.version = rootProject.version.toString()
             this.authors = "IOG"
             this.ios.deploymentTarget = "13.0"
@@ -90,11 +90,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
-            dependencies {
-                implementation(project(":wallet-core-sdk"))
-            }
-        }
+        val commonMain by getting
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
@@ -187,7 +183,7 @@ tasks.withType<DokkaTask> {
     moduleName.set(project.name)
     moduleVersion.set(rootProject.version.toString())
     description = """
-        This is a Kotlin Multiplatform Wallet-SDK Library
+        This is a Kotlin Multiplatform Wallet-Core-SDK Library
     """.trimIndent()
     dokkaSourceSets {
         // TODO: Figure out how to include files to the documentations
