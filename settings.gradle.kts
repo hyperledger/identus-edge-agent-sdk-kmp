@@ -8,3 +8,4 @@ pluginManagement {
 
 rootProject.name = "wallet-sdk"
 include(":wallet-sdk")
+include(":wallet-core-sdk")
