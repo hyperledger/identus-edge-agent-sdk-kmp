@@ -3,7 +3,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
 version = rootProject.version
-val currentModuleName: String = "core-sdk"
+val currentModuleName: String = "wallet-core-sdk"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
@@ -76,7 +76,7 @@ kotlin {
 
     if (os.isMacOsX) {
         cocoapods {
-            this.summary = "Wallet-SDK - DIDComm V2 operation"
+            this.summary = "Wallet-Core-SDK"
             this.version = rootProject.version.toString()
             this.authors = "IOG"
             this.ios.deploymentTarget = "13.0"
@@ -92,7 +92,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":core-sdk"))
+                implementation("io.ktor:ktor-client-core:2.1.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
             }
         }
         val commonTest by getting {
@@ -100,28 +101,57 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-okhttp:2.1.3")
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val androidMain by getting
+        val androidMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-okhttp:2.1.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+            }
+        }
         val androidTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-js:2.1.3")
+            }
+        }
         val jsTest by getting
         if (os.isMacOsX) {
-            val iosMain by getting
+            val iosMain by getting {
+                dependencies {
+                    implementation("io.ktor:ktor-client-darwin:2.1.3")
+                }
+            }
             val iosTest by getting
-            val tvosMain by getting
+            val tvosMain by getting {
+                dependencies {
+                    implementation("io.ktor:ktor-client-darwin:2.1.3")
+                }
+            }
             val tvosTest by getting
-            val watchosMain by getting
+            val watchosMain by getting {
+                dependencies {
+                    implementation("io.ktor:ktor-client-darwin:2.1.3")
+                }
+            }
             val watchosTest by getting
-            val macosX64Main by getting
+            val macosX64Main by getting {
+                dependencies {
+                    implementation("io.ktor:ktor-client-darwin:2.1.3")
+                }
+            }
             val macosX64Test by getting
             if (System.getProperty("os.arch") != "x86_64") { // M1Chip
                 val iosSimulatorArm64Main by getting {
@@ -187,7 +217,7 @@ tasks.withType<DokkaTask> {
     moduleName.set(project.name)
     moduleVersion.set(rootProject.version.toString())
     description = """
-        This is a Kotlin Multiplatform Wallet-SDK Library
+        This is a Kotlin Multiplatform Wallet-Core-SDK Library
     """.trimIndent()
     dokkaSourceSets {
         // TODO: Figure out how to include files to the documentations

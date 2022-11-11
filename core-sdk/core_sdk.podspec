@@ -1,12 +1,12 @@
 Pod::Spec.new do |spec|
-    spec.name                     = 'wallet_sdk'
+    spec.name                     = 'core_sdk'
     spec.version                  = '1.0.0-alpha'
     spec.homepage                 = ''
     spec.source                   = { :http=> ''}
     spec.authors                  = 'IOG'
     spec.license                  = ''
-    spec.summary                  = 'Wallet-SDK - DIDComm V2 operation'
-    spec.vendored_frameworks      = 'build/cocoapods/framework/core-sdk.framework'
+    spec.summary                  = 'Wallet-Core-SDK'
+    spec.vendored_frameworks      = 'build/cocoapods/framework/wallet-core-sdk.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target = '13.0'
     spec.osx.deployment_target = '12.0'
@@ -15,13 +15,13 @@ Pod::Spec.new do |spec|
                 
                 
     spec.pod_target_xcconfig = {
-        'KOTLIN_PROJECT_PATH' => ':wallet-sdk',
-        'PRODUCT_MODULE_NAME' => 'core-sdk',
+        'KOTLIN_PROJECT_PATH' => ':core-sdk',
+        'PRODUCT_MODULE_NAME' => 'wallet-core-sdk',
     }
                 
     spec.script_phases = [
         {
-            :name => 'Build wallet_sdk',
+            :name => 'Build core_sdk',
             :execution_position => :before_compile,
             :shell_path => '/bin/sh',
             :script => <<-SCRIPT
