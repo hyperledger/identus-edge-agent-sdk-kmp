@@ -1,0 +1,1 @@
+expect fun createChallenge(expiration: Int): String

@@ -6,7 +6,7 @@ Pod::Spec.new do |spec|
     spec.authors                  = 'IOG'
     spec.license                  = ''
     spec.summary                  = 'Wallet-Core-SDK'
-    spec.vendored_frameworks      = 'build/cocoapods/framework/wallet-core-sdk.framework'
+    spec.vendored_frameworks      = 'build/cocoapods/framework/wallet_core_sdk.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target = '13.0'
     spec.osx.deployment_target = '12.0'
@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
                 
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => ':core-sdk',
-        'PRODUCT_MODULE_NAME' => 'wallet-core-sdk',
+        'PRODUCT_MODULE_NAME' => 'wallet_core_sdk',
     }
                 
     spec.script_phases = [
