@@ -6,7 +6,7 @@ Pod::Spec.new do |spec|
     spec.authors                  = 'IOG'
     spec.license                  = ''
     spec.summary                  = 'Wallet-SDK - DIDComm V2 operation'
-    spec.vendored_frameworks      = 'build/cocoapods/framework/core-sdk.framework'
+    spec.vendored_frameworks      = 'build/cocoapods/framework/core_sdk.framework'
     spec.libraries                = 'c++'
     spec.ios.deployment_target = '13.0'
     spec.osx.deployment_target = '12.0'
@@ -16,7 +16,7 @@ Pod::Spec.new do |spec|
                 
     spec.pod_target_xcconfig = {
         'KOTLIN_PROJECT_PATH' => ':wallet-sdk',
-        'PRODUCT_MODULE_NAME' => 'core-sdk',
+        'PRODUCT_MODULE_NAME' => 'core_sdk',
     }
                 
     spec.script_phases = [

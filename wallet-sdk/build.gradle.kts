@@ -3,7 +3,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
 version = rootProject.version
-val currentModuleName: String = "core-sdk"
+val currentModuleName: String = "core_sdk"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
