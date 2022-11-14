@@ -26,6 +26,7 @@ buildscript {
 
 rootProject.name = "wallet-sdk"
 include(":protosLib")
+include(":prism-protos")
 include(":wallet-sdk")
 include(":core-sdk")
 include(":authenticate-sdk")
