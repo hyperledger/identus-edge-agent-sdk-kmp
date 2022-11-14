@@ -1,9 +1,11 @@
+import org.gradle.internal.os.OperatingSystem
 import com.google.protobuf.gradle.*
-import org.apache.tools.ant.taskdefs.condition.Os
+
+val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
     `java-library`
-    id(Plugins.protobuf)
+    id("com.google.protobuf")
 }
 
 // Mock configuration which derives compile only.
@@ -13,10 +15,10 @@ val jarPathConf by configurations.creating {
 }
 
 dependencies {
-    jarPathConf(Deps.pbandkPrismClientsGenerator)
+    jarPathConf("io.iohk.atala:pbandk-prism-clients-generator:0.20.7")
 
     // This is needed for includes, ref: https://github.com/google/protobuf-gradle-plugin/issues/41#issuecomment-143884188
-    compileOnly(Deps.protobufJava)
+    // compileOnly("com.google.protobuf:protobuf-java:3.21.9")
 }
 
 sourceSets {
@@ -39,20 +41,20 @@ sourceSets {
 
 protobuf {
     protoc {
-        artifact = if (Os.isFamily(Os.FAMILY_MAC)) {
+        artifact = if (os.isMacOsX) {
             if (System.getProperty("os.arch") != "x86_64") {
                 // In case of macOS and M1 chip then we need to use a different version of protobuf that support M1 chip arch
-                "${Deps.protobufProtoc}:osx-x86_64" // "com.google.protobuf:protoc:3.12.0:osx-x86_64"
+                "com.google.protobuf:protoc:3.21.9:osx-x86_64" // "com.google.protobuf:protoc:3.12.0:osx-x86_64"
             } else {
-                Deps.protobufProtoc
+                "com.google.protobuf:protoc:3.21.9"
             }
         } else {
-            Deps.protobufProtoc
+            "com.google.protobuf:protoc:3.21.9"
         }
     }
     plugins {
         id("kotlin") {
-            artifact = Deps.pbandkProtocGenJDK8
+            artifact = "io.iohk:protoc-gen-pbandk-jvm:0.20.7:jvm8@jar"
         }
     }
 
@@ -69,7 +71,6 @@ protobuf {
                     option("kotlin_service_gen=$pbandkClientsGeneratorJar|io.iohk.atala.prism.generator.Generator")
                     option("visibility=public")
                     option("js_export=true")
-                    option("with_annotations=@io.iohk.atala.prism.common.PrismSdkInternal")
                 }
             }
         }
