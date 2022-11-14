@@ -1,5 +1,7 @@
+import com.google.protobuf.gradle.id
+import com.google.protobuf.gradle.proto
+import com.google.protobuf.gradle.remove
 import org.gradle.internal.os.OperatingSystem
-import com.google.protobuf.gradle.*
 
 val os: OperatingSystem = OperatingSystem.current()
 

@@ -1,11 +1,14 @@
 package io.iohk.atala.prism.walletcore
 
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-
-internal expect fun httpClient(config: HttpClientConfig<*>.() -> Unit = {}): HttpClient
+import io.ktor.client.HttpClient
+import io.ktor.client.request.prepareRequest
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.HttpStatement
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.URLProtocol
+import io.ktor.http.path
 
 class AtalaClient(
     private val baseURL: String,
@@ -20,7 +23,7 @@ class AtalaClient(
         httpHeaders: Map<String, String> = mapOf()
     ): HttpStatement {
         return client.prepareRequest {
-            for(header in httpHeaders) {
+            for (header in httpHeaders) {
                 if (
                     httpMethod == HttpMethod.Get &&
                     header.key == HttpHeaders.ContentType &&
@@ -58,6 +61,7 @@ class AtalaClient(
      */
 }
 
+/*
 fun AtalaClient.login() {
 
 }
@@ -70,3 +74,4 @@ suspend fun x() {
     )
     request.execute()
 }
+*/
