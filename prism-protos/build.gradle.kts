@@ -91,7 +91,7 @@ kotlin {
                 implementation("io.grpc:grpc-kotlin-stub:1.0.0")
                 implementation("io.grpc:grpc-okhttp:1.36.0")
                 implementation("io.grpc:grpc-protobuf-lite:1.36.0")
-                implementationimplementation("io.iohk:protoc-gen-pbandk-jvm:0.20.7:jvm8@jar")
+                implementation("io.iohk:protoc-gen-pbandk-jvm:0.20.7:jvm8@jar")
             }
         }
         val jsMain by getting {
