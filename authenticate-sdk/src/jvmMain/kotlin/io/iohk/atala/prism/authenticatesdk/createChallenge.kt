@@ -1,5 +1,5 @@
+package io.iohk.atala.prism.authenticatesdk
 
-@JsExport
 actual fun createChallenge(expiration: Int): String {
     return "hola";
 }
