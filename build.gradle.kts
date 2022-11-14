@@ -1,26 +1,18 @@
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-        vendor.set(JvmVendorSpec.ADOPTOPENJDK)
-    }
-}
-
 plugins {
-    java
-    kotlin(Plugins.multiplatform) version PluginVersions.multiplatform apply false
-    kotlin(Plugins.serialization) version PluginVersions.multiplatform apply false
-    id(Plugins.protobuf) version PluginVersions.protobuf apply false
-    id(Plugins.npmPublish) version PluginVersions.npmPublish apply false
-    id(Plugins.gitVersion) version PluginVersions.gitVersion
-    id(Plugins.klint) version PluginVersions.klint
-    id(Plugins.compatibilityValidator) version PluginVersions.compatibilityValidator
-    id(Plugins.gitOps) version PluginVersions.gitOps
-    id(Plugins.koverage) version PluginVersions.koverage
-    id(Plugins.dokka) version PluginVersions.dokka
-    `maven-publish`
+    kotlin("jvm") version "1.7.20"
+    kotlin("plugin.serialization") version "1.7.20"
+    id("maven-publish")
+    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
+    id("org.jetbrains.dokka") version "1.7.10"
+    id("com.google.protobuf") version "0.9.1"
+    // id(Plugins.npmPublish) version PluginVersions.npmPublish apply false
+    // id(Plugins.gitVersion) version PluginVersions.gitVersion
+    // id(Plugins.compatibilityValidator) version PluginVersions.compatibilityValidator
+    // id(Plugins.gitOps) version PluginVersions.gitOps
+    // id(Plugins.koverage) version PluginVersions.koverage
 }
 
 buildscript {

@@ -62,7 +62,6 @@ kotlin {
         }
     }
 
-
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -127,7 +126,7 @@ tasks.withType<DokkaTask> {
     moduleName.set(project.name)
     moduleVersion.set(rootProject.version.toString())
     description = """
-        This is a Kotlin Multiplatform Wallet-SDK Library
+        This is a Kotlin Multiplatform Authenticate-SDK Library
     """.trimIndent()
     dokkaSourceSets {
         // TODO: Figure out how to include files to the documentations
