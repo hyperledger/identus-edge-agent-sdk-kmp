@@ -1,0 +1,127 @@
+public final class io/iohk/atala/prism/protos/Common_modelsKt {
+}
+
+public final class io/iohk/atala/prism/protos/Connector_apiKt {
+}
+
+public final class io/iohk/atala/prism/protos/Connector_modelsKt {
+}
+
+public final class io/iohk/atala/prism/protos/Console_apiKt {
+}
+
+public final class io/iohk/atala/prism/protos/Console_modelsKt {
+}
+
+public final class io/iohk/atala/prism/protos/Credential_modelsKt {
+}
+
+public final class io/iohk/atala/prism/protos/GrpcClientKt {
+	public static final field DID Ljava/lang/String;
+	public static final field DID_KEY_ID Ljava/lang/String;
+	public static final field DID_SIGNATURE Ljava/lang/String;
+	public static final field PRISM_AUTH_TOKEN Ljava/lang/String;
+	public static final field REQUEST_NONCE Ljava/lang/String;
+}
+
+public final class io/iohk/atala/prism/protos/GrpcOptions {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;I)V
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)V
+	public synthetic fun <init> (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()Ljava/lang/String;
+	public final fun component3 ()I
+	public final fun component4 ()Ljava/lang/String;
+	public final fun copy (Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;)Lio/iohk/atala/prism/protos/GrpcOptions;
+	public static synthetic fun copy$default (Lio/iohk/atala/prism/protos/GrpcOptions;Ljava/lang/String;Ljava/lang/String;ILjava/lang/String;ILjava/lang/Object;)Lio/iohk/atala/prism/protos/GrpcOptions;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getHost ()Ljava/lang/String;
+	public final fun getPort ()I
+	public final fun getProtocol ()Ljava/lang/String;
+	public final fun getToken ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/iohk/atala/prism/protos/Node_apiKt {
+}
+
+public final class io/iohk/atala/prism/protos/Node_internalKt {
+}
+
+public final class io/iohk/atala/prism/protos/Node_modelsKt {
+}
+
+public final class io/iohk/atala/prism/protos/PrismMetadata {
+	public fun <init> (Ljava/lang/String;Ljava/lang/String;[B[B)V
+	public final fun getDid ()Ljava/lang/String;
+	public final fun getDidKeyId ()Ljava/lang/String;
+	public final fun getDidSignature ()[B
+	public final fun getRequestNonce ()[B
+}
+
+public final class io/iohk/atala/prism/protos/StatusKt {
+}
+
+public final class io/iohk/atala/prism/protos/models/Ledger {
+	public static final field INSTANCE Lio/iohk/atala/prism/protos/models/Ledger;
+	public final fun asString (I)Ljava/lang/String;
+	public final fun fromString (Ljava/lang/String;)I
+	public final fun getCARDANO_MAINNET ()I
+	public final fun getCARDANO_TESTNET ()I
+	public final fun getIN_MEMORY ()I
+	public final fun getUNKNOWN_LEDGER ()I
+}
+
+public final class io/iohk/atala/prism/protos/models/LedgerData {
+	public fun <init> (Ljava/lang/String;ILio/iohk/atala/prism/protos/models/TimestampInfo;)V
+	public final fun component1 ()Ljava/lang/String;
+	public final fun component2 ()I
+	public final fun component3 ()Lio/iohk/atala/prism/protos/models/TimestampInfo;
+	public final fun copy (Ljava/lang/String;ILio/iohk/atala/prism/protos/models/TimestampInfo;)Lio/iohk/atala/prism/protos/models/LedgerData;
+	public static synthetic fun copy$default (Lio/iohk/atala/prism/protos/models/LedgerData;Ljava/lang/String;ILio/iohk/atala/prism/protos/models/TimestampInfo;ILjava/lang/Object;)Lio/iohk/atala/prism/protos/models/LedgerData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getLedger ()I
+	public final fun getTimestampInfo ()Lio/iohk/atala/prism/protos/models/TimestampInfo;
+	public final fun getTransactionId ()Ljava/lang/String;
+	public fun hashCode ()I
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/iohk/atala/prism/protos/models/LedgerDataKt {
+	public static final fun toModel (Lio/iohk/atala/prism/protos/LedgerData;)Lio/iohk/atala/prism/protos/models/LedgerData;
+	public static final fun toProto (Lio/iohk/atala/prism/protos/models/LedgerData;)Lio/iohk/atala/prism/protos/LedgerData;
+}
+
+public final class io/iohk/atala/prism/protos/models/LedgerKt {
+	public static final fun toModel (Lio/iohk/atala/prism/protos/Ledger;)I
+	public static final fun toProto (I)Lio/iohk/atala/prism/protos/Ledger;
+}
+
+public final class io/iohk/atala/prism/protos/models/TimestampInfo {
+	public fun <init> (JII)V
+	public final fun component1 ()J
+	public final fun component2 ()I
+	public final fun component3 ()I
+	public final fun copy (JII)Lio/iohk/atala/prism/protos/models/TimestampInfo;
+	public static synthetic fun copy$default (Lio/iohk/atala/prism/protos/models/TimestampInfo;JIIILjava/lang/Object;)Lio/iohk/atala/prism/protos/models/TimestampInfo;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getAtalaBlockSequenceNumber ()I
+	public final fun getAtalaBlockTimestamp ()J
+	public final fun getOperationSequenceNumber ()I
+	public fun hashCode ()I
+	public final fun occurredBefore (Lio/iohk/atala/prism/protos/models/TimestampInfo;)Z
+	public fun toString ()Ljava/lang/String;
+}
+
+public final class io/iohk/atala/prism/protos/models/TimestampInfoKt {
+	public static final fun toModel (Lio/iohk/atala/prism/protos/TimestampInfo;)Lio/iohk/atala/prism/protos/models/TimestampInfo;
+	public static final fun toProto (Lio/iohk/atala/prism/protos/models/TimestampInfo;)Lio/iohk/atala/prism/protos/TimestampInfo;
+}
+
+public final class io/iohk/atala/prism/protos/util/Base64Utils {
+	public static final field INSTANCE Lio/iohk/atala/prism/protos/util/Base64Utils;
+	public final fun decode (Ljava/lang/String;)[B
+	public final fun encode ([B)Ljava/lang/String;
+}
+
