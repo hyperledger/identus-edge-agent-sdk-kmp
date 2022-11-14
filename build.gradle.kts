@@ -16,6 +16,7 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jetbrains.dokka") version "1.7.10"
     id("com.google.protobuf") version "0.9.1"
+    // This should be changed
     // id(Plugins.npmPublish) version PluginVersions.npmPublish apply false
     // id(Plugins.gitVersion) version PluginVersions.gitVersion
     // id(Plugins.compatibilityValidator) version PluginVersions.compatibilityValidator
