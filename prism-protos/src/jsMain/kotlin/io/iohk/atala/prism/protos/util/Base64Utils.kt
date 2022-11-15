@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.protos.util
 
+// TODO("Use Apollo Base64")
 public actual object Base64Utils {
     // https://regexland.com/base64/
     private val base64Regex = """^(?:[A-Za-z\d+/]{4})*(?:[A-Za-z\d+/]{3}=|[A-Za-z\d+/]{2}==)?$""".toRegex()

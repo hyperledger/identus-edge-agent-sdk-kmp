@@ -6,6 +6,7 @@ import platform.Foundation.base64EncodedStringWithOptions
 import platform.Foundation.create
 import platform.posix.memcpy
 
+// TODO("Use Apollo Base64")
 public actual object Base64Utils {
     public actual fun encode(bytes: ByteArray): String {
         val nsData = memScoped {

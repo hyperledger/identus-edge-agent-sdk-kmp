@@ -2,6 +2,7 @@ package io.iohk.atala.prism.protos.util
 
 import java.util.*
 
+// TODO("Use Apollo Base64")
 public actual object Base64Utils {
     public actual fun encode(bytes: ByteArray): String =
         Base64.getUrlEncoder().withoutPadding().encodeToString(bytes)

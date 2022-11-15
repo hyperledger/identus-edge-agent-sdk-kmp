@@ -24,14 +24,14 @@ internal external interface Metadata {
     operator fun set(s: String, value: String)
 }
 
-internal external open class AbstractClientBase {
+internal open external class AbstractClientBase {
     open fun <REQ, RESP> thenableCall(method: String, request: REQ, metadata: Metadata, methodDescriptor: MethodDescriptor<REQ, RESP>): Promise<RESP>
     open fun <REQ, RESP> rpcCall(method: String, request: REQ, metadata: Metadata, methodDescriptor: MethodDescriptor<REQ, RESP>, callback: (err: Error, response: RESP) -> Unit): ClientReadableStream<RESP>
     open fun <REQ, RESP> serverStreaming(method: String, request: REQ, metadata: Metadata, methodDescriptor: MethodDescriptor<REQ, RESP>): ClientReadableStream<RESP>
     open class MethodInfo<REQ, RESP>(responseType: Any, requestSerializeFn: (request: REQ) -> Any, responseDeserializeFn: (bytes: Uint8Array) -> RESP)
 }
 
-internal external open class ClientReadableStream<RESP> {
+internal open external class ClientReadableStream<RESP> {
     open fun on(eventType: String /* "error" */, callback: (err: Error) -> Unit): ClientReadableStream<RESP>
     open fun on(eventType: String /* "status" */, callback: (status: Status) -> Unit): ClientReadableStream<RESP>
     open fun on(eventType: String /* "metadata" */, callback: (status: Metadata) -> Unit): ClientReadableStream<RESP>
@@ -53,20 +53,20 @@ internal external interface UnaryInterceptor<REQ, RESP> {
     fun intercept(request: Request<REQ, RESP>, invoker: (request: Request<REQ, RESP>) -> Promise<UnaryResponse<REQ, RESP>>): Promise<UnaryResponse<REQ, RESP>>
 }
 
-internal external open class CallOptions(options: Json)
+internal open external class CallOptions(options: Json)
 
-internal external open class MethodDescriptor<REQ, RESP>(name: String, methodType: Any, requestType: Any, responseType: Any, requestSerializeFn: Any, responseDeserializeFn: Any) {
+internal open external class MethodDescriptor<REQ, RESP>(name: String, methodType: Any, requestType: Any, responseType: Any, requestSerializeFn: Any, responseDeserializeFn: Any) {
     open fun createRequest(requestMessage: REQ, metadata: Metadata, callOptions: CallOptions): UnaryResponse<REQ, RESP>
 }
 
-internal external open class Request<REQ, RESP> {
+internal open external class Request<REQ, RESP> {
     open fun getRequestMessage(): REQ
     open fun getMethodDescriptor(): MethodDescriptor<REQ, RESP>
     open fun getMetadata(): Metadata
     open fun getCallOptions(): CallOptions
 }
 
-internal external open class UnaryResponse<REQ, RESP> {
+internal open external class UnaryResponse<REQ, RESP> {
     open fun getResponseMessage(): RESP
     open fun getMetadata(): Metadata
     open fun getMethodDescriptor(): MethodDescriptor<REQ, RESP>
@@ -82,7 +82,7 @@ internal external interface GrpcWebClientBaseOptions {
         set(value) = definedExternally
 }
 
-internal external open class GrpcWebClientBase(options: GrpcWebClientBaseOptions) : AbstractClientBase
+internal open external class GrpcWebClientBase(options: GrpcWebClientBaseOptions) : AbstractClientBase
 
 internal external interface Error {
     var code: Number

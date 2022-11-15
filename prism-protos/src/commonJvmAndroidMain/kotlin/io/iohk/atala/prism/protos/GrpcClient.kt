@@ -3,7 +3,6 @@ package io.iohk.atala.prism.protos
 import io.grpc.*
 import io.grpc.kotlin.ClientCalls
 import io.grpc.stub.MetadataUtils
-import io.iohk.atala.prism.common.PrismSdkInternal
 import io.ktor.utils.io.core.*
 import kotlinx.coroutines.flow.Flow
 import pbandk.Message
@@ -13,7 +12,6 @@ import java.io.InputStream
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-@PrismSdkInternal
 public actual class GrpcClient actual constructor(options: GrpcOptions) : Closeable {
     private val channel: ManagedChannel =
         if (options.protocol == "http") {
@@ -23,7 +21,6 @@ public actual class GrpcClient actual constructor(options: GrpcOptions) : Closea
         }
     private val token: String? = options.token
 
-    @PrismSdkInternal
     public class MessageMarshaller<T : Message>(private val companion: Message.Companion<T>) :
         MethodDescriptor.Marshaller<T> {
         override fun stream(value: T): InputStream =
@@ -158,7 +155,6 @@ public actual class GrpcClient actual constructor(options: GrpcOptions) : Closea
         }
     }
 
-    @PrismSdkInternal
     public companion object {
         public val DID_HEADER: Metadata.Key<String> =
             Metadata.Key.of(DID, Metadata.ASCII_STRING_MARSHALLER)

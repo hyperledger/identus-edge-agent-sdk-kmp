@@ -1,6 +1,5 @@
-import com.google.protobuf.gradle.id
-import com.google.protobuf.gradle.proto
-import com.google.protobuf.gradle.remove
+@file:Suppress("ktlint:no-wildcard-imports")
+import com.google.protobuf.gradle.*
 import org.gradle.internal.os.OperatingSystem
 
 val os: OperatingSystem = OperatingSystem.current()
@@ -20,7 +19,7 @@ dependencies {
     jarPathConf("io.iohk.atala:pbandk-prism-clients-generator:0.20.7")
 
     // This is needed for includes, ref: https://github.com/google/protobuf-gradle-plugin/issues/41#issuecomment-143884188
-    // compileOnly("com.google.protobuf:protobuf-java:3.21.9")
+    compileOnly("com.google.protobuf:protobuf-java:3.21.9")
 }
 
 sourceSets {
