@@ -19,7 +19,7 @@ dependencies {
     jarPathConf("io.iohk.atala:pbandk-prism-clients-generator:0.20.7")
 
     // This is needed for includes, ref: https://github.com/google/protobuf-gradle-plugin/issues/41#issuecomment-143884188
-    compileOnly("com.google.protobuf:protobuf-java:3.21.9")
+    compileOnly("com.google.protobuf:protobuf-java:3.12.0")
 }
 
 sourceSets {
@@ -45,12 +45,12 @@ protobuf {
         artifact = if (os.isMacOsX) {
             if (System.getProperty("os.arch") != "x86_64") {
                 // In case of macOS and M1 chip then we need to use a different version of protobuf that support M1 chip arch
-                "com.google.protobuf:protoc:3.21.9:osx-x86_64" // "com.google.protobuf:protoc:3.12.0:osx-x86_64"
+                "com.google.protobuf:protoc:3.12.0:osx-x86_64" // "com.google.protobuf:protoc:3.12.0:osx-x86_64"
             } else {
-                "com.google.protobuf:protoc:3.21.9"
+                "com.google.protobuf:protoc:3.12.0"
             }
         } else {
-            "com.google.protobuf:protoc:3.21.9"
+            "com.google.protobuf:protoc:3.12.0"
         }
     }
     plugins {
