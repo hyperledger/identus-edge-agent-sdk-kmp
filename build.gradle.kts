@@ -1,12 +1,8 @@
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(11))
-        vendor.set(JvmVendorSpec.ADOPTOPENJDK)
-    }
-}
+version = "1.0.0-alpha"
+group = "io.iohk.atala.prism"
 
 plugins {
     java
@@ -16,11 +12,11 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jetbrains.dokka") version "1.7.10"
     id("com.google.protobuf") version "0.9.1"
-    // This should be changed
+    // The following should be removed
     // id(Plugins.npmPublish) version PluginVersions.npmPublish apply false
-    id(Plugins.gitVersion) version PluginVersions.gitVersion
+    // id(Plugins.gitVersion) version PluginVersions.gitVersion
     // id(Plugins.compatibilityValidator) version PluginVersions.compatibilityValidator
-    id(Plugins.gitOps) version PluginVersions.gitOps
+    // id(Plugins.gitOps) version PluginVersions.gitOps
     // id(Plugins.koverage) version PluginVersions.koverage
 }
 
@@ -41,21 +37,10 @@ buildscript {
     }
 }
 
-version = "1.0.0-alpha"
-group = "io.iohk.atala.prism"
-
-val prismVersion: String by extra {
-    if (System.getenv("PRISM_SDK_VERSION") != null && System.getenv("PRISM_SDK_VERSION") != "")
-        System.getenv("PRISM_SDK_VERSION")
-    else {
-        val latestReleaseTag: String = grgit.tag.list().filter { tag ->
-            Regex("""[v]?\d+\.\d+\.\d+$""").matchEntire(tag.name) != null
-        }.map {
-            it.name
-        }.last()
-        val commitShortSha: String = grgit.head().abbreviatedId
-        val commitTimestamp = grgit.head().dateTime.toEpochSecond().toString()
-        "$latestReleaseTag-snapshot-$commitTimestamp-$commitShortSha"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+        vendor.set(JvmVendorSpec.ADOPTOPENJDK)
     }
 }
 

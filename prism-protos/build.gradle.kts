@@ -1,12 +1,18 @@
-import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.KotlinJsCompile
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompileCommon
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
+version = rootProject.version
+val currentModuleName: String = "protos"
+val os: org.gradle.internal.os.OperatingSystem = org.gradle.internal.os.OperatingSystem.current()
+
 plugins {
     kotlin("multiplatform")
+    kotlin("native.cocoapods")
     id("com.android.library")
+    id("org.jetbrains.dokka")
 }
 
 repositories {
@@ -15,9 +21,6 @@ repositories {
 }
 
 kotlin {
-    explicitApi()
-    explicitApi = ExplicitApiMode.Strict
-
     android {
         publishAllLibraryVariants()
     }
@@ -27,30 +30,61 @@ kotlin {
                 jvmTarget = "11"
             }
         }
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
+    if (os.isMacOsX) {
+        ios()
     }
     js(IR) {
-        moduleName = "protos"
+        this.moduleName = currentModuleName
+        this.binaries.executable()
+        this.useCommonJs()
+        this.compilations["main"].packageJson {
+            this.version = rootProject.version.toString()
+        }
+        this.compilations["test"].packageJson {
+            this.version = rootProject.version.toString()
+        }
         browser {
-            testTask {
-                useKarma {
-                    useChromeHeadless()
+            this.webpackTask {
+                this.output.library = currentModuleName
+                this.output.libraryTarget = Target.VAR
+            }
+            this.commonWebpackConfig {
+                this.cssSupport {
+                    this.enabled = true
+                }
+            }
+            this.testTask {
+                this.useKarma {
+                    this.useChromeHeadless()
                 }
             }
         }
-        binaries.library()
-        useCommonJs()
-
-        val prismVersion: String by rootProject.extra
-        compilations["main"].packageJson {
-            version = prismVersion
-        }
-
-        compilations["test"].packageJson {
-            version = prismVersion
+        nodejs {
+            this.testTask {
+                this.useKarma {
+                    this.useChromeHeadless()
+                }
+            }
         }
     }
-    ios("ios") {
-        binaries.all {}
+
+    if (os.isMacOsX) {
+        cocoapods {
+            this.summary = "Wallet-Core-SDK"
+            this.version = rootProject.version.toString()
+            this.authors = "IOG"
+            this.ios.deploymentTarget = "13.0"
+            this.osx.deploymentTarget = "12.0"
+            this.tvos.deploymentTarget = "13.0"
+            this.watchos.deploymentTarget = "8.0"
+            framework {
+                this.baseName = currentModuleName
+            }
+        }
     }
 
     sourceSets {
@@ -58,12 +92,12 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.1-new-mm-dev2")
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 api("io.iohk:pbandk-runtime:0.20.7") {
                     exclude("com.google.protobuf")
                 }
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.2.1")
-                implementation("io.ktor:ktor-io:1.6.5")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
+                implementation("io.ktor:ktor-io:2.1.3")
             }
         }
         val commonTest by getting {
@@ -71,8 +105,14 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
+        val commonJvmAndroidMain by creating {
+            dependsOn(commonMain)
+        }
+        val commonJvmAndroidTest by creating {
+            dependsOn(commonTest)
+        }
         val androidMain by getting {
-            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
+            dependsOn(commonJvmAndroidMain) // kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/commonJvmAndroidMain/kotlin")
             dependencies {
                 implementation("io.grpc:grpc-kotlin-stub:1.0.0") {
@@ -84,8 +124,11 @@ kotlin {
                 implementation("io.iohk:protoc-gen-pbandk-jvm:0.20.7:jvm8@jar")
             }
         }
+        val androidTest by getting {
+            dependsOn(commonJvmAndroidTest)
+        }
         val jvmMain by getting {
-            kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
+            dependsOn(commonJvmAndroidMain) // kotlin.srcDir("src/commonJvmAndroidMain/kotlin")
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/commonJvmAndroidMain/kotlin")
             dependencies {
                 implementation("io.grpc:grpc-kotlin-stub:1.0.0")
@@ -93,6 +136,9 @@ kotlin {
                 implementation("io.grpc:grpc-protobuf-lite:1.36.0")
                 implementation("io.iohk:protoc-gen-pbandk-jvm:0.20.7:jvm8@jar")
             }
+        }
+        val jvmTest by getting {
+            dependsOn(commonJvmAndroidTest)
         }
         val jsMain by getting {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/jsMain/kotlin")
@@ -109,25 +155,37 @@ kotlin {
 
         all {
             languageSettings.optIn("kotlin.js.ExperimentalJsExport")
-            languageSettings.optIn("io.iohk.atala.prism.common.PrismSdkInternal")
         }
     }
 }
 
 android {
-    compileSdkVersion(Versions.androidTargetSdk)
+    compileSdk = 32
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
-        minSdkVersion(26)
-        targetSdkVersion(29)
+        minSdk = 21
+        targetSdk = 32
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+    /**
+     * Because Software Components will not be created automatically for Maven publishing from
+     * Android Gradle Plugin 8.0. To opt-in to the future behavior, set the Gradle property android.
+     * disableAutomaticComponentCreation=true in the `gradle.properties` file or use the new
+     * publishing DSL.
+     */
+    publishing {
+        multipleVariants {
+            withSourcesJar()
+            withJavadocJar()
+            allVariants()
+        }
     }
 }
 
 tasks {
-    "jvmTest"(Test::class) {
-        useJUnitPlatform()
-    }
-
     project(":protosLib").tasks
         .matching { it.name == "generateProto" }
         .all {
