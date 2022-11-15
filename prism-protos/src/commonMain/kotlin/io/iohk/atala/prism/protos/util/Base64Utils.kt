@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.protos.util
 
+// TODO("Use Apollo Base64")
 public expect object Base64Utils {
     /**
      * Returns a URL-safe Base64 encoding without padding (i.e. no trailing '='s).

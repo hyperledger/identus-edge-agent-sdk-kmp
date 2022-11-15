@@ -65,7 +65,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.benasher44:uuid:0.3.0") // Apollo UUID
+                implementation("com.benasher44:uuid:0.3.0") // TODO("use Apollo UUID")
                 implementation(project(":core-sdk"))
             }
         }

@@ -15,11 +15,6 @@ plugins {
     id("org.jetbrains.dokka")
 }
 
-repositories {
-    mavenCentral()
-    mavenLocal()
-}
-
 kotlin {
     android {
         publishAllLibraryVariants()
@@ -36,6 +31,9 @@ kotlin {
     }
     if (os.isMacOsX) {
         ios()
+        if (System.getProperty("os.arch") != "x86_64") { // M1Chip
+            iosSimulatorArm64()
+        }
     }
     js(IR) {
         this.moduleName = currentModuleName
@@ -152,6 +150,14 @@ kotlin {
         val jsTest by getting
         val iosMain by getting
         val iosTest by getting
+        if (System.getProperty("os.arch") != "x86_64") { // M1Chip
+            val iosSimulatorArm64Main by getting {
+                this.dependsOn(iosMain)
+            }
+            val iosSimulatorArm64Test by getting {
+                this.dependsOn(iosTest)
+            }
+        }
 
         all {
             languageSettings.optIn("kotlin.js.ExperimentalJsExport")

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.protos
 
-import io.iohk.atala.prism.common.PrismSdkInternal
 import io.ktor.utils.io.core.Closeable
 import kotlinx.coroutines.flow.Flow
 import pbandk.Message
@@ -24,7 +23,6 @@ public const val DID_SIGNATURE: String = "did-signature"
 public const val REQUEST_NONCE: String = "request-nonce"
 public const val PRISM_AUTH_TOKEN: String = "prism-auth-token"
 
-@PrismSdkInternal
 public expect class GrpcClient(options: GrpcOptions) : Closeable {
     public suspend fun <Req : Message, Resp : Message> call(
         request: Req,

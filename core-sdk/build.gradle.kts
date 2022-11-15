@@ -29,14 +29,14 @@ kotlin {
     }
     if (os.isMacOsX) {
         ios()
-        tvos()
-        watchos()
-        macosX64()
+//        tvos()
+//        watchos()
+//        macosX64()
         if (System.getProperty("os.arch") != "x86_64") { // M1Chip
             iosSimulatorArm64()
-            tvosSimulatorArm64()
-            watchosSimulatorArm64()
-            macosArm64()
+//            tvosSimulatorArm64()
+//            watchosSimulatorArm64()
+//            macosArm64()
         }
     }
     js(IR) {
@@ -80,9 +80,9 @@ kotlin {
             this.version = rootProject.version.toString()
             this.authors = "IOG"
             this.ios.deploymentTarget = "13.0"
-            this.osx.deploymentTarget = "12.0"
-            this.tvos.deploymentTarget = "13.0"
-            this.watchos.deploymentTarget = "8.0"
+//            this.osx.deploymentTarget = "12.0"
+//            this.tvos.deploymentTarget = "13.0"
+//            this.watchos.deploymentTarget = "8.0"
             framework {
                 this.baseName = currentModuleName
             }
@@ -135,24 +135,24 @@ kotlin {
                 }
             }
             val iosTest by getting
-            val tvosMain by getting {
-                dependencies {
-                    implementation("io.ktor:ktor-client-darwin:2.1.3")
-                }
-            }
-            val tvosTest by getting
-            val watchosMain by getting {
-                dependencies {
-                    implementation("io.ktor:ktor-client-darwin:2.1.3")
-                }
-            }
-            val watchosTest by getting
-            val macosX64Main by getting {
-                dependencies {
-                    implementation("io.ktor:ktor-client-darwin:2.1.3")
-                }
-            }
-            val macosX64Test by getting
+//            val tvosMain by getting {
+//                dependencies {
+//                    implementation("io.ktor:ktor-client-darwin:2.1.3")
+//                }
+//            }
+//            val tvosTest by getting
+//            val watchosMain by getting {
+//                dependencies {
+//                    implementation("io.ktor:ktor-client-darwin:2.1.3")
+//                }
+//            }
+//            val watchosTest by getting
+//            val macosX64Main by getting {
+//                dependencies {
+//                    implementation("io.ktor:ktor-client-darwin:2.1.3")
+//                }
+//            }
+//            val macosX64Test by getting
             if (System.getProperty("os.arch") != "x86_64") { // M1Chip
                 val iosSimulatorArm64Main by getting {
                     this.dependsOn(iosMain)
@@ -160,24 +160,24 @@ kotlin {
                 val iosSimulatorArm64Test by getting {
                     this.dependsOn(iosTest)
                 }
-                val tvosSimulatorArm64Main by getting {
-                    this.dependsOn(tvosMain)
-                }
-                val tvosSimulatorArm64Test by getting {
-                    this.dependsOn(tvosTest)
-                }
-                val watchosSimulatorArm64Main by getting {
-                    this.dependsOn(watchosMain)
-                }
-                val watchosSimulatorArm64Test by getting {
-                    this.dependsOn(watchosTest)
-                }
-                val macosArm64Main by getting {
-                    this.dependsOn(macosX64Main)
-                }
-                val macosArm64Test by getting {
-                    this.dependsOn(macosX64Test)
-                }
+//                val tvosSimulatorArm64Main by getting {
+//                    this.dependsOn(tvosMain)
+//                }
+//                val tvosSimulatorArm64Test by getting {
+//                    this.dependsOn(tvosTest)
+//                }
+//                val watchosSimulatorArm64Main by getting {
+//                    this.dependsOn(watchosMain)
+//                }
+//                val watchosSimulatorArm64Test by getting {
+//                    this.dependsOn(watchosTest)
+//                }
+//                val macosArm64Main by getting {
+//                    this.dependsOn(macosX64Main)
+//                }
+//                val macosArm64Test by getting {
+//                    this.dependsOn(macosX64Test)
+//                }
             }
         }
         all {
