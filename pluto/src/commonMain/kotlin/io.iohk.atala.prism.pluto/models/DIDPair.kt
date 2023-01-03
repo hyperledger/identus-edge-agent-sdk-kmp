@@ -1,4 +1,7 @@
 package io.iohk.atala.prism.pluto.models
 
-class DIDPair {
-}
+data class DIDPair(
+    val holder: DID,
+    val other: DID,
+    val name: String? = null
+)

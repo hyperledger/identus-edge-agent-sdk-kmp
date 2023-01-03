@@ -1,16 +1,18 @@
-package io.iohk.atala.prism.pluto
+package io.iohk.atala.prism.pluto.providers
 
 import io.iohk.atala.prism.pluto.models.DID
+import io.iohk.atala.prism.pluto.models.DIDKeyPairIndex
+import kotlinx.coroutines.flow.Flow
 
 interface DIDProvider {
 
-    fun getAll()
+    fun getAll(): Flow<DIDKeyPairIndex>
 
-    fun getDIDInfo(alias: String)
+    fun getDIDInfo(alias: String): Flow<DIDKeyPairIndex>
 
-    fun getDIDInfo(did: DID)
+    fun getDIDInfo(did: DID): Flow<DIDKeyPairIndex>
 
-    fun getDIDInfo(keyPairIndex: Int)
+    fun getDIDInfo(keyPairIndex: Int): Flow<DIDKeyPairIndex>
 
-    fun getLastKeyPairIndex()
+    fun getLastKeyPairIndex(): Flow<Int>
 }

@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.pluto
+package io.iohk.atala.prism.pluto.providers
 
 import io.iohk.atala.prism.pluto.models.DID
 import io.iohk.atala.prism.pluto.models.DIDPair

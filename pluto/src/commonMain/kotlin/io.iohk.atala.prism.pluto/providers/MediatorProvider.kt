@@ -1,4 +1,10 @@
 package io.iohk.atala.prism.pluto.providers
 
-class MediatorProvider {
+import io.iohk.atala.prism.pluto.models.DIDMediator
+import kotlinx.coroutines.flow.Flow
+
+interface MediatorProvider {
+
+    fun getAll(): Flow<DIDMediator>
+
 }

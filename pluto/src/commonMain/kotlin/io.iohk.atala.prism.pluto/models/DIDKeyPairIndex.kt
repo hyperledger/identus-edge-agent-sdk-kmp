@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.pluto.models
 
-data class DIDKeyPair(
-    val
+data class DIDKeyPairIndex(
+    val did: DID,
+    val keyPairIndex: Int,
+    val alias: String? = null
 )

@@ -91,9 +91,6 @@ kotlin {
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                api("io.iohk:pbandk-runtime:0.20.7") {
-                    exclude("com.google.protobuf")
-                }
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
                 implementation("io.ktor:ktor-io:2.1.3")
             }

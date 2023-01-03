@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.pluto.models
 
-data class DIDInfo(
+data class DIDPrivateKey(
     val did: DID,
     val privateKeys: Array<PrivateKey>
 ) {
@@ -9,7 +9,7 @@ data class DIDInfo(
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as DIDInfo
+        other as DIDPrivateKey
 
         if (did != other.did) return false
         if (!privateKeys.contentEquals(other.privateKeys)) return false

@@ -1,4 +1,7 @@
 package io.iohk.atala.prism.pluto.models
 
-class DIDMediator {
-}
+data class DIDMediator(
+    val did: DID,
+    val routingDID: DID,
+    val mediatorDID: DID
+)

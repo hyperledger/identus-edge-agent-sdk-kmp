@@ -3,7 +3,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
 version = rootProject.version
-val currentModuleName: String = "authenticate_sdk"
+val currentModuleName: String = "pluto"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
@@ -67,6 +67,7 @@ kotlin {
             dependencies {
                 implementation("com.benasher44:uuid:0.3.0") // TODO("use Apollo UUID")
                 implementation(project(":core-sdk"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
             }
         }
         val commonTest by getting {
@@ -80,7 +81,11 @@ kotlin {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val androidMain by getting
+        val androidMain by getting {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+            }
+        }
         val androidTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
@@ -120,13 +125,16 @@ android {
         }
     }
 }
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+}
 
 // Dokka implementation
 tasks.withType<DokkaTask> {
     moduleName.set(project.name)
     moduleVersion.set(rootProject.version.toString())
     description = """
-        This is a Kotlin Multiplatform Authenticate-SDK Library
+        This is a Kotlin Multiplatform Pluto Library
     """.trimIndent()
     dokkaSourceSets {
         // TODO: Figure out how to include files to the documentations
