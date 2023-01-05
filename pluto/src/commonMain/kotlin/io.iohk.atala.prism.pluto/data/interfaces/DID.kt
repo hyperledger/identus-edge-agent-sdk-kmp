@@ -1,10 +1,10 @@
-package io.iohk.atala.prism.pluto.providers
+package io.iohk.atala.prism.pluto.data.interfaces
 
 import io.iohk.atala.prism.pluto.models.DID
 import io.iohk.atala.prism.pluto.models.DIDKeyPairIndex
 import kotlinx.coroutines.flow.Flow
 
-interface DIDProvider {
+interface DID {
 
     fun getAll(): Flow<DIDKeyPairIndex>
 
@@ -15,4 +15,10 @@ interface DIDProvider {
     fun getDIDInfo(keyPairIndex: Int): Flow<DIDKeyPairIndex>
 
     fun getLastKeyPairIndex(): Flow<Int>
+
+    fun addDID(did: DID, keyPairIndex: Int, alias: String? = null)
+
+    fun removeDID(did: DID)
+
+    fun removeAll()
 }
