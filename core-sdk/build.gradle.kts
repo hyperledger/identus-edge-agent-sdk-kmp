@@ -8,6 +8,7 @@ val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization") version "1.7.20"
     kotlin("native.cocoapods")
     id("com.android.library")
     id("org.jetbrains.dokka")
@@ -93,6 +94,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-core:2.1.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
             }
         }
