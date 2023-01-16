@@ -1,5 +1,10 @@
 package io.iohk.atala.prism.domain.buildingBlocks
 
+import io.iohk.atala.prism.domain.models.DID
+import io.iohk.atala.prism.domain.models.DIDDocument
+import io.iohk.atala.prism.domain.models.KeyPair
+import io.iohk.atala.prism.domain.models.PublicKey
+
 interface Castor {
 
     @Throws()

@@ -3,7 +3,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
 version = rootProject.version
-val currentModuleName: String = "domain"
+val currentModuleName: String = "prismAgent"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
@@ -132,7 +132,7 @@ tasks.withType<DokkaTask> {
     moduleName.set(project.name)
     moduleVersion.set(rootProject.version.toString())
     description = """
-        This is a Kotlin Multiplatform Domain Library
+        This is a Kotlin Multiplatform PrismAgent Library
     """.trimIndent()
     dokkaSourceSets {
         // TODO: Figure out how to include files to the documentations

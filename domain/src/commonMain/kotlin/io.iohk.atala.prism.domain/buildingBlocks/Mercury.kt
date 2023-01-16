@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.domain.buildingBlocks
 
+import io.iohk.atala.prism.domain.models.Message
+
 interface Mercury {
 
     @Throws()
