@@ -1,49 +1,50 @@
 package io.iohk.atala.prism.domain.models
 
-enum class CommonError {
-    somethingWentWrongError
+open class CommonError : Throwable() {
+    class SomethingWentWrongError : CommonError()
 }
 
-enum class ApolloError {
-    invalidMnemonicWord,
-    couldNotParseMessageString
+
+open class ApolloError : Throwable() {
+    class InvalidMnemonicWord : ApolloError()
+    class CouldNotParseMessageString : ApolloError()
 }
 
-enum class CastorError {
-    invalidLongFormDID,
-    methodIdIsDoesNotSatisfyRegex,
-    invalidPublicKeyEncoding,
-    invalidDIDString,
-    initialStateOfDIDChanged,
-    notPossibleToResolveDID,
-    invalidJWKKeysError,
-    invalidKeyError,
-    invalidPeerDIDError
+open class CastorError : Throwable() {
+    class InvalidLongFormDID : CastorError()
+    class MethodIdIsDoesNotSatisfyRegex : CastorError()
+    class InvalidPublicKeyEncoding : CastorError()
+    class InvalidDIDString : CastorError()
+    class InitialStateOfDIDChanged : CastorError()
+    class NotPossibleToResolveDID : CastorError()
+    class InvalidJWKKeysError : CastorError()
+    class InvalidKeyError : CastorError()
+    class InvalidPeerDIDError : CastorError()
 }
 
-enum class MercuryError {
-    invalidURLError,
-    noDIDReceiverSetError,
-    noValidServiceFoundError,
-    fromFieldNotSetError,
-    unknownAttachmentDataError,
-    messageAttachmentWithoutIDError,
-    messageInvalidBodyDataError,
-    unknowPackingMessageError,
-    couldNotResolveDIDError,
-//    didcommError(msg: String),
-//    urlSessionError(statusCode: Int, error: Error?, msg: String?)
+open class MercuryError : Throwable() {
+    class InvalidURLError : MercuryError()
+    class NoDIDReceiverSetError : MercuryError()
+    class NoValidServiceFoundError : MercuryError()
+    class FromFieldNotSetError : MercuryError()
+    class UnknownAttachmentDataError : MercuryError()
+    class MessageAttachmentWithoutIDError : MercuryError()
+    class MessageInvalidBodyDataError : MercuryError()
+    class UnknownPackingMessageError : MercuryError()
+    class CouldNotResolveDIDError : MercuryError()
+    class DidCommError(msg: String) : MercuryError()
+    class UrlSessionError(statusCode: Int, error: Error?, msg: String?) : MercuryError()
 }
 
-enum class PlutoError {
-    invalidHolderDIDNotPersistedError,
-    messageMissingFromOrToDIDError,
-    didPairIsNotPersistedError,
-    holderDIDAlreadyPairingError,
-    unknownCredentialTypeError,
-    invalidCredentialJsonError
+open class PlutoError : Throwable() {
+    class InvalidHolderDIDNotPersistedError : PlutoError()
+    class MessageMissingFromOrToDIDError : PlutoError()
+    class DidPairIsNotPersistedError : PlutoError()
+    class HolderDIDAlreadyPairingError : PlutoError()
+    class UnknownCredentialTypeError : PlutoError()
+    class InvalidCredentialJsonError : PlutoError()
 }
 
-enum class PolluxError {
-    invalidCredentialError
+open class PolluxError : Throwable() {
+    class InvalidCredentialError : PolluxError()
 }
