@@ -18,6 +18,10 @@ data class DID(
         string: String
     ) : this(getSchemaFromString(string), getMethodFromString(string), getMethodIdFromString(string))
 
+    override fun toString(): String {
+        return "$schema:$method:$methodId"
+    }
+
     companion object {
         fun getSchemaFromString(string: String): String {
             val split = string.split(":")

@@ -7,7 +7,21 @@ data class DIDUrl(
     val fragment: String? = null
 ) {
 
-    // TODO: Missing functionality
+    fun string(): String {
+        return "${did}fragmentString"
+    }
+
+    fun pathString(): String {
+        return "/${path?.joinToString("/")}"
+    }
+
+    fun queryString(): String {
+        return "?${parameters?.map { "${it.key}=${it.value}" }?.joinToString("&")}"
+    }
+
+    fun fragmentString(): String {
+        return "#$fragment"
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
