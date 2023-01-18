@@ -2,7 +2,7 @@ import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
-val currentModuleName: String = "wallet_core_sdk"
+val currentModuleName: String = "WalletDomain"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
