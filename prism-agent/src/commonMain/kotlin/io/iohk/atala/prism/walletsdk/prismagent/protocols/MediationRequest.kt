@@ -4,7 +4,7 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.Message
 
-class MediationRequest(
+sealed class MediationRequest(
     val id: String,
     val type: String = ProtocolType.DidcommMediationRequest.value,
     val from: DID,
