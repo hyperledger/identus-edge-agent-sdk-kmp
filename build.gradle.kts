@@ -8,6 +8,13 @@ plugins {
     id("maven-publish")
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jetbrains.dokka") version "1.7.10"
+    // id("com.google.protobuf") version "0.9.2"
+    // The following should be removed
+    // id(Plugins.npmPublish) version PluginVersions.npmPublish apply false
+    // id(Plugins.gitVersion) version PluginVersions.gitVersion
+    // id(Plugins.compatibilityValidator) version PluginVersions.compatibilityValidator
+    // id(Plugins.gitOps) version PluginVersions.gitOps
+    // id(Plugins.koverage) version PluginVersions.koverage
 }
 
 buildscript {

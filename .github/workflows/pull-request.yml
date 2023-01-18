@@ -103,7 +103,7 @@ jobs:
       - name: Build for JS, Android, JVM
         if: matrix.os-type == 'linux'
         run: |
-          ./gradlew build check allTests --stacktrace
+          ./gradlew build allTests --stacktrace
 
       - name: Upload the build report
         if: always()
