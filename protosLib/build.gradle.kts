@@ -16,8 +16,6 @@ val jarPathConf by configurations.creating {
 }
 
 dependencies {
-    jarPathConf("io.iohk.atala:pbandk-prism-clients-generator:0.20.7")
-
     // This is needed for includes, ref: https://github.com/google/protobuf-gradle-plugin/issues/41#issuecomment-143884188
     compileOnly("com.google.protobuf:protobuf-java:3.12.0")
 }
@@ -29,11 +27,7 @@ sourceSets {
             setIncludes(
                 listOf(
                     "common_*.proto",
-                    "node_*.proto",
-                    "connector_*.proto",
-                    "console_*.proto",
-                    "status.proto",
-                    "credential_*.proto"
+                    "node_*.proto"
                 )
             )
         }
@@ -59,8 +53,6 @@ protobuf {
         }
     }
 
-    val pbandkClientsGeneratorJar = configurations["jarPathConf"].files(configurations["jarPathConf"].dependencies.first()).first()
-
     generateProtoTasks {
         ofSourceSet("main").forEach { task ->
             task.builtins {
@@ -69,7 +61,6 @@ protobuf {
             task.plugins {
                 id("kotlin") {
                     option("kotlin_package=io.iohk.atala.prism.protos")
-                    option("kotlin_service_gen=$pbandkClientsGeneratorJar|io.iohk.atala.prism.generator.Generator")
                     option("visibility=public")
                     option("js_export=true")
                 }
