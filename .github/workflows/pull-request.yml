@@ -1,0 +1,113 @@
+name: Pull Request CI
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: ${{ github.head_ref }}${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: 11
+  NODEJS_VERSION: 16.17.0
+  ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
+  ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+
+  lint:
+    name: Lint changes
+    runs-on: ubuntu-latest
+    env:
+      APPLY_FIXES: all
+      APPLY_FIXES_EVENT: pull_request
+      APPLY_FIXES_MODE: commit
+      VALIDATE_ALL_CODEBASE: ${{ github.ref_name == 'main' }}
+      DISABLE: COPYPASTE,SPELL
+      GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.ATALA_GITHUB_TOKEN }}
+          fetch-depth: 0
+      - name: Mega-Linter
+        id: ml
+        uses: megalinter/megalinter@v6
+      - name: Archive production artifacts
+        if: success() || failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: Mega-Linter reports
+          path: |
+            report
+            mega-linter.log
+
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            os-type: linux
+#          - os: windows-latest
+#            os-type: windows
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout the repo
+        uses: actions/checkout@v3
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v1
+
+      - name: Cache gradle
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.konan
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Install Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'zulu'
+
+      - name: Install NodeJS ${{ env.NODEJS_VERSION }}
+        if: matrix.os-type == 'linux'
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODEJS_VERSION }}
+
+      - name: Test Kotlin code is properly formatted
+        run: ./gradlew ktlintCheck
+
+#      - name: Build for iOS, macOS, tvOS, watchOS
+#        if: matrix.os-type == 'macos'
+#        run: |
+#          ./gradlew clean build iosX64Test --stacktrace
+#        # removed watchosX64Test as GitHub action gets Invalid device: Apple Watch Series 5 - 44mm
+#        # no longer supporting them => macosX64Test tvosX64Test
+#        # TODO: This is not needed now
+
+      - name: Build for JS, Android, JVM
+        if: matrix.os-type == 'linux'
+        run: |
+          ./gradlew build check allTests --stacktrace
+
+      - name: Upload the build report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          path: "**/build/reports/"
+          name: report-${{ matrix.os-type }}
