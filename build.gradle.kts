@@ -11,7 +11,7 @@ plugins {
     id("maven-publish")
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jetbrains.dokka") version "1.7.10"
-    id("com.google.protobuf") version "0.9.1"
+    //id("com.google.protobuf") version "0.9.2"
     // The following should be removed
     // id(Plugins.npmPublish) version PluginVersions.npmPublish apply false
     // id(Plugins.gitVersion) version PluginVersions.gitVersion
