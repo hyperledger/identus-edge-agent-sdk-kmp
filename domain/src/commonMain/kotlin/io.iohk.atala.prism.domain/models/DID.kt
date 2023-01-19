@@ -1,13 +1,4 @@
 package io.iohk.atala.prism.domain.models
-
-data class DIDMethod(
-    val method: String
-)
-
-data class DIDMethodId(
-    val id: String
-)
-
 data class DID(
     val schema: String,
     val method: String,
