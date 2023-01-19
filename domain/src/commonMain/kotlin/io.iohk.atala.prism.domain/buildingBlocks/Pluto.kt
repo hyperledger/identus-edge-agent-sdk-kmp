@@ -1,6 +1,13 @@
 package io.iohk.atala.prism.domain.buildingBlocks
 
-import io.iohk.atala.prism.domain.models.*
+import io.iohk.atala.prism.domain.models.DID
+import io.iohk.atala.prism.domain.models.PrivateKey
+import io.iohk.atala.prism.domain.models.Message
+import io.iohk.atala.prism.domain.models.VerifiableCredential
+import io.iohk.atala.prism.domain.models.PrismDIDInfo
+import io.iohk.atala.prism.domain.models.PeerDID
+import io.iohk.atala.prism.domain.models.DIDPair
+import io.iohk.atala.prism.domain.models.MediatorDID
 import kotlinx.coroutines.flow.Flow
 
 interface Pluto {

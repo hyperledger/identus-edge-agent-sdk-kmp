@@ -1,5 +1,4 @@
 package io.iohk.atala.prism.domain.models
-
 data class KeyPair(
     val curve: KeyCurve? = KeyCurve.secp256k1,
     val privateKey: PrivateKey,

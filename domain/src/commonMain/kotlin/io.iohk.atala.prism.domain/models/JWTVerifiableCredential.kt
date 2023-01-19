@@ -1,8 +1,5 @@
 package io.iohk.atala.prism.domain.models
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class JWTCredentialPayload(
     val iss: DID,
     val sub: String? = null,
