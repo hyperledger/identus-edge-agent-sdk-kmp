@@ -56,7 +56,7 @@ data class Message(
     }
 
     enum class Direction(val value: String) {
-        sent("Sent"),
-        received("Received")
+        SENT("Sent"),
+        RECEIVED("Received")
     }
 }

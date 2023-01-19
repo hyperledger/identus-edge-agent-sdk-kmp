@@ -1,5 +1,16 @@
 package io.iohk.atala.prism.domain.models
 
+data class JWTVerifiableCredential(
+    val context: Set<String>? = setOf(),
+    val type: Set<String>? = setOf(),
+    val credentialSchema: VerifiableCredentialTypeContainer? = null,
+    val credentialSubject: String,
+    val credentialStatus: VerifiableCredentialTypeContainer? = null,
+    val refreshService: VerifiableCredentialTypeContainer? = null,
+    val evidence: VerifiableCredentialTypeContainer? = null,
+    val termsOfUse: VerifiableCredentialTypeContainer? = null
+)
+
 data class JWTCredentialPayload(
     val iss: DID,
     val sub: String? = null,
@@ -24,16 +35,4 @@ data class JWTCredentialPayload(
     override val validUntil: VerifiableCredentialTypeContainer?,
     override val proof: String?,
     override val aud: Set<String>
-) : VerifiableCredential {
-
-    data class JWTVerifiableCredential(
-        val context: Set<String>? = setOf(),
-        val type: Set<String>? = setOf(),
-        val credentialSchema: VerifiableCredentialTypeContainer? = null,
-        val credentialSubject: String,
-        val credentialStatus: VerifiableCredentialTypeContainer? = null,
-        val refreshService: VerifiableCredentialTypeContainer? = null,
-        val evidence: VerifiableCredentialTypeContainer? = null,
-        val termsOfUse: VerifiableCredentialTypeContainer? = null
-    )
-}
+) : VerifiableCredential
