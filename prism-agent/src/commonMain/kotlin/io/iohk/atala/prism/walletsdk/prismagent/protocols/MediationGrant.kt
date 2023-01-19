@@ -11,9 +11,6 @@ sealed class MediationProtocolError : Throwable() {
 }
 
 class MediationGrant {
-    @Serializable
-    data class Body(var routingDid: String)
-
     var id: String
     var type = ProtocolType.DidcommMediationGrant.value
     var body: Body
@@ -33,4 +30,7 @@ class MediationGrant {
         this.id = fromMessage.id
         this.body = Json.decodeFromString(fromMessage.body)
     }
+
+    @Serializable
+    data class Body(var routingDid: String)
 }
