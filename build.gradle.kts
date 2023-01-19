@@ -26,6 +26,7 @@ buildscript {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
         classpath("com.android.tools.build:gradle:7.2.2")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
+        classpath("com.squareup.sqldelight:gradle-plugin:1.5.4")
     }
 }
 
