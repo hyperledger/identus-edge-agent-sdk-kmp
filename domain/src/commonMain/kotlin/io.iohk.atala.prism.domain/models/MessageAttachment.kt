@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.domain.models
 
 interface AttachmentData
-
 data class AttachmentHeader(
     val children: String
 ) : AttachmentData
@@ -10,7 +9,7 @@ data class AttachmentJws(
     val header: AttachmentHeader,
     val protected: String,
     val signature: String
-): AttachmentData
+) : AttachmentData
 
 data class AttachmentJwsData(
     val base64: String,
@@ -19,12 +18,12 @@ data class AttachmentJwsData(
 
 data class AttachmentBase64(
     val base64: String
-): AttachmentData
+) : AttachmentData
 
 data class AttachmentLinkData(
     val links: Array<String>,
     val hash: String
-): AttachmentData {
+) : AttachmentData {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -46,7 +45,7 @@ data class AttachmentLinkData(
 
 data class AttachmentJsonData(
     val data: String
-): AttachmentData
+) : AttachmentData
 
 data class AttachmentDescriptor(
     val id: String,
@@ -57,7 +56,7 @@ data class AttachmentDescriptor(
     val lastModTime: String? = null, // Date format
     val byteCount: Int? = null,
     val description: String? = null
-): AttachmentData {
+) : AttachmentData {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false

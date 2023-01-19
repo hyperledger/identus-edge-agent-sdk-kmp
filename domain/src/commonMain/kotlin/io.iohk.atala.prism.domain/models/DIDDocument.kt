@@ -264,4 +264,3 @@ data class DIDDocument(
         }
     }
 }
-

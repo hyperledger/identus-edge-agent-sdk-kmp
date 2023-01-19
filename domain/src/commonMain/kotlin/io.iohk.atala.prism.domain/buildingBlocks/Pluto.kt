@@ -73,5 +73,4 @@ interface Pluto {
     fun getAllMediators(): Flow<Array<MediatorDID>>
 
     fun getAllCredentials(): Flow<Array<VerifiableCredential>>
-
 }

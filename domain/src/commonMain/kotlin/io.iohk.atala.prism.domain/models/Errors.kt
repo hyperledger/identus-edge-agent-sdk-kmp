@@ -4,7 +4,6 @@ open class CommonError : Throwable() {
     class SomethingWentWrongError : CommonError()
 }
 
-
 open class ApolloError : Throwable() {
     class InvalidMnemonicWord : ApolloError()
     class CouldNotParseMessageString : ApolloError()

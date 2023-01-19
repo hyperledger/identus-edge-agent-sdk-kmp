@@ -31,7 +31,7 @@ interface Castor {
         did: DID,
         challenge: ByteArray,
         signature: ByteArray
-    ) : Boolean
+    ): Boolean
 
     @Throws()
     fun getEcnumbasis(
