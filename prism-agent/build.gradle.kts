@@ -2,12 +2,12 @@ import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
-version = rootProject.version
-val currentModuleName: String = "prismAgent"
+val currentModuleName: String = "WalletAgent"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
     kotlin("multiplatform")
+    kotlin("plugin.serialization") version "1.7.20"
     id("com.android.library")
     id("org.jetbrains.dokka")
 }
@@ -16,6 +16,7 @@ kotlin {
     android {
         publishAllLibraryVariants()
     }
+
     jvm {
         compilations.all {
             kotlinOptions {
@@ -29,7 +30,7 @@ kotlin {
 
     js(IR) {
         this.moduleName = currentModuleName
-        this.binaries.library()
+        this.binaries.executable()
         this.useCommonJs()
         this.compilations["main"].packageJson {
             this.version = rootProject.version.toString()
@@ -65,10 +66,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.benasher44:uuid:0.3.0") // TODO("use Apollo UUID")
-                implementation(project(":core-sdk"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
             }
         }
         val commonTest by getting {
@@ -132,7 +131,7 @@ tasks.withType<DokkaTask> {
     moduleName.set(project.name)
     moduleVersion.set(rootProject.version.toString())
     description = """
-        This is a Kotlin Multiplatform PrismAgent Library
+        This is a Kotlin Multiplatform Wallet-Core-SDK Library
     """.trimIndent()
     dokkaSourceSets {
         // TODO: Figure out how to include files to the documentations
@@ -141,3 +140,13 @@ tasks.withType<DokkaTask> {
         }
     }
 }
+
+// afterEvaluate {
+//    tasks.withType<AbstractTestTask> {
+//        testLogging {
+//            events("passed", "skipped", "failed", "standard_out", "standard_error")
+//            showExceptions = true
+//            showStackTraces = true
+//        }
+//    }
+// }

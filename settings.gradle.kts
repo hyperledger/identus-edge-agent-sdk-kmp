@@ -28,7 +28,6 @@ rootProject.name = "wallet-sdk"
 include(":protosLib")
 include(":wallet-sdk")
 include(":core-sdk")
-include(":authenticate-sdk")
 include(":domain")
 include(":castor")
 include(":mercury")
