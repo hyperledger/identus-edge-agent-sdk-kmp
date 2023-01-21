@@ -1,4 +1,7 @@
 package io.iohk.atala.prism.domain.models
+
+import kotlin.jvm.JvmStatic
+
 data class DID(
     val schema: String,
     val method: String,
@@ -14,16 +17,19 @@ data class DID(
     }
 
     companion object {
+        @JvmStatic
         fun getSchemaFromString(string: String): String {
             val split = string.split(":")
             return split[0]
         }
 
+        @JvmStatic
         fun getMethodFromString(string: String): String {
             val split = string.split(":")
             return split[1]
         }
 
+        @JvmStatic
         fun getMethodIdFromString(string: String): String {
             val split = string.split(":")
             return split[2]
