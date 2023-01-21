@@ -1,5 +1,5 @@
 // Generated from java-escape by ANTLR 4.7.1
-package io.iohk.atala.prism.castor.DIDGrammar
+package io.iohk.atala.prism.castor.antlrGrammar
 
 import com.strumenta.kotlinmultiplatform.asCharArray
 import org.antlr.v4.kotlinruntime.*

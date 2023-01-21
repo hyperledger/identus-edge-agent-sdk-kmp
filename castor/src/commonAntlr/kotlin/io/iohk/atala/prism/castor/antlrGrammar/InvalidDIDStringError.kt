@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.castor.DIDGrammar
+package io.iohk.atala.prism.castor.antlrGrammar
 
 class InvalidDIDStringError(override val message: String) : Exception(message) {
     val code: String = "InvalidDIDStringError"
