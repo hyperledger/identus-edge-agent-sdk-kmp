@@ -1,18 +1,16 @@
-// Generated from java-escape by ANTLR 4.7.1
 package io.iohk.atala.prism.castor.antlrGrammar
 
 import com.strumenta.kotlinmultiplatform.asCharArray
 import org.antlr.v4.kotlinruntime.CharStream
 import org.antlr.v4.kotlinruntime.dfa.DFA
 import org.antlr.v4.kotlinruntime.Lexer
-import org.antlr.v4.kotlinruntime.ThreadLocal
 import org.antlr.v4.kotlinruntime.Vocabulary
 import org.antlr.v4.kotlinruntime.VocabularyImpl
 import org.antlr.v4.kotlinruntime.atn.ATN
 import org.antlr.v4.kotlinruntime.atn.ATNDeserializer
 import org.antlr.v4.kotlinruntime.atn.LexerATNSimulator
 import org.antlr.v4.kotlinruntime.atn.PredictionContextCache
-
+import org.antlr.v4.kotlinruntime.ThreadLocal
 
 open class DIDUrlAbnfLexer(val input: CharStream) : Lexer(input) {
 
@@ -73,8 +71,6 @@ open class DIDUrlAbnfLexer(val input: CharStream) : Lexer(input) {
             decisionToDFA = Array<DFA>(ATN.numberOfDecisions, {
                 DFA(ATN.getDecisionState(it)!!, it)
             })
-
-
         }
     }
 
@@ -131,9 +127,7 @@ open class DIDUrlAbnfLexer(val input: CharStream) : Lexer(input) {
         STRING
     }
 
-
     init {
         this.interpreter = LexerATNSimulator(this, ATN, decisionToDFA as Array<DFA?>, sharedContextCache)
     }
-
 }
