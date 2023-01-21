@@ -4,7 +4,6 @@ package io.iohk.atala.prism.castor.antlrGrammar;
 import com.strumenta.kotlinmultiplatform.TypeDeclarator
 import com.strumenta.kotlinmultiplatform.asCharArray
 import com.strumenta.kotlinmultiplatform.getType
-import org.antlr.v4.kotlinruntime.*
 import org.antlr.v4.kotlinruntime.atn.ATN
 import org.antlr.v4.kotlinruntime.atn.ATN.Companion.INVALID_ALT_NUMBER
 import org.antlr.v4.kotlinruntime.atn.ATNDeserializer
@@ -13,6 +12,14 @@ import org.antlr.v4.kotlinruntime.atn.PredictionContextCache
 import org.antlr.v4.kotlinruntime.dfa.DFA
 import org.antlr.v4.kotlinruntime.tree.ParseTreeListener
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
+import org.antlr.v4.kotlinruntime.TokenStream
+import org.antlr.v4.kotlinruntime.Parser
+import org.antlr.v4.kotlinruntime.Vocabulary
+import org.antlr.v4.kotlinruntime.VocabularyImpl
+import org.antlr.v4.kotlinruntime.ThreadLocal
+import org.antlr.v4.kotlinruntime.ParserRuleContext
+import org.antlr.v4.kotlinruntime.Token
+import org.antlr.v4.kotlinruntime.RecognitionException
 import kotlin.reflect.KClass
 
 open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
@@ -45,7 +52,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
     override val vocabulary: Vocabulary
         get() = DIDUrlAbnfParser.Companion.VOCABULARY
 
-    enum class Tokens(val id: Int) {
+    enum class TOKENS(val id: Int) {
         EOF(-1),
         T__0(1),
         T__1(2),
@@ -65,7 +72,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
         STRING(16)
     }
 
-    enum class Rules(val id: Int) {
+    enum class RULES(val id: Int) {
         RULE_did_url(0),
         RULE_did(1),
         RULE_method_name(2),
@@ -136,22 +143,22 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
         }
     }
 
-    private val T__0 = Tokens.T__0.id
-    private val T__1 = Tokens.T__1.id
-    private val T__2 = Tokens.T__2.id
-    private val T__3 = Tokens.T__3.id
-    private val T__4 = Tokens.T__4.id
-    private val SCHEMA = Tokens.SCHEMA.id
-    private val ALPHA = Tokens.ALPHA.id
-    private val DIGIT = Tokens.DIGIT.id
-    private val PCT_ENCODED = Tokens.PCT_ENCODED.id
-    private val PERCENT = Tokens.PERCENT.id
-    private val DASH = Tokens.DASH.id
-    private val PERIOD = Tokens.PERIOD.id
-    private val COLON = Tokens.COLON.id
-    private val UNDERSCORE = Tokens.UNDERSCORE.id
-    private val HEX = Tokens.HEX.id
-    private val STRING = Tokens.STRING.id
+    private val T__0 = TOKENS.T__0.id
+    private val T__1 = TOKENS.T__1.id
+    private val T__2 = TOKENS.T__2.id
+    private val T__3 = TOKENS.T__3.id
+    private val T__4 = TOKENS.T__4.id
+    private val SCHEMA = TOKENS.SCHEMA.id
+    private val ALPHA = TOKENS.ALPHA.id
+    private val DIGIT = TOKENS.DIGIT.id
+    private val PCT_ENCODED = TOKENS.PCT_ENCODED.id
+    private val PERCENT = TOKENS.PERCENT.id
+    private val DASH = TOKENS.DASH.id
+    private val PERIOD = TOKENS.PERIOD.id
+    private val COLON = TOKENS.COLON.id
+    private val UNDERSCORE = TOKENS.UNDERSCORE.id
+    private val HEX = TOKENS.HEX.id
+    private val STRING = TOKENS.STRING.id
 
     /* Named actions */
     init {
@@ -161,13 +168,13 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
     /* Funcs */
     open class Did_urlContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_did_url.id
+            get() = RULES.RULE_did_url.id
             set(value) {
                 throw RuntimeException()
             }
 
         fun findDid(): DidContext? = getRuleContext(solver.getType("DidContext"), 0)
-        fun EOF(): TerminalNode? = getToken(DIDUrlAbnfParser.Tokens.EOF.id, 0)
+        fun EOF(): TerminalNode? = getToken(DIDUrlAbnfParser.TOKENS.EOF.id, 0)
         fun findPath(): PathContext? = getRuleContext(solver.getType("PathContext"), 0)
         fun findQuery(): QueryContext? = getRuleContext(solver.getType("QueryContext"), 0)
         fun findFrag(): FragContext? = getRuleContext(solver.getType("FragContext"), 0)
@@ -186,7 +193,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun did_url(): Did_urlContext {
         var _localctx: Did_urlContext = Did_urlContext(context, state)
-        enterRule(_localctx, 0, Rules.RULE_did_url.id)
+        enterRule(_localctx, 0, RULES.RULE_did_url.id)
         var _la: Int
         try {
             enterOuterAlt(_localctx, 1)
@@ -236,12 +243,12 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class DidContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_did.id
+            get() = RULES.RULE_did.id
             set(value) {
                 throw RuntimeException()
             }
 
-        fun SCHEMA(): TerminalNode? = getToken(DIDUrlAbnfParser.Tokens.SCHEMA.id, 0)
+        fun SCHEMA(): TerminalNode? = getToken(DIDUrlAbnfParser.TOKENS.SCHEMA.id, 0)
         fun findMethod_name(): Method_nameContext? = getRuleContext(solver.getType("Method_nameContext"), 0)
         fun findMethod_specific_id(): Method_specific_idContext? =
             getRuleContext(solver.getType("Method_specific_idContext"), 0)
@@ -260,7 +267,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun did(): DidContext {
         var _localctx: DidContext = DidContext(context, state)
-        enterRule(_localctx, 2, Rules.RULE_did.id)
+        enterRule(_localctx, 2, RULES.RULE_did.id)
         try {
             enterOuterAlt(_localctx, 1)
             if (true) {
@@ -287,7 +294,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class Method_nameContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_method_name.id
+            get() = RULES.RULE_method_name.id
             set(value) {
                 throw RuntimeException()
             }
@@ -308,7 +315,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun method_name(): Method_nameContext {
         var _localctx: Method_nameContext = Method_nameContext(context, state)
-        enterRule(_localctx, 4, Rules.RULE_method_name.id)
+        enterRule(_localctx, 4, RULES.RULE_method_name.id)
         try {
             enterOuterAlt(_localctx, 1)
             if (true) {
@@ -327,7 +334,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class Method_specific_idContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_method_specific_id.id
+            get() = RULES.RULE_method_specific_id.id
             set(value) {
                 throw RuntimeException()
             }
@@ -349,7 +356,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun method_specific_id(): Method_specific_idContext {
         var _localctx: Method_specific_idContext = Method_specific_idContext(context, state)
-        enterRule(_localctx, 6, Rules.RULE_method_specific_id.id)
+        enterRule(_localctx, 6, RULES.RULE_method_specific_id.id)
         var _la: Int
         try {
             var _alt: Int
@@ -396,7 +403,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class PathContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_path.id
+            get() = RULES.RULE_path.id
             set(value) {
                 throw RuntimeException()
             }
@@ -418,7 +425,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun path(): PathContext {
         var _localctx: PathContext = PathContext(context, state)
-        enterRule(_localctx, 8, Rules.RULE_path.id)
+        enterRule(_localctx, 8, RULES.RULE_path.id)
         var _la: Int
         try {
             var _alt: Int
@@ -465,7 +472,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class QueryContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_query.id
+            get() = RULES.RULE_query.id
             set(value) {
                 throw RuntimeException()
             }
@@ -486,7 +493,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun query(): QueryContext {
         var _localctx: QueryContext = QueryContext(context, state)
-        enterRule(_localctx, 10, Rules.RULE_query.id)
+        enterRule(_localctx, 10, RULES.RULE_query.id)
         try {
             enterOuterAlt(_localctx, 1)
             if (true) {
@@ -507,13 +514,13 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class FragContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_frag.id
+            get() = RULES.RULE_frag.id
             set(value) {
                 throw RuntimeException()
             }
 
         fun findString(): StringContext? = getRuleContext(solver.getType("StringContext"), 0)
-        fun DIGIT(): TerminalNode? = getToken(DIDUrlAbnfParser.Tokens.DIGIT.id, 0)
+        fun DIGIT(): TerminalNode? = getToken(DIDUrlAbnfParser.TOKENS.DIGIT.id, 0)
 
         constructor(parent: ParserRuleContext?, invokingState: Int) : super(parent, invokingState) {
         }
@@ -529,7 +536,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun frag(): FragContext {
         var _localctx: FragContext = FragContext(context, state)
-        enterRule(_localctx, 12, Rules.RULE_frag.id)
+        enterRule(_localctx, 12, RULES.RULE_frag.id)
         try {
             enterOuterAlt(_localctx, 1)
             if (true) {
@@ -565,7 +572,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class SearchContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_search.id
+            get() = RULES.RULE_search.id
             set(value) {
                 throw RuntimeException()
             }
@@ -590,7 +597,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun search(): SearchContext {
         var _localctx: SearchContext = SearchContext(context, state)
-        enterRule(_localctx, 14, Rules.RULE_search.id)
+        enterRule(_localctx, 14, RULES.RULE_search.id)
         var _la: Int
         try {
             enterOuterAlt(_localctx, 1)
@@ -626,15 +633,15 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class SearchparameterContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_searchparameter.id
+            get() = RULES.RULE_searchparameter.id
             set(value) {
                 throw RuntimeException()
             }
 
         fun findString(): List<StringContext> = getRuleContexts(solver.getType("StringContext"))
         fun findString(i: Int): StringContext? = getRuleContext(solver.getType("StringContext"), i)
-        fun DIGIT(): TerminalNode? = getToken(DIDUrlAbnfParser.Tokens.DIGIT.id, 0)
-        fun HEX(): TerminalNode? = getToken(DIDUrlAbnfParser.Tokens.HEX.id, 0)
+        fun DIGIT(): TerminalNode? = getToken(DIDUrlAbnfParser.TOKENS.DIGIT.id, 0)
+        fun HEX(): TerminalNode? = getToken(DIDUrlAbnfParser.TOKENS.HEX.id, 0)
 
         constructor(parent: ParserRuleContext?, invokingState: Int) : super(parent, invokingState) {
         }
@@ -650,7 +657,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun searchparameter(): SearchparameterContext {
         var _localctx: SearchparameterContext = SearchparameterContext(context, state)
-        enterRule(_localctx, 16, Rules.RULE_searchparameter.id)
+        enterRule(_localctx, 16, RULES.RULE_searchparameter.id)
         var _la: Int
         try {
             enterOuterAlt(_localctx, 1)
@@ -704,13 +711,13 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     open class StringContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_string.id
+            get() = RULES.RULE_string.id
             set(value) {
                 throw RuntimeException()
             }
 
-        fun STRING(): TerminalNode? = getToken(DIDUrlAbnfParser.Tokens.STRING.id, 0)
-        fun DIGIT(): TerminalNode? = getToken(DIDUrlAbnfParser.Tokens.DIGIT.id, 0)
+        fun STRING(): TerminalNode? = getToken(DIDUrlAbnfParser.TOKENS.STRING.id, 0)
+        fun DIGIT(): TerminalNode? = getToken(DIDUrlAbnfParser.TOKENS.DIGIT.id, 0)
 
         constructor(parent: ParserRuleContext?, invokingState: Int) : super(parent, invokingState) {
         }
@@ -726,7 +733,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 
     fun string(): StringContext {
         var _localctx: StringContext = StringContext(context, state)
-        enterRule(_localctx, 18, Rules.RULE_string.id)
+        enterRule(_localctx, 18, RULES.RULE_string.id)
         var _la: Int
         try {
             enterOuterAlt(_localctx, 1)
@@ -736,7 +743,7 @@ open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
                 if (!(_la == DIGIT || _la == STRING)) {
                     errorHandler.recoverInline(this)
                 } else {
-                    if (_input!!.LA(1) == Tokens.EOF.id) isMatchedEOF = true
+                    if (_input!!.LA(1) == TOKENS.EOF.id) isMatchedEOF = true
                     errorHandler.reportMatch(this)
                     consume()
                 }
