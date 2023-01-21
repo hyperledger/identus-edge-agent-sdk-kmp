@@ -1,16 +1,15 @@
 // Generated from java-escape by ANTLR 4.7.1
-package io.iohk.atala.prism.castor.antlrGrammar;
+package io.iohk.atala.prism.castor.antlrGrammar
 
 import com.strumenta.kotlinmultiplatform.TypeDeclarator
 import com.strumenta.kotlinmultiplatform.asCharArray
 import com.strumenta.kotlinmultiplatform.getType
-import kotlin.reflect.KClass
 import org.antlr.v4.kotlinruntime.Parser
 import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.RecognitionException
+import org.antlr.v4.kotlinruntime.ThreadLocal
 import org.antlr.v4.kotlinruntime.Token
 import org.antlr.v4.kotlinruntime.TokenStream
-import org.antlr.v4.kotlinruntime.ThreadLocal
 import org.antlr.v4.kotlinruntime.Vocabulary
 import org.antlr.v4.kotlinruntime.VocabularyImpl
 import org.antlr.v4.kotlinruntime.atn.ATN
@@ -20,6 +19,7 @@ import org.antlr.v4.kotlinruntime.atn.PredictionContextCache
 import org.antlr.v4.kotlinruntime.dfa.DFA
 import org.antlr.v4.kotlinruntime.tree.ParseTreeListener
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
+import kotlin.reflect.KClass
 
 open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
@@ -31,7 +31,6 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
             DIDAbnfParser.IdcharContext::class
         )
     }
-
 
     override val grammarFileName: String
         get() = "DIDAbnf.g4"
@@ -113,8 +112,6 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
             decisionToDFA = Array<DFA>(ATN.numberOfDecisions, {
                 DFA(ATN.getDecisionState(it)!!, it)
             })
-
-
         }
     }
 
@@ -219,7 +216,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
             enterOuterAlt(_localctx, 1)
             if (true) {
                 this.state = 18
-                errorHandler.sync(this);
+                errorHandler.sync(this)
                 _la = _input!!.LA(1)
                 while (_la == ALPHA || _la == DIGIT) {
                     if (true) {
@@ -278,7 +275,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
             enterOuterAlt(_localctx, 1)
             if (true) {
                 this.state = 24
-                errorHandler.sync(this);
+                errorHandler.sync(this)
                 _la = _input!!.LA(1)
                 while ((((_la) and 0x3f.inv()) == 0 && ((1L shl _la) and ((1L shl ALPHA) or (1L shl DIGIT) or (1L shl PCT_ENCODED) or (1L shl DASH) or (1L shl PERIOD) or (1L shl UNDERSCORE))) != 0L)) {
                     if (true) {
@@ -314,7 +311,6 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
                         } while ((((_la) and 0x3f.inv()) == 0 && ((1L shl _la) and ((1L shl ALPHA) or (1L shl DIGIT) or (1L shl PCT_ENCODED) or (1L shl DASH) or (1L shl PERIOD) or (1L shl UNDERSCORE))) != 0L))
                     }
                 }
-
             }
         } catch (re: RecognitionException) {
             throw InvalidDIDStringError("Invalid Did char found at [line ${re.offendingToken?.line}, col ${re.offendingToken?.charPositionInLine}] \"${re.offendingToken?.text}\"")
@@ -374,5 +370,4 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
         }
         return _localctx
     }
-
 }

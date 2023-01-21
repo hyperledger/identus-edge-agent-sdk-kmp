@@ -1,4 +1,3 @@
-// Generated from java-escape by ANTLR 4.7.1
 package io.iohk.atala.prism.castor.antlrGrammar
 
 import com.strumenta.kotlinmultiplatform.asCharArray
