@@ -4,6 +4,15 @@ package io.iohk.atala.prism.castor.antlrGrammar;
 import com.strumenta.kotlinmultiplatform.TypeDeclarator
 import com.strumenta.kotlinmultiplatform.asCharArray
 import com.strumenta.kotlinmultiplatform.getType
+import kotlin.reflect.KClass
+import org.antlr.v4.kotlinruntime.Parser
+import org.antlr.v4.kotlinruntime.ParserRuleContext
+import org.antlr.v4.kotlinruntime.RecognitionException
+import org.antlr.v4.kotlinruntime.Token
+import org.antlr.v4.kotlinruntime.TokenStream
+import org.antlr.v4.kotlinruntime.ThreadLocal
+import org.antlr.v4.kotlinruntime.Vocabulary
+import org.antlr.v4.kotlinruntime.VocabularyImpl
 import org.antlr.v4.kotlinruntime.atn.ATN
 import org.antlr.v4.kotlinruntime.atn.ATN.Companion.INVALID_ALT_NUMBER
 import org.antlr.v4.kotlinruntime.atn.ATNDeserializer
@@ -12,15 +21,6 @@ import org.antlr.v4.kotlinruntime.atn.PredictionContextCache
 import org.antlr.v4.kotlinruntime.dfa.DFA
 import org.antlr.v4.kotlinruntime.tree.ParseTreeListener
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
-import org.antlr.v4.kotlinruntime.TokenStream
-import org.antlr.v4.kotlinruntime.Parser
-import org.antlr.v4.kotlinruntime.Vocabulary
-import org.antlr.v4.kotlinruntime.VocabularyImpl
-import org.antlr.v4.kotlinruntime.ThreadLocal
-import org.antlr.v4.kotlinruntime.ParserRuleContext
-import org.antlr.v4.kotlinruntime.Token
-import org.antlr.v4.kotlinruntime.RecognitionException
-import kotlin.reflect.KClass
 
 open class DIDUrlAbnfParser(input: TokenStream) : Parser(input) {
 

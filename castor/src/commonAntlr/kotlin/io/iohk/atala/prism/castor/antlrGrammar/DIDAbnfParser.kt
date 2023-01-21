@@ -4,7 +4,15 @@ package io.iohk.atala.prism.castor.antlrGrammar;
 import com.strumenta.kotlinmultiplatform.TypeDeclarator
 import com.strumenta.kotlinmultiplatform.asCharArray
 import com.strumenta.kotlinmultiplatform.getType
-import org.antlr.v4.kotlinruntime.*
+import kotlin.reflect.KClass
+import org.antlr.v4.kotlinruntime.Parser
+import org.antlr.v4.kotlinruntime.ParserRuleContext
+import org.antlr.v4.kotlinruntime.RecognitionException
+import org.antlr.v4.kotlinruntime.Token
+import org.antlr.v4.kotlinruntime.TokenStream
+import org.antlr.v4.kotlinruntime.ThreadLocal
+import org.antlr.v4.kotlinruntime.Vocabulary
+import org.antlr.v4.kotlinruntime.VocabularyImpl
 import org.antlr.v4.kotlinruntime.atn.ATN
 import org.antlr.v4.kotlinruntime.atn.ATNDeserializer
 import org.antlr.v4.kotlinruntime.atn.ParserATNSimulator
@@ -12,7 +20,6 @@ import org.antlr.v4.kotlinruntime.atn.PredictionContextCache
 import org.antlr.v4.kotlinruntime.dfa.DFA
 import org.antlr.v4.kotlinruntime.tree.ParseTreeListener
 import org.antlr.v4.kotlinruntime.tree.TerminalNode
-import kotlin.reflect.KClass
 
 open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
@@ -52,10 +59,10 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
     }
 
     enum class Rules(val id: Int) {
-        RULE_did(0),
-        RULE_method_name(1),
-        RULE_method_specific_id(2),
-        RULE_idchar(3)
+        RULE_DID(0),
+        RULE_METHOD_NAME(1),
+        RULE_METHOD_SPECIFIC_ID(2),
+        RULE_ID_CHAR(3)
     }
 
     @ThreadLocal
@@ -129,7 +136,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
     /* Funcs */
     open class DidContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_did.id
+            get() = Rules.RULE_DID.id
             set(value) {
                 throw RuntimeException()
             }
@@ -155,7 +162,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
     fun did(): DidContext {
         var _localctx: DidContext = DidContext(context, state)
-        enterRule(_localctx, 0, Rules.RULE_did.id)
+        enterRule(_localctx, 0, Rules.RULE_DID.id)
         try {
             enterOuterAlt(_localctx, 1)
             if (true) {
@@ -182,7 +189,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
     open class Method_nameContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_method_name.id
+            get() = Rules.RULE_METHOD_NAME.id
             set(value) {
                 throw RuntimeException()
             }
@@ -206,7 +213,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
     fun method_name(): Method_nameContext {
         var _localctx: Method_nameContext = Method_nameContext(context, state)
-        enterRule(_localctx, 2, Rules.RULE_method_name.id)
+        enterRule(_localctx, 2, Rules.RULE_METHOD_NAME.id)
         var _la: Int
         try {
             enterOuterAlt(_localctx, 1)
@@ -243,7 +250,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
     open class Method_specific_idContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_method_specific_id.id
+            get() = Rules.RULE_METHOD_SPECIFIC_ID.id
             set(value) {
                 throw RuntimeException()
             }
@@ -265,7 +272,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
     fun method_specific_id(): Method_specific_idContext {
         var _localctx: Method_specific_idContext = Method_specific_idContext(context, state)
-        enterRule(_localctx, 4, Rules.RULE_method_specific_id.id)
+        enterRule(_localctx, 4, Rules.RULE_METHOD_SPECIFIC_ID.id)
         var _la: Int
         try {
             enterOuterAlt(_localctx, 1)
@@ -319,7 +326,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
     open class IdcharContext : ParserRuleContext {
         override var ruleIndex: Int
-            get() = Rules.RULE_idchar.id
+            get() = Rules.RULE_ID_CHAR.id
             set(value) {
                 throw RuntimeException()
             }
@@ -345,7 +352,7 @@ open class DIDAbnfParser(input: TokenStream) : Parser(input) {
 
     fun idchar(): IdcharContext {
         var _localctx: IdcharContext = IdcharContext(context, state)
-        enterRule(_localctx, 6, Rules.RULE_idchar.id)
+        enterRule(_localctx, 6, Rules.RULE_ID_CHAR.id)
         var _la: Int
         try {
             enterOuterAlt(_localctx, 1)
