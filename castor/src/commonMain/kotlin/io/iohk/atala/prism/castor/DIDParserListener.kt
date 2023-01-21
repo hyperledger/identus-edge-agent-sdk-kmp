@@ -23,6 +23,3 @@ class DIDParserListener : DIDAbnfBaseListener() {
         methodId = ctx.text
     }
 }
-
-
-
