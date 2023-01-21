@@ -153,6 +153,12 @@ ktlint {
         exclude("build/generated-src/**")
         exclude("**/generated/**")
         exclude("**/generated-src/**")
+        exclude {
+            it.file.path.contains("generated-src")
+        }
+        exclude {
+            it.file.path.contains("generated")
+        }
     }
 }
 
