@@ -3,6 +3,8 @@ pluginManagement {
         gradlePluginPortal()
         mavenCentral()
         google()
+        maven("https://plugins.gradle.org/m2/")
+        maven("https://jitpack.io")
     }
 }
 
@@ -17,6 +19,7 @@ buildscript {
         maven {
             url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
         }
+        maven("https://jitpack.io")
     }
 
     dependencies {

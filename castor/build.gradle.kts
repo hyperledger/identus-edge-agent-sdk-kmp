@@ -64,10 +64,19 @@ kotlin {
     }
 
     sourceSets {
+        val commonAntlr by creating {
+            kotlin.srcDir("build/generated-src/commonAntlr/kotlin")
+            dependencies {
+                api(kotlin("stdlib-common"))
+                api("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
+            }
+        }
         val commonMain by getting {
+            dependsOn(commonAntlr)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation(project(":domain"))
             }
         }
         val commonTest by getting {
@@ -75,7 +84,12 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                api(kotlin("stdlib-jdk8"))
+                api(kotlin("reflect"))
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
@@ -91,7 +105,15 @@ kotlin {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependsOn(commonAntlr)
+            dependencies {
+                implementation("com.github.piacenti:antlr-kotlin-runtime-js:0.0.14")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib-common:1.7.20")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib-js:1.7.20")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+            }
+        }
         val jsTest by getting
 
         all {
@@ -126,6 +148,20 @@ android {
     }
 }
 
+ktlint {
+    filter {
+        exclude("build/generated-src/**")
+        exclude("**/generated/**")
+        exclude("**/generated-src/**")
+        exclude {
+            it.file.path.contains("generated-src")
+        }
+        exclude {
+            it.file.path.contains("generated")
+        }
+    }
+}
+
 // Dokka implementation
 tasks.withType<DokkaTask> {
     moduleName.set(project.name)
@@ -150,3 +186,34 @@ tasks.withType<DokkaTask> {
 //        }
 //    }
 // }
+
+val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinCommonGrammarSource") {
+    // the classpath used to run antlr code generation
+    antlrClasspath = configurations.detachedConfiguration(
+        project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
+    )
+    maxHeapSize = "64m"
+    packageName = "io.iohk.atala.prism.castor.antlrgrammar"
+    arguments = listOf("-long-messages", "-Dlanguage=JavaScript")
+    source = project.objects
+        .sourceDirectorySet("antlr", "antlr")
+        .srcDir("src/commonAntlr/antlr").apply {
+            include("*.g4")
+        }
+    // outputDirectory is required, put it into the build directory
+    // if you do not want to add the generated sources to version control
+    outputDirectory = File("build/generated-src/commonAntlr/kotlin")
+    // use this setting if you want to add the generated sources to version control
+    // outputDirectory = File("src/commonAntlr/kotlin")
+}
+
+tasks.matching {
+    it.name == "compileCommonAntlrKotlinMetadata" ||
+        // it.name == "compileCommonMainKotlinMetadata" ||
+        it.name == "compileReleaseKotlinAndroid" ||
+        it.name == "compileDebugKotlinAndroid" ||
+        it.name == "compileKotlinJs" ||
+        it.name == "compileKotlinJvm"
+}.all {
+    this.dependsOn(antlrGenerationTask)
+}
