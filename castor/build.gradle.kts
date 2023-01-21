@@ -13,11 +13,6 @@ plugins {
 }
 
 kotlin {
-    ktlint {
-        filter {
-            exclude("**/DIDGrammar/**")
-        }
-    }
 
     android {
         publishAllLibraryVariants()
