@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.castor
 
-import io.iohk.atala.prism.castor.antlrGrammar.InvalidDIDStringError
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

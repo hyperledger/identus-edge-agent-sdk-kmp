@@ -2,7 +2,6 @@ package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.castor.antlrGrammar.DIDAbnfLexer
 import io.iohk.atala.prism.castor.antlrGrammar.DIDAbnfParser
-import io.iohk.atala.prism.castor.antlrGrammar.InvalidDIDStringError
 import io.iohk.atala.prism.domain.models.DID
 import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
