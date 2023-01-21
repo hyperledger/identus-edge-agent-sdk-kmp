@@ -13,6 +13,12 @@ plugins {
 }
 
 kotlin {
+    ktlint {
+        filter {
+            exclude("**/DIDGrammar/**")
+        }
+    }
+
     android {
         publishAllLibraryVariants()
     }
@@ -71,9 +77,11 @@ kotlin {
             }
         }
         val commonMain by getting {
+            dependsOn(commonAntlr)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation(project(":domain"))
             }
         }
         val commonTest by getting {
@@ -169,3 +177,31 @@ tasks.withType<DokkaTask> {
 //        }
 //    }
 // }
+
+tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinCommonGrammarSource") {
+    // the classpath used to run antlr code generation
+    antlrClasspath = configurations.detachedConfiguration(
+        project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
+    )
+    maxHeapSize = "64m"
+    packageName = "io.iohk.atala.prism.castor.DIDGrammar"
+    arguments = listOf("-long-messages", "-Dlanguage=JavaScript")
+    source = project.objects
+        .sourceDirectorySet("antlr", "antlr")
+        .srcDir("src/commonAntlr/antlr").apply {
+            include("*.g4")
+        }
+    // outputDirectory is required, put it into the build directory
+    // if you do not want to add the generated sources to version control
+    // outputDirectory = File("build/generated-src/commonAntlr/kotlin")
+    // use this settings if you want to add the generated sources to version control
+    outputDirectory = File("src/commonAntlr/kotlin")
+}
+
+/*
+Task dependency is disabled as we don't want to regenerate commonAntlr/kotlin each time
+We have a customised output in order to ensure total compatibility between native platforms
+tasks.getByName("compileKotlinJvm").dependsOn("generateKotlinCommonGrammarSource")
+tasks.getByName("compileKotlinJs").dependsOn("generateKotlinCommonGrammarSource")
+tasks.getByName("compileKotlinJs").dependsOn("generateKotlinCommonGrammarSource")
+*/
