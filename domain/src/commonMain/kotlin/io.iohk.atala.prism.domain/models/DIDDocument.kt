@@ -7,6 +7,24 @@ data class DIDDocument(
     val coreProperties: Array<DIDDocumentCoreProperty>
 ) {
 
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as DIDDocument
+
+        if (id != other.id) return false
+        if (!coreProperties.contentEquals(other.coreProperties)) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + coreProperties.contentHashCode()
+        return result
+    }
+
     data class VerificationMethod(
         val id: DIDUrl,
         val controller: DID,
@@ -35,7 +53,7 @@ data class DIDDocument(
 
         override fun hashCode(): Int {
             var result = id.hashCode()
-            result = 31 * result + (type?.contentHashCode() ?: 0)
+            result = 31 * result + (type.contentHashCode() ?: 0)
             result = 31 * result + serviceEndpoint.hashCode()
             return result
         }

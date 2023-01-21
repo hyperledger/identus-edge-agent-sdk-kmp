@@ -15,8 +15,8 @@ data class JWTCredentialPayload(
     val iss: DID,
     val sub: String? = null,
     val verifiableCredential: JWTVerifiableCredential,
-    val nbf: String, // Date type
-    val exp: String? = null, // Date type
+    val nbf: String, // TODO: Change to Date type
+    val exp: String? = null, // TODO: Change to Date type
     val jti: String,
     override val credentialType: CredentialType,
     override val id: String,
