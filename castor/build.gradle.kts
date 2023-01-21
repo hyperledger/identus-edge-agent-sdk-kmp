@@ -64,6 +64,12 @@ kotlin {
     }
 
     sourceSets {
+        val commonAntlr by creating {
+            dependencies {
+                api(kotlin("stdlib-common"))
+                api("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
+            }
+        }
         val commonMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
@@ -75,7 +81,12 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                api(kotlin("stdlib-jdk8"))
+                api(kotlin("reflect"))
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
@@ -91,7 +102,15 @@ kotlin {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependsOn(commonAntlr)
+            dependencies {
+                implementation("com.github.piacenti:antlr-kotlin-runtime-js:0.0.14")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib-common:1.7.20")
+                implementation("org.jetbrains.kotlin:kotlin-stdlib-js:1.7.20")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+            }
+        }
         val jsTest by getting
 
         all {
