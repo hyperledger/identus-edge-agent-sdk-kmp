@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.castor
 
-import io.iohk.atala.prism.castor.antlrGrammar.DIDAbnfBaseListener
-import io.iohk.atala.prism.castor.antlrGrammar.DIDAbnfParser
+import io.iohk.atala.prism.castor.antlrgrammar.DIDAbnfBaseListener
+import io.iohk.atala.prism.castor.antlrgrammar.DIDAbnfParser
 
 class DIDParserListener : DIDAbnfBaseListener() {
 

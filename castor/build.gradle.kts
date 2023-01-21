@@ -13,12 +13,6 @@ plugins {
 }
 
 kotlin {
-    ktlint {
-        filter {
-            exclude("**/antlrGrammar/**")
-        }
-    }
-
     android {
         publishAllLibraryVariants()
     }
@@ -154,6 +148,14 @@ android {
     }
 }
 
+ktlint {
+    filter {
+        exclude("build/generated-src/**")
+        exclude("**/generated/**")
+        exclude("**/generated-src/**")
+    }
+}
+
 // Dokka implementation
 tasks.withType<DokkaTask> {
     moduleName.set(project.name)
@@ -179,13 +181,13 @@ tasks.withType<DokkaTask> {
 //    }
 // }
 
-tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinCommonGrammarSource") {
+val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinCommonGrammarSource") {
     // the classpath used to run antlr code generation
     antlrClasspath = configurations.detachedConfiguration(
         project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
     )
     maxHeapSize = "64m"
-    packageName = "io.iohk.atala.prism.castor.antlrGrammar"
+    packageName = "io.iohk.atala.prism.castor.antlrgrammar"
     arguments = listOf("-long-messages", "-Dlanguage=JavaScript")
     source = project.objects
         .sourceDirectorySet("antlr", "antlr")
@@ -195,12 +197,17 @@ tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generate
     // outputDirectory is required, put it into the build directory
     // if you do not want to add the generated sources to version control
     outputDirectory = File("build/generated-src/commonAntlr/kotlin")
-    // use this settings if you want to add the generated sources to version control
+    // use this setting if you want to add the generated sources to version control
     // outputDirectory = File("src/commonAntlr/kotlin")
 }
 
 tasks.matching {
-    it != tasks.getByName("generateKotlinCommonGrammarSource")
+    it.name == "compileCommonAntlrKotlinMetadata" ||
+        // it.name == "compileCommonMainKotlinMetadata" ||
+        it.name == "compileReleaseKotlinAndroid" ||
+        it.name == "compileDebugKotlinAndroid" ||
+        it.name == "compileKotlinJs" ||
+        it.name == "compileKotlinJvm"
 }.all {
-    dependsOn("generateKotlinCommonGrammarSource")
+    this.dependsOn(antlrGenerationTask)
 }
