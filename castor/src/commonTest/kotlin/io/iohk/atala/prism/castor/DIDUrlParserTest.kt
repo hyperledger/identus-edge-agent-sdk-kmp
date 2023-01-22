@@ -34,7 +34,7 @@ class DIDUrlParserTest {
         assertEquals(parsedDID3.did.schema, "did")
         assertEquals(parsedDID3.did.method, "example")
         assertEquals(parsedDID3.did.methodId, "123456")
-        assertContentEquals(parsedDID3.path, arrayOf("path",  "jpg.pp"))
+        assertContentEquals(parsedDID3.path, arrayOf("path", "jpg.pp"))
         assertEquals(parsedDID3.parameters, mapOf("query" to "something"))
         assertNull(parsedDID3.fragment)
     }
