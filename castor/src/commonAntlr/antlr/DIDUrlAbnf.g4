@@ -1,13 +1,13 @@
 grammar DIDUrlAbnf;
 
 did_url
-    : did path? query? frag? EOF
+    : did path? query? '#'? frag? EOF
     ;
 
 did
     : SCHEMA ':' method_name ':' method_specific_id
     ;
-    
+
 method_name
     : string
     ;
@@ -17,7 +17,7 @@ method_specific_id
     ;
 
 path
-   : ('/' string)* '/'?
+   : (('/')? string)* ('/')?
    ;
 
 query
@@ -25,7 +25,7 @@ query
    ;
 
 frag
-   : '#' (string | DIGIT)
+   :  (string | DIGIT)
    ;
 
 search
@@ -59,3 +59,4 @@ UNDERSCORE : '_';
 HEX : ('%' [a-fA-F0-9] [a-fA-F0-9])+;
 
 STRING: ([a-zA-Z~0-9] | HEX) ([a-zA-Z0-9.+-] | HEX)*;
+SLASH: '/';
