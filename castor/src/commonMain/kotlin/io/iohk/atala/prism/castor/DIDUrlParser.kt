@@ -9,7 +9,6 @@ import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.tree.ParseTree
 import org.antlr.v4.kotlinruntime.tree.ParseTreeWalker
 
-
 class DIDUrlParser(private var didUrlString: String) {
     fun parse(): DIDUrl {
         var inputStream = CharStreams.fromString(didUrlString)

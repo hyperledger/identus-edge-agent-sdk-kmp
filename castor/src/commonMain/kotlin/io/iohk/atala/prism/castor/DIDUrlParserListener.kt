@@ -41,5 +41,4 @@ class DIDUrlParserListener : DIDUrlAbnfBaseListener() {
         query[key] = value
     }
 
-
 }
