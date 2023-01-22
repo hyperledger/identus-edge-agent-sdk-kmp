@@ -9,13 +9,13 @@ class DIDUrlParserTest {
 
     @Test
     fun it_should_test_valid_Urls() {
-        var didExample1 = "did:example:123456:adsd/path?query=something#fragment"
-        var didExample2 = "did:example:123456/path?query=something&query2=something#0"
-        var didExample3 = "did:example:123456/path/jpg.pp?query=something"
+        val didExample1 = "did:example:123456:adsd/path?query=something#fragment"
+        val didExample2 = "did:example:123456/path?query=something&query2=something#0"
+        val didExample3 = "did:example:123456/path/jpg.pp?query=something"
 
-        var parsedDID1 =  DIDUrlParser.parse(didExample1)
-        var parsedDID2 =  DIDUrlParser.parse(didExample2)
-        var parsedDID3 =  DIDUrlParser.parse(didExample3)
+        val parsedDID1 = DIDUrlParser.parse(didExample1)
+        val parsedDID2 = DIDUrlParser.parse(didExample2)
+        val parsedDID3 = DIDUrlParser.parse(didExample3)
 
         assertEquals(parsedDID1.did.schema, "did")
         assertEquals(parsedDID1.did.method, "example")
@@ -38,5 +38,4 @@ class DIDUrlParserTest {
         assertEquals(parsedDID3.parameters, mapOf("query" to "something"))
         assertNull(parsedDID3.fragment)
     }
-
 }
