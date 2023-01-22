@@ -7,33 +7,33 @@ import io.iohk.atala.prism.domain.models.PublicKey
 
 interface Castor {
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     fun parseDID(did: String): DID
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     fun createPrismDID(
         masterPublicKey: PublicKey,
         services: Array<DIDDocument.Service>? = null
     ): DID
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     fun createPeerDID(
         keyAgreementKeyPair: KeyPair,
         authenticationKeyPair: KeyPair,
         services: Array<DIDDocument.Service>
     ): DID
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     suspend fun resolveDID(did: DID): DIDDocument
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     suspend fun verifySignature(
         did: DID,
         challenge: ByteArray,
         signature: ByteArray
     ): Boolean
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     fun getEcnumbasis(
         did: DID,
         keyPair: KeyPair

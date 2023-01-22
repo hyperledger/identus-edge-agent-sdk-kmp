@@ -4,15 +4,15 @@ import io.iohk.atala.prism.domain.models.Message
 
 interface Mercury {
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     suspend fun packMessage(message: Message): String
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     suspend fun unpackMessage(message: String): Message
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     suspend fun sendMessage(message: Message): ByteArray?
 
-    @Throws()
+    @Throws() // TODO: Add throw classes
     suspend fun sendMessageParseMessage(message: Message): Message?
 }

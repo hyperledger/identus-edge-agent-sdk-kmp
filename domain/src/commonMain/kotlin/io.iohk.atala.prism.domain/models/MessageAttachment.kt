@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.domain.models
 
 interface AttachmentData
+
 data class AttachmentHeader(
     val children: String
 ) : AttachmentData
