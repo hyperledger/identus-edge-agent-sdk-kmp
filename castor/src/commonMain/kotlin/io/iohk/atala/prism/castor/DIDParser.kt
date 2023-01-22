@@ -8,8 +8,6 @@ import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.tree.ParseTree
 import org.antlr.v4.kotlinruntime.tree.ParseTreeWalker
 
-
-
 object DIDParser {
 
     @Throws(InvalidDIDStringError::class)

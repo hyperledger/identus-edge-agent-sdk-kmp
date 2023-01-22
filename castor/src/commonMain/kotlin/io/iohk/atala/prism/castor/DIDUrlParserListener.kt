@@ -40,5 +40,4 @@ class DIDUrlParserListener : DIDUrlAbnfBaseListener() {
         val value = ctx.children?.get(2)!!.text
         query[key] = value
     }
-
 }
