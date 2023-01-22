@@ -13,7 +13,7 @@ class DIDUrlParserTest {
         var didExample2 = "did:example:123456/path?query=something&query2=something#0"
         var didExample3 = "did:example:123456/path/jpg.pp?query=something"
 
-        var parsedDID1 =  DIDUrlParser(didExample1).parse()
+        var parsedDID1 =  DIDUrlParser.parse(didExample1)
         var parsedDID2 =  DIDUrlParser.parse(didExample2)
         var parsedDID3 =  DIDUrlParser.parse(didExample3)
 
