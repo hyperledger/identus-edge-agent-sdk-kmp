@@ -14,7 +14,7 @@ class DIDUrlParserTest {
         var didExample3 = "did:example:123456/path/jpg.pp?query=something"
 
         var parsedDID1 =  DIDUrlParser(didExample1).parse()
-        var parsedDID2 =  DIDUrlParser(didExample2).parse()
+        var parsedDID2 =  DIDUrlParser.parse(didExample2)
         var parsedDID3 =  DIDUrlParser.parse(didExample3)
 
         assertEquals(parsedDID1.did.schema, "did")
