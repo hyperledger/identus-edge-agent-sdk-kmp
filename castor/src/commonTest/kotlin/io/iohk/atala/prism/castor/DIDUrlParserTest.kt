@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.castor
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 
 class DIDUrlParserTest {
 
