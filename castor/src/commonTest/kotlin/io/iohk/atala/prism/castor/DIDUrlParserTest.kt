@@ -15,7 +15,7 @@ class DIDUrlParserTest {
 
         var parsedDID1 =  DIDUrlParser(didExample1).parse()
         var parsedDID2 =  DIDUrlParser(didExample2).parse()
-        var parsedDID3 =  DIDUrlParser(didExample3).parse()
+        var parsedDID3 =  DIDUrlParser.parse(didExample3)
 
         assertEquals(parsedDID1.did.schema, "did")
         assertEquals(parsedDID1.did.method, "example")
