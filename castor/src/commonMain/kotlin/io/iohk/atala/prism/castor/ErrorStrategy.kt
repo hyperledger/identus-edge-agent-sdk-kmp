@@ -7,6 +7,7 @@ import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Token
 
 class ErrorStrategy : DefaultErrorStrategy() {
+    @Throws(RecognitionException::class)
     override fun recover(recognizer: Parser, e: RecognitionException) {
         var context = recognizer.context
         while (context != null) {
@@ -17,6 +18,7 @@ class ErrorStrategy : DefaultErrorStrategy() {
         throw e
     }
 
+    @Throws(InvalidDIDStringError::class)
     override fun recoverInline(recognizer: Parser): Token {
         var context = recognizer.context
         while (context != null) {
