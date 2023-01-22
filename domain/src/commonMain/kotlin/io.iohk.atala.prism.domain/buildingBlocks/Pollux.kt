@@ -4,6 +4,6 @@ import io.iohk.atala.prism.domain.models.VerifiableCredential
 
 interface Pollux {
 
-    @Throws
+    @Throws // TODO: Add throw classes
     fun parseVerifiableCredential(jsonString: String): VerifiableCredential
 }

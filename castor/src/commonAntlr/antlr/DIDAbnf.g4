@@ -32,4 +32,3 @@ DASH : '-';
 PERIOD : '.';
 COLON : ':';
 UNDERSCORE : '_';
-

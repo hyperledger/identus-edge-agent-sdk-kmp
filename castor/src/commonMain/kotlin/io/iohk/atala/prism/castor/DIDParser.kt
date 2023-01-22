@@ -35,9 +35,11 @@ class BailErrorStrategy : DefaultErrorStrategy() {
     override fun sync(recognizer: Parser) {}
 }
 
-class DIDParser(private var didString: String) {
-    fun parse(): DID {
-        var inputStream = CharStreams.fromString(didString)
+object DIDParser {
+
+    @Throws(InvalidDIDStringError::class)
+    fun parse(didString: String): DID {
+        val inputStream = CharStreams.fromString(didString)
         val lexer = DIDAbnfLexer(inputStream)
         val tokenStream = CommonTokenStream(lexer)
         val parser = DIDAbnfParser(tokenStream)

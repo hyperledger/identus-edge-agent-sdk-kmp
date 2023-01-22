@@ -1,4 +1,5 @@
 package io.iohk.atala.prism.domain.models
+
 data class Message(
     val id: String,
     val piuri: String,

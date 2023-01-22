@@ -1,9 +1,8 @@
 package io.iohk.atala.prism.domain.models
 
-import com.benasher44.uuid.Uuid
-import com.benasher44.uuid.uuid4
+import io.iohk.atala.prism.apollo.uuid.UUID
 
 data class Session(
-    val uuid: Uuid = uuid4(),
+    val uuid: UUID = UUID.randomUUID4(),
     val seed: Seed
 )

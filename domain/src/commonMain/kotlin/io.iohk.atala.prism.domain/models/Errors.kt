@@ -1,49 +1,49 @@
 package io.iohk.atala.prism.domain.models
 
-open class CommonError : Throwable() {
-    class SomethingWentWrongError : CommonError()
+sealed class CommonError(message: String? = null) : Throwable(message) {
+    class SomethingWentWrongError(message: String? = null) : CommonError(message)
 }
 
-open class ApolloError : Throwable() {
-    class InvalidMnemonicWord : ApolloError()
-    class CouldNotParseMessageString : ApolloError()
+sealed class ApolloError(message: String? = null) : Throwable(message) {
+    class InvalidMnemonicWord(message: String? = null) : ApolloError(message)
+    class CouldNotParseMessageString(message: String? = null) : ApolloError(message)
 }
 
-open class CastorError : Throwable() {
-    class InvalidLongFormDID : CastorError()
-    class MethodIdIsDoesNotSatisfyRegex : CastorError()
-    class InvalidPublicKeyEncoding : CastorError()
-    class InvalidDIDString : CastorError()
-    class InitialStateOfDIDChanged : CastorError()
-    class NotPossibleToResolveDID : CastorError()
-    class InvalidJWKKeysError : CastorError()
-    class InvalidKeyError : CastorError()
-    class InvalidPeerDIDError : CastorError()
+sealed class CastorError(message: String? = null) : Throwable(message) {
+    class InvalidLongFormDID(message: String? = null) : CastorError(message)
+    class MethodIdIsDoesNotSatisfyRegex(message: String? = null) : CastorError(message)
+    class InvalidPublicKeyEncoding(message: String? = null) : CastorError(message)
+    class InvalidDIDString(message: String? = null) : CastorError(message)
+    class InitialStateOfDIDChanged(message: String? = null) : CastorError(message)
+    class NotPossibleToResolveDID(message: String? = null) : CastorError(message)
+    class InvalidJWKKeysError(message: String? = null) : CastorError(message)
+    class InvalidKeyError(message: String? = null) : CastorError(message)
+    class InvalidPeerDIDError(message: String? = null) : CastorError(message)
 }
 
-open class MercuryError : Throwable() {
-    class InvalidURLError : MercuryError()
-    class NoDIDReceiverSetError : MercuryError()
-    class NoValidServiceFoundError : MercuryError()
-    class FromFieldNotSetError : MercuryError()
-    class UnknownAttachmentDataError : MercuryError()
-    class MessageAttachmentWithoutIDError : MercuryError()
-    class MessageInvalidBodyDataError : MercuryError()
-    class UnknownPackingMessageError : MercuryError()
-    class CouldNotResolveDIDError : MercuryError()
-    class DidCommError(msg: String) : MercuryError()
-    class UrlSessionError(statusCode: Int, error: Error?, msg: String?) : MercuryError()
+sealed class MercuryError(message: String? = null) : Throwable(message) {
+    class InvalidURLError(message: String? = null) : MercuryError(message)
+    class NoDIDReceiverSetError(message: String? = null) : MercuryError(message)
+    class NoValidServiceFoundError(message: String? = null) : MercuryError(message)
+    class FromFieldNotSetError(message: String? = null) : MercuryError(message)
+    class UnknownAttachmentDataError(message: String? = null) : MercuryError(message)
+    class MessageAttachmentWithoutIDError(message: String? = null) : MercuryError(message)
+    class MessageInvalidBodyDataError(message: String? = null) : MercuryError(message)
+    class UnknownPackingMessageError(message: String? = null) : MercuryError(message)
+    class CouldNotResolveDIDError(message: String? = null) : MercuryError(message)
+    class DidCommError(message: String? = null) : MercuryError(message)
+    class UrlSessionError(message: String? = null, statusCode: Int, error: Error?) : MercuryError(message)
 }
 
-open class PlutoError : Throwable() {
-    class InvalidHolderDIDNotPersistedError : PlutoError()
-    class MessageMissingFromOrToDIDError : PlutoError()
-    class DidPairIsNotPersistedError : PlutoError()
-    class HolderDIDAlreadyPairingError : PlutoError()
-    class UnknownCredentialTypeError : PlutoError()
-    class InvalidCredentialJsonError : PlutoError()
+sealed class PlutoError(message: String? = null) : Throwable(message) {
+    class InvalidHolderDIDNotPersistedError(message: String? = null) : PlutoError(message)
+    class MessageMissingFromOrToDIDError(message: String? = null) : PlutoError(message)
+    class DidPairIsNotPersistedError(message: String? = null) : PlutoError(message)
+    class HolderDIDAlreadyPairingError(message: String? = null) : PlutoError(message)
+    class UnknownCredentialTypeError(message: String? = null) : PlutoError(message)
+    class InvalidCredentialJsonError(message: String? = null) : PlutoError(message)
 }
 
-open class PolluxError : Throwable() {
-    class InvalidCredentialError : PolluxError()
+sealed class PolluxError(message: String? = null) : Throwable(message) {
+    class InvalidCredentialError(message: String? = null) : PolluxError(message)
 }
