@@ -6,6 +6,7 @@ val currentModuleName: String = "WalletPluto"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
+    id("com.squareup.sqldelight")
     kotlin("multiplatform")
     kotlin("plugin.serialization") version "1.7.20"
     id("com.android.library")
@@ -68,6 +69,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                implementation("com.squareup.sqldelight:runtime:1.5.4")
             }
         }
         val commonTest by getting {
@@ -75,7 +77,11 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation("com.squareup.sqldelight:sqlite-driver:1.5.4")
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
@@ -84,6 +90,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+                implementation("com.squareup.sqldelight:android-driver:1.5.4")
             }
         }
         val androidTest by getting {
@@ -91,7 +98,11 @@ kotlin {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependencies {
+                implementation("com.squareup.sqldelight:sqljs-driver:1.5.4")
+            }
+        }
         val jsTest by getting
 
         all {
@@ -150,3 +161,19 @@ tasks.withType<DokkaTask> {
 //        }
 //    }
 // }
+
+sqldelight {
+    database("PrismPlutoDb") {
+        packageName = "io.iohk.atala.prism.pluto"
+        sourceFolders = listOf("sqldelight")
+    }
+}
+
+ktlint {
+    filter {
+        exclude("**/generated/**", "/build/generated/**")
+        exclude { entry ->
+            entry.file.toString().contains("generated")
+        }
+    }
+}

@@ -87,3 +87,12 @@ rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
 tasks.dokkaGfmMultiModule.configure {
     outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
 }
+
+ktlint {
+    filter {
+        exclude("**/generated/**", "/pluto/build/generated/**")
+        exclude { entry ->
+            entry.file.toString().contains("generated")
+        }
+    }
+}
