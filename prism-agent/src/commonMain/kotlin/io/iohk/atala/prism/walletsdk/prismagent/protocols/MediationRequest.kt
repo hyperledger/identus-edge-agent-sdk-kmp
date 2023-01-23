@@ -6,7 +6,7 @@ import io.iohk.atala.prism.domain.models.Message
 
 class MediationRequest(
     val id: String,
-    val type: String = ProtocolType.didcommMediationRequest.value,
+    val type: String = ProtocolType.DidcommMediationRequest.value,
     val from: DID,
     val to: DID
 ) {
@@ -34,7 +34,7 @@ class MediationRequest(
             thid = null,
             pthid = null,
             ack = emptyArray(),
-            direction = Message.Direction.sent
+            direction = Message.Direction.SENT
         )
     }
 
