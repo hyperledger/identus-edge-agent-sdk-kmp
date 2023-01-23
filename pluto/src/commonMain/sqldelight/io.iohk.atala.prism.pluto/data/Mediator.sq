@@ -1,0 +1,10 @@
+CREATE TABLE Mediator (
+    id TEXT NOT NULL UNIQUE, -- VARCHAR(36)
+    mediatorDIDId TEXT,
+    hostDIDId TEXT,
+    routingDIDId TEXT,
+    PRIMARY KEY (id),
+    FOREIGN KEY (mediatorDIDId) REFERENCES DID(did),
+    FOREIGN KEY (hostDIDId) REFERENCES DID(did),
+    FOREIGN KEY (routingDIDId) REFERENCES DID(did)
+);

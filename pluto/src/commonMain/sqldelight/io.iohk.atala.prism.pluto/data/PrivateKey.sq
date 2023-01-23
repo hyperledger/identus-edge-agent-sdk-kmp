@@ -1,0 +1,9 @@
+CREATE TABLE PrivateKey (
+    id TEXT NOT NULL UNIQUE, -- VARCHAR(36)
+    curve TEXT,
+    privateKey TEXT,
+    keyPathIndex INTEGER,
+    didId TEXT NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (didId) REFERENCES DID(did)
+);

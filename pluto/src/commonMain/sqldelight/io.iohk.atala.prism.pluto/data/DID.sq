@@ -1,0 +1,8 @@
+CREATE TABLE DID (
+    did TEXT NOT NULL UNIQUE,
+    method TEXT,
+    methodId TEXT,
+    schema TEXT,
+    alias TEXT,
+    PRIMARY KEY (did)
+);

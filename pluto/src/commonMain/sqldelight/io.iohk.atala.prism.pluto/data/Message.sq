@@ -1,0 +1,11 @@
+CREATE TABLE Message (
+    id TEXT NOT NULL UNIQUE,
+    createdTime TEXT,
+    dataJson TEXT,
+    `from` TEXT,
+    thid TEXT,
+    `to` TEXT,
+    type TEXT,
+    isReceived INTEGER DEFAULT 0, -- TINYINT
+    PRIMARY KEY (id)
+);
