@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
 
 class PeerDIDResolver() : DIDResolver {
     override val method: String = "peer"
-    override fun resolve(did: DID): DIDDocument {
+    override suspend fun resolve(did: DID): DIDDocument {
         val coreProperties: MutableList<DIDDocumentCoreProperty> = mutableListOf()
         val peerDIDDocument = DIDDocPeerDID.fromJson(resolvePeerDID(did.toString()))
         coreProperties.add(

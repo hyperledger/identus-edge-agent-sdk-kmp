@@ -7,10 +7,9 @@ import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.DIDResolver
 import io.iohk.atala.prism.domain.models.KeyPair
 import io.iohk.atala.prism.domain.models.PublicKey
-import io.iohk.atala.prism.mercury.didpeer.Service
 
-class CastorImpl : Castor {
-    private var resolvers: Array<DIDResolver> = arrayOf(
+open class CastorImpl : Castor {
+    var resolvers: Array<DIDResolver> = arrayOf(
         PeerDIDResolver()
     )
 
