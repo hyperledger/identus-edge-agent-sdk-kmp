@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.castor
 
-import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.domain.models.DIDResolver
@@ -14,22 +13,23 @@ import kotlinx.serialization.json.Json
 
 class PeerDIDResolver() : DIDResolver {
     override val method: String = "peer"
-    override suspend fun resolve(did: DID): DIDDocument {
+    override suspend fun resolve(didString: String): DIDDocument {
+        val did = DIDParser.parse(didString)
         val coreProperties: MutableList<DIDDocumentCoreProperty> = mutableListOf()
-        val peerDIDDocument = DIDDocPeerDID.fromJson(resolvePeerDID(did.toString()))
+        val peerDIDDocument = DIDDocPeerDID.fromJson(resolvePeerDID(didString))
         coreProperties.add(
             DIDDocument.Authentication(
-                urls = arrayOf(did.toString()),
+                urls = arrayOf(didString),
                 verificationMethods = peerDIDDocument.authentication.map {
-                    fromVerificationMethodPeerDID(did.toString(), it)
+                    fromVerificationMethodPeerDID(didString, it)
                 }.toTypedArray()
             )
         )
         coreProperties.add(
             DIDDocument.KeyAgreement(
-                urls = arrayOf(did.toString()),
+                urls = arrayOf(didString),
                 verificationMethods = peerDIDDocument.keyAgreement.map {
-                    fromVerificationMethodPeerDID(did.toString(), it)
+                    fromVerificationMethodPeerDID(didString, it)
                 }.toTypedArray()
             )
         )
