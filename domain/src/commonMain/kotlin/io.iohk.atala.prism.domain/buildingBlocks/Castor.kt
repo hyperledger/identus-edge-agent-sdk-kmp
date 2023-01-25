@@ -24,7 +24,7 @@ interface Castor {
     ): DID
 
     @Throws() // TODO: Add throw classes
-    suspend fun resolveDID(did: DID): DIDDocument
+    suspend fun resolveDID(did: String): DIDDocument
 
     @Throws() // TODO: Add throw classes
     suspend fun verifySignature(
