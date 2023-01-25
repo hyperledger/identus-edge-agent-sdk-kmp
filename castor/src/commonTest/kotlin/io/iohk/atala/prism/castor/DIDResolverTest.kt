@@ -34,7 +34,6 @@ class DIDResolverTest {
                         }
                     }
                 }
-
                 is DIDDocument.KeyAgreement -> {
                     assertContentEquals(coreProperty.urls, arrayOf(didExample))
                     assertEquals(coreProperty.verificationMethods.size, 1)
@@ -48,7 +47,6 @@ class DIDResolverTest {
                         }
                     }
                 }
-
                 is DIDDocument.Services -> {
                     assertEquals(coreProperty.values.size, 1)
                     coreProperty.values.forEach { service ->

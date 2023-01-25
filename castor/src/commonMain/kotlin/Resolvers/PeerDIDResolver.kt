@@ -17,6 +17,7 @@ class PeerDIDResolver() : DIDResolver {
         val did = DIDParser.parse(didString)
         val coreProperties: MutableList<DIDDocumentCoreProperty> = mutableListOf()
         val peerDIDDocument = DIDDocPeerDID.fromJson(resolvePeerDID(didString))
+
         coreProperties.add(
             DIDDocument.Authentication(
                 urls = arrayOf(didString),
@@ -33,23 +34,35 @@ class PeerDIDResolver() : DIDResolver {
                 }.toTypedArray()
             )
         )
-        if (!peerDIDDocument.service.isNullOrEmpty()) {
-            coreProperties.add(
-                DIDDocument.Services(
-                    peerDIDDocument.service!!.filterIsInstance<DIDCommServicePeerDID>().map {
+
+        var peerDIDServices = peerDIDDocument.service ?: listOf()
+        var services: MutableList<DIDDocument.Service> = mutableListOf()
+
+        peerDIDServices.forEach { service ->
+            run {
+                if (service is DIDCommServicePeerDID) {
+                    services.add(
                         DIDDocument.Service(
-                            id = it.id,
-                            type = arrayOf(it.type),
+                            id = service.id,
+                            type = arrayOf(service.type),
                             serviceEndpoint = DIDDocument.ServiceEndpoint(
-                                uri = it.serviceEndpoint,
-                                accept = it.accept.toTypedArray(),
-                                routingKeys = it.routingKeys.toTypedArray()
+                                uri = service.serviceEndpoint,
+                                accept = service.accept.toTypedArray(),
+                                routingKeys = service.routingKeys.toTypedArray()
                             )
                         )
-                    }.toTypedArray()
-                )
-            )
+                    )
+                }
+                // TODO() To add the OtherService and know which attributes we can extract from it.
+            }
         }
+
+        coreProperties.add(
+            DIDDocument.Services(
+                services.toTypedArray()
+            )
+        )
+
         return DIDDocument(
             id = did,
             coreProperties = coreProperties.toTypedArray()
