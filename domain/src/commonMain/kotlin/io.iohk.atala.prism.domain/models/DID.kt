@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.domain.models
 
+import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmStatic
 
+@Serializable
 data class DID(
     val schema: String,
     val method: String,
