@@ -30,15 +30,10 @@ class CastorImpl : Castor {
         TODO("Not yet implemented")
     }
 
-
     @Throws(CastorError.NotPossibleToResolveDID::class)
     override suspend fun resolveDID(did: DID): DIDDocument {
-        for (resolver in resolvers) {
-            if (resolver.method == did.method) {
-                return resolver.resolve(did)
-            }
-        }
-        throw CastorError.NotPossibleToResolveDID()
+        val resolver = resolvers.find { it.method == did.method } ?: throw CastorError.NotPossibleToResolveDID()
+        return resolver.resolve(did)
     }
 
     override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
