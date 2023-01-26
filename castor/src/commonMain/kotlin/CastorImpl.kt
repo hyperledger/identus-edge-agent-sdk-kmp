@@ -14,7 +14,6 @@ import io.iohk.atala.prism.mercury.didpeer.VerificationMaterialAuthentication
 import io.iohk.atala.prism.mercury.didpeer.VerificationMaterialFormatPeerDID
 import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAgreement
 import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAuthentication
-import io.iohk.atala.prism.mercury.didpeer.core.fromBase58Multibase
 import io.iohk.atala.prism.mercury.didpeer.core.toJsonElement
 import io.iohk.atala.prism.mercury.didpeer.createPeerDIDNumalgo2
 import kotlinx.serialization.encodeToString
@@ -99,5 +98,4 @@ open class CastorImpl : Castor {
     override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
         TODO("Not yet implemented")
     }
-
 }
