@@ -1,7 +1,10 @@
 package io.iohk.atala.prism.domain.models
 
+import kotlinx.serialization.Serializable
+
 interface DIDDocumentCoreProperty
 
+@Serializable
 data class DIDDocument(
     val id: DID,
     val coreProperties: Array<DIDDocumentCoreProperty>
@@ -33,6 +36,7 @@ data class DIDDocument(
         val publicKeyMultibase: String? = null
     )
 
+    @Serializable
     data class Service(
         val id: String,
         val type: Array<String>,
@@ -59,6 +63,7 @@ data class DIDDocument(
         }
     }
 
+    @Serializable
     data class ServiceEndpoint(
         val uri: String,
         val accept: Array<String>? = arrayOf(),

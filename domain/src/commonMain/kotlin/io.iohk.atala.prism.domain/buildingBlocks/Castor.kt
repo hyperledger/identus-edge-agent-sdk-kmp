@@ -18,8 +18,7 @@ interface Castor {
 
     @Throws() // TODO: Add throw classes
     fun createPeerDID(
-        keyAgreementKeyPair: KeyPair,
-        authenticationKeyPair: KeyPair,
+        keyPairs: Array<KeyPair>,
         services: Array<DIDDocument.Service>
     ): DID
 
@@ -32,10 +31,4 @@ interface Castor {
         challenge: ByteArray,
         signature: ByteArray
     ): Boolean
-
-    @Throws() // TODO: Add throw classes
-    fun getEcnumbasis(
-        did: DID,
-        keyPair: KeyPair
-    ): String
 }

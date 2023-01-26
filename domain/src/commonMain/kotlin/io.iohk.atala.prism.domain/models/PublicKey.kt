@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.domain.models
 
 data class PublicKey(
-    val curve: String,
+    val curve: KeyCurve,
     val value: String
 )
 
