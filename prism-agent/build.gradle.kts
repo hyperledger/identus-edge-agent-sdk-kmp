@@ -75,7 +75,9 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
+                implementation(project(":domain"))
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
             }
         }
         val jvmMain by getting
@@ -127,6 +129,9 @@ android {
             allVariants()
         }
     }
+}
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 }
 
 // Dokka implementation
