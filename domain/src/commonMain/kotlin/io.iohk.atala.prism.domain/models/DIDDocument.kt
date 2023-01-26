@@ -57,7 +57,7 @@ data class DIDDocument(
 
         override fun hashCode(): Int {
             var result = id.hashCode()
-            result = 31 * result + (type.contentHashCode() ?: 0)
+            result = 31 * result + (type.contentHashCode())
             result = 31 * result + serviceEndpoint.hashCode()
             return result
         }

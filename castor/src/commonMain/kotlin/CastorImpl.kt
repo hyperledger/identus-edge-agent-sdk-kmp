@@ -46,7 +46,7 @@ open class CastorImpl : Castor {
                     encryptionKeys.add(
                         VerificationMaterialAgreement(
                             format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                            value = it.publicKey.value,
+                            value = it.publicKey.value.decodeToString(),
                             type = VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020
                         )
                     )
@@ -55,7 +55,7 @@ open class CastorImpl : Castor {
                     signingKeys.add(
                         VerificationMaterialAuthentication(
                             format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                            value = it.publicKey.value,
+                            value = it.publicKey.value.decodeToString(),
                             type = VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020
                         )
                     )
@@ -69,7 +69,6 @@ open class CastorImpl : Castor {
         if (signingKeys.isEmpty() || encryptionKeys.isEmpty()) {
             throw CastorError.InvalidKeyError()
         }
-
         val peerDID = createPeerDIDNumalgo2(
             encryptionKeys = encryptionKeys,
             signingKeys = signingKeys,

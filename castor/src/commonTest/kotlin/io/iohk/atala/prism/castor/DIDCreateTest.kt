@@ -23,8 +23,8 @@ class DIDCreateTest {
 
         val fakeVerPrivateKey = PrivateKey(KeyCurve.ED25519, "".encodeToByteArray())
         val fakeAuthPrivateKey = PrivateKey(KeyCurve.X25519, "".encodeToByteArray())
-        val verificationPubKey = PublicKey(KeyCurve.ED25519, verKeyStr)
-        val authenticationPubKey = PublicKey(KeyCurve.X25519, authKeyStr)
+        val verificationPubKey = PublicKey(KeyCurve.ED25519, verKeyStr.encodeToByteArray())
+        val authenticationPubKey = PublicKey(KeyCurve.X25519, authKeyStr.encodeToByteArray())
         val verificationKeyPair = KeyPair(KeyCurve.ED25519, fakeVerPrivateKey, verificationPubKey)
         val authenticationKeyPair = KeyPair(KeyCurve.X25519, fakeAuthPrivateKey, authenticationPubKey)
         val service = DIDDocument.Service(
@@ -51,8 +51,8 @@ class DIDCreateTest {
         val fakeVerPrivateKey = PrivateKey(KeyCurve.ED25519, "".encodeToByteArray())
         val fakeAuthPrivateKey = PrivateKey(KeyCurve.X25519, "".encodeToByteArray())
 
-        val verificationPubKey = PublicKey(KeyCurve.ED25519, verKeyStr)
-        val authenticationPubKey = PublicKey(KeyCurve.X25519, authKeyStr)
+        val verificationPubKey = PublicKey(KeyCurve.ED25519, verKeyStr.encodeToByteArray())
+        val authenticationPubKey = PublicKey(KeyCurve.X25519, authKeyStr.encodeToByteArray())
 
         val verificationKeyPair = KeyPair(KeyCurve.ED25519, fakeVerPrivateKey, verificationPubKey)
         val authenticationKeyPair = KeyPair(KeyCurve.ED25519, fakeAuthPrivateKey, authenticationPubKey)
