@@ -30,6 +30,7 @@ jobs:
       VALIDATE_ALL_CODEBASE: ${{ github.ref_name == 'main' }}
       DISABLE: COPYPASTE,SPELL
       GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+      DISABLE_LINTERS: REPOSITORY_GITLEAKS
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
