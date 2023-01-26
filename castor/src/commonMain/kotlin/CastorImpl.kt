@@ -14,6 +14,7 @@ import io.iohk.atala.prism.mercury.didpeer.VerificationMaterialAuthentication
 import io.iohk.atala.prism.mercury.didpeer.VerificationMaterialFormatPeerDID
 import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAgreement
 import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAuthentication
+import io.iohk.atala.prism.mercury.didpeer.core.fromBase58Multibase
 import io.iohk.atala.prism.mercury.didpeer.core.toJsonElement
 import io.iohk.atala.prism.mercury.didpeer.createPeerDIDNumalgo2
 import kotlinx.serialization.encodeToString
@@ -99,7 +100,4 @@ open class CastorImpl : Castor {
         TODO("Not yet implemented")
     }
 
-    override fun getEcnumbasis(did: DID, keyPair: KeyPair): String {
-        TODO("Not yet implemented")
-    }
 }

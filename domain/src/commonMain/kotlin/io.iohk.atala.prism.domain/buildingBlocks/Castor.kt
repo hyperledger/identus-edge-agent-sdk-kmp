@@ -31,10 +31,4 @@ interface Castor {
         challenge: ByteArray,
         signature: ByteArray
     ): Boolean
-
-    @Throws() // TODO: Add throw classes
-    fun getEcnumbasis(
-        did: DID,
-        keyPair: KeyPair
-    ): String
 }
