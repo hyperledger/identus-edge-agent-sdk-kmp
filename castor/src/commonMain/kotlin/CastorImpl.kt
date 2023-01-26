@@ -32,6 +32,7 @@ open class CastorImpl : Castor {
         TODO("Not yet implemented")
     }
 
+    @Throws(CastorError.InvalidKeyError::class)
     override fun createPeerDID(
         keyPairs: Array<KeyPair>,
         services: Array<DIDDocument.Service>
