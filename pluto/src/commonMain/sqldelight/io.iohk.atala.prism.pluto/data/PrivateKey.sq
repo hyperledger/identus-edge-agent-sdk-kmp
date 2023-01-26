@@ -25,4 +25,3 @@ SELECT keyPathIndex FROM PrivateKey
 WHERE didId IN (SELECT methodId FROM DID WHERE method = 'Prism')
 ORDER BY keyPathIndex DESC
 LIMIT 1;
-
