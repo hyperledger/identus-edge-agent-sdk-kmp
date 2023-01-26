@@ -1,7 +1,8 @@
 package io.iohk.atala.prism.domain.models
 
 data class MediatorDID(
-    val did: DID,
-    val routingDID: DID,
-    val mediatorDID: DID
+    val id: String,
+    val mediatorDID: DID,
+    val hostDID: DID,
+    val routingDID: DID
 )

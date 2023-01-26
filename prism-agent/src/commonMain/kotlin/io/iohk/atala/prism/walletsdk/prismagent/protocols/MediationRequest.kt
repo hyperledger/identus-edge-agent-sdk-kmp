@@ -2,6 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.domain.models.DID
+import io.iohk.atala.prism.domain.models.Direction
 import io.iohk.atala.prism.domain.models.Message
 
 class MediationRequest(
@@ -34,7 +35,7 @@ class MediationRequest(
             thid = null,
             pthid = null,
             ack = emptyArray(),
-            direction = Message.Direction.SENT
+            direction = Direction.SENT
         )
     }
 
