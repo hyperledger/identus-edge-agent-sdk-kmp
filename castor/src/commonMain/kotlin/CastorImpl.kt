@@ -33,46 +33,58 @@ open class CastorImpl : Castor {
     }
 
     override fun createPeerDID(
-        keyAgreementKeyPair: KeyPair,
-        authenticationKeyPair: KeyPair,
+        keyPairs: Array<KeyPair>,
         services: Array<DIDDocument.Service>
     ): DID {
-        if (keyAgreementKeyPair.curve != KeyCurve.ED25519 ||
-            authenticationKeyPair.curve != KeyCurve.X25519 ||
-            keyAgreementKeyPair.publicKey.curve != KeyCurve.ED25519 ||
-            authenticationKeyPair.publicKey.curve != KeyCurve.X25519 ||
-            keyAgreementKeyPair.privateKey.curve != KeyCurve.ED25519 ||
-            authenticationKeyPair.privateKey.curve != KeyCurve.X25519
-        ) {
+        var encryptionKeys: MutableList<VerificationMaterialAgreement> = mutableListOf()
+        var signingKeys: MutableList<VerificationMaterialAuthentication> = mutableListOf()
+
+        keyPairs.forEach {
+            when (it.curve) {
+                KeyCurve.ED25519 -> {
+                    encryptionKeys.add(
+                        VerificationMaterialAgreement(
+                            format = VerificationMaterialFormatPeerDID.MULTIBASE,
+                            value = it.publicKey.value,
+                            type = VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020
+                        )
+                    )
+                }
+                KeyCurve.X25519 -> {
+                    signingKeys.add(
+                        VerificationMaterialAuthentication(
+                            format = VerificationMaterialFormatPeerDID.MULTIBASE,
+                            value = it.publicKey.value,
+                            type = VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020
+                        )
+                    )
+                }
+                else -> {
+                    throw CastorError.InvalidKeyError()
+                }
+            }
+        }
+
+        if (signingKeys.isEmpty() || encryptionKeys.isEmpty()) {
             throw CastorError.InvalidKeyError()
         }
+
         val peerDID = createPeerDIDNumalgo2(
-            encryptionKeys = listOf(
-                VerificationMaterialAgreement(
-                    format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                    value = keyAgreementKeyPair.publicKey.value,
-                    type = VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020
-                )
-            ),
-            signingKeys = listOf(
-                VerificationMaterialAuthentication(
-                    format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                    value = authenticationKeyPair.publicKey.value,
-                    type = VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020
-                )
-            ),
-            service = if (services.isNotEmpty()) {
+            encryptionKeys = encryptionKeys,
+            signingKeys = signingKeys,
+            service = services.map {
                 Json.encodeToString(
                     DIDCommServicePeerDID(
-                        id = services[0].id,
-                        type = services[0].type[0],
-                        serviceEndpoint = services[0].serviceEndpoint.uri,
+                        id = it.id,
+                        type = it.type[0],
+                        serviceEndpoint = it.serviceEndpoint.uri,
                         routingKeys = listOf(),
-                        accept = services[0].serviceEndpoint.accept?.asList() ?: listOf()
+                        accept = it.serviceEndpoint.accept?.asList() ?: listOf()
                     ).toDict().toJsonElement()
                 )
-            } else null
+            }.first()
         )
+
         return DIDParser.parse(peerDID)
     }
 

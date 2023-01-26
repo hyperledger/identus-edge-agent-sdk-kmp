@@ -36,9 +36,9 @@ class DIDCreateTest {
                 routingKeys = arrayOf()
             )
         )
-
+        val keyPairs: Array<KeyPair> = arrayOf(verificationKeyPair, authenticationKeyPair)
         val castor = CastorImpl()
-        val did = castor.createPeerDID(verificationKeyPair, authenticationKeyPair, arrayOf(service))
+        val did = castor.createPeerDID(keyPairs, arrayOf(service))
         assertEquals(did.toString(), "did:peer:2.E$verKeyStr.V$authKeyStr.S$serviceStr")
     }
 
@@ -55,7 +55,9 @@ class DIDCreateTest {
         val authenticationPubKey = PublicKey(KeyCurve.X25519, authKeyStr)
 
         val verificationKeyPair = KeyPair(KeyCurve.ED25519, fakeVerPrivateKey, verificationPubKey)
-        val authenticationKeyPair = KeyPair(KeyCurve.X25519, fakeAuthPrivateKey, authenticationPubKey)
+        val authenticationKeyPair = KeyPair(KeyCurve.ED25519, fakeAuthPrivateKey, authenticationPubKey)
+
+        val keyPairs: Array<KeyPair> = arrayOf(verificationKeyPair, authenticationKeyPair)
 
         val service = DIDDocument.Service(
             id = "DIDCommV2",
@@ -70,7 +72,7 @@ class DIDCreateTest {
         val castor = CastorImpl()
 
         assertFailsWith<CastorError.InvalidKeyError> {
-            castor.createPeerDID(authenticationKeyPair, verificationKeyPair, arrayOf(service))
+            castor.createPeerDID(keyPairs, arrayOf(service))
         }
     }
 }
