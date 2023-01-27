@@ -6,13 +6,21 @@ import io.iohk.atala.prism.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.KeyCurve
+import io.iohk.atala.prism.domain.models.PrismAgentError
 import io.iohk.atala.prism.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.PrismOnboarding.PrismOnboardingInvitation
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
 final class PrismAgent {
     enum class State {
         STOPED, STARTING, RUNNING, STOPING
+    }
+
+    sealed class InvitationType {
+        class PrismOnboarding(val from: String, val endpoint: String, val ownDID: DID)
+
+        data class OnboardingPrism(val prismOnboarding: PrismOnboarding) : InvitationType()
     }
 
     val seed: Seed
@@ -71,5 +79,39 @@ final class PrismAgent {
         pluto.storePeerDID(did = did, privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey))
 
         return did
+    }
+
+    @Throws(PrismAgentError.unknownInvitationTypeError::class)
+    suspend fun parseInvitation(str: String): InvitationType {
+        return try {
+            InvitationType.OnboardingPrism(parsePrismInvitation(str))
+        } catch (e: Throwable) {
+            throw PrismAgentError.unknownInvitationTypeError()
+        }
+    }
+
+    private suspend fun parsePrismInvitation(str: String): InvitationType.PrismOnboarding {
+        val prismOnboarding = PrismOnboardingInvitation(str)
+        val url = prismOnboarding.body.onboardEndpoint
+        val did = createNewPeerDID(
+            arrayOf(
+                DIDDocument.Service(
+                    id = "#didcomm-1",
+                    type = arrayOf("DIDCommMessaging"),
+                    serviceEndpoint = DIDDocument.ServiceEndpoint(
+                        uri = url,
+                        accept = arrayOf("DIDCommMessaging"),
+                        routingKeys = arrayOf()
+                    )
+                )
+            ),
+            true
+        )
+
+        return InvitationType.PrismOnboarding(
+            from = prismOnboarding.body.from,
+            endpoint = url,
+            ownDID = did
+        )
     }
 }
