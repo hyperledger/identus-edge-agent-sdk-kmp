@@ -94,11 +94,13 @@ kotlin {
             dependencies {
                 implementation("junit:junit:4.13.2")
                 implementation("io.ktor:ktor-client-mock:2.1.3")
+                implementation(kotlin("test"))
             }
         }
         val androidMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+                implementation("io.ktor:ktor-client-okhttp:2.1.3")
             }
         }
         val androidTest by getting {
