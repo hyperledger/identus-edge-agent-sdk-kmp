@@ -71,6 +71,11 @@ kotlin {
                 implementation(project(":domain"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+
+                implementation("io.ktor:ktor-client-core:2.1.3")
+                implementation("io.ktor:ktor-client-content-negotiation:2.1.3")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.3")
+                implementation("io.ktor:ktor-client-logging:2.1.3")
             }
         }
         val commonTest by getting {
@@ -80,10 +85,15 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
             }
         }
-        val jvmMain by getting
+        val jvmMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-okhttp:2.1.3")
+            }
+        }
         val jvmTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
+                implementation("io.ktor:ktor-client-mock:2.1.3")
             }
         }
         val androidMain by getting {
@@ -96,10 +106,19 @@ kotlin {
                 implementation("junit:junit:4.13.2")
             }
         }
-        val jsMain by getting
+        val jsMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-js:2.1.3")
+                implementation("io.ktor:ktor-client-content-negotiation:2.1.3")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.3")
+                implementation(npm("abort-controller", "3.0.0"))
+                implementation(npm("node-fetch", "2.6.7"))
+            }
+        }
         val jsTest by getting
 
         all {
+            languageSettings.optIn("kotlin.js.ExperimentalJsExport")
             languageSettings.optIn("kotlin.RequiresOptIn")
         }
     }
