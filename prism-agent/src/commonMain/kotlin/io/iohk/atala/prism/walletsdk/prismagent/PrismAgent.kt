@@ -8,15 +8,19 @@ import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.PrismAgentError
 import io.iohk.atala.prism.domain.models.Seed
-import io.iohk.atala.prism.walletsdk.prismagent.helpers.Api
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.ApiImpl
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.HttpClient
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding.PrismOnboardingInvitation
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
-open class PrismAgent {
+final class PrismAgent {
     enum class State {
         STOPED, STARTING, RUNNING, STOPING
     }
@@ -31,18 +35,32 @@ open class PrismAgent {
     private val apollo: Apollo
     private val castor: Castor
     private val pluto: Pluto
-    open val api: Api = Api()
+    private val api: ApiImpl
 
     constructor(
         apollo: Apollo,
         castor: Castor,
         pluto: Pluto,
         seed: Seed? = null,
+        api: ApiImpl? = null
     ) {
         this.apollo = apollo
         this.castor = castor
         this.pluto = pluto
         this.seed = seed ?: apollo.createRandomSeed().second
+        this.api = api ?: ApiImpl(
+            HttpClient {
+                install(ContentNegotiation) {
+                    json(
+                        Json {
+                            ignoreUnknownKeys = true
+                            prettyPrint = true
+                            isLenient = true
+                        }
+                    )
+                }
+            }
+        )
     }
 
     suspend fun createNewPrismDID(

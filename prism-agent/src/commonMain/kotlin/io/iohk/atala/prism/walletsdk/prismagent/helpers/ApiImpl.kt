@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.helpers
 
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.iohk.atala.prism.domain.models.Api
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -11,32 +11,18 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.http.contentType
 import io.ktor.http.path
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.serialization.json.Json
 import io.ktor.client.HttpClient as KtorClient
 
 @DelicateCoroutinesApi
-open class Api(
-    private val client: KtorClient = HttpClient {
-        install(ContentNegotiation) {
-            json(
-                Json {
-                    ignoreUnknownKeys = true
-                    prettyPrint = true
-                    isLenient = true
-                }
-            )
-        }
-    }
-) {
+open class ApiImpl(override val client: KtorClient) : Api {
 
-    private suspend fun prepareRequest(
+    override suspend fun prepareRequest(
         httpMethod: HttpMethod,
         url: Url,
-        urlParameters: Map<String, String> = mapOf(),
-        httpHeaders: Map<String, String> = mapOf(),
-        body: Any? = null
+        urlParameters: Map<String, String>,
+        httpHeaders: Map<String, String>,
+        body: Any?
     ): HttpStatement {
 
         return client.prepareRequest {
@@ -72,12 +58,12 @@ open class Api(
         }
     }
 
-    suspend fun request(
+    override suspend fun request(
         httpMethod: HttpMethod,
         url: Url,
-        urlParameters: Map<String, String> = mapOf(),
-        httpHeaders: Map<String, String> = mapOf(),
-        body: Any? = null
+        urlParameters: Map<String, String>,
+        httpHeaders: Map<String, String>,
+        body: Any?
     ): HttpResponse {
         return prepareRequest(httpMethod, url, urlParameters, httpHeaders, body).execute()
     }

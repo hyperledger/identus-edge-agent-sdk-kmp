@@ -47,7 +47,15 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldAcceptOnboardingInvitation_whenStatusIs200() = runTest {
-        var agent = AgentApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}")
+        val apolloMock = ApolloMock()
+        val castorMock = CastorMock()
+        val plutoMock = PlutoMock()
+        val agent = PrismAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}")
+        )
         var invitationString = """
             {
                 "type":"Onboarding",
@@ -61,7 +69,15 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenStatusIsNot200() = runTest {
-        var agent = AgentApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
+        val apolloMock = ApolloMock()
+        val castorMock = CastorMock()
+        val plutoMock = PlutoMock()
+        val agent = PrismAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
+        )
         var invitationString = """
             {
                 "type":"Onboarding",
@@ -77,7 +93,15 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenBodyIsWrong() = runTest {
-        var agent = AgentApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
+        val apolloMock = ApolloMock()
+        val castorMock = CastorMock()
+        val plutoMock = PlutoMock()
+        val agent = PrismAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}")
+        )
         var invitationString = """
             {
                 "type":"Onboarding",

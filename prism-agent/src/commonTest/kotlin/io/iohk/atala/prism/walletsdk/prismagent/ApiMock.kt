@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
-import io.iohk.atala.prism.walletsdk.prismagent.helpers.Api
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.ApiImpl
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -13,7 +13,7 @@ import kotlinx.serialization.json.Json
 import io.ktor.client.HttpClient as KtorClient
 
 @OptIn(DelicateCoroutinesApi::class)
-class ApiMock : Api {
+class ApiMock : ApiImpl {
 
     constructor(statusCode: HttpStatusCode, response: String) : super(
         KtorClient(
