@@ -99,6 +99,9 @@ kotlin {
             }
         }
         val androidMain by getting {
+            kotlin {
+                srcDir("src/jvmMain/kotlin")
+            }
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
                 implementation("io.ktor:ktor-client-okhttp:2.1.3")
