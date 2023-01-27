@@ -8,9 +8,13 @@ import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.PrismAgentError
 import io.iohk.atala.prism.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.Api
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.PrismOnboarding.PrismOnboardingInvitation
+import io.ktor.http.HttpMethod
+import io.ktor.http.Url
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
 
 final class PrismAgent {
     enum class State {
@@ -87,6 +91,23 @@ final class PrismAgent {
             InvitationType.OnboardingPrism(parsePrismInvitation(str))
         } catch (e: Throwable) {
             throw PrismAgentError.unknownInvitationTypeError()
+        }
+    }
+
+    suspend fun acceptInvitation(invitation: InvitationType.PrismOnboarding) {
+        @Serializable
+        data class SendDID(val did: String)
+
+        var response = Api().request(
+            HttpMethod.Post,
+            Url(invitation.endpoint),
+            mapOf(),
+            mapOf(),
+            SendDID(invitation.ownDID.toString())
+        )
+
+        if (response.status.value != 200) {
+            throw PrismAgentError.failedToOnboardError()
         }
     }
 
