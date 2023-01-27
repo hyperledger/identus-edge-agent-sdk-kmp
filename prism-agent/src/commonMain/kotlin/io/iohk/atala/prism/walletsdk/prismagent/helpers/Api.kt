@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.helpers
 
-import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.prepareRequest
 import io.ktor.client.request.setBody
@@ -15,10 +14,11 @@ import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.json.Json
+import io.ktor.client.HttpClient as KtorClient
 
 @DelicateCoroutinesApi
 open class Api(
-    private val client: HttpClient = httpClient {
+    private val client: KtorClient = HttpClient {
         install(ContentNegotiation) {
             json(
                 Json {

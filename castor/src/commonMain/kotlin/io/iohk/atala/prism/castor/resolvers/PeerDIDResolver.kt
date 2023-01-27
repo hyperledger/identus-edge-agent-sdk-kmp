@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.Resolvers
+package io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers
 
 import io.iohk.atala.prism.castor.DIDParser
 import io.iohk.atala.prism.castor.DIDUrlParser

@@ -9,7 +9,7 @@ import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.PrismAgentError
 import io.iohk.atala.prism.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.Api
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.PrismOnboarding.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding.PrismOnboardingInvitation
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import kotlinx.coroutines.flow.first
