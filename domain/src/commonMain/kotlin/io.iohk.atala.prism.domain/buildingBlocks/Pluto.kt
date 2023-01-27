@@ -14,37 +14,35 @@ interface Pluto {
 
     fun storePrismDID(
         did: DID,
-        keyPairIndex: Int,
+        keyPathIndex: Int,
         alias: String?
     )
 
     fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>)
 
-    fun storeDIDPair(holder: DID, other: DID, name: String)
+    fun storeDIDPair(host: DID, receiver: DID, name: String)
 
-    fun storeMessage(message: Message, direction: Message.Direction)
+    fun storeMessage(message: Message)
 
-    fun storeMessages(messages: Map<Message, Message.Direction>)
+    fun storeMessages(messages: Array<Message>)
 
-    fun storeMediator(peer: DID, routingDID: DID, mediatorDID: DID)
+    fun storeMediator(mediator: DID, host: DID, routing: DID)
 
     fun storeCredential(credential: VerifiableCredential)
 
     fun getAllPrismDIDs(): Flow<Array<PrismDIDInfo>>
 
-    fun getPrismDIDInfo(did: DID): Flow<PrismDIDInfo?>
+    fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?>
 
-    fun getPrismDIDInfo(alias: String): Flow<Array<PrismDIDInfo>>
+    fun getDIDInfoByAlias(alias: String): Flow<Array<PrismDIDInfo>>
 
-    fun getPrismDIDKeyPairIndex(did: DID): Flow<Int?>
+    fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?>
 
-    fun getPrismLastKeyPairIndex(): Flow<Int>
+    fun getPrismLastKeyPathIndex(): Flow<Int>
 
     fun getAllPeerDIDs(): Flow<Array<PeerDID>>
 
-    fun getPeerDIDInfo(did: DID): Flow<PeerDID?>
-
-    fun getPeerDIDPrivateKeys(did: DID): Flow<Array<PrivateKey>?>
+    fun getDIDPrivateKeysByDID(did: DID): Flow<Array<PrivateKey>?>
 
     fun getAllDidPairs(): Flow<Array<DIDPair>>
 

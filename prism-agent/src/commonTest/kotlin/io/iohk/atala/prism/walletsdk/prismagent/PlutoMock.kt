@@ -16,11 +16,10 @@ class PlutoMock : Pluto {
     var storedPrismDID: Array<DID> = emptyArray()
     var storedPeerDID: Array<DID> = emptyArray()
     var getAllPrismDIDsReturn: Flow<Array<PrismDIDInfo>> = flow { emit(emptyArray()) }
-    var getPrismDIDInfoReturn: Flow<PrismDIDInfo?> = flow { emit(null) }
-    var getPrismDIDKeyPairIndexReturn: Flow<Int?> = flow { emit(null) }
+    var getDIDInfoByDIDReturn: Flow<PrismDIDInfo?> = flow { emit(null) }
+    var getPrismDIDKeyPathIndexReturn: Flow<Int?> = flow { emit(null) }
     var getPrismLastKeyPairIndexReturn: Flow<Int> = flow { emit(0) }
     var getAllPeerDIDsReturn: Flow<Array<PeerDID>> = flow { emit(emptyArray()) }
-    var getPeerDIDInfoReturn: Flow<PeerDID?> = flow { emit(null) }
     var getPeerDIDPrivateKeysReturn: Flow<Array<PrivateKey>?> = flow { emit(emptyArray()) }
     var getAllDidPairsReturn: Flow<Array<DIDPair>> = flow { emit(emptyArray()) }
     var getPairReturn: Flow<DIDPair?> = flow { emit(null) }
@@ -36,7 +35,7 @@ class PlutoMock : Pluto {
 
     override fun storePrismDID(
         did: DID,
-        keyPairIndex: Int,
+        keyPathIndex: Int,
         alias: String?
     ) {
         storedPrismDID += did
@@ -46,31 +45,29 @@ class PlutoMock : Pluto {
         storedPeerDID += did
     }
 
-    override fun storeDIDPair(holder: DID, other: DID, name: String) {}
+    override fun storeDIDPair(host: DID, receiver: DID, name: String) {}
 
-    override fun storeMessage(message: Message, direction: Message.Direction) {}
+    override fun storeMessage(message: Message) {}
 
-    override fun storeMessages(messages: Map<Message, Message.Direction>) {}
+    override fun storeMessages(messages: Array<Message>) {}
 
-    override fun storeMediator(peer: DID, routingDID: DID, mediatorDID: DID) {}
+    override fun storeMediator(mediator: DID, host: DID, routing: DID) {}
 
     override fun storeCredential(credential: VerifiableCredential) {}
 
     override fun getAllPrismDIDs(): Flow<Array<PrismDIDInfo>> = getAllPrismDIDsReturn
 
-    override fun getPrismDIDInfo(did: DID): Flow<PrismDIDInfo?> = getPrismDIDInfoReturn
+    override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> = getDIDInfoByDIDReturn
 
-    override fun getPrismDIDInfo(alias: String): Flow<Array<PrismDIDInfo>> = getAllPrismDIDsReturn
+    override fun getDIDInfoByAlias(alias: String): Flow<Array<PrismDIDInfo>> = getAllPrismDIDsReturn
 
-    override fun getPrismDIDKeyPairIndex(did: DID): Flow<Int?> = getPrismDIDKeyPairIndexReturn
+    override fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?> = getPrismDIDKeyPathIndexReturn
 
-    override fun getPrismLastKeyPairIndex(): Flow<Int> = getPrismLastKeyPairIndexReturn
+    override fun getPrismLastKeyPathIndex(): Flow<Int> = getPrismLastKeyPairIndexReturn
 
     override fun getAllPeerDIDs(): Flow<Array<PeerDID>> = getAllPeerDIDsReturn
 
-    override fun getPeerDIDInfo(did: DID): Flow<PeerDID?> = getPeerDIDInfoReturn
-
-    override fun getPeerDIDPrivateKeys(did: DID): Flow<Array<PrivateKey>?> = getPeerDIDPrivateKeysReturn
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<Array<PrivateKey>?> = getPeerDIDPrivateKeysReturn
 
     override fun getAllDidPairs(): Flow<Array<DIDPair>> = getAllDidPairsReturn
 

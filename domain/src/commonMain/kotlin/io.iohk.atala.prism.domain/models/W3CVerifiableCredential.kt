@@ -1,10 +1,13 @@
 package io.iohk.atala.prism.domain.models
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class W3CVerifiableCredential(
     override val credentialType: CredentialType = CredentialType.W3C,
+    override val id: String,
     override val context: Set<String>,
     override val type: Set<String>,
-    override val id: String,
     override val issuer: DID,
     override val issuanceDate: String,
     override val expirationDate: String? = null,
