@@ -47,3 +47,28 @@ sealed class PlutoError(message: String? = null) : Throwable(message) {
 sealed class PolluxError(message: String? = null) : Throwable(message) {
     class InvalidCredentialError(message: String? = null) : PolluxError(message)
 }
+
+sealed class PrismAgentError(message: String? = null) : Throwable(message) {
+    class invalidURLError(message: String? = null) : PrismAgentError(message)
+    class cannotFindDIDKeyPairIndex(message: String? = null) : PrismAgentError(message)
+    class invitationHasNoFromDIDError(message: String? = null) : PrismAgentError(message)
+    class noValidServiceEndpointError(message: String? = null) : PrismAgentError(message)
+    class invitationIsInvalidError(message: String? = null) : PrismAgentError(message)
+    class noConnectionOpenError(message: String? = null) : PrismAgentError(message)
+    class noHandshakeResponseError(message: String? = null) : PrismAgentError(message)
+    class unknownInvitationTypeError(message: String? = null) : PrismAgentError(message)
+    class unknownPrismOnboardingTypeError(message: String? = null) : PrismAgentError(message)
+    class failedToOnboardError(message: String? = null) : PrismAgentError(message)
+    class invalidPickupDeliveryMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidOfferCredentialMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidProposedCredentialMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidIssueCredentialMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidRequestCredentialMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidPresentationMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidRequestPresentationMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidProposePresentationMessageError(message: String? = null) : PrismAgentError(message)
+    class invalidMediationGrantMessageError(message: String? = null) : PrismAgentError(message)
+    class noMediatorAvailableError(message: String? = null) : PrismAgentError(message)
+    class mediationRequestFailedError(message: String? = null) : PrismAgentError(message)
+
+}
