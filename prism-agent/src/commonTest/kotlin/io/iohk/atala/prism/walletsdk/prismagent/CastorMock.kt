@@ -9,7 +9,7 @@ import io.iohk.atala.prism.domain.models.PublicKey
 class CastorMock : Castor {
     var parseDIDReturn: DID? = null
     var createPrismDIDReturn: DID? = null
-    var createPeerDIDReturn: DID? = null
+    var createPeerDIDReturn: DID? = DID("did", "prism", "b6c0c33d701ac1b9a262a14454d1bbde3d127d697a76950963c5fd930605:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VmsxEiECSTjyV7sUfCr_ArpN9rvCwR9fRMAhcsr_S7ZRiJk4p5k")
     var resolveDIDReturn: DIDDocument? = null
     var verifySignatureReturn: Boolean = false
 

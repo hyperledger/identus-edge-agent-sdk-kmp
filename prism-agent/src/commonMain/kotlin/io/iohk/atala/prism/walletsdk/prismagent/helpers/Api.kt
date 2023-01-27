@@ -17,7 +17,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.serialization.json.Json
 
 @DelicateCoroutinesApi
-class Api {
+open class Api(
     private val client: HttpClient = httpClient {
         install(ContentNegotiation) {
             json(
@@ -28,8 +28,9 @@ class Api {
                 }
             )
         }
-        expectSuccess = true
     }
+) {
+
     private suspend fun prepareRequest(
         httpMethod: HttpMethod,
         url: Url,

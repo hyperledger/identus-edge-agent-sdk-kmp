@@ -16,16 +16,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
 
-final class PrismAgent {
+open class PrismAgent {
     enum class State {
         STOPED, STARTING, RUNNING, STOPING
     }
 
-    sealed class InvitationType {
-        class PrismOnboarding(val from: String, val endpoint: String, val ownDID: DID)
+    sealed class InvitationType
 
-        data class OnboardingPrism(val prismOnboarding: PrismOnboarding) : InvitationType()
-    }
+    data class PrismOnboardingInvitation(val from: String, val endpoint: String, val ownDID: DID) : InvitationType()
 
     val seed: Seed
     var state = State.STOPED
@@ -33,6 +31,7 @@ final class PrismAgent {
     private val apollo: Apollo
     private val castor: Castor
     private val pluto: Pluto
+    open val api: Api = Api()
 
     constructor(
         apollo: Apollo,
@@ -87,18 +86,20 @@ final class PrismAgent {
 
     @Throws(PrismAgentError.unknownInvitationTypeError::class)
     suspend fun parseInvitation(str: String): InvitationType {
-        return try {
-            InvitationType.OnboardingPrism(parsePrismInvitation(str))
+        val invite = try {
+            parsePrismInvitation(str)
         } catch (e: Throwable) {
+            println(e)
             throw PrismAgentError.unknownInvitationTypeError()
         }
+        return invite
     }
 
-    suspend fun acceptInvitation(invitation: InvitationType.PrismOnboarding) {
+    suspend fun acceptInvitation(invitation: PrismOnboardingInvitation) {
         @Serializable
         data class SendDID(val did: String)
 
-        var response = Api().request(
+        var response = api.request(
             HttpMethod.Post,
             Url(invitation.endpoint),
             mapOf(),
@@ -111,7 +112,7 @@ final class PrismAgent {
         }
     }
 
-    private suspend fun parsePrismInvitation(str: String): InvitationType.PrismOnboarding {
+    private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
         val prismOnboarding = PrismOnboardingInvitation(str)
         val url = prismOnboarding.body.onboardEndpoint
         val did = createNewPeerDID(
@@ -129,7 +130,7 @@ final class PrismAgent {
             true
         )
 
-        return InvitationType.PrismOnboarding(
+        return PrismOnboardingInvitation(
             from = prismOnboarding.body.from,
             endpoint = url,
             ownDID = did

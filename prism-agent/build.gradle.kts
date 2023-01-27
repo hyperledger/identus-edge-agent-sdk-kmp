@@ -83,6 +83,7 @@ kotlin {
                 implementation(project(":domain"))
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
+                implementation("io.ktor:ktor-client-mock:2.1.3")
             }
         }
         val jvmMain by getting {
