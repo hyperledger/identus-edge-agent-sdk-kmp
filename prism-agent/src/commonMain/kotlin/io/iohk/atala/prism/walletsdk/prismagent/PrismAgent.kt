@@ -6,14 +6,28 @@ import io.iohk.atala.prism.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.KeyCurve
+import io.iohk.atala.prism.domain.models.PrismAgentError
 import io.iohk.atala.prism.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.ApiImpl
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.HttpClient
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding.PrismOnboardingInvitation
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.HttpMethod
+import io.ktor.http.Url
+import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 
 final class PrismAgent {
     enum class State {
         STOPED, STARTING, RUNNING, STOPING
     }
+
+    sealed class InvitationType
+
+    data class PrismOnboardingInvitation(val from: String, val endpoint: String, val ownDID: DID) : InvitationType()
 
     val seed: Seed
     var state = State.STOPED
@@ -21,17 +35,32 @@ final class PrismAgent {
     private val apollo: Apollo
     private val castor: Castor
     private val pluto: Pluto
+    private val api: ApiImpl
 
     constructor(
         apollo: Apollo,
         castor: Castor,
         pluto: Pluto,
         seed: Seed? = null,
+        api: ApiImpl? = null
     ) {
         this.apollo = apollo
         this.castor = castor
         this.pluto = pluto
         this.seed = seed ?: apollo.createRandomSeed().second
+        this.api = api ?: ApiImpl(
+            HttpClient {
+                install(ContentNegotiation) {
+                    json(
+                        Json {
+                            ignoreUnknownKeys = true
+                            prettyPrint = true
+                            isLenient = true
+                        }
+                    )
+                }
+            }
+        )
     }
 
     suspend fun createNewPrismDID(
@@ -71,5 +100,58 @@ final class PrismAgent {
         pluto.storePeerDID(did = did, privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey))
 
         return did
+    }
+
+    @Throws(PrismAgentError.unknownInvitationTypeError::class)
+    suspend fun parseInvitation(str: String): InvitationType {
+        val invite = try {
+            parsePrismInvitation(str)
+        } catch (e: Throwable) {
+            println(e)
+            throw PrismAgentError.unknownInvitationTypeError()
+        }
+        return invite
+    }
+
+    suspend fun acceptInvitation(invitation: PrismOnboardingInvitation) {
+        @Serializable
+        data class SendDID(val did: String)
+
+        var response = api.request(
+            HttpMethod.Post,
+            Url(invitation.endpoint),
+            mapOf(),
+            mapOf(),
+            SendDID(invitation.ownDID.toString())
+        )
+
+        if (response.status.value != 200) {
+            throw PrismAgentError.failedToOnboardError()
+        }
+    }
+
+    private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
+        val prismOnboarding = PrismOnboardingInvitation(str)
+        val url = prismOnboarding.body.onboardEndpoint
+        val did = createNewPeerDID(
+            arrayOf(
+                DIDDocument.Service(
+                    id = "#didcomm-1",
+                    type = arrayOf("DIDCommMessaging"),
+                    serviceEndpoint = DIDDocument.ServiceEndpoint(
+                        uri = url,
+                        accept = arrayOf("DIDCommMessaging"),
+                        routingKeys = arrayOf()
+                    )
+                )
+            ),
+            true
+        )
+
+        return PrismOnboardingInvitation(
+            from = prismOnboarding.body.from,
+            endpoint = url,
+            ownDID = did
+        )
     }
 }

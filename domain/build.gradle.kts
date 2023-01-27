@@ -69,6 +69,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("io.iohk.atala.prism:uuid:1.0.0-alpha")
+                implementation("io.ktor:ktor-client-core:2.1.3")
             }
         }
         val commonTest by getting {
@@ -77,6 +78,7 @@ kotlin {
             }
         }
         val jvmMain by getting
+
         val jvmTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")

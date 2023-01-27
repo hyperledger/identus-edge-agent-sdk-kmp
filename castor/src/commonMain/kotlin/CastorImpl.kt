@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.castor
 
+import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.domain.models.CastorError
 import io.iohk.atala.prism.domain.models.DID
