@@ -64,17 +64,17 @@ data class Message(
     fun toJsonString(): String {
         return Json.encodeToString(this)
     }
+
+    enum class Direction(val value: Int) {
+        SENT(0),
+        RECEIVED(1)
+    }
 }
 
-enum class Direction(val value: Int) {
-    SENT(0),
-    RECEIVED(1)
-}
-
-fun getDirectionByValue(value: Int): Direction {
+fun getDirectionByValue(value: Int): Message.Direction {
     return when (value) {
-        0 -> Direction.SENT
-        1 -> Direction.RECEIVED
-        else -> Direction.SENT
+        0 -> Message.Direction.SENT
+        1 -> Message.Direction.RECEIVED
+        else -> Message.Direction.SENT
     }
 }

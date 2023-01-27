@@ -45,7 +45,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
         db.dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, alias))
     }
 
-    override fun storePeerDID(did: DID, privateKeys: List<PrivateKey>) {
+    override fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>) {
         db.dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, null))
         privateKeys.map { privateKey ->
             db.privateKeyQueries.insert(
@@ -79,7 +79,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
         )
     }
 
-    override fun storeMessages(messages: List<Message>) {
+    override fun storeMessages(messages: Array<Message>) {
         messages.map { message ->
             storeMessage(message)
         }
@@ -109,14 +109,14 @@ class PlutoImpl(connection: DbConnection) : Pluto {
         )
     }
 
-    override fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>> {
+    override fun getAllPrismDIDs(): Flow<Array<PrismDIDInfo>> {
         return db.dIDQueries.fetchAllPrismDID()
             .asFlow()
             .mapToList()
             .map { list ->
                 list.map {
                     PrismDIDInfo(DID(it.did), it.keyPathIndex, it.alias)
-                }
+                }.toTypedArray()
             }
     }
 
@@ -129,25 +129,25 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getDIDInfoByAlias(alias: String): Flow<List<PrismDIDInfo>> {
+    override fun getDIDInfoByAlias(alias: String): Flow<Array<PrismDIDInfo>> {
         return db.dIDQueries.fetchDIDInfoByAlias(alias)
             .asFlow()
             .mapToList()
             .map { list ->
                 list.map {
                     PrismDIDInfo(DID(it.did), it.keyPathIndex, it.alias)
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey>?> {
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<Array<PrivateKey>?> {
         return db.privateKeyQueries.fetchPrivateKeyByDID(did.toString())
             .asFlow()
             .mapToList()
             .map { list ->
                 list.map {
                     PrivateKey(getKeyCurveByNameAndIndex(it.curve, it.keyPathIndex), byteArrayOf())
-                }
+                }.toTypedArray()
             }
     }
 
@@ -165,7 +165,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             .map { it.keyPathIndex ?: 0 }
     }
 
-    override fun getAllPeerDIDs(): Flow<List<PeerDID>> {
+    override fun getAllPeerDIDs(): Flow<Array<PeerDID>> {
         return db.dIDQueries.fetchAllPeerDID()
             .asFlow()
             .mapToList()
@@ -180,29 +180,29 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                             )
                         }.toTypedArray()
                         PeerDID(DID(it.key), privateKeyList)
-                    }
+                    }.toTypedArray()
             }
     }
 
-    override fun getAllDidPairs(): Flow<List<DIDPair>> {
+    override fun getAllDidPairs(): Flow<Array<DIDPair>> {
         return db.dIDPairQueries.fetchAllDIDPairs()
             .asFlow()
             .mapToList()
             .map { list ->
                 list.map {
                     DIDPair(DID(it.hostDID), DID(it.receiverDID), it.name)
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getPair(did: DID): Flow<List<DIDPair>?> {
+    override fun getPair(did: DID): Flow<Array<DIDPair>?> {
         return db.dIDPairQueries.fetchDIDPairByDID(did.toString())
             .asFlow()
             .mapToList()
             .map { list ->
                 list.map {
                     DIDPair(DID(it.hostDID), DID(it.receiverDID), it.name)
-                }
+                }.toTypedArray()
             }
     }
 
@@ -215,7 +215,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getAllMessages(): Flow<List<Message>> {
+    override fun getAllMessages(): Flow<Array<Message>> {
         return db.messageQueries.fetchAllMessages()
             .asFlow()
             .mapToList()
@@ -238,15 +238,15 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         messageDb.ack,
                         messageDb.direction,
                     )
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getAllMessages(did: DID): Flow<List<Message>> {
+    override fun getAllMessages(did: DID): Flow<Array<Message>> {
         return getAllMessages(did, did)
     }
 
-    override fun getAllMessages(from: DID, to: DID): Flow<List<Message>> {
+    override fun getAllMessages(from: DID, to: DID): Flow<Array<Message>> {
         return db.messageQueries.fetchAllMessagesFromTo(from.toString(), to.toString())
             .asFlow()
             .mapToList()
@@ -269,11 +269,11 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         messageDb.ack,
                         messageDb.direction,
                     )
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getAllMessagesSent(): Flow<List<Message>> {
+    override fun getAllMessagesSent(): Flow<Array<Message>> {
         return db.messageQueries.fetchAllSentMessages()
             .asFlow()
             .mapToList()
@@ -296,11 +296,11 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         messageDb.ack,
                         messageDb.direction,
                     )
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getAllMessagesReceived(): Flow<List<Message>> {
+    override fun getAllMessagesReceived(): Flow<Array<Message>> {
         return db.messageQueries.fetchAllReceivedMessages()
             .asFlow()
             .mapToList()
@@ -323,11 +323,11 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         messageDb.ack,
                         messageDb.direction,
                     )
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getAllMessagesSentTo(did: DID): Flow<List<Message>> {
+    override fun getAllMessagesSentTo(did: DID): Flow<Array<Message>> {
         return db.messageQueries.fetchAllMessagesSentTo(did.toString())
             .asFlow()
             .mapToList()
@@ -350,11 +350,11 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         messageDb.ack,
                         messageDb.direction,
                     )
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getAllMessagesReceivedFrom(did: DID): Flow<List<Message>> {
+    override fun getAllMessagesReceivedFrom(did: DID): Flow<Array<Message>> {
         return db.messageQueries.fetchAllMessagesReceivedFrom(did.toString())
             .asFlow()
             .mapToList()
@@ -377,11 +377,11 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         messageDb.ack,
                         messageDb.direction,
                     )
-                }
+                }.toTypedArray()
             }
     }
 
-    override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>> {
+    override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<Array<Message>> {
         return db.messageQueries.fetchAllMessagesOfType(type, relatedWithDID.toString(), relatedWithDID.toString())
             .asFlow()
             .mapToList()
@@ -404,7 +404,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         messageDb.ack,
                         messageDb.direction,
                     )
-                }
+                }.toTypedArray()
             }
     }
 
@@ -433,7 +433,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getAllMediators(): Flow<List<MediatorDID>> {
+    override fun getAllMediators(): Flow<Array<MediatorDID>> {
         return db.mediatorQueries.fetchAllMediators()
             .asFlow()
             .mapToList()
@@ -445,12 +445,12 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                         DID(it.HostDID),
                         DID(it.RoutingDID)
                     )
-                }
+                }.toTypedArray()
             }
     }
 
     // TODO: Define how to form JWTVerifiableCredential and W3CVerifiableCredential
-    override fun getAllCredentials(): Flow<List<VerifiableCredential>> {
+    override fun getAllCredentials(): Flow<Array<VerifiableCredential>> {
         return db.verifiableCredentialQueries.fetchAllCredentials()
             .asFlow()
             .mapToList()
@@ -521,7 +521,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                                 verifiableCredential.aud
                             )
                     }
-                }
+                }.toTypedArray()
             }
     }
 }

@@ -18,57 +18,57 @@ interface Pluto {
         alias: String?
     )
 
-    fun storePeerDID(did: DID, privateKeys: List<PrivateKey>)
+    fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>)
 
     fun storeDIDPair(host: DID, receiver: DID, name: String)
 
     fun storeMessage(message: Message)
 
-    fun storeMessages(messages: List<Message>)
+    fun storeMessages(messages: Array<Message>)
 
     fun storeMediator(mediator: DID, host: DID, routing: DID)
 
     fun storeCredential(credential: VerifiableCredential)
 
-    fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>>
+    fun getAllPrismDIDs(): Flow<Array<PrismDIDInfo>>
 
     fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?>
 
-    fun getDIDInfoByAlias(alias: String): Flow<List<PrismDIDInfo>>
+    fun getDIDInfoByAlias(alias: String): Flow<Array<PrismDIDInfo>>
 
     fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?>
 
     fun getPrismLastKeyPathIndex(): Flow<Int>
 
-    fun getAllPeerDIDs(): Flow<List<PeerDID>>
+    fun getAllPeerDIDs(): Flow<Array<PeerDID>>
 
-    fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey>?>
+    fun getDIDPrivateKeysByDID(did: DID): Flow<Array<PrivateKey>?>
 
-    fun getAllDidPairs(): Flow<List<DIDPair>>
+    fun getAllDidPairs(): Flow<Array<DIDPair>>
 
-    fun getPair(did: DID): Flow<List<DIDPair>?>
+    fun getPair(did: DID): Flow<Array<DIDPair>?>
 
     fun getPair(name: String): Flow<DIDPair?>
 
-    fun getAllMessages(): Flow<List<Message>>
+    fun getAllMessages(): Flow<Array<Message>>
 
-    fun getAllMessages(did: DID): Flow<List<Message>>
+    fun getAllMessages(did: DID): Flow<Array<Message>>
 
-    fun getAllMessagesSent(): Flow<List<Message>>
+    fun getAllMessagesSent(): Flow<Array<Message>>
 
-    fun getAllMessagesReceived(): Flow<List<Message>>
+    fun getAllMessagesReceived(): Flow<Array<Message>>
 
-    fun getAllMessagesSentTo(did: DID): Flow<List<Message>>
+    fun getAllMessagesSentTo(did: DID): Flow<Array<Message>>
 
-    fun getAllMessagesReceivedFrom(did: DID): Flow<List<Message>>
+    fun getAllMessagesReceivedFrom(did: DID): Flow<Array<Message>>
 
-    fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>>
+    fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<Array<Message>>
 
-    fun getAllMessages(from: DID, to: DID): Flow<List<Message>>
+    fun getAllMessages(from: DID, to: DID): Flow<Array<Message>>
 
     fun getMessage(id: String): Flow<Message?>
 
-    fun getAllMediators(): Flow<List<MediatorDID>>
+    fun getAllMediators(): Flow<Array<MediatorDID>>
 
-    fun getAllCredentials(): Flow<List<VerifiableCredential>>
+    fun getAllCredentials(): Flow<Array<VerifiableCredential>>
 }

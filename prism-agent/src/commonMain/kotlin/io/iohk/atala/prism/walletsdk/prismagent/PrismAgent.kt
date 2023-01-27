@@ -69,7 +69,7 @@ final class PrismAgent {
             // TODO: This still needs to be done update the key List
         }
 
-        pluto.storePeerDID(did = did, privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey))
+        pluto.storePeerDID(did = did, privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey))
 
         return did
     }
