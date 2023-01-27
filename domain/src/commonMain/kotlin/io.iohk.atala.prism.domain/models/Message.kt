@@ -1,15 +1,20 @@
 package io.iohk.atala.prism.domain.models
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
+@Serializable
 data class Message(
     val id: String,
     val piuri: String,
     val from: DID?,
     val to: DID?,
     val fromPrior: String?,
-    val body: String, // TODO: Change to Data
+    val body: String,
     val extraHeaders: Array<String>,
-    val createdTime: String, // TODO: Change to Date
-    val expiresTimePlus: String, // TODO: Change to Date
+    val createdTime: String,
+    val expiresTimePlus: String,
     val attachments: Array<String>, // TODO: Change to AttachmentDescriptor
     val thid: String? = null,
     val pthid: String? = null,
@@ -56,8 +61,20 @@ data class Message(
         return result
     }
 
-    enum class Direction(val value: String) {
-        SENT("Sent"),
-        RECEIVED("Received")
+    fun toJsonString(): String {
+        return Json.encodeToString(this)
+    }
+
+    enum class Direction(val value: Int) {
+        SENT(0),
+        RECEIVED(1)
+    }
+}
+
+fun getDirectionByValue(value: Int): Message.Direction {
+    return when (value) {
+        0 -> Message.Direction.SENT
+        1 -> Message.Direction.RECEIVED
+        else -> Message.Direction.SENT
     }
 }

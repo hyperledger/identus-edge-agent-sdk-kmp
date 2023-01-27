@@ -2,6 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 import io.iohk.atala.prism.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.domain.models.CompressedPublicKey
+import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.KeyPair
 import io.iohk.atala.prism.domain.models.PrivateKey
@@ -14,18 +15,18 @@ class ApolloMock : Apollo {
     var createSeedReturn: Seed = Seed(ByteArray(0))
     var createRandomSeedReturn: Pair<Array<String>, Seed> = Pair(emptyArray(), Seed(ByteArray(0)))
     var createKeyPairReturn: KeyPair = KeyPair(
-        privateKey = PrivateKey(KeyCurve.ED25519, ByteArray(0)),
-        publicKey = PublicKey(KeyCurve.ED25519, ByteArray(0))
+        privateKey = PrivateKey(KeyCurve(Curve.ED25519), ByteArray(0)),
+        publicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0))
     )
     var compressedPublicKeyReturn: CompressedPublicKey = CompressedPublicKey(
-        PublicKey(KeyCurve.ED25519, ByteArray(0)),
+        PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
         ByteArray(0)
     )
-    var publicKeyReturn: PublicKey = PublicKey(KeyCurve.ED25519, ByteArray(0))
+    var publicKeyReturn: PublicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0))
     var signMessageReturn: Signature = Signature(ByteArray(0))
     var verifySignatureReturn: Boolean = false
     var compressedPublicKeyDataReturn: CompressedPublicKey = CompressedPublicKey(
-        PublicKey(KeyCurve.ED25519, ByteArray(0)),
+        PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
         ByteArray(0)
     )
     var signMessageByteArrayReturn: Signature = Signature(ByteArray(0))

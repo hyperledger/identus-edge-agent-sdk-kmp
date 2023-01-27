@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.domain.models
 
 data class PrivateKey(
-    val curve: KeyCurve,
+    val keyCurve: KeyCurve,
     val value: ByteArray
 ) {
     override fun equals(other: Any?): Boolean {
@@ -10,14 +10,14 @@ data class PrivateKey(
 
         other as PrivateKey
 
-        if (curve != other.curve) return false
+        if (keyCurve != other.keyCurve) return false
         if (!value.contentEquals(other.value)) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = curve.hashCode()
+        var result = keyCurve.hashCode()
         result = 31 * result + value.contentHashCode()
         return result
     }

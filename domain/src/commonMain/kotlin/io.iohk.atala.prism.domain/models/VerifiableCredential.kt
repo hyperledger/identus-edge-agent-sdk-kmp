@@ -1,5 +1,10 @@
 package io.iohk.atala.prism.domain.models
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
+@Serializable
 data class VerifiableCredentialTypeContainer(
     val id: String,
     val type: String
@@ -29,4 +34,8 @@ interface VerifiableCredential {
     val validUntil: VerifiableCredentialTypeContainer?
     val proof: String?
     val aud: Set<String>
+
+    fun toJsonString(): String {
+        return Json.encodeToString(this)
+    }
 }
