@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.domain.models.CastorError
+import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.KeyPair
@@ -21,12 +22,12 @@ class DIDCreateTest {
         val authKeyStr = "z6MkqgCXHEGr2wJZANPZGC8WFmeVuS3abAD9uvh7mTXygCFv"
         val serviceStr = "eyJpZCI6IkRJRENvbW1WMiIsInQiOiJkbSIsInMiOiJsb2NhbGhvc3Q6ODA4MiIsInIiOltdLCJhIjpbImRtIl19"
 
-        val fakeVerPrivateKey = PrivateKey(KeyCurve.ED25519, "".encodeToByteArray())
-        val fakeAuthPrivateKey = PrivateKey(KeyCurve.X25519, "".encodeToByteArray())
-        val verificationPubKey = PublicKey(KeyCurve.ED25519, verKeyStr.encodeToByteArray())
-        val authenticationPubKey = PublicKey(KeyCurve.X25519, authKeyStr.encodeToByteArray())
-        val verificationKeyPair = KeyPair(KeyCurve.ED25519, fakeVerPrivateKey, verificationPubKey)
-        val authenticationKeyPair = KeyPair(KeyCurve.X25519, fakeAuthPrivateKey, authenticationPubKey)
+        val fakeVerPrivateKey = PrivateKey(KeyCurve(Curve.X25519), "".encodeToByteArray())
+        val fakeAuthPrivateKey = PrivateKey(KeyCurve(Curve.ED25519), "".encodeToByteArray())
+        val verificationPubKey = PublicKey(KeyCurve(Curve.X25519), verKeyStr.encodeToByteArray())
+        val authenticationPubKey = PublicKey(KeyCurve(Curve.ED25519), authKeyStr.encodeToByteArray())
+        val verificationKeyPair = KeyPair(KeyCurve(Curve.X25519), fakeVerPrivateKey, verificationPubKey)
+        val authenticationKeyPair = KeyPair(KeyCurve(Curve.ED25519), fakeAuthPrivateKey, authenticationPubKey)
         val service = DIDDocument.Service(
             id = "DIDCommV2",
             type = arrayOf("DIDCommMessaging"),
@@ -48,14 +49,14 @@ class DIDCreateTest {
         val verKeyStr = "z6LSci5EK4Ezue5QA72ZX71QUbXY2xr5ygRw7wM1WJigTNnd"
         val authKeyStr = "z6MkqgCXHEGr2wJZANPZGC8WFmeVuS3abAD9uvh7mTXygCFv"
 
-        val fakeVerPrivateKey = PrivateKey(KeyCurve.ED25519, "".encodeToByteArray())
-        val fakeAuthPrivateKey = PrivateKey(KeyCurve.X25519, "".encodeToByteArray())
+        val fakeVerPrivateKey = PrivateKey(KeyCurve(Curve.ED25519), "".encodeToByteArray())
+        val fakeAuthPrivateKey = PrivateKey(KeyCurve(Curve.X25519), "".encodeToByteArray())
 
-        val verificationPubKey = PublicKey(KeyCurve.ED25519, verKeyStr.encodeToByteArray())
-        val authenticationPubKey = PublicKey(KeyCurve.X25519, authKeyStr.encodeToByteArray())
+        val verificationPubKey = PublicKey(KeyCurve(Curve.ED25519), verKeyStr.encodeToByteArray())
+        val authenticationPubKey = PublicKey(KeyCurve(Curve.X25519), authKeyStr.encodeToByteArray())
 
-        val verificationKeyPair = KeyPair(KeyCurve.ED25519, fakeVerPrivateKey, verificationPubKey)
-        val authenticationKeyPair = KeyPair(KeyCurve.ED25519, fakeAuthPrivateKey, authenticationPubKey)
+        val verificationKeyPair = KeyPair(KeyCurve(Curve.ED25519), fakeVerPrivateKey, verificationPubKey)
+        val authenticationKeyPair = KeyPair(KeyCurve(Curve.ED25519), fakeAuthPrivateKey, authenticationPubKey)
 
         val keyPairs: Array<KeyPair> = arrayOf(verificationKeyPair, authenticationKeyPair)
 

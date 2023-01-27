@@ -2,7 +2,6 @@ package io.iohk.atala.prism.domain.buildingBlocks
 
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDPair
-import io.iohk.atala.prism.domain.models.Direction
 import io.iohk.atala.prism.domain.models.MediatorDID
 import io.iohk.atala.prism.domain.models.Message
 import io.iohk.atala.prism.domain.models.PeerDID
@@ -37,9 +36,9 @@ interface Pluto {
 
     fun getDIDInfoByAlias(alias: String): Flow<List<PrismDIDInfo>>
 
-    fun getPrismDIDkeyPathIndex(did: DID): Flow<Int?>
+    fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?>
 
-    fun getPrismLastkeyPathIndex(): Flow<Int>
+    fun getPrismLastKeyPathIndex(): Flow<Int>
 
     fun getAllPeerDIDs(): Flow<List<PeerDID>>
 

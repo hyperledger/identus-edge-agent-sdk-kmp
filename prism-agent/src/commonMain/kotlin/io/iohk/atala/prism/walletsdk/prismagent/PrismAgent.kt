@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 import io.iohk.atala.prism.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.domain.buildingBlocks.Pluto
+import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.KeyCurve
@@ -41,14 +42,14 @@ final class PrismAgent {
     ): DID {
         var index = 0
         val newDID = pluto
-            .getPrismLastKeyPairIndex()
+            .getPrismLastKeyPathIndex()
             .map {
                 index = keyPathIndex ?: it
-                val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve.SECP256K1)
+                val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
                 castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
             }
             .first()
-        pluto.storePrismDID(did = newDID, keyPairIndex = index, alias = alias)
+        pluto.storePrismDID(did = newDID, keyPathIndex = index, alias = alias)
         return newDID
     }
 
@@ -56,8 +57,8 @@ final class PrismAgent {
         services: Array<DIDDocument.Service> = emptyArray(),
         updateMediator: Boolean
     ): DID {
-        val keyAgreementKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve.X25519)
-        val authenticationKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve.ED25519)
+        val keyAgreementKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.X25519))
+        val authenticationKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.ED25519))
 
         val did = castor.createPeerDID(
             arrayOf(keyAgreementKeyPair, authenticationKeyPair),
@@ -68,7 +69,7 @@ final class PrismAgent {
             // TODO: This still needs to be done update the key List
         }
 
-        pluto.storePeerDID(did = did, privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey))
+        pluto.storePeerDID(did = did, privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey))
 
         return did
     }

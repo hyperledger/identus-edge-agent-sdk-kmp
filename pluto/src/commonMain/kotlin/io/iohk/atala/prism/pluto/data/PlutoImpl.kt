@@ -16,7 +16,6 @@ import io.iohk.atala.prism.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.domain.models.PrivateKey
 import io.iohk.atala.prism.domain.models.VerifiableCredential
 import io.iohk.atala.prism.domain.models.W3CVerifiableCredential
-import io.iohk.atala.prism.domain.models.getDirectionByValue
 import io.iohk.atala.prism.domain.models.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.pluto.PrismPlutoDb
 import kotlinx.coroutines.GlobalScope
@@ -52,9 +51,9 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             db.privateKeyQueries.insert(
                 PrivateKeyDB(
                     UUID.randomUUID4().toString(),
-                    privateKey.curve.name,
+                    privateKey.keyCurve.curve.value,
                     privateKey.value.toString(),
-                    privateKey.curve.index,
+                    privateKey.keyCurve.index,
                     did.methodId
                 )
             )
@@ -152,14 +151,14 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getPrismDIDkeyPathIndex(did: DID): Flow<Int?> {
+    override fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?> {
         return db.privateKeyQueries.fetchKeyPathIndexByDID(did.methodId)
             .asFlow()
             .mapToOne()
             .map { it.keyPathIndex }
     }
 
-    override fun getPrismLastkeyPathIndex(): Flow<Int> {
+    override fun getPrismLastKeyPathIndex(): Flow<Int> {
         return db.privateKeyQueries.fetchLastkeyPathIndex()
             .asFlow()
             .mapToOne()

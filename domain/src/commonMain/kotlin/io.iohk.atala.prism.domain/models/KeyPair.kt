@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.domain.models
 
 data class KeyPair(
-    val curve: KeyCurve? = KeyCurve(Curves.SECP256K1.name),
+    val keyCurve: KeyCurve? = KeyCurve(Curve.SECP256K1),
     val privateKey: PrivateKey,
     val publicKey: PublicKey
 )
 
-data class KeyCurve(val name: String, val index: Int? = 0)
+data class KeyCurve(val curve: Curve, val index: Int? = 0)
 
-enum class Curves(val value: String) {
+enum class Curve(val value: String) {
     X25519("X25519"),
     ED25519("Ed25519"),
     SECP256K1("secp256k1");
@@ -16,16 +16,16 @@ enum class Curves(val value: String) {
 
 fun getKeyCurveByNameAndIndex(name: String, index: Int?): KeyCurve {
     return when (name) {
-        Curves.X25519.value ->
-            KeyCurve(Curves.X25519.value)
+        Curve.X25519.value ->
+            KeyCurve(Curve.X25519)
 
-        Curves.ED25519.value ->
-            KeyCurve(Curves.ED25519.value)
+        Curve.ED25519.value ->
+            KeyCurve(Curve.ED25519)
 
-        Curves.SECP256K1.value ->
-            KeyCurve(Curves.SECP256K1.value, index)
+        Curve.SECP256K1.value ->
+            KeyCurve(Curve.SECP256K1, index)
 
         else ->
-            KeyCurve(Curves.SECP256K1.value, index)
+            KeyCurve(Curve.SECP256K1, index)
     }
 }

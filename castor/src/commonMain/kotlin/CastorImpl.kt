@@ -2,10 +2,10 @@ package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.domain.models.CastorError
+import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.DIDResolver
-import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.KeyPair
 import io.iohk.atala.prism.domain.models.PublicKey
 import io.iohk.atala.prism.mercury.didpeer.DIDCommServicePeerDID
@@ -41,27 +41,33 @@ open class CastorImpl : Castor {
         var signingKeys: MutableList<VerificationMaterialAuthentication> = mutableListOf()
 
         keyPairs.forEach {
-            when (it.curve) {
-                KeyCurve.ED25519 -> {
-                    encryptionKeys.add(
-                        VerificationMaterialAgreement(
-                            format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                            value = it.publicKey.value.decodeToString(),
-                            type = VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020
+            if (it.keyCurve == null) {
+                throw CastorError.InvalidKeyError()
+            } else {
+                when (it.keyCurve!!.curve) {
+                    Curve.X25519 -> {
+                        encryptionKeys.add(
+                            VerificationMaterialAgreement(
+                                format = VerificationMaterialFormatPeerDID.MULTIBASE,
+                                value = it.publicKey.value.decodeToString(),
+                                type = VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020
+                            )
                         )
-                    )
-                }
-                KeyCurve.X25519 -> {
-                    signingKeys.add(
-                        VerificationMaterialAuthentication(
-                            format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                            value = it.publicKey.value.decodeToString(),
-                            type = VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020
+                    }
+
+                    Curve.ED25519 -> {
+                        signingKeys.add(
+                            VerificationMaterialAuthentication(
+                                format = VerificationMaterialFormatPeerDID.MULTIBASE,
+                                value = it.publicKey.value.decodeToString(),
+                                type = VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020
+                            )
                         )
-                    )
-                }
-                else -> {
-                    throw CastorError.InvalidKeyError()
+                    }
+
+                    else -> {
+                        throw CastorError.InvalidKeyError()
+                    }
                 }
             }
         }
@@ -69,6 +75,7 @@ open class CastorImpl : Castor {
         if (signingKeys.isEmpty() || encryptionKeys.isEmpty()) {
             throw CastorError.InvalidKeyError()
         }
+
         val peerDID = createPeerDIDNumalgo2(
             encryptionKeys = encryptionKeys,
             signingKeys = signingKeys,
