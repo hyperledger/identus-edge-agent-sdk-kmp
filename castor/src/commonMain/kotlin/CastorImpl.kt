@@ -1,14 +1,17 @@
 package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.PeerDIDResolver
+import io.iohk.atala.prism.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.domain.models.CastorError
 import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.DIDResolver
+import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.KeyPair
 import io.iohk.atala.prism.domain.models.PublicKey
+import io.iohk.atala.prism.domain.models.Signature
 import io.iohk.atala.prism.mercury.didpeer.DIDCommServicePeerDID
 import io.iohk.atala.prism.mercury.didpeer.VerificationMaterialAgreement
 import io.iohk.atala.prism.mercury.didpeer.VerificationMaterialAuthentication
@@ -21,9 +24,16 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 open class CastorImpl : Castor {
+    private val apollo: Apollo
     private var resolvers: Array<DIDResolver> = arrayOf(
         PeerDIDResolver()
     )
+
+    constructor(
+        apollo: Apollo,
+    ) {
+        this.apollo = apollo
+    }
 
     override fun parseDID(did: String): DID {
         return DIDParser.parse(did)
@@ -104,6 +114,38 @@ open class CastorImpl : Castor {
     }
 
     override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
-        TODO("Not yet implemented")
+        val document = resolveDID(did.toString())
+        val keyPairs = document.coreProperties
+            .filterIsInstance<DIDDocument.Authentication>()
+            .flatMap { it.verificationMethods.toList() }
+            .mapNotNull {
+                when (it.type) {
+                    VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value -> {
+                        it.publicKeyMultibase?.let { it1 ->
+                            PublicKey(
+                                curve = KeyCurve(Curve.ED25519),
+                                value = it1.encodeToByteArray()
+                            )
+                        }
+                    }
+                    // TODO: Adding Secp256K1 keys here for verification too
+                    else -> {
+                        throw CastorError.InvalidKeyError()
+                    }
+                }
+            }
+
+        if (keyPairs.isEmpty()) {
+            throw CastorError.InvalidKeyError()
+        }
+
+        for (keyPair in keyPairs) {
+            val verified = apollo.verifySignature(keyPair, challenge, Signature(signature))
+            if (verified) {
+                return true
+            }
+        }
+
+        return false
     }
 }
