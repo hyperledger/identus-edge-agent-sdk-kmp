@@ -9,7 +9,7 @@ import io.iohk.atala.prism.domain.models.PublicKey
 import io.iohk.atala.prism.domain.models.Seed
 import io.iohk.atala.prism.domain.models.Signature
 
-class ApolloImpl: Apollo {
+class ApolloImpl : Apollo {
     override fun createRandomMnemonics(): Array<String> {
         TODO("Not yet implemented")
     }
