@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.castor
 
+import io.iohk.atala.prism.apollo.ApolloImpl
 import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.domain.buildingBlocks.Castor
@@ -30,9 +31,9 @@ open class CastorImpl : Castor {
     )
 
     constructor(
-        apollo: Apollo,
+        apollo: Apollo? = null,
     ) {
-        this.apollo = apollo
+        this.apollo = apollo ?: ApolloImpl()
     }
 
     override fun parseDID(did: String): DID {
@@ -115,24 +116,21 @@ open class CastorImpl : Castor {
 
     override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
         val document = resolveDID(did.toString())
-        val keyPairs = document.coreProperties
+        val keyPairs: List<PublicKey> = mutableListOf()
+
+        document.coreProperties
             .filterIsInstance<DIDDocument.Authentication>()
             .flatMap { it.verificationMethods.toList() }
             .mapNotNull {
-                when (it.type) {
-                    VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value -> {
-                        it.publicKeyMultibase?.let { it1 ->
-                            PublicKey(
-                                curve = KeyCurve(Curve.ED25519),
-                                value = it1.encodeToByteArray()
-                            )
-                        }
-                    }
-                    // TODO: Adding Secp256K1 keys here for verification too
-                    else -> {
-                        throw CastorError.InvalidKeyError()
+                if (it.type == VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value) {
+                    it.publicKeyMultibase?.let { it1 ->
+                        keyPairs + PublicKey(
+                            curve = KeyCurve(Curve.ED25519),
+                            value = it1.encodeToByteArray()
+                        )
                     }
                 }
+                //TODO: When we have PrismDID, we must be able to map to secp256K1 for signature verification
             }
 
         if (keyPairs.isEmpty()) {
