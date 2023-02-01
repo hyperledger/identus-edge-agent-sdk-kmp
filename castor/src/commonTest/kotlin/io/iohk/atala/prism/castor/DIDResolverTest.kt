@@ -2,8 +2,6 @@ package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DIDDocument
-import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAgreement
-import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAuthentication
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
