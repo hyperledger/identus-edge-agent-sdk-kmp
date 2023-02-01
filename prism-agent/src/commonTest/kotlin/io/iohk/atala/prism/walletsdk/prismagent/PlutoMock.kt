@@ -20,7 +20,7 @@ class PlutoMock : Pluto {
     var getPrismDIDKeyPathIndexReturn: Flow<Int?> = flow { emit(null) }
     var getPrismLastKeyPairIndexReturn: Flow<Int> = flow { emit(0) }
     var getAllPeerDIDsReturn: Flow<Array<PeerDID>> = flow { emit(emptyArray()) }
-    var getPeerDIDPrivateKeysReturn: Flow<Array<PrivateKey>?> = flow { emit(emptyArray()) }
+    var getDIDPrivateKeysReturn: Flow<Array<PrivateKey>?> = flow { emit(emptyArray()) }
     var getAllDidPairsReturn: Flow<Array<DIDPair>> = flow { emit(emptyArray()) }
     var getPairReturn: Flow<DIDPair?> = flow { emit(null) }
     var getAllMessagesReturn: Flow<Array<Message>> = flow { emit(emptyArray()) }
@@ -67,7 +67,7 @@ class PlutoMock : Pluto {
 
     override fun getAllPeerDIDs(): Flow<Array<PeerDID>> = getAllPeerDIDsReturn
 
-    override fun getDIDPrivateKeysByDID(did: DID): Flow<Array<PrivateKey>?> = getPeerDIDPrivateKeysReturn
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<Array<PrivateKey>?> = getDIDPrivateKeysReturn
 
     override fun getAllDidPairs(): Flow<Array<DIDPair>> = getAllDidPairsReturn
 
