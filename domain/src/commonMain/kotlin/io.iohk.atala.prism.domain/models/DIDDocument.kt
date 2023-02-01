@@ -34,7 +34,26 @@ data class DIDDocument(
         val type: String,
         val publicKeyJwk: Map<String, String>? = null,
         val publicKeyMultibase: String? = null
-    )
+    ) {
+        companion object {
+            fun getCurveByType(type: String): Curve {
+                return when (type) {
+                    Curve.X25519.value -> {
+                        Curve.X25519
+                    }
+                    Curve.ED25519.value -> {
+                        Curve.ED25519
+                    }
+                    Curve.SECP256K1.value -> {
+                        Curve.SECP256K1
+                    }
+                    else -> {
+                        throw CastorError.InvalidKeyError()
+                    }
+                }
+            }
+        }
+    }
 
     @Serializable
     data class Service(

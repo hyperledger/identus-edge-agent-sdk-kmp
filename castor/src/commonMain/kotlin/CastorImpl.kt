@@ -8,6 +8,7 @@ import io.iohk.atala.prism.domain.models.CastorError
 import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.DIDDocument
+import io.iohk.atala.prism.domain.models.DIDDocument.VerificationMethod.Companion.getCurveByType
 import io.iohk.atala.prism.domain.models.DIDResolver
 import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.KeyPair
@@ -116,21 +117,20 @@ open class CastorImpl : Castor {
 
     override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
         val document = resolveDID(did.toString())
-        val keyPairs: List<PublicKey> = mutableListOf()
+        val keyPairs: MutableList<PublicKey> = mutableListOf()
 
         document.coreProperties
             .filterIsInstance<DIDDocument.Authentication>()
             .flatMap { it.verificationMethods.toList() }
             .mapNotNull {
-                if (it.type == VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value) {
-                    it.publicKeyMultibase?.let { it1 ->
-                        keyPairs + PublicKey(
-                            curve = KeyCurve(Curve.ED25519),
-                            value = it1.encodeToByteArray()
+                it.publicKeyMultibase?.let { publicKey ->
+                    keyPairs.add(
+                        PublicKey(
+                            curve = KeyCurve(getCurveByType(it.type)),
+                            value = publicKey.encodeToByteArray()
                         )
-                    }
+                    )
                 }
-                //TODO: When we have PrismDID, we must be able to map to secp256K1 for signature verification
             }
 
         if (keyPairs.isEmpty()) {
