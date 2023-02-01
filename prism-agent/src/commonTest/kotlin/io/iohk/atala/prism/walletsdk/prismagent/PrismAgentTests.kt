@@ -1,41 +1,56 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DID
+import io.iohk.atala.prism.domain.models.KeyCurve
+import io.iohk.atala.prism.domain.models.Message
 import io.iohk.atala.prism.domain.models.PrismAgentError
+import io.iohk.atala.prism.domain.models.PrivateKey
 import io.iohk.atala.prism.domain.models.Seed
+import io.iohk.atala.prism.domain.models.Signature
 import io.ktor.http.HttpStatusCode
+import io.ktor.utils.io.core.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertFailsWith
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class PrismAgentTests {
 
+    lateinit var apolloMock: ApolloMock
+    lateinit var castorMock: CastorMock
+    lateinit var plutoMock: PlutoMock
+
+    @BeforeTest
+    fun setup() {
+        apolloMock = ApolloMock()
+        castorMock = CastorMock()
+        plutoMock = PlutoMock()
+    }
+
     @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val apollo = ApolloMock()
-        val castor = CastorMock()
-        val pluto = PlutoMock()
         val seed = Seed(ByteArray(0))
         val validDID = DID("did", "test", "123")
-        castor.createPrismDIDReturn = validDID
+        castorMock.createPrismDIDReturn = validDID
         val agent = PrismAgent(
-            apollo = apollo,
-            castor = castor,
-            pluto = pluto,
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
             seed = seed
         )
         val newDID = agent.createNewPrismDID()
         assertEquals(newDID, validDID)
-        assertEquals(newDID, pluto.storedPrismDID.first())
+        assertEquals(newDID, plutoMock.storedPrismDID.first())
     }
 
     @Test
     fun testCreateNewPeerDID_shouldCreateNewDID_whenCalled() = runTest {
-        val apolloMock = ApolloMock()
-        val castorMock = CastorMock()
-        val plutoMock = PlutoMock()
         val validDID = DID("did", "test", "123")
         castorMock.createPeerDIDReturn = validDID
         val agent = PrismAgent(apolloMock, castorMock, plutoMock)
@@ -47,9 +62,6 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldAcceptOnboardingInvitation_whenStatusIs200() = runTest {
-        val apolloMock = ApolloMock()
-        val castorMock = CastorMock()
-        val plutoMock = PlutoMock()
         val agent = PrismAgent(
             apollo = apolloMock,
             castor = castorMock,
@@ -69,9 +81,6 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenStatusIsNot200() = runTest {
-        val apolloMock = ApolloMock()
-        val castorMock = CastorMock()
-        val plutoMock = PlutoMock()
         val agent = PrismAgent(
             apollo = apolloMock,
             castor = castorMock,
@@ -93,9 +102,6 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenBodyIsWrong() = runTest {
-        val apolloMock = ApolloMock()
-        val castorMock = CastorMock()
-        val plutoMock = PlutoMock()
         val agent = PrismAgent(
             apollo = apolloMock,
             castor = castorMock,
@@ -112,5 +118,43 @@ class PrismAgentTests {
         assertFailsWith<PrismAgentError.unknownInvitationTypeError> {
             agent.parseInvitation(invitationString)
         }
+    }
+
+    @Test
+    fun testPrismAgentSignWith_whenNoPrivateKeyAvailable_thenThrowCannotFindDIDPrivateKey() = runTest {
+        val agent = PrismAgent(
+            apolloMock,
+            castorMock,
+            plutoMock
+        )
+
+        plutoMock.getDIDPrivateKeysReturn = flow {
+            emit(null)
+        }
+
+        val did = DID("did", "peer", "asdf1234asdf1234")
+        val messageString = "This is a message"
+        assertFailsWith(PrismAgentError.cannotFindDIDPrivateKey::class, null) {
+            agent.signWith(did, messageString.toByteArray())
+        }
+    }
+
+    @Test
+    fun testPrismAgentSignWith_whenPrivateKeyAvailable_thenSignatureReturned() = runTest {
+        val agent = PrismAgent(
+            apolloMock,
+            castorMock,
+            plutoMock
+        )
+
+        plutoMock.getDIDPrivateKeysReturn = flow {
+            val privateKeys = arrayOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
+            emit(privateKeys)
+        }
+
+        val did = DID("did", "peer", "asdf1234asdf1234")
+        val messageString = "This is a message"
+
+        assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
     }
 }

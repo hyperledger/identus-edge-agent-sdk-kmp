@@ -9,6 +9,7 @@ import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.KeyCurve
 import io.iohk.atala.prism.domain.models.PrismAgentError
 import io.iohk.atala.prism.domain.models.Seed
+import io.iohk.atala.prism.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.ApiImpl
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.HttpClient
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding.PrismOnboardingInvitation
@@ -16,8 +17,14 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapConcat
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.single
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -98,7 +105,10 @@ final class PrismAgent {
             // TODO: This still needs to be done update the key List
         }
 
-        pluto.storePeerDID(did = did, privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey))
+        pluto.storePeerDID(
+            did = did,
+            privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey)
+        )
 
         return did
     }
@@ -129,6 +139,14 @@ final class PrismAgent {
         if (response.status.value != 200) {
             throw PrismAgentError.failedToOnboardError()
         }
+    }
+
+    suspend fun signWith(did: DID, message: ByteArray): Signature {
+        return pluto.getDIDPrivateKeysByDID(did)
+            .firstOrNull()
+            ?.let { privateKeys ->
+                apollo.signMessage(privateKeys.first(), message)
+            } ?: throw PrismAgentError.cannotFindDIDPrivateKey()
     }
 
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
