@@ -51,6 +51,7 @@ sealed class PolluxError(message: String? = null) : Throwable(message) {
 sealed class PrismAgentError(message: String? = null) : Throwable(message) {
     class invalidURLError(message: String? = null) : PrismAgentError(message)
     class cannotFindDIDKeyPairIndex(message: String? = null) : PrismAgentError(message)
+    class cannotFindDIDPrivateKey(message: String? = null) : PrismAgentError(message)
     class invitationHasNoFromDIDError(message: String? = null) : PrismAgentError(message)
     class noValidServiceEndpointError(message: String? = null) : PrismAgentError(message)
     class invitationIsInvalidError(message: String? = null) : PrismAgentError(message)
