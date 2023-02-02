@@ -155,8 +155,8 @@ class PlutoMock : Pluto {
     }
 
     override fun getAllMessagesSent(): Flow<Array<Message>> {
-       wasGetAllMessagesSentCalled = true
-       return getAllMessagesSentReturn
+        wasGetAllMessagesSentCalled = true
+        return getAllMessagesSentReturn
     }
 
     override fun getAllMessagesReceived(): Flow<Array<Message>> {

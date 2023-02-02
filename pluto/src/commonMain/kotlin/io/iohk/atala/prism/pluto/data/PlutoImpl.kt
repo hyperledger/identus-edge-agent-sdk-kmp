@@ -80,13 +80,15 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int) {
-        db.privateKeyQueries.insert(PrivateKeyDB(
-            UUID.randomUUID4().toString(),
-            privateKey.keyCurve.curve.value,
-            privateKey.value.toString(),
-            keyPathIndex,
-            did.methodId
-        ))
+        db.privateKeyQueries.insert(
+            PrivateKeyDB(
+                UUID.randomUUID4().toString(),
+                privateKey.keyCurve.curve.value,
+                privateKey.value.toString(),
+                keyPathIndex,
+                did.methodId
+            )
+        )
     }
 
     override fun storeMessages(messages: Array<Message>) {
