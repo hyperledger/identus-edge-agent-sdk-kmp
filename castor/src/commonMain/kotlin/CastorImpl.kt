@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.castor.did.DIDParser
+import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.domain.models.CastorError
@@ -23,7 +24,8 @@ import kotlinx.serialization.json.Json
 
 open class CastorImpl : Castor {
     private var resolvers: Array<DIDResolver> = arrayOf(
-        PeerDIDResolver()
+        PeerDIDResolver(),
+        LongFormPrismDIDResolver()
     )
 
     override fun parseDID(did: String): DID {

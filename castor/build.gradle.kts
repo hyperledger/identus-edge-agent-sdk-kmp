@@ -81,6 +81,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("io.iohk.atala.prism:didpeer:1.0.0-alpha")
+                implementation("io.iohk.atala.prism:apollo:1.0.0-alpha")
                 api("io.iohk:pbandk-runtime:0.20.7") {
                     exclude("com.google.protobuf")
                 }

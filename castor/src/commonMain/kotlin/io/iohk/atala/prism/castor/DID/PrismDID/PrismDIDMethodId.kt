@@ -3,7 +3,7 @@ package io.iohk.atala.prism.castor.did.prismdid
 import io.iohk.atala.prism.domain.models.CastorError
 
 data class PrismDIDMethodId(private val value: String) {
-    private val sections: List<String>
+    val sections: List<String>
         get() = value.split(":").map { it }
 
     override fun toString(): String {
