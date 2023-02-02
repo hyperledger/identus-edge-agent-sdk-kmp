@@ -1,8 +1,7 @@
 package io.iohk.atala.prism.castor
 
+import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DIDDocument
-import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAgreement
-import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAuthentication
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -31,7 +30,7 @@ class DIDResolverTest {
                             assertEquals(verificationMethod.id.did.toString(), didExample)
                             assertEquals(
                                 verificationMethod.type,
-                                VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value
+                                Curve.ED25519.value
                             )
                         }
                     }
@@ -44,7 +43,7 @@ class DIDResolverTest {
                             assertEquals(verificationMethod.id.did.toString(), didExample)
                             assertEquals(
                                 verificationMethod.type,
-                                VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020.value
+                                Curve.X25519.value
                             )
                         }
                     }

@@ -24,7 +24,7 @@ class ApolloMock : Apollo {
     )
     var publicKeyReturn: PublicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0))
     var signMessageReturn: Signature = Signature(ByteArray(0))
-    var verifySignatureReturn: Boolean = false
+    var verifySignatureReturn: Boolean = true
     var compressedPublicKeyDataReturn: CompressedPublicKey = CompressedPublicKey(
         PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
         ByteArray(0)
