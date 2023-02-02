@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.castor
+package io.iohk.atala.prism.castor.did
 
 import io.iohk.atala.prism.castor.antlrgrammar.DIDUrlAbnfBaseListener
 import io.iohk.atala.prism.castor.antlrgrammar.DIDUrlAbnfParser

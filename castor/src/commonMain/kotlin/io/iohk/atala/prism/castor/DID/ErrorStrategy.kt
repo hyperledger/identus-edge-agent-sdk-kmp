@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.castor
+package io.iohk.atala.prism.castor.did
 
 import org.antlr.v4.kotlinruntime.DefaultErrorStrategy
 import org.antlr.v4.kotlinruntime.Parser

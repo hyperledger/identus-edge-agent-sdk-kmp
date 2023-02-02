@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers
 
-import io.iohk.atala.prism.castor.DIDParser
-import io.iohk.atala.prism.castor.DIDUrlParser
+import io.iohk.atala.prism.castor.did.DIDParser
+import io.iohk.atala.prism.castor.did.DIDUrlParser
 import io.iohk.atala.prism.domain.models.DIDDocument
 import io.iohk.atala.prism.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.domain.models.DIDResolver

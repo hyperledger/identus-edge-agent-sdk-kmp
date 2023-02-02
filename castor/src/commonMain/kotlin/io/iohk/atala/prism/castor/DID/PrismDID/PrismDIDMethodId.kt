@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.castor
+package io.iohk.atala.prism.castor.did.prismdid
 
 import io.iohk.atala.prism.domain.models.CastorError
 
