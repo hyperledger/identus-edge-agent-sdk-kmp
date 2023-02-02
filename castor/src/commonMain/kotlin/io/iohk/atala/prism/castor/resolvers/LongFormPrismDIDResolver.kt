@@ -2,7 +2,9 @@ package io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers
 
 import io.iohk.atala.prism.apollo.base64.base64Encoded
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.hashing.SHA256
+import io.iohk.atala.prism.apollo.hashing.internal.toHexString
 import io.iohk.atala.prism.castor.did.DIDParser
 import io.iohk.atala.prism.castor.did.prismdid.PrismDIDPublicKey
 import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.did.prismdid.LongFormPrismDID
@@ -26,7 +28,7 @@ class LongFormPrismDIDResolver(
         val prismDID = LongFormPrismDID(did)
 
         val data = try {
-            prismDID.encodedState.base64UrlDecoded
+            prismDID.encodedState.base64UrlEncoded
         } catch (e: Throwable) {
             // TODO: Add logger here
             throw CastorError.InitialStateOfDIDChanged(e.message)
@@ -66,15 +68,16 @@ class LongFormPrismDIDResolver(
     private fun decodeState(
         did: DID,
         stateHash: String,
-        encodedData: ByteArray
+        encodedData: ByteArray,
     ): Pair<Map<String, DIDDocument.VerificationMethod>, List<DIDDocument.Service>> {
+
         val sha256 = SHA256()
 
         sha256.update(encodedData)
 
-        val verifyEncodedState = sha256.digest().toString()
+        val verifyEncodedState = sha256.digest()
 
-        require(stateHash == verifyEncodedState) {
+        require(stateHash.encodeToByteArray() == verifyEncodedState) {
             throw CastorError.InitialStateOfDIDChanged()
         }
 
