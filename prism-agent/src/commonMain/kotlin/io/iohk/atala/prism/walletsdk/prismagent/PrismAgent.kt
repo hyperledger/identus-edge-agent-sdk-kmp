@@ -77,7 +77,9 @@ final class PrismAgent {
             .map {
                 index = keyPathIndex ?: it
                 val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
-                castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
+                val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
+                pluto.storePrivateKeys(keyPair.privateKey, did, index)
+                return@map did
             }
             .first()
         pluto.storePrismDID(did = newDID, keyPathIndex = index, alias = alias)
