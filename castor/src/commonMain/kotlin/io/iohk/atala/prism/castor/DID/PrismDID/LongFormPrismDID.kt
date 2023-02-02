@@ -25,5 +25,4 @@ data class LongFormPrismDID(val did: DID) {
         this.stateHash = stateHash
         this.encodedState = encodedState
     }
-
 }

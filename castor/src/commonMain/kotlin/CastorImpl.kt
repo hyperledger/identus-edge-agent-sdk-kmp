@@ -29,15 +29,16 @@ import kotlinx.serialization.json.Json
 
 open class CastorImpl : Castor {
     private val apollo: Apollo
-    private var resolvers: Array<DIDResolver> = arrayOf(
-        PeerDIDResolver(),
-        LongFormPrismDIDResolver()
-    )
+    private var resolvers: Array<DIDResolver>
 
     constructor(
         apollo: Apollo? = null,
     ) {
         this.apollo = apollo ?: ApolloImpl()
+        this.resolvers = arrayOf(
+            PeerDIDResolver(),
+            LongFormPrismDIDResolver(this.apollo)
+        )
     }
 
     override fun parseDID(did: String): DID {

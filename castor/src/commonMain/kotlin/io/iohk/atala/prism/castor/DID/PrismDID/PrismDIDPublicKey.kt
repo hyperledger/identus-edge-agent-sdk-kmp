@@ -12,9 +12,11 @@ class PrismDIDPublicKey {
     enum class Usage(val value: String) {
         MASTER_KEY("masterKey"),
         ISSUING_KEY("issuingKey"),
-        COMMUNICATION_KEY("communicationKey"),
         AUTHENTICATION_KEY("authenticationKey"),
         REVOCATION_KEY("revocationKey"),
+        CAPABILITY_DELEGATION_KEY("capabilityDelegationKey"),
+        CAPABILITY_INVOCATION_KEY("capabilityInvocationKey"),
+        KEY_AGREEMENT_KEY("keyAgreementKey"),
         UNKNOWN_KEY("unknownKey");
 
         val defaultId: String
@@ -24,9 +26,11 @@ class PrismDIDPublicKey {
             return when (this) {
                 MASTER_KEY -> KeyUsage.MASTER_KEY
                 ISSUING_KEY -> KeyUsage.ISSUING_KEY
-                COMMUNICATION_KEY -> KeyUsage.COMMUNICATION_KEY
                 AUTHENTICATION_KEY -> KeyUsage.AUTHENTICATION_KEY
                 REVOCATION_KEY -> KeyUsage.REVOCATION_KEY
+                CAPABILITY_DELEGATION_KEY -> KeyUsage.CAPABILITY_DELEGATION_KEY
+                CAPABILITY_INVOCATION_KEY -> KeyUsage.CAPABILITY_INVOCATION_KEY
+                KEY_AGREEMENT_KEY -> KeyUsage.KEY_AGREEMENT_KEY
                 UNKNOWN_KEY -> KeyUsage.UNKNOWN_KEY
             }
         }
@@ -35,9 +39,11 @@ class PrismDIDPublicKey {
             return when (this) {
                 MASTER_KEY -> "master$index"
                 ISSUING_KEY -> "issuing$index"
-                COMMUNICATION_KEY -> "communication$index"
                 AUTHENTICATION_KEY -> "authentication$index"
                 REVOCATION_KEY -> "revocation$index"
+                CAPABILITY_DELEGATION_KEY -> "capabilityDelegation$index"
+                CAPABILITY_INVOCATION_KEY -> "capabilityInvocation$index"
+                KEY_AGREEMENT_KEY -> "keyAgreement$index"
                 UNKNOWN_KEY -> "unknown$index"
             }
         }
@@ -85,9 +91,11 @@ fun KeyUsage.fromProto(): PrismDIDPublicKey.Usage {
     return when (this) {
         is KeyUsage.MASTER_KEY -> PrismDIDPublicKey.Usage.MASTER_KEY
         is KeyUsage.ISSUING_KEY -> PrismDIDPublicKey.Usage.ISSUING_KEY
-        is KeyUsage.COMMUNICATION_KEY -> PrismDIDPublicKey.Usage.COMMUNICATION_KEY
         is KeyUsage.AUTHENTICATION_KEY -> PrismDIDPublicKey.Usage.AUTHENTICATION_KEY
         is KeyUsage.REVOCATION_KEY -> PrismDIDPublicKey.Usage.REVOCATION_KEY
+        is KeyUsage.CAPABILITY_DELEGATION_KEY -> PrismDIDPublicKey.Usage.CAPABILITY_DELEGATION_KEY
+        is KeyUsage.CAPABILITY_INVOCATION_KEY -> PrismDIDPublicKey.Usage.CAPABILITY_INVOCATION_KEY
+        is KeyUsage.KEY_AGREEMENT_KEY -> PrismDIDPublicKey.Usage.KEY_AGREEMENT_KEY
         is KeyUsage.UNKNOWN_KEY -> PrismDIDPublicKey.Usage.UNKNOWN_KEY
         is KeyUsage.UNRECOGNIZED -> PrismDIDPublicKey.Usage.UNKNOWN_KEY
     }
