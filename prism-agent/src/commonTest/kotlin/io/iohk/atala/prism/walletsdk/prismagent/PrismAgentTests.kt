@@ -137,7 +137,7 @@ class PrismAgentTests {
 
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
-        assertFalse { plutoMock.wasGetDIDPrivateKeysByDIDCalled}
+        assertFalse { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
         assertFailsWith(PrismAgentError.cannotFindDIDPrivateKey::class, null) {
             agent.signWith(did, messageString.toByteArray())
         }
@@ -160,6 +160,6 @@ class PrismAgentTests {
         val messageString = "This is a message"
 
         assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
-        assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled}
+        assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
     }
 }

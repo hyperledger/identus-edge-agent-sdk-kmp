@@ -96,7 +96,6 @@ class PlutoMock : Pluto {
 
     override fun storeCredential(credential: VerifiableCredential) {
         wasStoreCredentialCalled = true
-
     }
 
     override fun getAllPrismDIDs(): Flow<Array<PrismDIDInfo>> {
@@ -117,7 +116,6 @@ class PlutoMock : Pluto {
         wasGetPrismLastKeyPathIndexCalled = true
         return getPrismLastKeyPathIndexReturn
     }
-
 
     override fun getAllPeerDIDs(): Flow<Array<PeerDID>> {
         wasGetAllPeerDIDsCalled = true
