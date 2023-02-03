@@ -15,6 +15,8 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class PrismAgentTests {
@@ -44,6 +46,9 @@ class PrismAgentTests {
         val newDID = agent.createNewPrismDID()
         assertEquals(newDID, validDID)
         assertEquals(newDID, plutoMock.storedPrismDID.first())
+        assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
+        assertTrue { plutoMock.wasStorePrivateKeysCalled }
+        assertTrue { plutoMock.wasStorePrismDIDCalled }
     }
 
     @Test
@@ -55,6 +60,7 @@ class PrismAgentTests {
 
         assertEquals(newDID, validDID)
         assertEquals(newDID, plutoMock.storedPeerDID.first())
+        assertTrue { plutoMock.wasStorePeerDIDCalled }
     }
 
     @Test
@@ -131,6 +137,7 @@ class PrismAgentTests {
 
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
+        assertFalse { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
         assertFailsWith(PrismAgentError.cannotFindDIDPrivateKey::class, null) {
             agent.signWith(did, messageString.toByteArray())
         }
@@ -153,5 +160,6 @@ class PrismAgentTests {
         val messageString = "This is a message"
 
         assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
+        assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
     }
 }
