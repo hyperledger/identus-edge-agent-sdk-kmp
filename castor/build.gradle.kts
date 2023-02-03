@@ -73,12 +73,18 @@ kotlin {
         }
         val commonMain by getting {
             dependsOn(commonAntlr)
+            kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
+            resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
+                implementation(project(":domain"))
+                implementation(project(":apollo"))
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("io.iohk.atala.prism:didpeer:1.0.0-alpha")
-                implementation(project(":apollo"))
-                implementation(project(":domain"))
+                implementation("io.iohk.atala.prism:apollo:1.0.0-alpha")
+                api("io.iohk:pbandk-runtime:0.20.7") {
+                    exclude("com.google.protobuf")
+                }
             }
         }
         val commonTest by getting {
@@ -218,5 +224,17 @@ tasks.matching {
         it.name == "compileKotlinJs" ||
         it.name == "compileKotlinJvm"
 }.all {
+    this.dependsOn(":protosLib:generateProto")
     this.dependsOn(antlrGenerationTask)
+}
+
+val buildProtoLibsGen by tasks.creating {
+    group = "build"
+    this.dependsOn(":protosLib:generateProto")
+}
+
+tasks.getByName("build") {
+    this.doFirst {
+        ":protosLib:generateProto"
+    }
 }

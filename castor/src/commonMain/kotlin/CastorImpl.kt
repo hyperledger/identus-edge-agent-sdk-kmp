@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.apollo.ApolloImpl
+import io.iohk.atala.prism.castor.did.DIDParser
+import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.domain.buildingBlocks.Castor
@@ -27,14 +29,16 @@ import kotlinx.serialization.json.Json
 
 open class CastorImpl : Castor {
     private val apollo: Apollo
-    private var resolvers: Array<DIDResolver> = arrayOf(
-        PeerDIDResolver()
-    )
+    private var resolvers: Array<DIDResolver>
 
     constructor(
         apollo: Apollo? = null,
     ) {
         this.apollo = apollo ?: ApolloImpl()
+        this.resolvers = arrayOf(
+            PeerDIDResolver(),
+            LongFormPrismDIDResolver(this.apollo)
+        )
     }
 
     override fun parseDID(did: String): DID {

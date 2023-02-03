@@ -8,7 +8,7 @@ data class DIDUrl(
 ) {
 
     fun string(): String {
-        return "${did}fragmentString"
+        return "${did}${fragmentString()}"
     }
 
     fun pathString(): String {

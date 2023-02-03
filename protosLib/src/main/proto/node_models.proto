@@ -30,9 +30,9 @@ enum KeyUsage {
     // to avoid malicious credentials being issued.
     ISSUING_KEY = 2;
 
-    // This key-type is used for end-to-end encrypted communication, whoever wants to send a message should
+    // This key-type is used to establish a shared symmetric key for secure end-to end communication
     // use this key-type to encrypt the content.
-    COMMUNICATION_KEY = 3;
+    KEY_AGREEMENT_KEY = 3;
 
     // This key-type is used to authenticate requests or logging into services.
     AUTHENTICATION_KEY = 4;
@@ -40,6 +40,14 @@ enum KeyUsage {
     // This key-type is used for revoking credentials only, it should be kept in a safe place
     // to avoid malicious credentials being issued.
     REVOCATION_KEY = 5;
+
+    // This key-type is used to specify a verification method that might be used by the DID subject to invoke a cryptographic capability,
+    // such as the authorization to update the DID Document.
+    CAPABILITY_INVOCATION_KEY = 6;
+
+    // This is used to specify a mechanism that might be used by the DID subject to delegate a cryptographic capability to another party,
+    // such as delegating the authority to access a specific HTTP API to a subordinate.
+    CAPABILITY_DELEGATION_KEY = 7;
 }
 
 /**
@@ -83,16 +91,18 @@ message PublicKey {
 message DIDData {
     string id = 1; // The DID suffix, where DID is in form did:prism:[DID suffix]
     repeated PublicKey public_keys = 2; // The keys that belong to this DID Document.
+    repeated Service services = 3; // The list of services that belong to this DID Document.
 }
 
 // The operation to create a public DID.
 message CreateDIDOperation {
-    DIDCreationData did_data = 1; // DIDCreationData with public keys
+    DIDCreationData did_data = 1; // DIDCreationData with public keys and services
 
     // The data necessary to create a DID.
     message DIDCreationData {
         reserved 1; // Removed DID id field which is empty on creation
         repeated PublicKey public_keys = 2; // The keys that belong to this DID Document.
+        repeated Service services = 3; // The list of services that belong to this DID Document.
     }
 }
 
@@ -106,6 +116,21 @@ message RemoveKeyAction {
     string keyId = 1; // the key id to remove
 }
 
+message AddServiceAction {
+    Service service = 1;
+}
+
+message RemoveServiceAction {
+    string serviceId = 1;
+}
+
+message UpdateServiceAction {
+    string serviceId = 1; // scoped to the did, unique per did
+    string type = 2; // new type if provided
+    // Will replace all existing service endpoints of the service with provided ones
+    repeated string service_endpoints = 3;
+}
+
 // The potential details that can be updated in a DID.
 message UpdateDIDAction {
 
@@ -113,6 +138,9 @@ message UpdateDIDAction {
     oneof action {
         AddKeyAction add_key = 1; // Used to add a new key to the DID.
         RemoveKeyAction remove_key = 2; // Used to remove a key from the DID.
+        AddServiceAction add_service = 3; // Used to add a new service to a DID,
+        RemoveServiceAction remove_service = 4; // Used to remove an existing service from a DID,
+        UpdateServiceAction update_service = 5; // Used to Update a list of service endpoints of a given service on a given DID.
     }
 }
 
@@ -245,3 +273,12 @@ message UpdateDIDOutput {}
 message RevokeCredentialsOutput {}
 message ProtocolVersionUpdateOutput {}
 message DeactivateDIDOutput {}
+
+message Service {
+    string id = 1;
+    string type = 2;
+
+    repeated string service_endpoint = 3;
+    LedgerData added_on = 4; // (when present) The ledger details related to the event that added the service.
+    LedgerData deleted_on = 5; // (when present) The ledger details related to the event that revoked the service.
+}

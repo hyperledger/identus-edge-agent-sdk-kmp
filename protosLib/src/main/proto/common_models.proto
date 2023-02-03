@@ -105,4 +105,3 @@ enum OperationStatus {
     CONFIRMED_AND_APPLIED = 3; // The operation has been successfully applied to the PRISM.
     CONFIRMED_AND_REJECTED = 4; // The operation has been processed by PRISM, but rejected because of some error.
 }
-

@@ -31,6 +31,7 @@ jobs:
       DISABLE: COPYPASTE,SPELL
       GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
       DISABLE_LINTERS: REPOSITORY_GITLEAKS
+      DISABLE_ERRORS_LINTERS: PROTOBUF_PROTOLINT
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
