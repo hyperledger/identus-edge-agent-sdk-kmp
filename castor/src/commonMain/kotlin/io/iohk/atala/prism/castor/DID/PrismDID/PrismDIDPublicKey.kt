@@ -19,8 +19,7 @@ class PrismDIDPublicKey {
         KEY_AGREEMENT_KEY("keyAgreementKey"),
         UNKNOWN_KEY("unknownKey");
 
-        val defaultId: String
-            get() = id(0)
+        val defaultId: String get() = id(0)
 
         fun toProto(): KeyUsage {
             return when (this) {
