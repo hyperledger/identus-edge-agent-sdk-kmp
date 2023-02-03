@@ -79,7 +79,7 @@ fun CompressedPublicKey.toProto(): CompressedECKeyData {
     )
 }
 
-fun PrismDIDPublicKey.Usage.id(index:Int): String {
+fun PrismDIDPublicKey.Usage.id(index: Int): String {
     return when (this) {
         PrismDIDPublicKey.Usage.MASTER_KEY -> "master$index"
         PrismDIDPublicKey.Usage.ISSUING_KEY -> "issuing$index"

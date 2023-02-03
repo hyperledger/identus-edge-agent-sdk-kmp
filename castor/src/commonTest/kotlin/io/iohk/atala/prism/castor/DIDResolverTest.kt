@@ -1,5 +1,6 @@
+package io.iohk.atala.prism.castor
+
 import io.iohk.atala.prism.apollo.ApolloMock
-import io.iohk.atala.prism.castor.CastorImpl
 import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DIDDocument
 import kotlinx.coroutines.ExperimentalCoroutinesApi

@@ -1,4 +1,5 @@
-import io.iohk.atala.prism.castor.CastorImpl
+package io.iohk.atala.prism.castor
+
 import io.iohk.atala.prism.domain.models.CastorError
 import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DIDDocument

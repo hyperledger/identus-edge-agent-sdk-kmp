@@ -1,3 +1,5 @@
+package io.iohk.atala.prism.castor
+
 import io.iohk.atala.prism.castor.did.DIDUrlParser
 import kotlin.test.Test
 import kotlin.test.assertContentEquals

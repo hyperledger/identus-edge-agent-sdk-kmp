@@ -1,3 +1,5 @@
+package io.iohk.atala.prism.castor
+
 import io.iohk.atala.prism.castor.did.prismdid.PrismDIDMethodId
 import io.iohk.atala.prism.domain.models.CastorError
 import kotlinx.coroutines.ExperimentalCoroutinesApi

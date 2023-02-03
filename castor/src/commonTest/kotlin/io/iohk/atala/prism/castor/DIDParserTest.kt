@@ -1,3 +1,5 @@
+package io.iohk.atala.prism.castor
+
 import io.iohk.atala.prism.castor.did.DIDParser
 import io.iohk.atala.prism.castor.did.InvalidDIDStringError
 import kotlin.test.Test
