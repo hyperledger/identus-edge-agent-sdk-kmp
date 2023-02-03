@@ -79,6 +79,18 @@ class PlutoImpl(connection: DbConnection) : Pluto {
         )
     }
 
+    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int) {
+        db.privateKeyQueries.insert(
+            PrivateKeyDB(
+                UUID.randomUUID4().toString(),
+                privateKey.keyCurve.curve.value,
+                privateKey.value.toString(),
+                keyPathIndex,
+                did.methodId
+            )
+        )
+    }
+
     override fun storeMessages(messages: Array<Message>) {
         messages.map { message ->
             storeMessage(message)
@@ -195,7 +207,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getPair(did: DID): Flow<Array<DIDPair>?> {
+    override fun getPairByDID(did: DID): Flow<Array<DIDPair>?> {
         return db.dIDPairQueries.fetchDIDPairByDID(did.toString())
             .asFlow()
             .mapToList()
@@ -206,7 +218,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getPair(name: String): Flow<DIDPair?> {
+    override fun getPairByName(name: String): Flow<DIDPair?> {
         return db.dIDPairQueries.fetchDIDPairByName(name)
             .asFlow()
             .mapToOne()

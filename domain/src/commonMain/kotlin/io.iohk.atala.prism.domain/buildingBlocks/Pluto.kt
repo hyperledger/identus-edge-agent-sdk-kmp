@@ -26,6 +26,8 @@ interface Pluto {
 
     fun storeMessages(messages: Array<Message>)
 
+    fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int)
+
     fun storeMediator(mediator: DID, host: DID, routing: DID)
 
     fun storeCredential(credential: VerifiableCredential)
@@ -46,9 +48,9 @@ interface Pluto {
 
     fun getAllDidPairs(): Flow<Array<DIDPair>>
 
-    fun getPair(did: DID): Flow<Array<DIDPair>?>
+    fun getPairByDID(did: DID): Flow<Array<DIDPair>?>
 
-    fun getPair(name: String): Flow<DIDPair?>
+    fun getPairByName(name: String): Flow<DIDPair?>
 
     fun getAllMessages(): Flow<Array<Message>>
 
