@@ -1,7 +1,13 @@
 package io.iohk.atala.prism.castor
 
 import io.iohk.atala.prism.apollo.ApolloImpl
+import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.apollo.hashing.SHA256
+import io.iohk.atala.prism.apollo.hashing.internal.toHexString
 import io.iohk.atala.prism.castor.did.DIDParser
+import io.iohk.atala.prism.castor.did.prismdid.PrismDIDMethodId
+import io.iohk.atala.prism.castor.did.prismdid.PrismDIDPublicKey
+import io.iohk.atala.prism.castor.did.prismdid.defaultId
 import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.domain.buildingBlocks.Apollo
@@ -24,8 +30,12 @@ import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAgreement
 import io.iohk.atala.prism.mercury.didpeer.VerificationMethodTypeAuthentication
 import io.iohk.atala.prism.mercury.didpeer.core.toJsonElement
 import io.iohk.atala.prism.mercury.didpeer.createPeerDIDNumalgo2
+import io.iohk.atala.prism.protos.AtalaOperation
+import io.iohk.atala.prism.protos.CreateDIDOperation
+import io.iohk.atala.prism.protos.Service
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import pbandk.encodeToByteArray
 
 open class CastorImpl : Castor {
     private val apollo: Apollo
@@ -46,7 +56,46 @@ open class CastorImpl : Castor {
     }
 
     override fun createPrismDID(masterPublicKey: PublicKey, services: Array<DIDDocument.Service>?): DID {
-        TODO("Not yet implemented")
+
+        val atalaOperation = AtalaOperation(
+            operation = AtalaOperation.Operation.CreateDid(
+                CreateDIDOperation(
+                    didData = CreateDIDOperation.DIDCreationData(
+                        publicKeys = listOf(
+                            PrismDIDPublicKey(
+                                apollo = apollo,
+                                id = PrismDIDPublicKey.Usage.MASTER_KEY.defaultId(),
+                                usage = PrismDIDPublicKey.Usage.MASTER_KEY,
+                                keyData = masterPublicKey
+                            ).toProto()
+                        ),
+                        services = services?.map {
+                            Service(
+                                id = it.id,
+                                type = it.type.first(),
+                                serviceEndpoint = listOf(it.serviceEndpoint.uri)
+                            )
+                        } ?: emptyList()
+                    )
+                )
+            )
+        )
+
+        val encodedState = atalaOperation.encodeToByteArray()
+        val stateHash = SHA256().digest(encodedState).toHexString()
+        val base64State = encodedState.base64UrlEncoded
+        val methodSpecificId = PrismDIDMethodId(
+            sections = listOf(
+                stateHash,
+                base64State
+            )
+        )
+
+        return DID(
+            schema = "did",
+            method = "prism",
+            methodId = methodSpecificId.toString()
+        )
     }
 
     @Throws(CastorError.InvalidKeyError::class)

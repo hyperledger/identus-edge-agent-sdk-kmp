@@ -104,3 +104,7 @@ fun PrismDIDPublicKey.Usage.toProto(): KeyUsage {
         PrismDIDPublicKey.Usage.UNKNOWN_KEY -> KeyUsage.UNKNOWN_KEY
     }
 }
+
+fun PrismDIDPublicKey.Usage.defaultId(): String {
+    return this.id(0)
+}
