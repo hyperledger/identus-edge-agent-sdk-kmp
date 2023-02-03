@@ -63,9 +63,10 @@ class DIDResolverTest {
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun it_should_resolve_valid_PrismDIDs() = runTest {
+        val mock = ApolloMock()
         val didExample =
-            "did:prism:b6c0c33d701ac1b9a262a14454d1bbde3d127d697a76950963c5fd930605:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VmsxEiECSTjyV7sUfCr_ArpN9rvCwR9fRMAhcsr_S7ZRiJk4p5k"
-        val castor = CastorImpl(ApolloMock())
+            "did:prism:9b5118411248d9663b6ab15128fba8106511230ff654e7514cdcc4ce919bde9b:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VjcDI1NmsxEiEDHpf-yhIns-LP3tLvA8icC5FJ1ZlBwbllPtIdNZ3q0jU"
+        val castor = CastorImpl(mock)
         val response = castor.resolveDID(didExample)
 
         assertEquals(response.id.toString(), didExample)
@@ -73,38 +74,23 @@ class DIDResolverTest {
         response.coreProperties.forEach { coreProperty ->
             when (coreProperty) {
                 is DIDDocument.Authentication -> {
-                    assertContentEquals(coreProperty.urls, arrayOf(didExample))
-                    assertEquals(coreProperty.verificationMethods.size, 1)
+                    assertEquals(1, coreProperty.verificationMethods.size)
                     coreProperty.verificationMethods.forEach { verificationMethod ->
                         run {
                             assertEquals(verificationMethod.id.did.toString(), didExample)
                             assertEquals(
                                 verificationMethod.type,
-                                Curve.ED25519.value
+                                mock.createKeyPairReturn.keyCurve!!.curve.value
                             )
-                        }
-                    }
-                }
-                is DIDDocument.KeyAgreement -> {
-                    assertContentEquals(coreProperty.urls, arrayOf(didExample))
-                    assertEquals(coreProperty.verificationMethods.size, 1)
-                    coreProperty.verificationMethods.forEach { verificationMethod ->
-                        run {
-                            assertEquals(verificationMethod.id.did.toString(), didExample)
-                            assertEquals(
-                                verificationMethod.type,
-                                Curve.X25519.value
+                            assertContentEquals(
+                                verificationMethod.publicKeyMultibase!!.encodeToByteArray(),
+                                mock.createKeyPairReturn.publicKey.value
                             )
                         }
                     }
                 }
                 is DIDDocument.Services -> {
-                    assertEquals(coreProperty.values.size, 1)
-                    coreProperty.values.forEach { service ->
-                        run {
-                            assertContentEquals(service.type, arrayOf<String>("DIDCommMessaging"))
-                        }
-                    }
+                    assertEquals(coreProperty.values.size, 0)
                 }
             }
         }

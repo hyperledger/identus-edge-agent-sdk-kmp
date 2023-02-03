@@ -1,8 +1,7 @@
 package io.iohk.atala.prism.castor.io.iohk.atala.prism.castor.resolvers
 
 import io.iohk.atala.prism.apollo.base64.base64Encoded
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.hashing.SHA256
 import io.iohk.atala.prism.apollo.hashing.internal.toHexString
 import io.iohk.atala.prism.castor.did.DIDParser
@@ -27,30 +26,27 @@ class LongFormPrismDIDResolver(
         val did = DIDParser.parse(didString)
         val prismDID = LongFormPrismDID(did)
 
-        val data = try {
-            prismDID.encodedState.base64UrlEncoded
+        val (verificationMethods, services) = try {
+            decodeState(
+                did = did,
+                stateHash = prismDID.stateHash,
+                encodedData = prismDID.encodedState.base64UrlDecodedBytes
+            )
         } catch (e: Throwable) {
             // TODO: Add logger here
             throw CastorError.InitialStateOfDIDChanged(e.message)
         }
 
-        val (verificationMethods, services) = decodeState(
-            did = did,
-            stateHash = prismDID.stateHash,
-            encodedData = data.encodeToByteArray()
-        )
+        val servicesProperty = DIDDocument.Services(services.toTypedArray())
+        val verificationMethodsProperty = DIDDocument.VerificationMethods(verificationMethods.values.toTypedArray())
+        val coreProperties = mutableListOf<DIDDocumentCoreProperty>()
 
         val authenticate = verificationMethods.entries.map {
             DIDDocument.Authentication(
                 urls = arrayOf(it.key),
-                verificationMethods = arrayOf()
+                verificationMethods = verificationMethods.values.toTypedArray()
             )
         }
-
-        val servicesProperty = DIDDocument.Services(services.toTypedArray())
-        val verificationMethodsProperty = DIDDocument.VerificationMethods(verificationMethods.values.toTypedArray())
-
-        val coreProperties = mutableListOf<DIDDocumentCoreProperty>()
 
         authenticate.forEach {
             coreProperties.add(it)
@@ -72,12 +68,10 @@ class LongFormPrismDIDResolver(
     ): Pair<Map<String, DIDDocument.VerificationMethod>, List<DIDDocument.Service>> {
 
         val sha256 = SHA256()
+        val verifyEncodedState = sha256.digest(encodedData)
+        val verifyEncodedStateHex = verifyEncodedState.toHexString()
 
-        sha256.update(encodedData)
-
-        val verifyEncodedState = sha256.digest()
-
-        require(stateHash.encodeToByteArray() == verifyEncodedState) {
+        require(stateHash == verifyEncodedStateHex) {
             throw CastorError.InitialStateOfDIDChanged()
         }
 
@@ -113,7 +107,7 @@ class LongFormPrismDIDResolver(
                     type = publicKey.keyData.curve.curve.value,
                     publicKeyMultibase = publicKey.keyData.value.base64Encoded
                 )
-                partialResult + (didUrl.toString() to method)
+                partialResult + (didUrl.string() to method)
             }
 
         return Pair(verificationMethods, services)

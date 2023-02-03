@@ -4,7 +4,8 @@ import io.iohk.atala.prism.castor.did.prismdid.PrismDIDMethodId
 import io.iohk.atala.prism.domain.models.CastorError
 import io.iohk.atala.prism.domain.models.DID
 
-data class LongFormPrismDID(val did: DID) {
+data class
+LongFormPrismDID(val did: DID) {
     private val prismMethodId: PrismDIDMethodId
     val stateHash: String
     val encodedState: String
