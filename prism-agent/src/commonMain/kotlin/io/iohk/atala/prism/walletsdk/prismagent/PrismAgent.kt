@@ -131,7 +131,6 @@ final class PrismAgent {
         return invite
     }
 
-
     suspend fun acceptInvitation(invitation: PrismOnboardingInvitation) {
         @Serializable
         data class SendDID(val did: String)
