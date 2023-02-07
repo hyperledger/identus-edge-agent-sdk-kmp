@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.domain.models.Curve
 import io.iohk.atala.prism.domain.models.DID
 import io.iohk.atala.prism.domain.models.KeyCurve
@@ -15,10 +14,6 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

@@ -1,8 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.models
 
 import io.iohk.atala.prism.domain.models.DID
-import io.iohk.atala.prism.domain.models.PrismAgentError
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -20,9 +18,7 @@ data class PrismOnboardingInvitation(
 ) : InvitationType() {
 
     init {
-        fromString?.let {
-            from = DID(fromString)
-        }
+        from = DID(fromString)
     }
 
     companion object {
