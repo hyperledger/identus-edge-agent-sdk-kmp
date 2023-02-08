@@ -12,7 +12,11 @@ import io.iohk.atala.prism.domain.models.Seed
 import io.iohk.atala.prism.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.ApiImpl
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.HttpClient
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.models.InvitationType
+import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.findProtocolTypeByValue
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
@@ -21,16 +25,14 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
 
 final class PrismAgent {
     enum class State {
         STOPED, STARTING, RUNNING, STOPING
     }
-
-    sealed class InvitationType
-
-    data class PrismOnboardingInvitation(val from: String, val endpoint: String, val ownDID: DID) : InvitationType()
 
     val seed: Seed
     var state = State.STOPED
@@ -112,12 +114,20 @@ final class PrismAgent {
 
     @Throws(PrismAgentError.unknownInvitationTypeError::class)
     suspend fun parseInvitation(str: String): InvitationType {
-        val invite = try {
-            parsePrismInvitation(str)
-        } catch (e: Throwable) {
-            println(e)
-            throw PrismAgentError.unknownInvitationTypeError()
+        val json = Json.decodeFromString<JsonObject>(str)
+        val typeString: String = if (json.containsKey("type")) {
+            json["type"].toString().trim('"')
+        } else {
+            ""
         }
+
+        val invite: InvitationType = when (findProtocolTypeByValue(typeString)) {
+            ProtocolType.PrismOnboarding -> parsePrismInvitation(str)
+            ProtocolType.Didcomminvitation -> parseOOBInvitation(str)
+            else ->
+                throw PrismAgentError.unknownInvitationTypeError()
+        }
+
         return invite
     }
 
@@ -127,10 +137,10 @@ final class PrismAgent {
 
         var response = api.request(
             HttpMethod.Post,
-            Url(invitation.endpoint),
+            Url(invitation.onboardEndpoint),
             mapOf(),
             mapOf(),
-            SendDID(invitation.ownDID.toString())
+            SendDID(invitation.from.toString())
         )
 
         if (response.status.value != 200) {
@@ -147,27 +157,35 @@ final class PrismAgent {
     }
 
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
-        val prismOnboarding = PrismOnboardingInvitation(str)
-        val url = prismOnboarding.body.onboardEndpoint
-        val did = createNewPeerDID(
-            arrayOf(
-                DIDDocument.Service(
-                    id = "#didcomm-1",
-                    type = arrayOf("DIDCommMessaging"),
-                    serviceEndpoint = DIDDocument.ServiceEndpoint(
-                        uri = url,
-                        accept = arrayOf("DIDCommMessaging"),
-                        routingKeys = arrayOf()
+        try {
+            val prismOnboarding = PrismOnboardingInvitation.prismOnboardingInvitationFromJsonString(str)
+            val url = prismOnboarding.onboardEndpoint
+            val did = createNewPeerDID(
+                arrayOf(
+                    DIDDocument.Service(
+                        id = "#didcomm-1",
+                        type = arrayOf("DIDCommMessaging"),
+                        serviceEndpoint = DIDDocument.ServiceEndpoint(
+                            uri = url,
+                            accept = arrayOf("DIDCommMessaging"),
+                            routingKeys = arrayOf()
+                        )
                     )
-                )
-            ),
-            true
-        )
+                ),
+                true
+            )
+            prismOnboarding.from = did
+            return prismOnboarding
+        } catch (e: Exception) {
+            throw PrismAgentError.unknownInvitationTypeError()
+        }
+    }
 
-        return PrismOnboardingInvitation(
-            from = prismOnboarding.body.from,
-            endpoint = url,
-            ownDID = did
-        )
+    private fun parseOOBInvitation(str: String): OutOfBandInvitation {
+        try {
+            return Json.decodeFromString(str)
+        } catch (e: Exception) {
+            throw PrismAgentError.unknownInvitationTypeError()
+        }
     }
 }

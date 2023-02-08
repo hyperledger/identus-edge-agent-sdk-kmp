@@ -7,6 +7,9 @@ import io.iohk.atala.prism.domain.models.PrismAgentError
 import io.iohk.atala.prism.domain.models.PrivateKey
 import io.iohk.atala.prism.domain.models.Seed
 import io.iohk.atala.prism.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.coroutines.flow.flow
@@ -73,13 +76,14 @@ class PrismAgentTests {
         )
         var invitationString = """
             {
-                "type":"Onboarding",
+                "type":"${ProtocolType.PrismOnboarding.value}",
                 "onboardEndpoint":"http://localhost/onboarding",
                 "from":"did:prism:b6c0c33d701ac1b9a262a14454d1bbde3d127d697a76950963c5fd930605:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VmsxEiECSTjyV7sUfCr_ArpN9rvCwR9fRMAhcsr_S7ZRiJk4p5k"
             }
         """
         val invitation = agent.parseInvitation(invitationString)
-        agent.acceptInvitation(invitation as PrismAgent.PrismOnboardingInvitation)
+        assertEquals(PrismOnboardingInvitation::class, invitation::class)
+        agent.acceptInvitation(invitation as PrismOnboardingInvitation)
     }
 
     @Test
@@ -92,14 +96,14 @@ class PrismAgentTests {
         )
         var invitationString = """
             {
-                "type":"Onboarding",
+                "type":"${ProtocolType.PrismOnboarding.value}",
                 "onboardEndpoint":"http://localhost/onboarding",
                 "from":"did:prism:b6c0c33d701ac1b9a262a14454d1bbde3d127d697a76950963c5fd930605:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VmsxEiECSTjyV7sUfCr_ArpN9rvCwR9fRMAhcsr_S7ZRiJk4p5k"
             }
         """
         val invitation = agent.parseInvitation(invitationString)
         assertFailsWith<PrismAgentError.failedToOnboardError> {
-            agent.acceptInvitation(invitation as PrismAgent.PrismOnboardingInvitation)
+            agent.acceptInvitation(invitation as PrismOnboardingInvitation)
         }
     }
 
@@ -113,7 +117,7 @@ class PrismAgentTests {
         )
         var invitationString = """
             {
-                "type":"Onboarding",
+                "type":"${ProtocolType.PrismOnboarding.value}",
                 "errorField":"http://localhost/onboarding",
                 "from":"did:prism:b6c0c33d701ac1b9a262a14454d1bbde3d127d697a76950963c5fd930605:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VmsxEiECSTjyV7sUfCr_ArpN9rvCwR9fRMAhcsr_S7ZRiJk4p5k"
             }
@@ -161,5 +165,66 @@ class PrismAgentTests {
 
         assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
         assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
+    }
+
+    @Test
+    fun testParseInvitation_whenOutOfBand_thenReturnsOutOfBandInvitationObject() = runTest {
+        val agent = PrismAgent(
+            apolloMock,
+            castorMock,
+            plutoMock
+        )
+
+        val invitationString = """
+            {
+              "type": "https://didcomm.org/out-of-band/2.0/invitation",
+              "id": "1234-1234-1234-1234",
+              "from": "did:peer:asdf42sf",
+              "body": {
+                "goal_code": "issue-vc",
+                "goal": "To issue a Faber College Graduate credential",
+                "accept": [
+                  "didcomm/v2",
+                  "didcomm/aip2;env=rfc587"
+                ]
+              }
+            }
+        """
+
+        val invitation = agent.parseInvitation(invitationString.trim())
+        assertEquals(OutOfBandInvitation::class, invitation::class)
+        val oobInvitation: OutOfBandInvitation = invitation as OutOfBandInvitation
+        assertEquals("https://didcomm.org/out-of-band/2.0/invitation", oobInvitation.type)
+        assertEquals(DID("did:peer:asdf42sf"), oobInvitation.from)
+        assertEquals(
+            OutOfBandInvitation.Body(
+                "issue-vc",
+                "To issue a Faber College Graduate credential",
+                arrayOf("didcomm/v2", "didcomm/aip2;env=rfc587")
+            ),
+            oobInvitation.body
+        )
+    }
+
+    @Test
+    fun testParseInvitation_whenOutOfBandWrongBody_thenThrowsUnknownInvitationTypeError() = runTest {
+        val agent = PrismAgent(
+            apolloMock,
+            castorMock,
+            plutoMock
+        )
+
+        val invitationString = """
+            {
+              "type": "https://didcomm.org/out-of-band/2.0/invitation",
+              "id": "1234-1234-1234-1234",
+              "from": "did:peer:asdf42sf",
+              "wrongBody": {}
+            }
+        """
+
+        assertFailsWith<PrismAgentError.unknownInvitationTypeError> {
+            agent.parseInvitation(invitationString.trim())
+        }
     }
 }
