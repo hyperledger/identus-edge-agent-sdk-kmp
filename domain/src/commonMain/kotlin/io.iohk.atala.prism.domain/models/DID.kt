@@ -1,18 +1,26 @@
 package io.iohk.atala.prism.domain.models
 
 import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
+import kotlin.js.JsName
 import kotlin.jvm.JvmStatic
 
 @Serializable
+@JsExport
 data class DID(
     val schema: String,
     val method: String,
     val methodId: String
 ) {
 
+    @JsName("fromString")
     constructor(
         string: String
-    ) : this(getSchemaFromString(string), getMethodFromString(string), getMethodIdFromString(string))
+    ) : this(
+        getSchemaFromString(string),
+        getMethodFromString(string),
+        getMethodIdFromString(string)
+    )
 
     override fun toString(): String {
         return "$schema:$method:$methodId"
