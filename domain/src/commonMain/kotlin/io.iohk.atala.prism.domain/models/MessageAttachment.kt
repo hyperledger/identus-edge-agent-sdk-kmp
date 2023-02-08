@@ -1,5 +1,8 @@
 package io.iohk.atala.prism.domain.models
 
+import kotlinx.serialization.Serializable
+import kotlin.js.JsExport
+
 interface AttachmentData
 
 data class AttachmentHeader(
@@ -48,16 +51,19 @@ data class AttachmentJsonData(
     val data: String
 ) : AttachmentData
 
+@Serializable
+@JsExport
 data class AttachmentDescriptor(
     val id: String,
     val mediaType: String? = null,
     val data: AttachmentData,
-    val filename: Array<String>,
+    val filename: Array<String>? = null,
     val format: String? = null,
     val lastModTime: String? = null, // Date format
     val byteCount: Int? = null,
     val description: String? = null
 ) : AttachmentData {
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
