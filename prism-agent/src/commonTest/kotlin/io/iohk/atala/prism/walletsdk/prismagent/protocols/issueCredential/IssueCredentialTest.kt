@@ -12,7 +12,7 @@ import kotlin.test.assertFailsWith
 class IssueCredentialTest {
 
     @Test
-    fun testWhenValidIssueMessageThenInitIssueCredential() {
+    fun testCredentialFromMessage_whenValidIssueMessage_thenInitIssueCredential() {
         val fromDID = DID.fromIndex(index = 0)
         val toDID = DID.fromIndex(index = 1)
         val validIssueCredential = IssueCredential(
