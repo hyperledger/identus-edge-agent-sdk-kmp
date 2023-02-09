@@ -83,9 +83,9 @@ data class IssueCredential(
                     formats = request.body.formats
                 ),
                 attachments = request.attachments,
-                thid = request.thid,
-                from = request.from,
-                to = request.to
+                thid = msg.id,
+                from = request.to,
+                to = request.from
             )
         }
     }

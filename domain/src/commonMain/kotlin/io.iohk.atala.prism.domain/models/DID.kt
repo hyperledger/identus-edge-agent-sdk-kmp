@@ -8,7 +8,7 @@ import kotlin.jvm.JvmStatic
 @Serializable
 @JsExport
 data class DID(
-    val schema: String? = "did",
+    val schema: String = "did",
     val method: String,
     val methodId: String
 ) {
@@ -21,7 +21,6 @@ data class DID(
         getMethodFromString(string),
         getMethodIdFromString(string)
     )
-
 
     override fun toString(): String {
         return "$schema:$method:$methodId"

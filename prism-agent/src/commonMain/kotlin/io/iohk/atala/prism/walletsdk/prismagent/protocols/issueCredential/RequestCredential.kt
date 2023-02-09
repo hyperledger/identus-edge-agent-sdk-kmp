@@ -44,7 +44,7 @@ data class RequestCredential(
                     fromMessage.from != null &&
                     fromMessage.to != null
             ) {
-                throw PrismAgentError.invalidIssueCredentialMessageError()
+                throw PrismAgentError.invalidRequestCredentialMessageError()
             }
 
             val fromDID = fromMessage.from!!

@@ -2,7 +2,6 @@ package io.iohk.atala.prism.walletsdk.prismagent.helpers
 
 import io.iohk.atala.prism.domain.models.DID
 
-
 fun DID.Companion.fromMethodAndMethodId(
     method: String?,
     methodId: String?
