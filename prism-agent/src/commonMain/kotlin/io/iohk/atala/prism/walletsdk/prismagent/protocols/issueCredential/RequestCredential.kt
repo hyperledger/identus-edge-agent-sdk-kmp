@@ -132,7 +132,6 @@ data class RequestCredential(
     }
 }
 
-
 inline fun <reified T : Serializable> RequestCredential.Companion.build(
     fromDID: DID,
     toDID: DID,

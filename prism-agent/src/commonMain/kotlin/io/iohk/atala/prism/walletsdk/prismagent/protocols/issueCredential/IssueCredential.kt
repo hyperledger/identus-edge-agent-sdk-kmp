@@ -51,7 +51,7 @@ data class IssueCredential(
     }
 
     companion object {
-        fun fromMessage(fromMessage: Message): OfferCredential {
+        fun fromMessage(fromMessage: Message): IssueCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommIssueCredential.value &&
                     fromMessage.from != null &&
@@ -62,9 +62,9 @@ data class IssueCredential(
 
             val fromDID = fromMessage.from!!
             val toDID = fromMessage.to!!
-            val body = Json.decodeFromString<OfferCredential.Body>(fromMessage.body)
+            val body = Json.decodeFromString<IssueCredential.Body>(fromMessage.body)
 
-            return OfferCredential(
+            return IssueCredential(
                 id = fromMessage.id,
                 body = body,
                 attachments = fromMessage.attachments,

@@ -22,7 +22,6 @@ data class ProposeCredential(
     val thid: String?,
     val from: DID,
     val to: DID
-
 ) {
     public val type: String = ProtocolType.DidcommProposeCredential.value
 
