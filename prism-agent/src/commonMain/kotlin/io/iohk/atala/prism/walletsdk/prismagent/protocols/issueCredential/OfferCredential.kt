@@ -54,6 +54,7 @@ data class OfferCredential(
             )
         }
 
+        @Throws(PrismAgentError.invalidOfferCredentialMessageError::class)
         fun fromMessage(fromMessage: Message): OfferCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommOfferCredential.value &&

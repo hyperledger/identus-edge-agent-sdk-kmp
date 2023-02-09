@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.domain.models
 
+import io.iohk.atala.prism.apollo.uuid.UUID
 import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -9,7 +10,7 @@ import kotlin.js.JsExport
 @Serializable
 @JsExport
 data class Message(
-    val id: String,
+    val id: String = UUID.randomUUID4().toString(),
     val piuri: String,
     val from: DID? = null,
     val to: DID? = null,
@@ -18,7 +19,7 @@ data class Message(
     val extraHeaders: Array<String> = arrayOf(),
     val createdTime: String = Clock.System.now().toString(),
     val expiresTimePlus: String = Clock.System.now().toString(),
-    val attachments: Array<AttachmentDescriptor>,
+    val attachments: Array<AttachmentDescriptor> = arrayOf(),
     val thid: String? = null,
     val pthid: String? = null,
     val ack: Array<String>? = emptyArray(),
