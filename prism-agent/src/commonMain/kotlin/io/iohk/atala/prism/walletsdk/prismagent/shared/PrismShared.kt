@@ -62,6 +62,5 @@ class PrismShared {
             }
             return builder
         }
-
     }
 }
