@@ -17,7 +17,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-suspend fun resolvePeerDID(didString: String): DIDDocument {
+suspend fun ResolvePeerDID(didString: String): DIDDocument {
     val peerDIDDocument = try {
         DIDDocPeerDID.fromJson(resolvePeerDID(didString))
     } catch (e: MalformedPeerDIDException) {

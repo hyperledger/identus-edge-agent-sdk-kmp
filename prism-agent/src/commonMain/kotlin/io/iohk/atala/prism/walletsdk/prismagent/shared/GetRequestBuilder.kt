@@ -9,7 +9,7 @@ import io.ktor.http.Url
 import io.ktor.http.contentType
 import io.ktor.http.path
 
-fun getRequestBuilder(
+fun GetRequestBuilder(
     httpMethod: HttpMethod,
     url: Url,
     urlParametersArray: Array<KeyValue>,
@@ -17,8 +17,8 @@ fun getRequestBuilder(
     body: Any?
 ): HttpRequestBuilder {
 
-    val urlParameters: Map<String, String> = mapFromKeyValueArray(urlParametersArray)
-    val httpHeaders: Map<String, String> = mapFromKeyValueArray(httpHeadersArray)
+    val urlParameters: Map<String, String> = MapFromKeyValueArray(urlParametersArray)
+    val httpHeaders: Map<String, String> = MapFromKeyValueArray(httpHeadersArray)
 
     val builder = HttpRequestBuilder()
     for (header in httpHeaders) {

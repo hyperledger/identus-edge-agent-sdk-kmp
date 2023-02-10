@@ -29,7 +29,7 @@ actual class CastorImpl actual constructor(apollo: Apollo?) : Castor {
     }
 
     actual override fun parseDID(did: String): DID {
-        return io.iohk.atala.prism.walletsdk.castor.shared.parseDID(did)
+        return io.iohk.atala.prism.walletsdk.castor.shared.ParseDID(did)
     }
 
     actual override fun createPrismDID(
@@ -43,21 +43,21 @@ actual class CastorImpl actual constructor(apollo: Apollo?) : Castor {
         keyPairs: Array<KeyPair>,
         services: Array<DIDDocument.Service>
     ): DID {
-        return io.iohk.atala.prism.walletsdk.castor.shared.createPeerDID(
+        return io.iohk.atala.prism.walletsdk.castor.shared.CreatePeerDID(
             keyPairs = keyPairs,
             services = services
         )
     }
 
     override fun resolveDID(did: String): Promise<DIDDocument> {
-        val resolver = io.iohk.atala.prism.walletsdk.castor.shared.getDIDResolver(did, resolvers)
+        val resolver = io.iohk.atala.prism.walletsdk.castor.shared.GetDIDResolver(did, resolvers)
         return resolver.resolve(did)
     }
 
     override fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Promise<Boolean> {
         return resolveDID(did.toString()).then { document ->
             val keyPairs: List<PublicKey> =
-                io.iohk.atala.prism.walletsdk.castor.shared.getKeyPairFromCoreProperties(document.coreProperties)
+                io.iohk.atala.prism.walletsdk.castor.shared.GetKeyPairFromCoreProperties(document.coreProperties)
 
             if (keyPairs.isEmpty()) {
                 throw CastorError.InvalidKeyError()

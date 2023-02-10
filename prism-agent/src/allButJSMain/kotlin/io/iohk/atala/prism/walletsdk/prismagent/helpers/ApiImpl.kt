@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.prismagent.helpers
 
 import io.iohk.atala.prism.walletsdk.domain.models.HttpResponse
+import io.iohk.atala.prism.walletsdk.prismagent.shared.GetRequestBuilder
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
-import io.iohk.atala.prism.walletsdk.prismagent.shared.getRequestBuilder
 import io.ktor.client.HttpClient
 import io.ktor.client.request.request
 import io.ktor.client.statement.bodyAsText
@@ -18,7 +18,7 @@ open class ApiImpl(override var client: HttpClient) : Api {
         httpHeaders: Array<KeyValue>,
         body: Any?
     ): HttpResponse {
-        val request = getRequestBuilder(
+        val request = GetRequestBuilder(
             httpMethod = HttpMethod(httpMethod),
             url = Url(url),
             urlParametersArray = urlParameters,
