@@ -20,10 +20,10 @@ actual class PrismAgent actual constructor(
     api: Api?
 ) {
     actual enum class State {
-        STOPED, STARTING, RUNNING, STOPING
+        STOPPED, STARTING, RUNNING, STOPPING
     }
 
-    actual var state: State = State.STOPED
+    actual var state: State = State.STOPPED
     actual val seed: Seed
     actual val apollo: Apollo
     actual val castor: Castor
