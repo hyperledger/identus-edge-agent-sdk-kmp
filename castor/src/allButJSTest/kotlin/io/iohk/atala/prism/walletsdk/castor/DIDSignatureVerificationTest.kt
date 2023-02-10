@@ -16,7 +16,7 @@ class DIDSignatureVerificationTest {
         val serviceStr = "eyJpZCI6IkRJRENvbW1WMiIsInQiOiJkbSIsInMiOiJsb2NhbGhvc3Q6ODA4MiIsInIiOltdLCJhIjpbImRtIl19"
         val didString = "did:peer:2.E$verKeyStr.V$authKeyStr.S$serviceStr"
 
-        val castor = io.iohk.atala.prism.walletsdk.castor.CastorImpl(ApolloMock())
+        val castor = CastorImpl(ApolloMock())
 
         val did = DIDParser.parse(didString)
         val result = castor.verifySignature(did, "".encodeToByteArray(), "".encodeToByteArray())
@@ -29,7 +29,7 @@ class DIDSignatureVerificationTest {
         val serviceStr = "eyJpZCI6IkRJRENvbW1WMiIsInQiOiJkbSIsInMiOiJsb2NhbGhvc3Q6ODA4MiIsInIiOltdLCJhIjpbImRtIl19"
         val didString = "did:peer:2.E$verKeyStr.V$verKeyStr.S$serviceStr"
 
-        val castor = io.iohk.atala.prism.walletsdk.castor.CastorImpl(ApolloMock())
+        val castor = CastorImpl(ApolloMock())
 
         val did = DIDParser.parse(didString)
 

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor.resolvers
 
-import io.iohk.atala.prism.walletsdk.castor.shared.ResolveLongFormPrismDID
+import io.iohk.atala.prism.walletsdk.castor.shared.CastorShared
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
@@ -16,7 +16,7 @@ actual class LongFormPrismDIDResolver(
 
     override fun resolve(didString: String): Promise<DIDDocument> {
         return GlobalScope.promise {
-            ResolveLongFormPrismDID(
+            CastorShared.resolveLongFormPrismDID(
                 apollo = apollo,
                 didString = didString
             )

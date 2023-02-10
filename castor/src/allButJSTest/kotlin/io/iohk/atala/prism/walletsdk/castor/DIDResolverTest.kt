@@ -68,7 +68,7 @@ class DIDResolverTest {
         val mock = ApolloMock()
         val didExample =
             "did:prism:9b5118411248d9663b6ab15128fba8106511230ff654e7514cdcc4ce919bde9b:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VjcDI1NmsxEiEDHpf-yhIns-LP3tLvA8icC5FJ1ZlBwbllPtIdNZ3q0jU"
-        val castor = io.iohk.atala.prism.walletsdk.castor.CastorImpl(mock)
+        val castor = CastorImpl(mock)
         val response = castor.resolveDID(didExample)
 
         assertEquals(response.id.toString(), didExample)

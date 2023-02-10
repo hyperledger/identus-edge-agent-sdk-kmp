@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor.resolvers
 
-import io.iohk.atala.prism.walletsdk.castor.shared.ResolvePeerDID
+import io.iohk.atala.prism.walletsdk.castor.shared.CastorShared
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import kotlinx.coroutines.GlobalScope
@@ -12,7 +12,7 @@ actual class PeerDIDResolver : DIDResolver {
     actual override val method: String = "peer"
     override fun resolve(didString: String): Promise<DIDDocument> {
         return GlobalScope.promise {
-            ResolvePeerDID(didString)
+            CastorShared.resolvePeerDID(didString)
         }
     }
 }
