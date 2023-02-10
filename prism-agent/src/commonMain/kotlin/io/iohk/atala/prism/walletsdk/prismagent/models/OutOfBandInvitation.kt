@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.models
 
 import io.iohk.atala.prism.apollo.uuid.UUID
-import io.iohk.atala.prism.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding
 
-import io.iohk.atala.prism.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json

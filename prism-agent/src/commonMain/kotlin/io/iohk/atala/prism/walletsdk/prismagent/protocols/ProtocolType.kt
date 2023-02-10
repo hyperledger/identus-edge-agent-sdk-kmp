@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
-import io.iohk.atala.prism.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 
 enum class ProtocolType(val value: String) {
     DidcommMediationRequest("https://didcomm.org/coordinate-mediation/2.0/mediate-request"),
