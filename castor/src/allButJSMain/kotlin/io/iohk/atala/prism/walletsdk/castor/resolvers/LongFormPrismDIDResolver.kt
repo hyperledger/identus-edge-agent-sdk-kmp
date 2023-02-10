@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor.resolvers
 
-import io.iohk.atala.prism.walletsdk.castor.shared.resolveLongFormPrismDID
+import io.iohk.atala.prism.walletsdk.castor.shared.ResolveLongFormPrismDID
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
@@ -11,7 +11,7 @@ actual class LongFormPrismDIDResolver(
     actual override val method: String = "prism"
 
     override suspend fun resolve(didString: String): DIDDocument {
-        return resolveLongFormPrismDID(
+        return ResolveLongFormPrismDID(
             apollo = apollo,
             didString = didString
         )
