@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.castor
 
-import io.iohk.atala.prism.apollo.ApolloMock
 import io.iohk.atala.prism.protos.PublicKey
 import io.iohk.atala.prism.walletsdk.castor.did.prismdid.PrismDIDPublicKey
 import io.iohk.atala.prism.walletsdk.castor.did.prismdid.id

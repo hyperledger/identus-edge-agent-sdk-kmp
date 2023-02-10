@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.apollo
+package io.iohk.atala.prism.walletsdk.castor
 
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.CompressedPublicKey

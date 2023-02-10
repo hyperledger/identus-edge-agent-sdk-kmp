@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.castor
 
-import io.iohk.atala.prism.apollo.ApolloMock
 import io.iohk.atala.prism.walletsdk.castor.did.DIDParser
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import kotlinx.coroutines.test.runTest

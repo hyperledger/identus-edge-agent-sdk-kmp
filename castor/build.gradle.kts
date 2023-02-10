@@ -88,6 +88,7 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
+                implementation(project(":apollo"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
                 implementation(kotlin("test"))
             }
