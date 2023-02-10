@@ -2,6 +2,10 @@ package io.iohk.atala.prism.walletsdk.castor
 
 import io.iohk.atala.prism.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.resolvers.PeerDIDResolver
+import io.iohk.atala.prism.walletsdk.castor.shared.CreatePeerDID
+import io.iohk.atala.prism.walletsdk.castor.shared.GetDIDResolver
+import io.iohk.atala.prism.walletsdk.castor.shared.GetKeyPairFromCoreProperties
+import io.iohk.atala.prism.walletsdk.castor.shared.ParseDID
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
@@ -25,7 +29,7 @@ actual class CastorImpl actual constructor(apollo: Apollo) : Castor {
     }
 
     actual override fun parseDID(did: String): DID {
-        return io.iohk.atala.prism.walletsdk.castor.shared.ParseDID(did)
+        return ParseDID(did)
     }
 
     actual override fun createPrismDID(
@@ -39,21 +43,21 @@ actual class CastorImpl actual constructor(apollo: Apollo) : Castor {
         keyPairs: Array<KeyPair>,
         services: Array<DIDDocument.Service>
     ): DID {
-        return io.iohk.atala.prism.walletsdk.castor.shared.CreatePeerDID(
+        return CreatePeerDID(
             keyPairs = keyPairs,
             services = services
         )
     }
 
     override suspend fun resolveDID(did: String): DIDDocument {
-        val resolver = io.iohk.atala.prism.walletsdk.castor.shared.GetDIDResolver(did, resolvers)
+        val resolver = GetDIDResolver(did, resolvers)
         return resolver.resolve(did)
     }
 
     override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
         val document = resolveDID(did.toString())
         val keyPairs: List<PublicKey> =
-            io.iohk.atala.prism.walletsdk.castor.shared.GetKeyPairFromCoreProperties(document.coreProperties)
+            GetKeyPairFromCoreProperties(document.coreProperties)
 
         if (keyPairs.isEmpty()) {
             throw CastorError.InvalidKeyError()

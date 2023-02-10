@@ -5,7 +5,7 @@ import kotlin.js.JsExport
 
 @Serializable
 @JsExport
-internal data class KeyValue(
+data class KeyValue(
     val key: String,
     val value: String
 )
