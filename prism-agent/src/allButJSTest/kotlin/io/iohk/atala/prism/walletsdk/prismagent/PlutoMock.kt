@@ -9,8 +9,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 class PlutoMock : Pluto {
     var wasStorePrismDIDCalled: Boolean = false

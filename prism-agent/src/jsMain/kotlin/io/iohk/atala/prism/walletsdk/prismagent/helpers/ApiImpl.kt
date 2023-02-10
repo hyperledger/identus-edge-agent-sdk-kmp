@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.prismagent.helpers
 
 import io.iohk.atala.prism.walletsdk.domain.models.HttpResponse
-import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.iohk.atala.prism.walletsdk.prismagent.shared.GetRequestBuilder
+import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.ktor.client.HttpClient
 import io.ktor.client.request.request
 import io.ktor.client.statement.bodyAsText
@@ -11,6 +11,7 @@ import io.ktor.http.Url
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.promise
 import kotlin.js.Promise
+
 @JsExport
 open class ApiImpl(override var client: HttpClient) : Api {
     override fun request(

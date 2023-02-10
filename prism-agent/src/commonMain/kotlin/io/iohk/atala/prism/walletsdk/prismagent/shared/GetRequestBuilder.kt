@@ -33,7 +33,7 @@ fun GetRequestBuilder(
     }
     builder.contentType(ContentType.Application.Json)
 
-    builder.body?.let {
+    body?.let {
         builder.setBody(body)
     }
 
