@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.castor
 
-import io.iohk.atala.prism.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo

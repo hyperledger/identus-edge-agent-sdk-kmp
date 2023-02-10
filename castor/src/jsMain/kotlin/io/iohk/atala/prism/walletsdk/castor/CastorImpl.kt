@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.castor
 
-import io.iohk.atala.prism.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
@@ -21,7 +20,7 @@ actual class CastorImpl actual constructor(apollo: Apollo) : Castor {
     actual var resolvers: Array<DIDResolver>
 
     init {
-        this.apollo = apollo ?: ApolloImpl()
+        this.apollo = apollo
         this.resolvers = arrayOf(
             PeerDIDResolver(),
             LongFormPrismDIDResolver(this.apollo)
