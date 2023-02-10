@@ -16,7 +16,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
 import pbandk.decodeFromByteArray
 
-suspend fun ResolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
+internal suspend fun ResolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
     val did = DIDParser.parse(didString)
     val prismDID = LongFormPrismDID(did)
 

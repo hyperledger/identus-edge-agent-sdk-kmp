@@ -5,7 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 
-fun GetKeyPairFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
+internal fun GetKeyPairFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
     return coreProperties
         .filterIsInstance<DIDDocument.Authentication>()
         .flatMap { it.verificationMethods.toList() }

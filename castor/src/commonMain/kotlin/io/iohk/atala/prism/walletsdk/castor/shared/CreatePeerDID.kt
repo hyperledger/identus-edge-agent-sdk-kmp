@@ -17,7 +17,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-fun CreatePeerDID(
+internal fun CreatePeerDID(
     keyPairs: Array<KeyPair>,
     services: Array<DIDDocument.Service>
 ): DID {

@@ -9,7 +9,7 @@ import io.ktor.http.Url
 import io.ktor.http.contentType
 import io.ktor.http.path
 
-fun GetRequestBuilder(
+internal fun GetRequestBuilder(
     httpMethod: HttpMethod,
     url: Url,
     urlParametersArray: Array<KeyValue>,
