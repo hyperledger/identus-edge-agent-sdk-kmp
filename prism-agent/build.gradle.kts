@@ -86,12 +86,20 @@ kotlin {
                 implementation("io.ktor:ktor-client-mock:2.1.3")
             }
         }
+        val allButJSMain by creating {
+            this.dependsOn(commonMain)
+        }
+        val allButJSTest by creating {
+            this.dependsOn(commonTest)
+        }
         val jvmMain by getting {
+            this.dependsOn(allButJSMain)
             dependencies {
                 implementation("io.ktor:ktor-client-okhttp:2.1.3")
             }
         }
         val jvmTest by getting {
+            this.dependsOn(allButJSTest)
             dependencies {
                 implementation("junit:junit:4.13.2")
                 implementation("io.ktor:ktor-client-mock:2.1.3")
@@ -99,15 +107,14 @@ kotlin {
             }
         }
         val androidMain by getting {
-            kotlin {
-                srcDir("src/jvmMain/kotlin")
-            }
+            this.dependsOn(allButJSMain)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
                 implementation("io.ktor:ktor-client-okhttp:2.1.3")
             }
         }
         val androidTest by getting {
+            this.dependsOn(allButJSTest)
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
@@ -122,7 +129,6 @@ kotlin {
             }
         }
         val jsTest by getting
-
         all {
             languageSettings.optIn("kotlin.js.ExperimentalJsExport")
             languageSettings.optIn("kotlin.RequiresOptIn")

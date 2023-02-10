@@ -1,14 +1,14 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
-import io.iohk.atala.prism.domain.buildingBlocks.Apollo
-import io.iohk.atala.prism.domain.models.CompressedPublicKey
-import io.iohk.atala.prism.domain.models.Curve
-import io.iohk.atala.prism.domain.models.KeyCurve
-import io.iohk.atala.prism.domain.models.KeyPair
-import io.iohk.atala.prism.domain.models.PrivateKey
-import io.iohk.atala.prism.domain.models.PublicKey
-import io.iohk.atala.prism.domain.models.Seed
-import io.iohk.atala.prism.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
+import io.iohk.atala.prism.walletsdk.domain.models.CompressedPublicKey
+import io.iohk.atala.prism.walletsdk.domain.models.Curve
+import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
+import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
+import io.iohk.atala.prism.walletsdk.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.domain.models.Signature
 
 class ApolloMock : Apollo {
     var createRandomMnemonicsReturn: Array<String> = emptyArray()
@@ -53,6 +53,7 @@ class ApolloMock : Apollo {
     override fun compressedPublicKey(publicKey: PublicKey): CompressedPublicKey {
         return compressedPublicKeyReturn
     }
+
     override fun compressedPublicKey(compressedData: ByteArray): CompressedPublicKey =
         compressedPublicKeyDataReturn
 

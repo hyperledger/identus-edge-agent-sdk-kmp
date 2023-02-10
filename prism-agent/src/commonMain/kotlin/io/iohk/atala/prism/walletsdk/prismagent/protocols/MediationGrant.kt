@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
 import io.iohk.atala.prism.apollo.uuid.UUID
-import io.iohk.atala.prism.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.Message
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
