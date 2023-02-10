@@ -13,12 +13,12 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 
-actual class CastorImpl actual constructor(apollo: Apollo?) : Castor {
+actual class CastorImpl actual constructor(apollo: Apollo) : Castor {
     actual val apollo: Apollo
     actual var resolvers: Array<DIDResolver>
 
     init {
-        this.apollo = apollo ?: ApolloImpl()
+        this.apollo = apollo
         this.resolvers = arrayOf(
             PeerDIDResolver(),
             LongFormPrismDIDResolver(this.apollo)

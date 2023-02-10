@@ -16,7 +16,7 @@ import kotlin.js.Promise
 
 @OptIn(ExperimentalJsExport::class)
 @JsExport
-actual class CastorImpl actual constructor(apollo: Apollo?) : Castor {
+actual class CastorImpl actual constructor(apollo: Apollo) : Castor {
     actual val apollo: Apollo
     actual var resolvers: Array<DIDResolver>
 

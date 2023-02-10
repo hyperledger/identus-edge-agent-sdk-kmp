@@ -9,7 +9,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 
-expect class CastorImpl(apollo: Apollo? = null) : Castor {
+expect class CastorImpl(apollo: Apollo) : Castor {
 
     val apollo: Apollo
     var resolvers: Array<DIDResolver>
