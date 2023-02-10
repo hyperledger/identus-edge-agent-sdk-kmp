@@ -72,7 +72,7 @@ kotlin {
             }
         }
         val commonMain by getting {
-            dependsOn(commonAntlr)
+            this.dependsOn(commonAntlr)
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
@@ -93,26 +93,30 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
+        val allButJSMain by creating {
+            this.dependsOn(commonMain)
+        }
+        val allButJSTest by creating {
+            this.dependsOn(commonTest)
+        }
         val jvmMain by getting {
+            this.dependsOn(allButJSMain)
             dependencies {
                 api(kotlin("stdlib-jdk8"))
                 api(kotlin("reflect"))
             }
         }
         val jvmTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
+            this.dependsOn(allButJSTest)
         }
         val androidMain by getting {
+            this.dependsOn(allButJSMain)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
             }
         }
         val androidTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
+            this.dependsOn(allButJSTest)
         }
         val jsMain by getting {
             dependsOn(commonAntlr)
@@ -202,7 +206,7 @@ val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin
         project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
     )
     maxHeapSize = "64m"
-    packageName = "io.iohk.atala.prism.castor.antlrgrammar"
+    packageName = "io.iohk.atala.prism.walletsdk.castor.antlrgrammar"
     arguments = listOf("-long-messages", "-Dlanguage=JavaScript")
     source = project.objects
         .sourceDirectorySet("antlr", "antlr")
