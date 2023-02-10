@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
+import kotlinx.serialization.Serializable
+
 interface AttachmentData
 
 data class AttachmentHeader(
@@ -48,6 +50,7 @@ data class AttachmentJsonData(
     val data: String
 ) : AttachmentData
 
+@Serializable
 data class AttachmentDescriptor(
     val id: String,
     val mediaType: String? = null,

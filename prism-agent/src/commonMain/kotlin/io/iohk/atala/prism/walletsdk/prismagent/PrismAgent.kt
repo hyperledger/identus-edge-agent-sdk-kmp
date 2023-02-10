@@ -14,7 +14,7 @@ expect class PrismAgent(
     api: Api? = null
 ) {
     enum class State {
-        STOPED, STARTING, RUNNING, STOPING
+        STOPPED, STARTING, RUNNING, STOPPING
     }
 
     val seed: Seed
