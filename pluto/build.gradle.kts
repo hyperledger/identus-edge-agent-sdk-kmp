@@ -81,6 +81,7 @@ kotlin {
             }
         }
         val jvmMain by getting {
+            this.dependsOn(commonMain)
             dependencies {
                 implementation("com.squareup.sqldelight:sqlite-driver:1.5.4")
             }
@@ -91,6 +92,7 @@ kotlin {
             }
         }
         val androidMain by getting {
+            this.dependsOn(commonMain)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
                 implementation("com.squareup.sqldelight:android-driver:1.5.4")
