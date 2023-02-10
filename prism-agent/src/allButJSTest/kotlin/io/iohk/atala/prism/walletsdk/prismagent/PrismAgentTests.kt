@@ -1,18 +1,17 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
-import io.iohk.atala.prism.domain.models.Curve
-import io.iohk.atala.prism.domain.models.DID
-import io.iohk.atala.prism.domain.models.KeyCurve
-import io.iohk.atala.prism.domain.models.PrismAgentError
-import io.iohk.atala.prism.domain.models.PrivateKey
-import io.iohk.atala.prism.domain.models.Seed
-import io.iohk.atala.prism.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.domain.models.Curve
+import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.core.toByteArray
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -135,9 +134,7 @@ class PrismAgentTests {
             plutoMock
         )
 
-        plutoMock.getDIDPrivateKeysReturn = flow {
-            emit(null)
-        }
+        plutoMock.getDIDPrivateKeysReturn = null
 
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
@@ -155,10 +152,8 @@ class PrismAgentTests {
             plutoMock
         )
 
-        plutoMock.getDIDPrivateKeysReturn = flow {
-            val privateKeys = arrayOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
-            emit(privateKeys)
-        }
+        val privateKeys = arrayOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
+        plutoMock.getDIDPrivateKeysReturn = privateKeys
 
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
