@@ -104,6 +104,8 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 implementation("com.squareup.sqldelight:sqljs-driver:1.5.4")
+                implementation(npm("sql.js", "1.6.2"))
+                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
             }
         }
         val jsTest by getting
@@ -167,7 +169,7 @@ tasks.withType<DokkaTask> {
 
 sqldelight {
     database("PrismPlutoDb") {
-        packageName = "io.iohk.atala.prism.pluto"
+        packageName = "io.iohk.atala.prism.walletsdk.pluto"
         sourceFolders = listOf("sqldelight")
     }
 }

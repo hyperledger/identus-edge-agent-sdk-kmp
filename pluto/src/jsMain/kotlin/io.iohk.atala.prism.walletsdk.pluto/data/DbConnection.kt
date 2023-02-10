@@ -1,7 +1,8 @@
-package io.iohk.atala.prism.pluto.data
+package io.iohk.atala.prism.walletsdk.pluto.data
 
 import com.squareup.sqldelight.drivers.sqljs.initSqlDriver
-import io.iohk.atala.prism.pluto.PrismPlutoDb
+import io.iohk.atala.prism.walletsdk.pluto.PrismPlutoDb
+import io.iohk.atala.prism.walletsdk.pluto.shared.createPrismPlutoDb
 import kotlinx.coroutines.await
 
 actual class DbConnection {
