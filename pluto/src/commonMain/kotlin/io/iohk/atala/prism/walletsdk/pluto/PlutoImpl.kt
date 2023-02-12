@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.pluto.data
+package io.iohk.atala.prism.walletsdk.pluto
 
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
@@ -9,14 +9,14 @@ import io.iohk.atala.prism.walletsdk.domain.models.JWTVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.MediatorDID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
+import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.W3CVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.getKeyCurveByNameAndIndex
-import io.iohk.atala.prism.walletsdk.pluto.PrismPlutoDb
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
+import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import ioiohkatalaprismwalletsdkpluto.data.DID as DIDDB
@@ -26,41 +26,56 @@ import ioiohkatalaprismwalletsdkpluto.data.Message as MessageDB
 import ioiohkatalaprismwalletsdkpluto.data.PrivateKey as PrivateKeyDB
 import ioiohkatalaprismwalletsdkpluto.data.VerifiableCredential as VerifiableCredentialDB
 
-class PlutoImpl(connection: DbConnection) : Pluto {
+class PlutoImpl(private val connection: DbConnection) : Pluto {
+    private var db: PrismPlutoDb? = null
 
-    private lateinit var db: PrismPlutoDb
-
-    init {
-        GlobalScope.launch {
-            db = connection.connectDb()
+    val isConnected: Boolean
+        get() {
+            return this.connection.driver?.isConnected ?: false
         }
+
+    public suspend fun start(context: Any? = null) {
+        if (this.db != null) {
+            throw PlutoError.DatabaseServiceAlreadyRunning()
+        }
+        this.db = this.connection.connectDb(context)
+    }
+
+    public fun stop() {
+        val driver = this.connection.driver ?: throw PlutoError.DatabaseConnectionError()
+        this.db = null
+        driver.close()
+    }
+
+    private fun getInstance(): PrismPlutoDb {
+        return this.db ?: throw PlutoError.DatabaseConnectionError()
     }
 
     override fun storePrismDID(did: DID, keyPathIndex: Int, alias: String?) {
-        db.dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, alias))
+        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, alias))
     }
 
     override fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>) {
-        db.dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, null))
+        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, null))
         privateKeys.map { privateKey ->
-            db.privateKeyQueries.insert(
+            getInstance().privateKeyQueries.insert(
                 PrivateKeyDB(
                     UUID.randomUUID4().toString(),
                     privateKey.keyCurve.curve.value,
                     privateKey.value.toString(),
                     privateKey.keyCurve.index,
-                    did.methodId
-                )
+                    did.methodId,
+                ),
             )
         }
     }
 
     override fun storeDIDPair(host: DID, receiver: DID, name: String) {
-        db.dIDPairQueries.insert(DIDPairDB("$host$receiver", name, host.toString(), receiver.toString()))
+        getInstance().dIDPairQueries.insert(DIDPairDB("$host$receiver", name, host.toString(), receiver.toString()))
     }
 
     override fun storeMessage(message: Message) {
-        db.messageQueries.insert(
+        getInstance().messageQueries.insert(
             MessageDB(
                 UUID.randomUUID4().toString(),
                 message.createdTime,
@@ -69,20 +84,20 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                 message.thid,
                 message.to.toString(),
                 message.piuri,
-                message.direction.value
-            )
+                message.direction.value,
+            ),
         )
     }
 
     override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int) {
-        db.privateKeyQueries.insert(
+        getInstance().privateKeyQueries.insert(
             PrivateKeyDB(
                 UUID.randomUUID4().toString(),
                 privateKey.keyCurve.curve.value,
                 privateKey.value.toString(),
                 keyPathIndex,
-                did.methodId
-            )
+                did.methodId,
+            ),
         )
     }
 
@@ -93,31 +108,31 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun storeMediator(mediator: DID, host: DID, routing: DID) {
-        db.mediatorQueries.insert(
+        getInstance().mediatorQueries.insert(
             MediatorDB(
                 UUID.randomUUID4().toString(),
                 mediator.methodId,
                 host.methodId,
-                routing.methodId
-            )
+                routing.methodId,
+            ),
         )
     }
 
     override fun storeCredential(credential: VerifiableCredential) {
-        db.verifiableCredentialQueries.insert(
+        getInstance().verifiableCredentialQueries.insert(
             VerifiableCredentialDB(
                 UUID.randomUUID4().toString(),
                 credential.credentialType.type,
                 credential.expirationDate,
                 credential.issuanceDate,
                 credential.toJsonString(),
-                credential.issuer.toString()
-            )
+                credential.issuer.toString(),
+            ),
         )
     }
 
     override fun getAllPrismDIDs(): Array<PrismDIDInfo> {
-        return db.dIDQueries
+        return getInstance().dIDQueries
             .fetchAllPrismDID()
             .executeAsList()
             .map {
@@ -127,7 +142,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
 
     override fun getDIDInfoByDID(did: DID): PrismDIDInfo? {
         val didInfo = try {
-            db.dIDQueries
+            getInstance().dIDQueries
                 .fetchDIDInfoByDID(did.toString())
                 .executeAsOne()
         } catch (e: NullPointerException) {
@@ -138,7 +153,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getDIDInfoByAlias(alias: String): Array<PrismDIDInfo> {
-        return db.dIDQueries
+        return getInstance().dIDQueries
             .fetchDIDInfoByAlias(alias)
             .executeAsList()
             .map { PrismDIDInfo(DID(it.did), it.keyPathIndex, it.alias) }
@@ -147,7 +162,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
 
     override fun getDIDPrivateKeysByDID(did: DID): Array<PrivateKey>? {
         val privateKeys = try {
-            db.privateKeyQueries
+            getInstance().privateKeyQueries
                 .fetchPrivateKeyByDID(did.toString())
                 .executeAsList()
         } catch (e: IllegalStateException) {
@@ -158,9 +173,9 @@ class PlutoImpl(connection: DbConnection) : Pluto {
             PrivateKey(
                 getKeyCurveByNameAndIndex(
                     it.curve,
-                    it.keyPathIndex
+                    it.keyPathIndex,
                 ),
-                byteArrayOf()
+                byteArrayOf(),
             )
         }
             .toTypedArray()
@@ -168,7 +183,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
 
     override fun getPrismDIDKeyPathIndex(did: DID): Int? {
         val did = try {
-            db.privateKeyQueries.fetchKeyPathIndexByDID(did.methodId)
+            getInstance().privateKeyQueries.fetchKeyPathIndexByDID(did.methodId)
                 .executeAsOne()
         } catch (e: NullPointerException) {
             null
@@ -178,20 +193,20 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getPrismLastKeyPathIndex(): Int {
-        return db.privateKeyQueries.fetchLastkeyPathIndex()
+        return getInstance().privateKeyQueries.fetchLastkeyPathIndex()
             .executeAsOne()
             .keyPathIndex ?: 0
     }
 
     override fun getAllPeerDIDs(): Array<PeerDID> {
-        return db.dIDQueries.fetchAllPeerDID()
+        return getInstance().dIDQueries.fetchAllPeerDID()
             .executeAsList()
             .groupBy { it.did }
             .map {
                 val privateKeyList = it.value.map { data ->
                     PrivateKey(
                         getKeyCurveByNameAndIndex(data.curve, data.keyPathIndex),
-                        byteArrayOf()
+                        byteArrayOf(),
                     )
                 }.toTypedArray()
                 PeerDID(DID(it.key), privateKeyList)
@@ -199,7 +214,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllDidPairs(): Array<DIDPair> {
-        return db.dIDPairQueries.fetchAllDIDPairs()
+        return getInstance().dIDPairQueries.fetchAllDIDPairs()
             .executeAsList()
             .map { DIDPair(DID(it.hostDID), DID(it.receiverDID), it.name) }
             .toTypedArray()
@@ -207,7 +222,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
 
     override fun getPairByDID(did: DID): DIDPair? {
         val didPair = try {
-            db.dIDPairQueries.fetchDIDPairByDID(did.toString())
+            getInstance().dIDPairQueries.fetchDIDPairByDID(did.toString())
                 .executeAsOne()
         } catch (e: NullPointerException) {
             null
@@ -218,7 +233,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
 
     override fun getPairByName(name: String): DIDPair? {
         val didPair = try {
-            db.dIDPairQueries.fetchDIDPairByName(name)
+            getInstance().dIDPairQueries.fetchDIDPairByName(name)
                 .executeAsOne()
         } catch (e: NullPointerException) {
             null
@@ -228,7 +243,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMessages(): Array<Message> {
-        return db.messageQueries.fetchAllMessages()
+        return getInstance().messageQueries.fetchAllMessages()
             .executeAsList()
             .map {
                 val messageDb = Json.decodeFromString<Message>(it.dataJson)
@@ -256,7 +271,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMessages(from: DID, to: DID): Array<Message> {
-        return db.messageQueries.fetchAllMessagesFromTo(from.toString(), to.toString())
+        return getInstance().messageQueries.fetchAllMessagesFromTo(from.toString(), to.toString())
             .executeAsList()
             .map {
                 val messageDb = Json.decodeFromString<Message>(it.dataJson)
@@ -280,7 +295,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMessagesSent(): Array<Message> {
-        return db.messageQueries.fetchAllSentMessages()
+        return getInstance().messageQueries.fetchAllSentMessages()
             .executeAsList()
             .map {
                 val messageDb = Json.decodeFromString<Message>(it.dataJson)
@@ -304,7 +319,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMessagesReceived(): Array<Message> {
-        return db.messageQueries.fetchAllReceivedMessages()
+        return getInstance().messageQueries.fetchAllReceivedMessages()
             .executeAsList()
             .map {
                 val messageDb = Json.decodeFromString<Message>(it.dataJson)
@@ -328,7 +343,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMessagesSentTo(did: DID): Array<Message> {
-        return db.messageQueries.fetchAllMessagesSentTo(did.toString())
+        return getInstance().messageQueries.fetchAllMessagesSentTo(did.toString())
             .executeAsList()
             .map {
                 val messageDb = Json.decodeFromString<Message>(it.dataJson)
@@ -352,7 +367,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMessagesReceivedFrom(did: DID): Array<Message> {
-        return db.messageQueries.fetchAllMessagesReceivedFrom(did.toString())
+        return getInstance().messageQueries.fetchAllMessagesReceivedFrom(did.toString())
             .executeAsList()
             .map {
                 val messageDb = Json.decodeFromString<Message>(it.dataJson)
@@ -376,7 +391,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Array<Message> {
-        return db.messageQueries.fetchAllMessagesOfType(type, relatedWithDID.toString(), relatedWithDID.toString())
+        return getInstance().messageQueries.fetchAllMessagesOfType(type, relatedWithDID.toString(), relatedWithDID.toString())
             .executeAsList()
             .map {
                 val messageDb = Json.decodeFromString<Message>(it.dataJson)
@@ -401,7 +416,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
 
     override fun getMessage(id: String): Message? {
         val message = try {
-            db.messageQueries.fetchMessageById(id)
+            getInstance().messageQueries.fetchMessageById(id)
                 .executeAsOne()
         } catch (e: NullPointerException) {
             null
@@ -428,21 +443,21 @@ class PlutoImpl(connection: DbConnection) : Pluto {
     }
 
     override fun getAllMediators(): Array<MediatorDID> {
-        return db.mediatorQueries.fetchAllMediators()
+        return getInstance().mediatorQueries.fetchAllMediators()
             .executeAsList()
             .map {
                 MediatorDID(
                     it.id,
                     DID(it.MediatorDID),
                     DID(it.HostDID),
-                    DID(it.RoutingDID)
+                    DID(it.RoutingDID),
                 )
             }.toTypedArray()
     }
 
     // TODO: Define how to form JWTVerifiableCredential and W3CVerifiableCredential
     override fun getAllCredentials(): Array<VerifiableCredential> {
-        return db.verifiableCredentialQueries.fetchAllCredentials()
+        return getInstance().verifiableCredentialQueries.fetchAllCredentials()
             .executeAsList()
             .map {
                 val verifiableCredential = Json.decodeFromString<VerifiableCredential>(it.verifiableCredentialJson)
@@ -465,7 +480,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                             verifiableCredential.validFrom,
                             verifiableCredential.validUntil,
                             verifiableCredential.proof,
-                            verifiableCredential.aud
+                            verifiableCredential.aud,
                         )
 
                     CredentialType.W3C.type ->
@@ -486,7 +501,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                             verifiableCredential.validFrom,
                             verifiableCredential.validUntil,
                             verifiableCredential.proof,
-                            verifiableCredential.aud
+                            verifiableCredential.aud,
                         )
 
                     else ->
@@ -507,7 +522,7 @@ class PlutoImpl(connection: DbConnection) : Pluto {
                             verifiableCredential.validFrom,
                             verifiableCredential.validUntil,
                             verifiableCredential.proof,
-                            verifiableCredential.aud
+                            verifiableCredential.aud,
                         )
                 }
             }.toTypedArray()

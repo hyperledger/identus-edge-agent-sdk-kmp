@@ -78,34 +78,39 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
             }
         }
         val jvmMain by getting {
-            this.dependsOn(commonMain)
             dependencies {
                 implementation("com.squareup.sqldelight:sqlite-driver:1.5.4")
             }
         }
         val jvmTest by getting {
             dependencies {
-                implementation("junit:junit:4.13.2")
+                implementation(kotlin("test"))
             }
         }
         val androidMain by getting {
-            this.dependsOn(commonMain)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
                 implementation("com.squareup.sqldelight:android-driver:1.5.4")
             }
         }
         val androidTest by getting {
+            this.dependsOn(jvmMain)
             dependencies {
-                implementation("junit:junit:4.13.2")
+                implementation("androidx.test:runner:1.5.2")
+                implementation("androidx.test.ext:junit:1.1.5")
             }
         }
         val jsMain by getting {
             dependencies {
                 implementation("com.squareup.sqldelight:sqljs-driver:1.5.4")
+                implementation(devNpm("webpack", "5.73.0"))
+                implementation(devNpm("path-browserify", "1.0.1"))
+                implementation(devNpm("crypto-browserify", "3.12.0"))
+                implementation(devNpm("stream-browserify", "3.0.0"))
                 implementation(npm("sql.js", "1.6.2"))
                 implementation(devNpm("copy-webpack-plugin", "9.1.0"))
             }
@@ -124,6 +129,8 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 32
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
