@@ -31,7 +31,7 @@ kotlin {
 
     js(IR) {
         this.moduleName = currentModuleName
-        this.binaries.executable()
+        this.binaries.library()
         this.useCommonJs()
         this.compilations["main"].packageJson {
             this.version = rootProject.version.toString()
