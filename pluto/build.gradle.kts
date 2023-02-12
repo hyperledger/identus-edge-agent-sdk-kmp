@@ -100,6 +100,9 @@ kotlin {
         val androidTest by getting {
             this.dependsOn(jvmMain)
             dependencies {
+                implementation(kotlin("test"))
+                implementation(kotlin("test-junit"))
+                implementation("junit:junit:4.13.2")
                 implementation("androidx.test:runner:1.5.2")
                 implementation("androidx.test.ext:junit:1.1.5")
             }
