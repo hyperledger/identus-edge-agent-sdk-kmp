@@ -1,15 +1,17 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
+import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 
 interface DIDDocumentCoreProperty
 
+@OptIn(ExperimentalJsExport::class)
 @Serializable
 @JsExport
 data class DIDDocument(
     val id: DID,
-    val coreProperties: Array<DIDDocumentCoreProperty>
+    val coreProperties: Array<DIDDocumentCoreProperty>,
 ) {
 
     override fun equals(other: Any?): Boolean {
@@ -35,7 +37,7 @@ data class DIDDocument(
         val controller: DID,
         val type: String,
         val publicKeyJwk: Map<String, String>? = null,
-        val publicKeyMultibase: String? = null
+        val publicKeyMultibase: String? = null,
     ) {
         companion object {
             fun getCurveByType(type: String): Curve {
@@ -64,7 +66,7 @@ data class DIDDocument(
     data class Service(
         val id: String,
         val type: Array<String>,
-        val serviceEndpoint: ServiceEndpoint
+        val serviceEndpoint: ServiceEndpoint,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -91,7 +93,7 @@ data class DIDDocument(
     data class ServiceEndpoint(
         val uri: String,
         val accept: Array<String>? = arrayOf(),
-        val routingKeys: Array<String>? = arrayOf()
+        val routingKeys: Array<String>? = arrayOf(),
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -121,7 +123,7 @@ data class DIDDocument(
     }
 
     data class AlsoKnownAs(
-        val values: Array<String>
+        val values: Array<String>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -140,7 +142,7 @@ data class DIDDocument(
     }
 
     data class Controller(
-        val values: Array<DID>
+        val values: Array<DID>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -159,7 +161,7 @@ data class DIDDocument(
     }
 
     data class VerificationMethods(
-        val values: Array<VerificationMethod>
+        val values: Array<VerificationMethod>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -178,7 +180,7 @@ data class DIDDocument(
     }
 
     data class Services(
-        val values: Array<Service>
+        val values: Array<Service>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -198,7 +200,7 @@ data class DIDDocument(
 
     data class Authentication(
         val urls: Array<String>,
-        val verificationMethods: Array<VerificationMethod>
+        val verificationMethods: Array<VerificationMethod>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -221,7 +223,7 @@ data class DIDDocument(
 
     data class AssertionMethod(
         val urls: Array<String>,
-        val verificationMethods: Array<VerificationMethod>
+        val verificationMethods: Array<VerificationMethod>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -244,7 +246,7 @@ data class DIDDocument(
 
     data class KeyAgreement(
         val urls: Array<String>,
-        val verificationMethods: Array<VerificationMethod>
+        val verificationMethods: Array<VerificationMethod>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -267,7 +269,7 @@ data class DIDDocument(
 
     data class CapabilityInvocation(
         val urls: Array<String>,
-        val verificationMethods: Array<VerificationMethod>
+        val verificationMethods: Array<VerificationMethod>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -290,7 +292,7 @@ data class DIDDocument(
 
     data class CapabilityDelegation(
         val urls: Array<String>,
-        val verificationMethods: Array<VerificationMethod>
+        val verificationMethods: Array<VerificationMethod>,
     ) : DIDDocumentCoreProperty {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

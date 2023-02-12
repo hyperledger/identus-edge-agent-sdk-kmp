@@ -1,21 +1,23 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
+import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 import kotlin.js.JsName
 import kotlin.jvm.JvmStatic
 
+@OptIn(ExperimentalJsExport::class)
 @Serializable
 @JsExport
 data class DID(
     val schema: String,
     val method: String,
-    val methodId: String
+    val methodId: String,
 ) {
 
     @JsName("fromString")
     constructor(
-        string: String
+        string: String,
     ) : this(getSchemaFromString(string), getMethodFromString(string), getMethodIdFromString(string))
 
     override fun toString(): String {
