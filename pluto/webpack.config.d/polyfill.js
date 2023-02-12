@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 config.resolve = {
     fallback: {
         "crypto": require.resolve("crypto-browserify"),

@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 config.plugins.push(
     new CopyWebpackPlugin({

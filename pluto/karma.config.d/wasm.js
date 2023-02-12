@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 const path = require("path");
 const abs = path.resolve("../../node_modules/sql.js/dist/sql-wasm.wasm")
 
