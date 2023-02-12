@@ -29,7 +29,6 @@ buildscript {
 
 rootProject.name = "wallet-sdk"
 include(":protosLib")
-include(":wallet-sdk")
 include(":domain")
 include(":apollo")
 include(":castor")
