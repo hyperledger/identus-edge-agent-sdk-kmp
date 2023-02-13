@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+
 enum class ProtocolType(val value: String) {
     DidcommMediationRequest("https://didcomm.org/coordinate-mediation/2.0/mediate-request"),
     DidcommMediationGrant("https://didcomm.org/coordinate-mediation/2.0/mediate-grant"),
@@ -21,4 +23,15 @@ enum class ProtocolType(val value: String) {
     PickupDelivery("https://didcomm.org/messagepickup/3.0/delivery"),
     PickupStatus("https://didcomm.org/messagepickup/3.0/status"),
     PickupReceived("https://didcomm.org/messagepickup/3.0/messages-received")
+}
+
+fun findProtocolTypeByValue(string: String): ProtocolType {
+    val it = ProtocolType.values().iterator()
+    while (it.hasNext()) {
+        val internalType = it.next()
+        if (internalType.value == string) {
+            return internalType
+        }
+    }
+    throw PrismAgentError.unknownInvitationTypeError()
 }

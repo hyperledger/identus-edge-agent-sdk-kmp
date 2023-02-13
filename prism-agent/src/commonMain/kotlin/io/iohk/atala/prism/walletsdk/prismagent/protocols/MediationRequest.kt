@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
 import io.iohk.atala.prism.apollo.uuid.UUID
-import io.iohk.atala.prism.domain.models.DID
-import io.iohk.atala.prism.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.Message
 
 sealed class MediationRequest(
     val id: String,

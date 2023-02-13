@@ -31,7 +31,7 @@ kotlin {
 
     js(IR) {
         this.moduleName = currentModuleName
-        this.binaries.executable()
+        this.binaries.library()
         this.useCommonJs()
         this.compilations["main"].packageJson {
             this.version = rootProject.version.toString()
@@ -78,6 +78,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
             }
         }
         val jvmMain by getting {
@@ -87,7 +88,7 @@ kotlin {
         }
         val jvmTest by getting {
             dependencies {
-                implementation("junit:junit:4.13.2")
+                implementation(kotlin("test"))
             }
         }
         val androidMain by getting {
@@ -97,6 +98,7 @@ kotlin {
             }
         }
         val androidTest by getting {
+            this.dependsOn(jvmMain)
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
@@ -104,6 +106,12 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 implementation("com.squareup.sqldelight:sqljs-driver:1.5.4")
+                implementation(devNpm("webpack", "5.73.0"))
+                implementation(devNpm("path-browserify", "1.0.1"))
+                implementation(devNpm("crypto-browserify", "3.12.0"))
+                implementation(devNpm("stream-browserify", "3.0.0"))
+                implementation(npm("sql.js", "1.6.2"))
+                implementation(devNpm("copy-webpack-plugin", "9.1.0"))
             }
         }
         val jsTest by getting
@@ -167,7 +175,7 @@ tasks.withType<DokkaTask> {
 
 sqldelight {
     database("PrismPlutoDb") {
-        packageName = "io.iohk.atala.prism.pluto"
+        packageName = "io.iohk.atala.prism.walletsdk.pluto"
         sourceFolders = listOf("sqldelight")
     }
 }
