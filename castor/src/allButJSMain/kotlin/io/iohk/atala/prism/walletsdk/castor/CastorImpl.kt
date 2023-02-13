@@ -21,7 +21,7 @@ actual class CastorImpl actual constructor(apollo: Apollo) : Castor {
         this.apollo = apollo
         this.resolvers = arrayOf(
             PeerDIDResolver(),
-            LongFormPrismDIDResolver(this.apollo)
+            LongFormPrismDIDResolver(this.apollo),
         )
     }
 
@@ -31,18 +31,22 @@ actual class CastorImpl actual constructor(apollo: Apollo) : Castor {
 
     actual override fun createPrismDID(
         masterPublicKey: PublicKey,
-        services: Array<DIDDocument.Service>?
+        services: Array<DIDDocument.Service>?,
     ): DID {
-        TODO("Not yet implemented")
+        return CastorShared.createPrismDID(
+            apollo = apollo,
+            masterPublicKey = masterPublicKey,
+            services = services,
+        )
     }
 
     actual override fun createPeerDID(
         keyPairs: Array<KeyPair>,
-        services: Array<DIDDocument.Service>
+        services: Array<DIDDocument.Service>,
     ): DID {
         return CastorShared.createPeerDID(
             keyPairs = keyPairs,
-            services = services
+            services = services,
         )
     }
 

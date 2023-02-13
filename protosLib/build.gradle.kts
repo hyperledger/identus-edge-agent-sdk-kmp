@@ -48,7 +48,7 @@ protobuf {
     }
     plugins {
         id("kotlin") {
-            artifact = "io.iohk:protoc-gen-pbandk-jvm:0.20.7:jvm8@jar"
+            artifact = "pro.streem.pbandk:protoc-gen-pbandk-jvm:0.14.2:jvm8@jar"
         }
     }
 
