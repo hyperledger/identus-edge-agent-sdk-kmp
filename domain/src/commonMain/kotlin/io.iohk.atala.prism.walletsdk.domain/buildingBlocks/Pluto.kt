@@ -8,16 +8,18 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 import kotlin.js.JsName
 
+@OptIn(ExperimentalJsExport::class)
 @JsExport
 interface Pluto {
 
     fun storePrismDID(
         did: DID,
         keyPathIndex: Int,
-        alias: String?
+        alias: String?,
     )
 
     fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>)

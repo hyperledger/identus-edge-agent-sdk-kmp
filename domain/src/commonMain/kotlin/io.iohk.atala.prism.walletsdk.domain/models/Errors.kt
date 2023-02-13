@@ -42,6 +42,9 @@ sealed class PlutoError(message: String? = null) : Throwable(message) {
     class HolderDIDAlreadyPairingError(message: String? = null) : PlutoError(message)
     class UnknownCredentialTypeError(message: String? = null) : PlutoError(message)
     class InvalidCredentialJsonError(message: String? = null) : PlutoError(message)
+    class DatabaseConnectionError(message: String? = null) : PlutoError(message)
+    class DatabaseContextError(message: String? = null) : PlutoError(message)
+    class DatabaseServiceAlreadyRunning(message: String? = null) : PlutoError(message)
 }
 
 sealed class PolluxError(message: String? = null) : Throwable(message) {

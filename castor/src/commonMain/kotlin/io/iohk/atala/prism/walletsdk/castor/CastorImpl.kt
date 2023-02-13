@@ -17,12 +17,12 @@ expect class CastorImpl(apollo: Apollo) : Castor {
     override fun parseDID(did: String): DID
     override fun createPrismDID(
         masterPublicKey: PublicKey,
-        services: Array<DIDDocument.Service>?
+        services: Array<DIDDocument.Service>?,
     ): DID
 
     @Throws(CastorError.InvalidKeyError::class)
     override fun createPeerDID(
         keyPairs: Array<KeyPair>,
-        services: Array<DIDDocument.Service>
+        services: Array<DIDDocument.Service>,
     ): DID
 }
