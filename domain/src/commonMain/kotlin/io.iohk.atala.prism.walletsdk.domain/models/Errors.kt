@@ -49,6 +49,7 @@ sealed class PlutoError(message: String? = null) : Throwable(message) {
 
 sealed class PolluxError(message: String? = null) : Throwable(message) {
     class InvalidCredentialError(message: String? = null) : PolluxError(message)
+    class InvalidJWTString(message: String? = null) : PolluxError(message)
 }
 
 sealed class PrismAgentError(message: String? = null) : Throwable(message) {
