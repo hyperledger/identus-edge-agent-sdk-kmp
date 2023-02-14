@@ -5,7 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.JWTVerifiableCredential
+import io.iohk.atala.prism.walletsdk.domain.models.JWTCredentialPayload
 import io.iohk.atala.prism.walletsdk.domain.models.MediatorDID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
@@ -455,7 +455,6 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }.toTypedArray()
     }
 
-    // TODO: Define how to form JWTVerifiableCredential and W3CVerifiableCredential
     override fun getAllCredentials(): Array<VerifiableCredential> {
         return getInstance().verifiableCredentialQueries.fetchAllCredentials()
             .executeAsList()
@@ -463,9 +462,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 val verifiableCredential = Json.decodeFromString<VerifiableCredential>(it.verifiableCredentialJson)
                 when (it.credentialType) {
                     CredentialType.JWT.type ->
-                        JWTVerifiableCredential(
+                        JWTCredentialPayload.JWTVerifiableCredential(
                             CredentialType.JWT,
-                            verifiableCredential.id,
                             verifiableCredential.context,
                             verifiableCredential.type,
                             verifiableCredential.issuer,
@@ -477,16 +475,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             verifiableCredential.refreshService,
                             verifiableCredential.evidence,
                             verifiableCredential.termsOfUse,
-                            verifiableCredential.validFrom,
-                            verifiableCredential.validUntil,
                             verifiableCredential.proof,
-                            verifiableCredential.aud,
                         )
 
                     CredentialType.W3C.type ->
                         W3CVerifiableCredential(
                             CredentialType.JWT,
-                            verifiableCredential.id,
                             verifiableCredential.context,
                             verifiableCredential.type,
                             verifiableCredential.issuer,
@@ -498,16 +492,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             verifiableCredential.refreshService,
                             verifiableCredential.evidence,
                             verifiableCredential.termsOfUse,
-                            verifiableCredential.validFrom,
-                            verifiableCredential.validUntil,
                             verifiableCredential.proof,
-                            verifiableCredential.aud,
                         )
 
                     else ->
-                        JWTVerifiableCredential(
+                        JWTCredentialPayload.JWTVerifiableCredential(
                             CredentialType.JWT,
-                            verifiableCredential.id,
                             verifiableCredential.context,
                             verifiableCredential.type,
                             verifiableCredential.issuer,
@@ -519,10 +509,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             verifiableCredential.refreshService,
                             verifiableCredential.evidence,
                             verifiableCredential.termsOfUse,
-                            verifiableCredential.validFrom,
-                            verifiableCredential.validUntil,
                             verifiableCredential.proof,
-                            verifiableCredential.aud,
                         )
                 }
             }.toTypedArray()

@@ -19,7 +19,7 @@ data class JWTCredentialPayload(
 
     @Serializable
     data class JWTVerifiableCredential(
-        override val credentialType: CredentialType,
+        override val credentialType: CredentialType = CredentialType.JWT,
         override val context: Array<String>,
         override val type: Array<String>,
         override val issuer: DID,

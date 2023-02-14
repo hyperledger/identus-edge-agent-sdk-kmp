@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsd.pollux
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pollux
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.JsonString
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
@@ -23,25 +24,19 @@ class PolluxImpl(override val castor: Castor) : Pollux {
             throw PolluxError.InvalidCredentialError(e.message)
         }
 
-        val jwtCredential = try {
-            JWTCredential(
-                id = jwtString,
-                json = decodedBase64CredentialJson,
-            ).makeVerifiableCredential()
-        } catch (e: Throwable) {
-            null
-        }
+        val verifiableCredential = Json.decodeFromString<VerifiableCredential>(decodedBase64CredentialJson)
 
-        if (jwtCredential != null) {
-            return jwtCredential
+        return when (verifiableCredential.type.first()) {
+            CredentialType.JWT.type -> {
+                JWTCredential(
+                    id = jwtString,
+                    json = decodedBase64CredentialJson,
+                ).makeVerifiableCredential()
+            }
+            CredentialType.W3C.type -> {
+                Json.decodeFromString<W3CVerifiableCredential>(decodedBase64CredentialJson)
+            }
+            else -> throw PolluxError.InvalidCredentialError()
         }
-
-        val w3cCredential = try {
-            Json.decodeFromString<W3CVerifiableCredential>(decodedBase64CredentialJson)
-        } catch (e: Throwable) {
-            null
-        }
-
-        return w3cCredential ?: throw PolluxError.InvalidCredentialError()
     }
 }

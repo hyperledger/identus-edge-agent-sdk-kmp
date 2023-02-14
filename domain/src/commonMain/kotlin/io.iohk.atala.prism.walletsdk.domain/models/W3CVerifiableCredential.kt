@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class W3CVerifiableCredential(
-    override val credentialType: CredentialType,
+    override val credentialType: CredentialType = CredentialType.W3C,
     override val context: Array<String>,
     override val type: Array<String>,
     override val issuer: DID,
@@ -57,5 +57,4 @@ data class W3CVerifiableCredential(
         result = 31 * result + proof.hashCode()
         return result
     }
-
 }
