@@ -17,11 +17,11 @@ data class Message(
     val extraHeaders: Array<String>,
     val createdTime: String,
     val expiresTimePlus: String,
-    val attachments: Array<String>, // TODO: Change to AttachmentDescriptor
+    val attachments: Array<AttachmentDescriptor>,
     val thid: String? = null,
     val pthid: String? = null,
     val ack: Array<String>,
-    val direction: Direction
+    val direction: Direction,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -69,7 +69,7 @@ data class Message(
 
     enum class Direction(val value: Int) {
         SENT(0),
-        RECEIVED(1)
+        RECEIVED(1),
     }
 }
 
