@@ -5,8 +5,9 @@ import kotlin.js.JsExport
 
 @JsExport
 @Serializable
-data class DIDPair(
-    val host: DID,
-    val receiver: DID,
-    val name: String?,
+data class Mediator(
+    val id: String,
+    val mediatorDID: DID,
+    val hostDID: DID,
+    val routingDID: DID,
 )
