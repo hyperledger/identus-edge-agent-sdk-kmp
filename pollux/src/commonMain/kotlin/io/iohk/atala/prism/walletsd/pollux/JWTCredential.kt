@@ -3,15 +3,19 @@ package io.iohk.atala.prism.walletsd.pollux
 import io.iohk.atala.prism.walletsdk.domain.models.JWTCredentialPayload
 import io.iohk.atala.prism.walletsdk.domain.models.JsonString
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 
+@OptIn(ExperimentalJsExport::class)
 @Serializable
 @JsExport
 data class JWTCredential(val id: String, val json: JsonString) {
 
+    @SerialName("vc")
     private val jwtVerifiableCredential: JWTCredentialPayload = Json.decodeFromString(json)
 
     fun makeVerifiableCredential(): VerifiableCredential {
@@ -22,7 +26,6 @@ data class JWTCredential(val id: String, val json: JsonString) {
             nbf = jwtVerifiableCredential.nbf,
             exp = jwtVerifiableCredential.exp,
             jti = id,
-            aud = jwtVerifiableCredential.aud,
-        ).verifiableCredential
+        )
     }
 }

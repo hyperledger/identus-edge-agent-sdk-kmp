@@ -3,8 +3,10 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 
+@OptIn(ExperimentalJsExport::class)
 @Serializable
 @JsExport
 data class VerifiableCredentialTypeContainer(
@@ -12,6 +14,7 @@ data class VerifiableCredentialTypeContainer(
     val type: String,
 )
 
+@OptIn(ExperimentalJsExport::class)
 @JsExport
 @Serializable
 enum class CredentialType(val type: String) {
@@ -20,8 +23,10 @@ enum class CredentialType(val type: String) {
     Unknown("Unknown"),
 }
 
+@OptIn(ExperimentalJsExport::class)
 @JsExport
 interface VerifiableCredential {
+    val id: String
     val credentialType: CredentialType
     val context: Array<String>
     val type: Array<String>
@@ -34,7 +39,10 @@ interface VerifiableCredential {
     val issuer: DID
     val issuanceDate: String // Date
     val expirationDate: String? // Date
-    val proof: String
+    val validFrom: VerifiableCredentialTypeContainer?
+    val validUntil: VerifiableCredentialTypeContainer?
+    val proof: JsonString?
+    val aud: Array<String>
     fun toJsonString(): String {
         return Json.encodeToString(this)
     }
