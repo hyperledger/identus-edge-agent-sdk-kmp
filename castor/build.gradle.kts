@@ -78,10 +78,10 @@ kotlin {
             dependencies {
                 implementation(project(":domain"))
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("io.iohk.atala.prism:didpeer:1.0.0-alpha")
                 implementation("io.iohk.atala.prism:apollo:1.0.0-alpha")
-                api("io.iohk:pbandk-runtime:0.20.7") {
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                api("pro.streem.pbandk:pbandk-runtime:0.14.2") {
                     exclude("com.google.protobuf")
                 }
             }
@@ -119,12 +119,16 @@ kotlin {
             this.dependsOn(allButJSTest)
         }
         val jsMain by getting {
+            dependsOn(commonMain)
             dependsOn(commonAntlr)
             dependencies {
                 implementation("com.github.piacenti:antlr-kotlin-runtime-js:0.0.14")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-common:1.7.20")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-js:1.7.20")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                // Polyfill dependencies
+                implementation(npm("stream-browserify", "3.0.0"))
+                implementation(npm("buffer", "6.0.3"))
             }
         }
         val jsTest by getting
