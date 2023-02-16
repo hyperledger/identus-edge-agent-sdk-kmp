@@ -30,7 +30,7 @@ kotlin {
 
     js(IR) {
         this.moduleName = currentModuleName
-        this.binaries.executable()
+        this.binaries.library()
         this.useCommonJs()
         this.compilations["main"].packageJson {
             this.version = rootProject.version.toString()
@@ -72,55 +72,63 @@ kotlin {
             }
         }
         val commonMain by getting {
-            dependsOn(commonAntlr)
+            this.dependsOn(commonAntlr)
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
                 implementation(project(":domain"))
-                implementation(project(":apollo"))
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("io.iohk.atala.prism:didpeer:1.0.0-alpha")
                 implementation("io.iohk.atala.prism:apollo:1.0.0-alpha")
-                api("io.iohk:pbandk-runtime:0.20.7") {
+                api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+                api("pro.streem.pbandk:pbandk-runtime:0.14.2") {
                     exclude("com.google.protobuf")
                 }
             }
         }
         val commonTest by getting {
             dependencies {
+                implementation(project(":apollo"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
                 implementation(kotlin("test"))
             }
         }
+        val allButJSMain by creating {
+            this.dependsOn(commonMain)
+        }
+        val allButJSTest by creating {
+            this.dependsOn(commonTest)
+        }
         val jvmMain by getting {
+            this.dependsOn(allButJSMain)
             dependencies {
                 api(kotlin("stdlib-jdk8"))
                 api(kotlin("reflect"))
             }
         }
         val jvmTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
+            this.dependsOn(allButJSTest)
         }
         val androidMain by getting {
+            this.dependsOn(allButJSMain)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
             }
         }
         val androidTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
+            this.dependsOn(allButJSTest)
         }
         val jsMain by getting {
+            dependsOn(commonMain)
             dependsOn(commonAntlr)
             dependencies {
                 implementation("com.github.piacenti:antlr-kotlin-runtime-js:0.0.14")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-common:1.7.20")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-js:1.7.20")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                // Polyfill dependencies
+                implementation(npm("stream-browserify", "3.0.0"))
+                implementation(npm("buffer", "6.0.3"))
             }
         }
         val jsTest by getting
@@ -202,7 +210,7 @@ val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin
         project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
     )
     maxHeapSize = "64m"
-    packageName = "io.iohk.atala.prism.castor.antlrgrammar"
+    packageName = "io.iohk.atala.prism.walletsdk.castor.antlrgrammar"
     arguments = listOf("-long-messages", "-Dlanguage=JavaScript")
     source = project.objects
         .sourceDirectorySet("antlr", "antlr")

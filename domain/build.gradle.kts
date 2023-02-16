@@ -30,7 +30,7 @@ kotlin {
 
     js(IR) {
         this.moduleName = currentModuleName
-        this.binaries.executable()
+        this.binaries.library()
         this.useCommonJs()
         this.compilations["main"].packageJson {
             this.version = rootProject.version.toString()
@@ -76,24 +76,26 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-            }
-        }
-        val jvmMain by getting
-
-        val jvmTest by getting {
-            dependencies {
                 implementation("junit:junit:4.13.2")
             }
+        }
+        val allButJSMain by creating {
+            this.dependsOn(commonMain)
+        }
+        val allButJSTest by creating {
+            this.dependsOn(commonTest)
+        }
+        val jvmMain by getting {
+            this.dependsOn(allButJSMain)
+        }
+        val jvmTest by getting {
+            this.dependsOn(allButJSTest)
         }
         val androidMain by getting {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-            }
+            this.dependsOn(allButJSMain)
         }
         val androidTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
+            this.dependsOn(allButJSTest)
         }
         val jsMain by getting
         val jsTest by getting
