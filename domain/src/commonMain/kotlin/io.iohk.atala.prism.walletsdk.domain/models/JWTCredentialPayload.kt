@@ -243,18 +243,18 @@ data class JWTCredentialPayload(
 
             val jsonVc = jsonObject.getCredentialField<JsonObject>("vc")
 
-            val iss = DID(jsonObject.getCredentialField("iss"))
-            val sub: String? = jsonObject.getCredentialField("sub", true)
-            val nbf: String = jsonObject.getCredentialField("nbf")
-            val exp: String? = jsonObject.getCredentialField("exp", true)
-            val jti: String = jsonObject.getCredentialField("jti")
+            val iss = DID(jsonObject.getCredentialField(name = "iss"))
+            val sub: String? = jsonObject.getCredentialField(name = "sub", isOptional = true)
+            val nbf: String = jsonObject.getCredentialField(name = "nbf")
+            val exp: String? = jsonObject.getCredentialField(name = "exp", isOptional = true)
+            val jti: String = jsonObject.getCredentialField(name = "jti")
 
             if (jsonObject.getCredentialField<String>("credentialType") != CredentialType.JWT.type) {
                 throw PolluxError.InvalidCredentialError()
             }
 
-            val vcCredentialSubject: JsonObject = jsonVc.getCredentialField("credentialSubject")
-            val vcProof: JsonObject? = jsonVc.getCredentialField("proof", true)
+            val vcCredentialSubject: JsonObject = jsonVc.getCredentialField(name = "credentialSubject")
+            val vcProof: JsonObject? = jsonVc.getCredentialField(name = "proof", isOptional = true)
             val credentialSubject = Json.encodeToString(vcCredentialSubject)
             val proof = if (vcProof != null) {
                 Json.encodeToString(vcProof)
@@ -263,23 +263,23 @@ data class JWTCredentialPayload(
             }
 
             val verifiableCredential = JWTVerifiableCredential(
-                id = jsonVc.getCredentialField("id"),
+                id = jsonVc.getCredentialField(name = "id"),
                 credentialType = CredentialType.JWT,
-                context = jsonVc.getCredentialField("context"),
-                type = jsonVc.getCredentialField("type"),
-                credentialSchema = jsonVc.getCredentialField("credentialSchema", true),
+                context = jsonVc.getCredentialField(name = "context"),
+                type = jsonVc.getCredentialField(name = "type"),
+                credentialSchema = jsonVc.getCredentialField(name = "credentialSchema", isOptional = true),
                 credentialSubject = credentialSubject,
-                credentialStatus = jsonVc.getCredentialField("credentialStatus", true),
-                refreshService = jsonVc.getCredentialField("refreshService", true),
-                evidence = jsonVc.getCredentialField("evidence", true),
-                termsOfUse = jsonVc.getCredentialField("termsOfUse", true),
-                issuer = jsonVc.getCredentialField("issuer"),
-                issuanceDate = jsonVc.getCredentialField("issuanceDate"),
-                expirationDate = jsonVc.getCredentialField("expirationDate", true),
-                validFrom = jsonVc.getCredentialField("validFrom", true),
-                validUntil = jsonVc.getCredentialField("validUntil", true),
+                credentialStatus = jsonVc.getCredentialField(name = "credentialStatus", isOptional = true),
+                refreshService = jsonVc.getCredentialField(name = "refreshService", isOptional = true),
+                evidence = jsonVc.getCredentialField(name = "evidence", isOptional = true),
+                termsOfUse = jsonVc.getCredentialField(name = "termsOfUse", isOptional = true),
+                issuer = jsonVc.getCredentialField(name = "issuer"),
+                issuanceDate = jsonVc.getCredentialField(name = "issuanceDate"),
+                expirationDate = jsonVc.getCredentialField(name = "expirationDate", isOptional = true),
+                validFrom = jsonVc.getCredentialField(name = "validFrom", isOptional = true),
+                validUntil = jsonVc.getCredentialField(name = "validUntil", isOptional = true),
                 proof = proof,
-                aud = jsonVc.getCredentialField("aud"),
+                aud = jsonVc.getCredentialField(name = "aud"),
             )
 
             return JWTCredentialPayload(
