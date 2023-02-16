@@ -17,9 +17,9 @@ class ApiMock(statusCode: HttpStatusCode, response: String) : ApiImpl(
             respond(
                 content = response,
                 status = statusCode,
-                headers = headersOf(HttpHeaders.ContentType, "application/json")
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
             )
-        }
+        },
     ) {
         install(ContentNegotiation) {
             json(
@@ -27,8 +27,8 @@ class ApiMock(statusCode: HttpStatusCode, response: String) : ApiImpl(
                     ignoreUnknownKeys = true
                     prettyPrint = true
                     isLenient = true
-                }
+                },
             )
         }
-    }
+    },
 )
