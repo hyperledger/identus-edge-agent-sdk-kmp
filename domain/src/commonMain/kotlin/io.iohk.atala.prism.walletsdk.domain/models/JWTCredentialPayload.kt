@@ -139,54 +139,49 @@ data class JWTCredentialPayload(
         vcJson["type"] = JsonArray(this.type.map { JsonPrimitive(it) })
         vcJson["issuer"] = JsonPrimitive(this.issuer.toString())
 
-        if (this.credentialSchema != null) {
-            val credentialSchema = this.credentialSchema!!
+        this.credentialSchema?.let {
             vcJson["credentialSchema"] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(credentialSchema.id),
-                    "type" to JsonPrimitive(credentialSchema.type),
+                    "id" to JsonPrimitive(it.id),
+                    "type" to JsonPrimitive(it.type),
                 ),
             )
         }
 
         vcJson["credentialSubject"] = Json.decodeFromString(this.credentialSubject)
 
-        if (this.credentialStatus != null) {
-            val credentialStatus = this.credentialStatus!!
+        this.credentialStatus?.let {
             vcJson["credentialStatus"] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(credentialStatus.id),
-                    "type" to JsonPrimitive(credentialStatus.type),
+                    "id" to JsonPrimitive(it.id),
+                    "type" to JsonPrimitive(it.type),
                 ),
             )
         }
 
-        if (this.refreshService != null) {
-            val refreshService = this.refreshService!!
+        this.refreshService?.let {
             vcJson["refreshService"] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(refreshService.id),
-                    "type" to JsonPrimitive(refreshService.type),
+                    "id" to JsonPrimitive(it.id),
+                    "type" to JsonPrimitive(it.type),
                 ),
             )
         }
 
-        if (this.evidence != null) {
-            val evidence = this.evidence!!
+        this.evidence?.let {
             vcJson["evidence"] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(evidence.id),
-                    "type" to JsonPrimitive(evidence.type),
+                    "id" to JsonPrimitive(it.id),
+                    "type" to JsonPrimitive(it.type),
                 ),
             )
         }
 
-        if (this.termsOfUse != null) {
-            val termsOfUse = this.termsOfUse!!
+        this.termsOfUse?.let {
             vcJson["termsOfUse"] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(termsOfUse.id),
-                    "type" to JsonPrimitive(termsOfUse.type),
+                    "id" to JsonPrimitive(it.id),
+                    "type" to JsonPrimitive(it.type),
                 ),
             )
         }
@@ -197,29 +192,26 @@ data class JWTCredentialPayload(
             vcJson["expirationDate"] = JsonPrimitive(this.expirationDate)
         }
 
-        if (this.validFrom != null) {
-            val validFrom = this.validFrom!!
+        this.validFrom?.let {
             vcJson["validFrom"] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(validFrom.id),
-                    "type" to JsonPrimitive(validFrom.type),
+                    "id" to JsonPrimitive(it.id),
+                    "type" to JsonPrimitive(it.type),
                 ),
             )
         }
 
-        if (this.validUntil != null) {
-            val validUntil = this.validUntil!!
+        this.validUntil?.let {
             vcJson["validUntil"] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(validUntil.id),
-                    "type" to JsonPrimitive(validUntil.type),
+                    "id" to JsonPrimitive(it.id),
+                    "type" to JsonPrimitive(it.type),
                 ),
             )
         }
 
-        if (this.proof != null) {
-            val proof = this.proof!!
-            vcJson["proof"] = Json.decodeFromString(proof)
+        this.proof?.let {
+            vcJson["proof"] = Json.decodeFromString(it)
         }
 
         vcJson["aud"] = JsonArray(this.aud.map { JsonPrimitive(it) })
@@ -256,11 +248,7 @@ data class JWTCredentialPayload(
             val vcCredentialSubject: JsonObject = jsonVc.getCredentialField(name = "credentialSubject")
             val vcProof: JsonObject? = jsonVc.getCredentialField(name = "proof", isOptional = true)
             val credentialSubject = Json.encodeToString(vcCredentialSubject)
-            val proof = if (vcProof != null) {
-                Json.encodeToString(vcProof)
-            } else {
-                null
-            }
+            val proof = vcProof?.let { Json.encodeToString(it) }
 
             val verifiableCredential = JWTVerifiableCredential(
                 id = jsonVc.getCredentialField(name = "id"),
