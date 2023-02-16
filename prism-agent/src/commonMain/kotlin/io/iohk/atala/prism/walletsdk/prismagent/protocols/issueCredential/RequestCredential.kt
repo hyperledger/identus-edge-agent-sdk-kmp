@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
 import io.iohk.atala.prism.apollo.uuid.UUID
-import io.iohk.atala.prism.domain.models.AttachmentDescriptor
-import io.iohk.atala.prism.domain.models.DID
-import io.iohk.atala.prism.domain.models.Message
-import io.iohk.atala.prism.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
+import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable

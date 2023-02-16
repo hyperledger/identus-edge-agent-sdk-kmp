@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.connectionsManager
 
-import io.iohk.atala.prism.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.Message
 
 interface DIDCommConnection {
     suspend fun awaitMessages(): Array<Message>
