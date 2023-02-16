@@ -5,7 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.JWTVerifiableCredential
+import io.iohk.atala.prism.walletsdk.domain.models.JWTCredentialPayload
 import io.iohk.atala.prism.walletsdk.domain.models.MediatorDID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
@@ -462,56 +462,65 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 val verifiableCredential = Json.decodeFromString<VerifiableCredential>(it.verifiableCredentialJson)
                 when (it.credentialType) {
                     CredentialType.JWT.type -> {
-                        JWTVerifiableCredential(
-                            credentialType = CredentialType.JWT,
+                        JWTCredentialPayload.JWTVerifiableCredential(
                             id = verifiableCredential.id,
+                            credentialType = CredentialType.JWT,
                             context = verifiableCredential.context,
                             type = verifiableCredential.type,
-                            issuer = verifiableCredential.issuer,
                             credentialSchema = verifiableCredential.credentialSchema,
                             credentialSubject = verifiableCredential.credentialSubject,
                             credentialStatus = verifiableCredential.credentialStatus,
-                            issuanceDate = verifiableCredential.issuanceDate,
-                            expirationDate = verifiableCredential.expirationDate,
                             refreshService = verifiableCredential.refreshService,
                             evidence = verifiableCredential.evidence,
                             termsOfUse = verifiableCredential.termsOfUse,
+                            issuer = verifiableCredential.issuer,
+                            issuanceDate = verifiableCredential.issuanceDate,
+                            expirationDate = verifiableCredential.expirationDate,
+                            validFrom = verifiableCredential.validFrom,
+                            validUntil = verifiableCredential.validUntil,
                             proof = verifiableCredential.proof,
+                            aud = verifiableCredential.aud,
                         )
                     }
                     CredentialType.W3C.type ->
                         W3CVerifiableCredential(
-                            credentialType = CredentialType.W3C,
                             id = verifiableCredential.id,
+                            credentialType = CredentialType.JWT,
                             context = verifiableCredential.context,
                             type = verifiableCredential.type,
-                            issuer = verifiableCredential.issuer,
                             credentialSchema = verifiableCredential.credentialSchema,
                             credentialSubject = verifiableCredential.credentialSubject,
                             credentialStatus = verifiableCredential.credentialStatus,
-                            issuanceDate = verifiableCredential.issuanceDate,
-                            expirationDate = verifiableCredential.expirationDate,
                             refreshService = verifiableCredential.refreshService,
                             evidence = verifiableCredential.evidence,
                             termsOfUse = verifiableCredential.termsOfUse,
+                            issuer = verifiableCredential.issuer,
+                            issuanceDate = verifiableCredential.issuanceDate,
+                            expirationDate = verifiableCredential.expirationDate,
+                            validFrom = verifiableCredential.validFrom,
+                            validUntil = verifiableCredential.validUntil,
                             proof = verifiableCredential.proof,
+                            aud = verifiableCredential.aud,
                         )
                     else ->
-                        JWTVerifiableCredential(
-                            credentialType = CredentialType.JWT,
+                        JWTCredentialPayload.JWTVerifiableCredential(
                             id = verifiableCredential.id,
+                            credentialType = CredentialType.JWT,
                             context = verifiableCredential.context,
                             type = verifiableCredential.type,
-                            issuer = verifiableCredential.issuer,
                             credentialSchema = verifiableCredential.credentialSchema,
                             credentialSubject = verifiableCredential.credentialSubject,
                             credentialStatus = verifiableCredential.credentialStatus,
-                            issuanceDate = verifiableCredential.issuanceDate,
-                            expirationDate = verifiableCredential.expirationDate,
                             refreshService = verifiableCredential.refreshService,
                             evidence = verifiableCredential.evidence,
                             termsOfUse = verifiableCredential.termsOfUse,
+                            issuer = verifiableCredential.issuer,
+                            issuanceDate = verifiableCredential.issuanceDate,
+                            expirationDate = verifiableCredential.expirationDate,
+                            validFrom = verifiableCredential.validFrom,
+                            validUntil = verifiableCredential.validUntil,
                             proof = verifiableCredential.proof,
+                            aud = verifiableCredential.aud,
                         )
                 }
             }.toTypedArray()
