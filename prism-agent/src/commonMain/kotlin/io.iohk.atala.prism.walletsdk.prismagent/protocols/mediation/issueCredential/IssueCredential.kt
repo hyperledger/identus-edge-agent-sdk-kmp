@@ -23,7 +23,7 @@ data class IssueCredential(
     val attachments: Array<AttachmentDescriptor>,
     val thid: String?,
     val from: DID,
-    val to: DID
+    val to: DID,
 ) {
     val type: String = ProtocolType.DidcommIssueCredential.value
 
@@ -35,7 +35,7 @@ data class IssueCredential(
             to = to,
             body = Json.encodeToString(body),
             attachments = attachments,
-            thid = thid
+            thid = thid,
         )
     }
 
@@ -55,7 +55,7 @@ data class IssueCredential(
             require(
                 fromMessage.piuri == ProtocolType.DidcommIssueCredential.value &&
                     fromMessage.from != null &&
-                    fromMessage.to != null
+                    fromMessage.to != null,
             ) {
                 throw PrismAgentError.invalidIssueCredentialMessageError()
             }
@@ -70,7 +70,7 @@ data class IssueCredential(
                 attachments = fromMessage.attachments,
                 thid = fromMessage.thid,
                 from = fromDID,
-                to = toDID
+                to = toDID,
             )
         }
 
@@ -80,12 +80,12 @@ data class IssueCredential(
                 body = Body(
                     goalCode = request.body.goalCode,
                     comment = request.body.comment,
-                    formats = request.body.formats
+                    formats = request.body.formats,
                 ),
                 attachments = request.attachments,
                 thid = msg.id,
                 from = request.to,
-                to = request.from
+                to = request.from,
             )
         }
     }
@@ -96,7 +96,7 @@ data class IssueCredential(
         val comment: String? = null,
         val replacementId: String? = null,
         val moreAvailable: String? = null,
-        val formats: Array<CredentialFormat>
+        val formats: Array<CredentialFormat>,
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -156,22 +156,22 @@ inline fun <reified T : Serializable> IssueCredential.Companion.build(
     fromDID: DID,
     toDID: DID,
     thid: String?,
-    credentials: Map<String, T> = mapOf()
+    credentials: Map<String, T> = mapOf(),
 ): IssueCredential {
     val aux = credentials.map { (key, value) ->
         val attachment = AttachmentDescriptor.build(
-            payload = value
+            payload = value,
         )
         val format = CredentialFormat(attachId = attachment.id, format = key)
         format to attachment
     }
     return IssueCredential(
         body = IssueCredential.Body(
-            formats = aux.map { it.first }.toTypedArray()
+            formats = aux.map { it.first }.toTypedArray(),
         ),
         attachments = aux.map { it.second }.toTypedArray(),
         thid = thid,
         from = fromDID,
-        to = toDID
+        to = toDID,
     )
 }
