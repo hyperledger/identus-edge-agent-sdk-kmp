@@ -4,7 +4,7 @@ data class DIDUrl(
     val did: DID,
     val path: Array<String>? = arrayOf(),
     val parameters: Map<String, String>? = mapOf(),
-    val fragment: String? = null
+    val fragment: String? = null,
 ) {
 
     fun string(): String {

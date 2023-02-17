@@ -17,7 +17,7 @@ data class JWTVerifiableCredential(
     override val validFrom: VerifiableCredentialTypeContainer?,
     override val validUntil: VerifiableCredentialTypeContainer?,
     override val proof: String?,
-    override val aud: Set<String>
+    override val aud: Set<String>,
 ) : VerifiableCredential
 
 data class JWTCredentialPayload(

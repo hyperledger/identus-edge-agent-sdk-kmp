@@ -3,30 +3,41 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import kotlinx.serialization.Serializable
 import kotlin.js.JsExport
 
+@JsExport
 interface AttachmentData
 
+@Serializable
+@JsExport
 data class AttachmentHeader(
-    val children: String
+    val children: String,
 ) : AttachmentData
 
+@Serializable
+@JsExport
 data class AttachmentJws(
     val header: AttachmentHeader,
     val protected: String,
-    val signature: String
+    val signature: String,
 ) : AttachmentData
 
+@Serializable
+@JsExport
 data class AttachmentJwsData(
     val base64: String,
-    val jws: AttachmentJws
+    val jws: AttachmentJws,
 ) : AttachmentData
 
+@Serializable
+@JsExport
 data class AttachmentBase64(
-    val base64: String
+    val base64: String,
 ) : AttachmentData
 
+@Serializable
+@JsExport
 data class AttachmentLinkData(
     val links: Array<String>,
-    val hash: String
+    val hash: String,
 ) : AttachmentData {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -47,8 +58,10 @@ data class AttachmentLinkData(
     }
 }
 
+@Serializable
+@JsExport
 data class AttachmentJsonData(
-    val data: String
+    val data: String,
 ) : AttachmentData
 
 @Serializable
@@ -61,7 +74,7 @@ data class AttachmentDescriptor(
     val format: String? = null,
     val lastModTime: String? = null, // Date format
     val byteCount: Int? = null,
-    val description: String? = null
+    val description: String? = null,
 ) : AttachmentData {
 
     override fun equals(other: Any?): Boolean {

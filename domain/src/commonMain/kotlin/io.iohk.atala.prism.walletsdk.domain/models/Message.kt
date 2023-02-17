@@ -16,14 +16,14 @@ data class Message(
     val to: DID? = null,
     val fromPrior: String? = null,
     val body: String,
-    val extraHeaders: Array<String> = arrayOf(),
-    val createdTime: String = Clock.System.now().toString(),
-    val expiresTimePlus: String = Clock.System.now().toString(),
-    val attachments: Array<AttachmentDescriptor> = arrayOf(),
+    val extraHeaders: Array<String>,
+    val createdTime: String,
+    val expiresTimePlus: String,
+    val attachments: Array<AttachmentDescriptor>,
     val thid: String? = null,
     val pthid: String? = null,
-    val ack: Array<String>? = emptyArray(),
-    val direction: Direction = Direction.RECEIVED
+    val ack: Array<String>,
+    val direction: Direction,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -71,7 +71,7 @@ data class Message(
 
     enum class Direction(val value: Int) {
         SENT(0),
-        RECEIVED(1)
+        RECEIVED(1),
     }
 }
 
