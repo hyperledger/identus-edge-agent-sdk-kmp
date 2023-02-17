@@ -75,4 +75,5 @@ sealed class PrismAgentError(message: String? = null) : Throwable(message) {
     class invalidMessageError(message: String? = null) : PrismAgentError(message)
     class noMediatorAvailableError(message: String? = null) : PrismAgentError(message)
     class mediationRequestFailedError(message: String? = null) : PrismAgentError(message)
+    class invalidStepError(message: String? = null) : PrismAgentError(message)
 }
