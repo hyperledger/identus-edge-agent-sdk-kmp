@@ -10,7 +10,7 @@ import kotlin.jvm.JvmStatic
 @Serializable
 @JsExport
 data class DID(
-    val schema: String,
+    val schema: String = "did",
     val method: String,
     val methodId: String,
 ) {

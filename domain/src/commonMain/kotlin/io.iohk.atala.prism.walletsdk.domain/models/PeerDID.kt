@@ -5,7 +5,7 @@ import kotlin.js.JsExport
 @JsExport
 data class PeerDID(
     val did: DID,
-    val privateKeys: Array<PrivateKey>
+    val privateKeys: Array<PrivateKey>,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

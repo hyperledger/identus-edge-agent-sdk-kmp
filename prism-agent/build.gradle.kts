@@ -68,6 +68,7 @@ kotlin {
             dependencies {
                 implementation("io.iohk.atala.prism:uuid:1.0.0-alpha")
                 implementation(project(":domain"))
+                implementation("io.iohk.atala.prism:apollo:1.0.0-alpha")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
 

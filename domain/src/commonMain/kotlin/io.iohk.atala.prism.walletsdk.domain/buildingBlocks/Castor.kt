@@ -11,11 +11,11 @@ expect interface Castor {
 
     fun createPrismDID(
         masterPublicKey: PublicKey,
-        services: Array<DIDDocument.Service>? = null
+        services: Array<DIDDocument.Service>? = null,
     ): DID
 
     fun createPeerDID(
         keyPairs: Array<KeyPair>,
-        services: Array<DIDDocument.Service>
+        services: Array<DIDDocument.Service>,
     ): DID
 }
