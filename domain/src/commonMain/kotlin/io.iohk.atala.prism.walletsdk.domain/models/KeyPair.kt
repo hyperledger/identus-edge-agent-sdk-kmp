@@ -6,7 +6,7 @@ import kotlin.js.JsExport
 @Serializable
 @JsExport
 data class KeyPair(
-    val keyCurve: KeyCurve? = KeyCurve(Curve.SECP256K1),
+    val keyCurve: KeyCurve = KeyCurve(Curve.SECP256K1),
     val privateKey: PrivateKey,
     val publicKey: PublicKey,
 )

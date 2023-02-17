@@ -84,7 +84,7 @@ class PlutoMock : Pluto {
         wasStoreMessagesCalled = true
     }
 
-    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int) {
+    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String?) {
         wasStorePrivateKeysCalled = true
     }
 

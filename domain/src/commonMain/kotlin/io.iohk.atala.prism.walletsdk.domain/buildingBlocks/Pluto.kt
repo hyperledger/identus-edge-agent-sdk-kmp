@@ -30,7 +30,7 @@ interface Pluto {
 
     fun storeMessages(messages: Array<Message>)
 
-    fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int)
+    fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String? = null)
 
     fun storeMediator(mediator: DID, host: DID, routing: DID)
 
@@ -49,6 +49,8 @@ interface Pluto {
     fun getAllPeerDIDs(): Array<PeerDID>
 
     fun getDIDPrivateKeysByDID(did: DID): Array<PrivateKey>?
+
+    fun getDIDPrivateKeyByID(id: String): PrivateKey?
 
     fun getAllDidPairs(): Array<DIDPair>
 

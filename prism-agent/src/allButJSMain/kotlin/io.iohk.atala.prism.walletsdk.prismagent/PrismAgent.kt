@@ -164,6 +164,27 @@ class PrismAgent {
             privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
         )
 
+        // The next logic is a bit tricky, so it's not forgotten this is a reminder.
+        // The next few lines are needed because of DIDComm library, the library will need
+        // to get the secret(private key) that is pair of the public key within the DIDPeer Document
+        // to this end the library will give you the id of the public key that is `did:{method}:{methodId}#ecnumbasis`.
+        // So the code below after the did is created, it will retrieve the document and
+        // and store the private keys with the corresponding `id` of the one created on the document.
+        // So when the secret resolver asks for the secret we can identify it.
+        val document = castor.resolveDID(did.toString())
+
+        val verificationMethods = document.coreProperties.firstOrNull {
+            it is DIDDocument.VerificationMethods
+        } as? DIDDocument.VerificationMethods
+
+        verificationMethods?.values?.forEach {
+            if(it.type.contains("X25519")) {
+                pluto.storePrivateKeys(keyAgreementKeyPair.privateKey, did, 0, it.id.toString())
+            } else if(it.type.contains("Ed25519")) {
+                pluto.storePrivateKeys(authenticationKeyPair.privateKey, did, 0, it.id.toString())
+            }
+        }
+
         return did
     }
 
