@@ -20,7 +20,7 @@ interface Apollo {
 
     fun createSeed(mnemonics: Array<String>, passphrase: String): Seed
 
-    fun createRandomSeed(passphrase: String?): SeedWords
+    fun createRandomSeed(passphrase: String? = ""): SeedWords
 
     @JsName("createKeyPairFromKeyCurve")
     fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair

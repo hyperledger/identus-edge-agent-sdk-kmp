@@ -8,26 +8,27 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 
 class ApolloMock : Apollo {
     var createRandomMnemonicsReturn: Array<String> = emptyArray()
     var createSeedReturn: Seed = Seed(ByteArray(0))
-    var createRandomSeedReturn: Pair<Array<String>, Seed> = Pair(emptyArray(), Seed(ByteArray(0)))
+    var createRandomSeedReturn: SeedWords = SeedWords(emptyArray(), Seed(ByteArray(0)))
     var createKeyPairReturn: KeyPair = KeyPair(
         privateKey = PrivateKey(KeyCurve(Curve.ED25519), ByteArray(0)),
-        publicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0))
+        publicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
     )
     var compressedPublicKeyReturn: CompressedPublicKey = CompressedPublicKey(
         PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
-        ByteArray(0)
+        ByteArray(0),
     )
     var publicKeyReturn: PublicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0))
     var signMessageReturn: Signature = Signature(ByteArray(0))
     var verifySignatureReturn: Boolean = false
     var compressedPublicKeyDataReturn: CompressedPublicKey = CompressedPublicKey(
         PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
-        ByteArray(0)
+        ByteArray(0),
     )
     var signMessageByteArrayReturn: Signature = Signature(ByteArray(0))
     var signMessageStringReturn: Signature = Signature(ByteArray(0))
@@ -38,7 +39,7 @@ class ApolloMock : Apollo {
         return createSeedReturn
     }
 
-    override fun createRandomSeed(): Pair<Array<String>, Seed> {
+    override fun createRandomSeed(passphrase: String?): SeedWords {
         return createRandomSeedReturn
     }
 
@@ -73,6 +74,6 @@ class ApolloMock : Apollo {
     override fun verifySignature(
         publicKey: PublicKey,
         challenge: ByteArray,
-        signature: Signature
+        signature: Signature,
     ): Boolean = verifySignatureReturn
 }
