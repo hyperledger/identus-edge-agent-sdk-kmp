@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
 import io.iohk.atala.prism.apollo.uuid.UUID
-import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
