@@ -3,7 +3,7 @@ package io.iohk.atala.prism.walletsdk.domain.buildingBlocks
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 
 interface Pollux {
-
+    val castor: Castor
     @Throws // TODO: Add throw classes
-    fun parseVerifiableCredential(jsonString: String): VerifiableCredential
+    fun parseVerifiableCredential(jwtString: String): VerifiableCredential
 }

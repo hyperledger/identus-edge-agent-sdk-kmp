@@ -8,5 +8,5 @@ import kotlin.js.JsExport
 data class DIDPair(
     val host: DID,
     val receiver: DID,
-    val name: String?
+    val name: String?,
 )

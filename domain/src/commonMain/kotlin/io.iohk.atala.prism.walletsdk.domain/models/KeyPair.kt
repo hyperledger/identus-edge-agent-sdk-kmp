@@ -8,7 +8,7 @@ import kotlin.js.JsExport
 data class KeyPair(
     val keyCurve: KeyCurve? = KeyCurve(Curve.SECP256K1),
     val privateKey: PrivateKey,
-    val publicKey: PublicKey
+    val publicKey: PublicKey,
 )
 
 @Serializable
@@ -20,7 +20,7 @@ data class KeyCurve(val curve: Curve, val index: Int? = 0)
 enum class Curve(val value: String) {
     X25519("X25519"),
     ED25519("Ed25519"),
-    SECP256K1("secp256k1");
+    SECP256K1("secp256k1"),
 }
 
 @JsExport

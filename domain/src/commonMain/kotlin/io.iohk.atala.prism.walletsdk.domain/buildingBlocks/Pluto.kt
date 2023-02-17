@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.domain.buildingBlocks
 
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.MediatorDID
+import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
@@ -77,7 +77,7 @@ interface Pluto {
 
     fun getMessage(id: String): Message?
 
-    fun getAllMediators(): Array<MediatorDID>
+    fun getAllMediators(): Array<Mediator>
 
     fun getAllCredentials(): Array<VerifiableCredential>
 }
