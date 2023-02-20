@@ -35,10 +35,10 @@ interface Apollo {
     fun compressedPublicKey(compressedData: ByteArray): CompressedPublicKey
 
     @JsName("publicKeyFromPoints")
-    fun publicKey(curve: String, x: ByteArray, y: ByteArray): PublicKey
+    fun publicKey(curve: KeyCurve, x: ByteArray, y: ByteArray): PublicKey
 
     @JsName("publicKeyFromPoint")
-    fun publicKey(curve: String, x: ByteArray): PublicKey
+    fun publicKey(curve: KeyCurve, x: ByteArray): PublicKey
 
     @JsName("signByteArrayMessage")
     fun signMessage(privateKey: PrivateKey, message: ByteArray): Signature
