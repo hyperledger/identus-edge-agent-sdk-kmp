@@ -1,18 +1,17 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
- import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
- import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
- import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
- import io.iohk.atala.prism.walletsdk.domain.models.Secret
- import io.iohk.atala.prism.walletsdk.domain.models.SecretMaterialJWK
- import io.iohk.atala.prism.walletsdk.domain.models.SecretType
- import kotlinx.serialization.Serializable
- import kotlin.js.ExperimentalJsExport
- import kotlin.js.JsExport
+import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.models.Secret
+import io.iohk.atala.prism.walletsdk.domain.models.SecretMaterialJWK
+import io.iohk.atala.prism.walletsdk.domain.models.SecretType
+import kotlinx.serialization.Serializable
+import kotlin.js.ExperimentalJsExport
+import kotlin.js.JsExport
 
 @OptIn(ExperimentalJsExport::class)
 @JsExport
-class DefaultSecretsResolverImpl(val pluto: Pluto): SecretsResolver {
+class DefaultSecretsResolverImpl(val pluto: Pluto) : SecretsResolver {
 
     @Serializable
     data class PrivateJWK(
@@ -33,11 +32,14 @@ class DefaultSecretsResolverImpl(val pluto: Pluto): SecretsResolver {
             Secret(
                 secretid,
                 SecretType.JsonWebKey2020,
-                SecretMaterialJWK(PrivateJWK(
-                    secretid,
-                    it.keyCurve.curve.toString(),
-                    it.value.base64UrlEncoded
-                ).toString()))
+                SecretMaterialJWK(
+                    PrivateJWK(
+                        secretid,
+                        it.keyCurve.curve.toString(),
+                        it.value.base64UrlEncoded,
+                    ).toString(),
+                ),
+            )
         }
     }
- }
+}

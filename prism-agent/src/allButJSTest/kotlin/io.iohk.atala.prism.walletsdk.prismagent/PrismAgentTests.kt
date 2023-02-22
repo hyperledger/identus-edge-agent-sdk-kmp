@@ -52,7 +52,7 @@ class PrismAgentTests {
             mercury = mercuryMock,
             connectionManager = connectionManager,
             seed = seed,
-            api = null
+            api = null,
         )
         val newDID = agent.createNewPrismDID()
         assertEquals(newDID, validDID)
@@ -73,7 +73,7 @@ class PrismAgentTests {
             mercuryMock,
             connectionManager,
             null,
-            null
+            null,
         )
         val newDID = agent.createNewPeerDID(services = emptyArray(), updateMediator = false)
 
@@ -91,7 +91,7 @@ class PrismAgentTests {
             mercury = mercuryMock,
             connectionManager = connectionManager,
             seed = null,
-            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}")
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
         )
         var invitationString = """
             {
@@ -114,7 +114,7 @@ class PrismAgentTests {
             mercury = mercuryMock,
             connectionManager = connectionManager,
             seed = null,
-            api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
+            api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}"),
         )
         var invitationString = """
             {
@@ -138,7 +138,7 @@ class PrismAgentTests {
             mercury = mercuryMock,
             connectionManager = connectionManager,
             seed = null,
-            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}")
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
         )
         var invitationString = """
             {
@@ -161,7 +161,7 @@ class PrismAgentTests {
             mercury = mercuryMock,
             connectionManager = connectionManager,
             seed = null,
-            api = null
+            api = null,
         )
 
         plutoMock.getDIDPrivateKeysReturn = null
@@ -233,9 +233,9 @@ class PrismAgentTests {
             OutOfBandInvitation.Body(
                 "issue-vc",
                 "To issue a Faber College Graduate credential",
-                arrayOf("didcomm/v2", "didcomm/aip2;env=rfc587")
+                arrayOf("didcomm/v2", "didcomm/aip2;env=rfc587"),
             ),
-            oobInvitation.body
+            oobInvitation.body,
         )
     }
 

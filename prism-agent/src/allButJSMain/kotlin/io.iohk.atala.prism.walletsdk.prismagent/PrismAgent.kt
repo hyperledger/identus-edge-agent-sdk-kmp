@@ -178,9 +178,9 @@ class PrismAgent {
         } as? DIDDocument.VerificationMethods
 
         verificationMethods?.values?.forEach {
-            if(it.type.contains("X25519")) {
+            if (it.type.contains("X25519")) {
                 pluto.storePrivateKeys(keyAgreementKeyPair.privateKey, did, 0, it.id.toString())
-            } else if(it.type.contains("Ed25519")) {
+            } else if (it.type.contains("Ed25519")) {
                 pluto.storePrivateKeys(authenticationKeyPair.privateKey, did, 0, it.id.toString())
             }
         }

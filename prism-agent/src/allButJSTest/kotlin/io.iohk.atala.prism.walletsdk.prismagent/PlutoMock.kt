@@ -24,6 +24,7 @@ class PlutoMock : Pluto {
     var wasGetPrismLastKeyPathIndexCalled: Boolean = false
     var wasGetAllPeerDIDsCalled: Boolean = false
     var wasGetDIDPrivateKeysByDIDCalled: Boolean = false
+    var wasGetDIDPrivateKeysByIDCalled: Boolean = false
     var wasGetAllDidPairsCalled: Boolean = false
     var wasGetPairByDIDCalled: Boolean = false
     var wasGetPairByNameCalled: Boolean = false
@@ -45,6 +46,7 @@ class PlutoMock : Pluto {
     var getPrismLastKeyPathIndexReturn: Int = 0
     var getAllPeerDIDsReturn: Array<PeerDID> = emptyArray()
     var getDIDPrivateKeysReturn: Array<PrivateKey>? = emptyArray()
+    var getDIDPrivateKeysByIDReturn: PrivateKey? = null
     var getAllDidPairsReturn: Array<DIDPair> = emptyArray()
     var getPairByDIDReturn: DIDPair? = null
     var getPairByNameReturn: DIDPair? = null
@@ -61,7 +63,7 @@ class PlutoMock : Pluto {
     override fun storePrismDID(
         did: DID,
         keyPathIndex: Int,
-        alias: String?
+        alias: String?,
     ) {
         storedPrismDID += did
         wasStorePrismDIDCalled = true
@@ -123,6 +125,11 @@ class PlutoMock : Pluto {
     override fun getDIDPrivateKeysByDID(did: DID): Array<PrivateKey>? {
         wasGetDIDPrivateKeysByDIDCalled = true
         return getDIDPrivateKeysReturn
+    }
+
+    override fun getDIDPrivateKeyByID(id: String): PrivateKey? {
+        wasGetDIDPrivateKeysByIDCalled = true
+        return getDIDPrivateKeysByIDReturn
     }
 
     override fun getAllDidPairs(): Array<DIDPair> {
