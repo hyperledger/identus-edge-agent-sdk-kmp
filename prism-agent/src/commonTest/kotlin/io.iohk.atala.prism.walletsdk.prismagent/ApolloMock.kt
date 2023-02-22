@@ -58,10 +58,10 @@ class ApolloMock : Apollo {
     override fun compressedPublicKey(compressedData: ByteArray): CompressedPublicKey =
         compressedPublicKeyDataReturn
 
-    override fun publicKey(curve: String, x: ByteArray, y: ByteArray): PublicKey =
+    override fun publicKey(curve: KeyCurve, x: ByteArray, y: ByteArray): PublicKey =
         publicKeyReturn
 
-    override fun publicKey(curve: String, x: ByteArray): PublicKey =
+    override fun publicKey(curve: KeyCurve, x: ByteArray): PublicKey =
         publicKeyReturn
 
     override fun signMessage(privateKey: PrivateKey, message: ByteArray): Signature =

@@ -3,7 +3,10 @@ package io.iohk.atala.prism.walletsdk.apollo
 import io.iohk.atala.prism.apollo.derivation.DerivationPath
 import io.iohk.atala.prism.apollo.derivation.KeyDerivation
 import io.iohk.atala.prism.apollo.derivation.MnemonicCode
-import io.iohk.atala.prism.apollo.utils.KMMECPublicKey
+import io.iohk.atala.prism.apollo.ecdsa.ECDSAType
+import io.iohk.atala.prism.apollo.ecdsa.KMMECDSA
+import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PrivateKey
+import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.ApolloError
 import io.iohk.atala.prism.walletsdk.domain.models.CompressedPublicKey
@@ -48,17 +51,20 @@ class ApolloImpl : Apollo {
     override fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair {
         return when (curve) {
             KeyCurve(Curve.SECP256K1) -> {
-                val extendedKey = KeyDerivation.deriveKey(seed.value, DerivationPath.fromPath(curve.index.toString()))
+                val derivationPath = DerivationPath.fromPath("m/${curve.index}'/0'/0'")
+                val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
+                val privateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
+                val publicKey = kmmKeyPair.publicKey as KMMECSecp256k1PublicKey
                 KeyPair(
                     keyCurve = curve,
                     privateKey = PrivateKey(
                         keyCurve = curve,
-                        value = kmmKeyPair.privateKey.getEncoded(),
+                        value = privateKey.getEncoded(),
                     ),
                     publicKey = PublicKey(
                         curve = curve,
-                        value = kmmKeyPair.publicKey.getEncoded(),
+                        value = publicKey.getEncoded(),
                     ),
 
                 )
@@ -70,17 +76,20 @@ class ApolloImpl : Apollo {
     override fun createKeyPair(seed: Seed, privateKey: PrivateKey): KeyPair {
         return when (val curve = privateKey.keyCurve) {
             KeyCurve(Curve.SECP256K1) -> {
-                val extendedKey = KeyDerivation.deriveKey(seed.value, DerivationPath.fromPath(curve.index.toString()))
+                val derivationPath = DerivationPath.fromPath("m/${curve.index}'/0'/0'")
+                val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
+                val privateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
+                val publicKey = kmmKeyPair.publicKey as KMMECSecp256k1PublicKey
                 KeyPair(
                     keyCurve = curve,
                     privateKey = PrivateKey(
                         keyCurve = curve,
-                        value = kmmKeyPair.privateKey.getEncoded(),
+                        value = privateKey.getEncoded(),
                     ),
                     publicKey = PublicKey(
                         curve = curve,
-                        value = kmmKeyPair.publicKey.getEncoded(),
+                        value = publicKey.getEncoded(),
                     ),
                 )
             }
@@ -89,7 +98,7 @@ class ApolloImpl : Apollo {
     }
 
     override fun compressedPublicKey(publicKey: PublicKey): CompressedPublicKey {
-        val kmmPublicKey = KMMECPublicKey.secp256k1FromBytes(publicKey.value)
+        val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromBytes(publicKey.value)
         val kmmCompressed = kmmPublicKey.getEncodedCompressed()
         return CompressedPublicKey(
             uncompressed = publicKey,
@@ -98,7 +107,7 @@ class ApolloImpl : Apollo {
     }
 
     override fun compressedPublicKey(compressedData: ByteArray): CompressedPublicKey {
-        val kmmPublicKey = KMMECPublicKey.secp256k1FromCompressed(compressedData)
+        val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromCompressed(compressedData)
         val kmmCompressed = kmmPublicKey.getEncodedCompressed()
         val publicKey = PublicKey(
             curve = KeyCurve(Curve.SECP256K1),
@@ -113,7 +122,7 @@ class ApolloImpl : Apollo {
     override fun publicKey(curve: KeyCurve, x: ByteArray, y: ByteArray): PublicKey {
         return when (curve) {
             KeyCurve(Curve.SECP256K1) -> {
-                val kmmPublicKey = KMMECPublicKey.secp256k1FromByteCoordinates(x, y)
+                val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(x, y)
                 PublicKey(
                     curve = curve,
                     value = kmmPublicKey.getEncoded(),
@@ -129,7 +138,7 @@ class ApolloImpl : Apollo {
     override fun publicKey(curve: KeyCurve, x: ByteArray): PublicKey {
         return when (curve) {
             KeyCurve(Curve.SECP256K1) -> {
-                val kmmPublicKey = KMMECPublicKey.secp256k1FromBytes(x)
+                val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromBytes(x)
                 PublicKey(
                     curve = curve,
                     value = kmmPublicKey.getEncoded(),
@@ -143,14 +152,49 @@ class ApolloImpl : Apollo {
     }
 
     override fun signMessage(privateKey: PrivateKey, message: ByteArray): Signature {
-        TODO("Not yet implemented")
+        return when (privateKey.keyCurve) {
+            KeyCurve(Curve.SECP256K1) -> {
+                val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromBytes(privateKey.value)
+                val kmmSignature = KMMECDSA.sign(
+                    type = ECDSAType.ECDSA_SHA256,
+                    data = message,
+                    privateKey = kmmPrivateKey,
+                )
+                Signature(
+                    value = kmmSignature,
+                )
+            }
+            else -> {
+                TODO()
+            }
+        }
     }
 
     override fun signMessage(privateKey: PrivateKey, message: String): Signature {
-        TODO("Not yet implemented")
+        return when (privateKey.keyCurve) {
+            KeyCurve(Curve.SECP256K1) -> {
+                signMessage(privateKey, message.encodeToByteArray())
+            }
+            else -> {
+                TODO()
+            }
+        }
     }
 
     override fun verifySignature(publicKey: PublicKey, challenge: ByteArray, signature: Signature): Boolean {
-        TODO("Not yet implemented")
+        return when (publicKey.curve) {
+            KeyCurve(Curve.SECP256K1) -> {
+                val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromBytes(publicKey.value)
+                KMMECDSA.verify(
+                    type = ECDSAType.ECDSA_SHA256,
+                    data = challenge,
+                    publicKey = kmmPublicKey,
+                    signature = signature.value,
+                )
+            }
+            else -> {
+                TODO()
+            }
+        }
     }
 }

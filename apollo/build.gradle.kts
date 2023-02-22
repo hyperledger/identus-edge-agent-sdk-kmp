@@ -43,11 +43,6 @@ kotlin {
                 this.output.library = currentModuleName
                 this.output.libraryTarget = Target.VAR
             }
-            this.commonWebpackConfig {
-                this.cssSupport {
-                    this.enabled = true
-                }
-            }
             this.testTask {
                 this.useKarma {
                     this.useChromeHeadless()
@@ -70,6 +65,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("io.iohk.atala.prism:base-asymmetric-encryption:$apolloVersion")
+                implementation("io.iohk.atala.prism:ecdsa:$apolloVersion")
                 implementation(project(":domain"))
             }
         }
@@ -103,10 +99,10 @@ kotlin {
         }
         val jsMain by getting {
             dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-nodejs:0.0.7")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-common:1.7.20")
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-js:1.7.20")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-                // Polyfill dependencies
                 implementation(npm("stream-browserify", "3.0.0"))
                 implementation(npm("buffer", "6.0.3"))
             }
