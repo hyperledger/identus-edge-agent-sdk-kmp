@@ -16,6 +16,10 @@ fetchPrivateKeyByDID:
 SELECT * FROM PrivateKey
 WHERE didId = ?;
 
+fetchPrivateKeyByID:
+SELECT * FROM PrivateKey
+WHERE id = ?;
+
 fetchKeyPathIndexByDID:
 SELECT keyPathIndex FROM PrivateKey
 WHERE didId = ?;

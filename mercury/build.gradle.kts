@@ -66,6 +66,8 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
+                implementation(project(":domain"))
+                implementation("io.iohk.atala.prism:apollo:1.0.0-alpha")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
             }
@@ -75,18 +77,29 @@ kotlin {
                 implementation(kotlin("test"))
             }
         }
-        val jvmMain by getting
+        val allButJSMain by creating {
+            this.dependsOn(commonMain)
+        }
+        val allButJSTest by creating {
+            this.dependsOn(commonTest)
+        }
+        val jvmMain by getting {
+            this.dependsOn(allButJSMain)
+        }
         val jvmTest by getting {
+            this.dependsOn(allButJSTest)
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
         }
         val androidMain by getting {
+            this.dependsOn(allButJSMain)
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
             }
         }
         val androidTest by getting {
+            this.dependsOn(allButJSTest)
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
