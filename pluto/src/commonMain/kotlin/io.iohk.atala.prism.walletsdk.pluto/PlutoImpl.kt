@@ -89,10 +89,10 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
-    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int) {
+    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String?) {
         getInstance().privateKeyQueries.insert(
             PrivateKeyDB(
-                UUID.randomUUID4().toString(),
+                metaId ?: UUID.randomUUID4().toString(),
                 privateKey.keyCurve.curve.value,
                 privateKey.value.toString(),
                 keyPathIndex,
@@ -179,6 +179,26 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             )
         }
             .toTypedArray()
+    }
+
+    override fun getDIDPrivateKeyByID(id: String): PrivateKey? {
+        val privateKeys = try {
+            getInstance().privateKeyQueries
+                .fetchPrivateKeyByID(id)
+                .executeAsList()
+        } catch (e: IllegalStateException) {
+            null
+        } ?: return null
+
+        return privateKeys.firstOrNull()?.let {
+            PrivateKey(
+                getKeyCurveByNameAndIndex(
+                    it.curve,
+                    it.keyPathIndex,
+                ),
+                byteArrayOf(),
+            )
+        }
     }
 
     override fun getPrismDIDKeyPathIndex(did: DID): Int? {
