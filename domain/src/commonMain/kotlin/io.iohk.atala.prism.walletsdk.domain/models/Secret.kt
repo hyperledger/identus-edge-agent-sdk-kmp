@@ -5,7 +5,7 @@ import kotlin.js.JsExport
 
 @OptIn(ExperimentalJsExport::class)
 @JsExport
-data class SecretMaterialJWK(val value: String) {}
+data class SecretMaterialJWK(val value: String)
 
 @OptIn(ExperimentalJsExport::class)
 @JsExport
