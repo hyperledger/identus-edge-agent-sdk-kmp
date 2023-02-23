@@ -79,19 +79,20 @@ allprojects {
         }
     }
 
-//    apply(plugin = "org.gradle.maven-publish")
-//    publishing {
-//        repositories {
-//            maven {
-//                this.name = "GitHubPackages"
-//                this.url = uri("https://maven.pkg.github.com/input-output-hk/atala-prism-wallet-sdk-kmm/")
-//                credentials {
-//                    this.username = System.getenv("ATALA_GITHUB_ACTOR")
-//                    this.password = System.getenv("ATALA_GITHUB_TOKEN")
-//                }
-//            }
-//        }
-//    }
+    apply(plugin = "org.gradle.maven-publish")
+
+    publishing {
+        repositories {
+            maven {
+                this.name = "GitHubPackages"
+                this.url = uri("https://maven.pkg.github.com/input-output-hk/atala-prism-wallet-sdk-kmm/")
+                credentials {
+                    this.username = System.getenv("ATALA_GITHUB_ACTOR")
+                    this.password = System.getenv("ATALA_GITHUB_TOKEN")
+                }
+            }
+        }
+    }
 }
 
 subprojects {
