@@ -35,7 +35,6 @@ java {
 
 allprojects {
     this.group = "io.iohk.atala.prism.walletsdk"
-    this.version = "1.0.0-alpha"
 
     repositories {
         mavenCentral()
