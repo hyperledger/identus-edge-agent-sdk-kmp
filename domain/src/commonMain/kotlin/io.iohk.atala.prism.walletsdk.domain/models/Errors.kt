@@ -7,6 +7,7 @@ sealed class CommonError(message: String? = null) : Throwable(message) {
 sealed class ApolloError(message: String? = null) : Throwable(message) {
     class InvalidMnemonicWord(message: String? = null) : ApolloError(message)
     class CouldNotParseMessageString(message: String? = null) : ApolloError(message)
+    class InvalidKeyCurve(message: String? = null) : ApolloError(message)
 }
 
 sealed class CastorError(message: String? = null) : Throwable(message) {
