@@ -4,6 +4,8 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
 val currentModuleName: String = "WalletCastor"
 val os: OperatingSystem = OperatingSystem.current()
+val apolloVersion = project.property("apollo_version")
+val didpeerVersion = project.property("didpeer_version")
 
 plugins {
     kotlin("multiplatform")
@@ -207,7 +209,7 @@ tasks.withType<DokkaTask> {
 val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinCommonGrammarSource") {
     // the classpath used to run antlr code generation
     antlrClasspath = configurations.detachedConfiguration(
-        project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
+        project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14"),
     )
     maxHeapSize = "64m"
     packageName = "io.iohk.atala.prism.walletsdk.castor.antlrgrammar"

@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackOutput.Target
 
 val currentModuleName: String = "WalletAgent"
 val os: OperatingSystem = OperatingSystem.current()
+val apolloVersion = project.property("apollo_version")
 
 plugins {
     kotlin("multiplatform")
@@ -66,7 +67,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("io.iohk.atala.prism:uuid:1.0.0-alpha")
+                implementation("io.iohk.atala.prism:uuid:$apolloVersion")
                 implementation(project(":domain"))
                 implementation("io.iohk.atala.prism:apollo:1.0.0-alpha")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")

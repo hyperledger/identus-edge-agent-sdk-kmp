@@ -60,7 +60,7 @@ final class PrismAgent {
         this.pluto = pluto
         this.mercury = mercury
         this.connectionManager = connectionManager
-        this.seed = seed ?: apollo.createRandomSeed().second
+        this.seed = seed ?: apollo.createRandomSeed().seed
         this.api = api ?: ApiImpl(
             HttpClient {
                 install(ContentNegotiation) {
@@ -90,7 +90,7 @@ final class PrismAgent {
         this.castor = castor
         this.pluto = pluto
         this.mercury = mercury
-        this.seed = seed ?: apollo.createRandomSeed().second
+        this.seed = seed ?: apollo.createRandomSeed().seed
         this.api = api ?: ApiImpl(
             HttpClient {
                 install(ContentNegotiation) {
