@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
     id("maven-publish")
-    id("dev.petuska.npm.publish") version "3.1.0" apply false
+    id("dev.petuska.npm.publish") version "3.2.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jetbrains.dokka") version "1.8.10"
 }
