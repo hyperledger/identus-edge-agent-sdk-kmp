@@ -4,6 +4,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
@@ -21,6 +22,7 @@ actual class ConnectionManager {
         castor: Castor,
         pluto: Pluto,
         mediationHandler: MediationHandler,
+        pairings: MutableList<DIDPair>,
     ) {
         this.mercury = mercury
         this.castor = castor
