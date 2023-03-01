@@ -4,17 +4,20 @@ import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.connectionsManager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
-actual class ConnectionManager {
+actual class ConnectionManager : ConnectionsManager {
     private val mercury: Mercury
     private val castor: Castor
     private val pluto: Pluto
+    private var pairings: MutableList<DIDPair>
     internal val mediationHandler: MediationHandler
 
     actual constructor(
@@ -22,11 +25,13 @@ actual class ConnectionManager {
         castor: Castor,
         pluto: Pluto,
         mediationHandler: MediationHandler,
+        pairings: MutableList<DIDPair>,
     ) {
         this.mercury = mercury
         this.castor = castor
         this.pluto = pluto
         this.mediationHandler = mediationHandler
+        this.pairings = pairings
     }
 
     @Throws()
@@ -61,6 +66,20 @@ actual class ConnectionManager {
                 pluto.storeMessages(it)
                 it
             }
+    }
+
+    override suspend fun addConnection(paired: DIDPair) {
+        if (pairings.contains(paired)) return
+        pluto.storeDIDPair(paired.host, paired.receiver, paired.name ?: "")
+        pairings.add(paired)
+    }
+
+    override suspend fun removeConnection(pair: DIDPair): DIDPair? {
+        val index = pairings.indexOf(pair)
+        if (index > -1) {
+            pairings.removeAt(index)
+        }
+        return null
     }
 
     companion object {
