@@ -2,7 +2,7 @@
 name: "Pull request linter"
 
 on:
-  - pull_request
+  pull_request:
 
 jobs:
   lint_pr:
