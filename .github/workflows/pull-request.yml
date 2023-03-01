@@ -1,3 +1,4 @@
+---
 name: Pull Request CI
 
 defaults:
@@ -19,7 +20,6 @@ on:
     branches: [main]
 
 jobs:
-
   lint:
     name: Lint changes
     runs-on: ubuntu-latest
@@ -56,8 +56,8 @@ jobs:
         include:
           - os: ubuntu-latest
             os-type: linux
-#          - os: windows-latest
-#            os-type: windows
+      #          - os: windows-latest
+      #            os-type: windows
       fail-fast: false
     runs-on: ${{ matrix.os }}
 
@@ -83,7 +83,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'zulu'
+          distribution: "zulu"
 
       - name: Install NodeJS ${{ env.NODEJS_VERSION }}
         if: matrix.os-type == 'linux'
@@ -92,16 +92,16 @@ jobs:
           node-version: ${{ env.NODEJS_VERSION }}
 
         # TODO: This is disable for now it needs to be checked a linting error
-#      - name: Test Kotlin code is properly formatted
-#        run: ./gradlew ktlintCheck
+      #      - name: Test Kotlin code is properly formatted
+      #        run: ./gradlew ktlintCheck
 
-#      - name: Build for iOS, macOS, tvOS, watchOS
-#        if: matrix.os-type == 'macos'
-#        run: |
-#          ./gradlew clean build iosX64Test --stacktrace
-#        # removed watchosX64Test as GitHub action gets Invalid device: Apple Watch Series 5 - 44mm
-#        # no longer supporting them => macosX64Test tvosX64Test
-#        # TODO: This is not needed now
+      #      - name: Build for iOS, macOS, tvOS, watchOS
+      #        if: matrix.os-type == 'macos'
+      #        run: |
+      #          ./gradlew clean build iosX64Test --stacktrace
+      #        # removed watchosX64Test as GitHub action gets Invalid device: Apple Watch Series 5 - 44mm
+      #        # no longer supporting them => macosX64Test tvosX64Test
+      #        # TODO: This is not needed now
 
       - name: Build for JS, Android, JVM
         if: matrix.os-type == 'linux'
