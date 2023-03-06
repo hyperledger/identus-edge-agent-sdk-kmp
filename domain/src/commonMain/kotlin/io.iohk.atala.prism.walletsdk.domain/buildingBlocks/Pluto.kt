@@ -8,6 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import kotlinx.coroutines.flow.Flow
 import kotlin.js.ExperimentalJsExport
 import kotlin.js.JsExport
 import kotlin.js.JsName
@@ -36,50 +37,50 @@ interface Pluto {
 
     fun storeCredential(credential: VerifiableCredential)
 
-    fun getAllPrismDIDs(): Array<PrismDIDInfo>
+    fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>>
 
-    fun getDIDInfoByDID(did: DID): PrismDIDInfo?
+    fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?>
 
-    fun getDIDInfoByAlias(alias: String): Array<PrismDIDInfo>
+    fun getDIDInfoByAlias(alias: String): Flow<List<PrismDIDInfo>>
 
-    fun getPrismDIDKeyPathIndex(did: DID): Int?
+    fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?>
 
-    fun getPrismLastKeyPathIndex(): Int
+    fun getPrismLastKeyPathIndex(): Flow<Int>
 
-    fun getAllPeerDIDs(): Array<PeerDID>
+    fun getAllPeerDIDs(): Flow<List<PeerDID>>
 
-    fun getDIDPrivateKeysByDID(did: DID): Array<PrivateKey>?
+    fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>>
 
-    fun getDIDPrivateKeyByID(id: String): PrivateKey?
+    fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?>
 
-    fun getAllDidPairs(): Array<DIDPair>
+    fun getAllDidPairs(): Flow<List<DIDPair>>
 
-    fun getPairByDID(did: DID): DIDPair?
+    fun getPairByDID(did: DID): Flow<DIDPair?>
 
-    fun getPairByName(name: String): DIDPair?
+    fun getPairByName(name: String): Flow<DIDPair?>
 
     @JsName("getAllMessages")
-    fun getAllMessages(): Array<Message>
+    fun getAllMessages(): Flow<List<Message>>
 
     @JsName("getAllMessagesByDID")
-    fun getAllMessages(did: DID): Array<Message>
+    fun getAllMessages(did: DID): Flow<List<Message>>
 
-    fun getAllMessagesSent(): Array<Message>
+    fun getAllMessagesSent(): Flow<List<Message>>
 
-    fun getAllMessagesReceived(): Array<Message>
+    fun getAllMessagesReceived(): Flow<List<Message>>
 
-    fun getAllMessagesSentTo(did: DID): Array<Message>
+    fun getAllMessagesSentTo(did: DID): Flow<List<Message>>
 
-    fun getAllMessagesReceivedFrom(did: DID): Array<Message>
+    fun getAllMessagesReceivedFrom(did: DID): Flow<List<Message>>
 
-    fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Array<Message>
+    fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>>
 
     @JsName("getAllMessagesByFromToDID")
-    fun getAllMessages(from: DID, to: DID): Array<Message>
+    fun getAllMessages(from: DID, to: DID): Flow<List<Message>>
 
-    fun getMessage(id: String): Message?
+    fun getMessage(id: String): Flow<Message?>
 
-    fun getAllMediators(): Array<Mediator>
+    fun getAllMediators(): Flow<List<Mediator>>
 
-    fun getAllCredentials(): Array<VerifiableCredential>
+    fun getAllCredentials(): Flow<List<VerifiableCredential>>
 }
