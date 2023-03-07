@@ -48,8 +48,7 @@ fetchAllMessagesOfType:
 SELECT *
 FROM Message
 WHERE type = :type
-AND `from` = :from
-AND `to` = :to;
+AND (:relatedWithDID IS NULL OR `from` = :relatedWithDID OR `to` = :relatedWithDID);
 
 fetchMessageById:
 SELECT *

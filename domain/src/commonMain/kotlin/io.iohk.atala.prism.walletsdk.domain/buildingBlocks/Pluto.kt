@@ -10,26 +10,25 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import kotlinx.coroutines.flow.Flow
 import kotlin.js.ExperimentalJsExport
-import kotlin.js.JsExport
 import kotlin.js.JsName
 
 @OptIn(ExperimentalJsExport::class)
-@JsExport
 interface Pluto {
 
-    fun storePrismDID(
+    fun storePrismDIDAndPrivateKeys(
         did: DID,
         keyPathIndex: Int,
         alias: String?,
+        privateKeys: List<PrivateKey>,
     )
 
-    fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>)
+    fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>)
 
     fun storeDIDPair(host: DID, receiver: DID, name: String)
 
     fun storeMessage(message: Message)
 
-    fun storeMessages(messages: Array<Message>)
+    fun storeMessages(messages: List<Message>)
 
     fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String? = null)
 

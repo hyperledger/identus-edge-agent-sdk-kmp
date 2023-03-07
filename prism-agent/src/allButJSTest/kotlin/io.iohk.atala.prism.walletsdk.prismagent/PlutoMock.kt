@@ -9,10 +9,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import kotlinx.coroutines.flow.Flow
 
 class PlutoMock : Pluto {
-    var wasStorePrismDIDCalled: Boolean = false
-    var wasStorePeerDIDCalled: Boolean = false
+    var wasStorePrismDIDAndPrivateKeysCalled: Boolean = false
+    var wasStorePeerDIDAndPrivateKeysCalled: Boolean = false
     var wasStoreDIDPairCalled: Boolean = false
     var wasStoreMessageCalled: Boolean = false
     var wasStoreMessagesCalled: Boolean = false
@@ -38,40 +39,41 @@ class PlutoMock : Pluto {
     var wasGetAllMediatorsCalled: Boolean = false
     var wasGetAllCredentialsCalled: Boolean = false
 
-    var storedPrismDID: Array<DID> = emptyArray()
-    var storedPeerDID: Array<DID> = emptyArray()
-    var getAllPrismDIDsReturn: Array<PrismDIDInfo> = emptyArray()
-    var getDIDInfoByDIDReturn: PrismDIDInfo? = null
-    var getPrismDIDKeyPathIndexReturn: Int? = null
-    var getPrismLastKeyPathIndexReturn: Int = 0
-    var getAllPeerDIDsReturn: Array<PeerDID> = emptyArray()
-    var getDIDPrivateKeysReturn: Array<PrivateKey>? = emptyArray()
-    var getDIDPrivateKeysByIDReturn: PrivateKey? = null
-    var getAllDidPairsReturn: Array<DIDPair> = emptyArray()
-    var getPairByDIDReturn: DIDPair? = null
-    var getPairByNameReturn: DIDPair? = null
-    var getAllMessagesReturn: Array<Message> = emptyArray()
-    var getAllMessagesSentReturn: Array<Message> = emptyArray()
-    var getAllMessagesSentToReturn: Array<Message> = emptyArray()
-    var getAllMessagesReceivedReturn: Array<Message> = emptyArray()
-    var getAllMessagesReceivedFromReturn: Array<Message> = emptyArray()
-    var getAllMessagesOfTypeReturn: Array<Message> = emptyArray()
-    var getMessageReturn: Message? = null
-    var getAllMediatorsReturn: Array<Mediator> = emptyArray()
-    var getAllCredentialsReturn: Array<VerifiableCredential> = emptyArray()
+    var storedPrismDID: List<DID> = listOf()
+    var storedPeerDID: List<DID> = listOf()
+    lateinit var getAllPrismDIDsReturn: Flow<List<PrismDIDInfo>>
+    lateinit var getDIDInfoByDIDReturn: Flow<PrismDIDInfo?>
+    lateinit var getPrismDIDKeyPathIndexReturn: Flow<Int?>
+    lateinit var getPrismLastKeyPathIndexReturn: Flow<Int>
+    lateinit var getAllPeerDIDsReturn: Flow<List<PeerDID>>
+    lateinit var getDIDPrivateKeysReturn: Flow<List<PrivateKey?>>
+    lateinit var getDIDPrivateKeysByIDReturn: Flow<PrivateKey?>
+    lateinit var getAllDidPairsReturn: Flow<List<DIDPair>>
+    lateinit var getPairByDIDReturn: Flow<DIDPair?>
+    lateinit var getPairByNameReturn: Flow<DIDPair?>
+    lateinit var getAllMessagesReturn: Flow<List<Message>>
+    lateinit var getAllMessagesSentReturn: Flow<List<Message>>
+    lateinit var getAllMessagesSentToReturn: Flow<List<Message>>
+    lateinit var getAllMessagesReceivedReturn: Flow<List<Message>>
+    lateinit var getAllMessagesReceivedFromReturn: Flow<List<Message>>
+    lateinit var getAllMessagesOfTypeReturn: Flow<List<Message>>
+    lateinit var getMessageReturn: Flow<Message?>
+    lateinit var getAllMediatorsReturn: Flow<List<Mediator>>
+    lateinit var getAllCredentialsReturn: Flow<List<VerifiableCredential>>
 
-    override fun storePrismDID(
+    override fun storePrismDIDAndPrivateKeys(
         did: DID,
         keyPathIndex: Int,
         alias: String?,
+        privateKeys: List<PrivateKey>,
     ) {
         storedPrismDID += did
-        wasStorePrismDIDCalled = true
+        wasStorePrismDIDAndPrivateKeysCalled = true
     }
 
-    override fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>) {
+    override fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>) {
         storedPeerDID += did
-        wasStorePeerDIDCalled = true
+        wasStorePeerDIDAndPrivateKeysCalled = true
     }
 
     override fun storeDIDPair(host: DID, receiver: DID, name: String) {
@@ -82,7 +84,7 @@ class PlutoMock : Pluto {
         wasStoreMessageCalled = true
     }
 
-    override fun storeMessages(messages: Array<Message>) {
+    override fun storeMessages(messages: List<Message>) {
         wasStoreMessagesCalled = true
     }
 
@@ -98,106 +100,106 @@ class PlutoMock : Pluto {
         wasStoreCredentialCalled = true
     }
 
-    override fun getAllPrismDIDs(): Array<PrismDIDInfo> {
+    override fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>> {
         wasGetAllPrismDIDsCalled = true
         return getAllPrismDIDsReturn
     }
 
-    override fun getDIDInfoByDID(did: DID): PrismDIDInfo? {
+    override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> {
         wasGetDIDInfoByDIDCalled = true
         return getDIDInfoByDIDReturn
     }
 
-    override fun getDIDInfoByAlias(alias: String): Array<PrismDIDInfo> = getAllPrismDIDsReturn
+    override fun getDIDInfoByAlias(alias: String): Flow<List<PrismDIDInfo>> = getAllPrismDIDsReturn
 
-    override fun getPrismDIDKeyPathIndex(did: DID): Int? = getPrismDIDKeyPathIndexReturn
+    override fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?> = getPrismDIDKeyPathIndexReturn
 
-    override fun getPrismLastKeyPathIndex(): Int {
+    override fun getPrismLastKeyPathIndex(): Flow<Int> {
         wasGetPrismLastKeyPathIndexCalled = true
         return getPrismLastKeyPathIndexReturn
     }
 
-    override fun getAllPeerDIDs(): Array<PeerDID> {
+    override fun getAllPeerDIDs(): Flow<List<PeerDID>> {
         wasGetAllPeerDIDsCalled = true
         return getAllPeerDIDsReturn
     }
 
-    override fun getDIDPrivateKeysByDID(did: DID): Array<PrivateKey>? {
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
         wasGetDIDPrivateKeysByDIDCalled = true
         return getDIDPrivateKeysReturn
     }
 
-    override fun getDIDPrivateKeyByID(id: String): PrivateKey? {
+    override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
         wasGetDIDPrivateKeysByIDCalled = true
         return getDIDPrivateKeysByIDReturn
     }
 
-    override fun getAllDidPairs(): Array<DIDPair> {
+    override fun getAllDidPairs(): Flow<List<DIDPair>> {
         wasGetAllDidPairsCalled = true
         return getAllDidPairsReturn
     }
 
-    override fun getPairByDID(did: DID): DIDPair? {
+    override fun getPairByDID(did: DID): Flow<DIDPair?> {
         wasGetPairByDIDCalled = true
         return getPairByDIDReturn
     }
 
-    override fun getPairByName(name: String): DIDPair? {
+    override fun getPairByName(name: String): Flow<DIDPair?> {
         wasGetPairByNameCalled = true
         return getPairByNameReturn
     }
 
-    override fun getAllMessages(): Array<Message> {
+    override fun getAllMessages(): Flow<List<Message>> {
         wasGetAllMessagesCalled = true
         return getAllMessagesReturn
     }
 
-    override fun getAllMessages(did: DID): Array<Message> {
+    override fun getAllMessages(did: DID): Flow<List<Message>> {
         wasGetAllMessagesCalled = true
         return getAllMessagesReturn
     }
 
-    override fun getAllMessagesSent(): Array<Message> {
+    override fun getAllMessagesSent(): Flow<List<Message>> {
         wasGetAllMessagesSentCalled = true
         return getAllMessagesSentReturn
     }
 
-    override fun getAllMessagesReceived(): Array<Message> {
+    override fun getAllMessagesReceived(): Flow<List<Message>> {
         wasGetAllMessagesReceivedCalled = true
         return getAllMessagesReceivedReturn
     }
 
-    override fun getAllMessagesSentTo(did: DID): Array<Message> {
+    override fun getAllMessagesSentTo(did: DID): Flow<List<Message>> {
         wasGetAllMessagesSentToCalled = true
         return getAllMessagesSentToReturn
     }
 
-    override fun getAllMessagesReceivedFrom(did: DID): Array<Message> {
+    override fun getAllMessagesReceivedFrom(did: DID): Flow<List<Message>> {
         wasGetAllMessagesReceivedFromCalled = true
         return getAllMessagesReceivedFromReturn
     }
 
-    override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Array<Message> {
+    override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>> {
         wasGetAllMessagesOfTypeCalled = true
         return getAllMessagesOfTypeReturn
     }
 
-    override fun getAllMessages(from: DID, to: DID): Array<Message> {
+    override fun getAllMessages(from: DID, to: DID): Flow<List<Message>> {
         wasGetAllMessagesCalled = true
         return getAllMessagesReturn
     }
 
-    override fun getMessage(id: String): Message? {
+    override fun getMessage(id: String): Flow<Message?> {
         wasGetMessageCalled = true
         return getMessageReturn
     }
 
-    override fun getAllMediators(): Array<Mediator> {
+    override fun getAllMediators(): Flow<List<Mediator>> {
         wasGetAllMediatorsCalled = true
         return getAllMediatorsReturn
     }
 
-    override fun getAllCredentials(): Array<VerifiableCredential> {
+    override fun getAllCredentials(): Flow<List<VerifiableCredential>> {
         wasGetAllCredentialsCalled = true
         return getAllCredentialsReturn
     }

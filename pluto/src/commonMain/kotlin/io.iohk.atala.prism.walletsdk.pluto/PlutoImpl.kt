@@ -19,6 +19,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.W3CVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
@@ -56,22 +57,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         return this.db ?: throw PlutoError.DatabaseConnectionError()
     }
 
-    override fun storePrismDID(did: DID, keyPathIndex: Int, alias: String?) {
-        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, alias))
+    override fun storePrismDIDAndPrivateKeys(
+        did: DID,
+        keyPathIndex: Int,
+        alias: String?,
+        privateKeys: List<PrivateKey>,
+    ) {
+        getInstance().dIDQueries.insert(DIDDB(did.methodId, did.method, did.methodId, did.schema, alias))
+        privateKeys.map { privateKey ->
+            storePrivateKeys(privateKey, did, keyPathIndex)
+        }
     }
 
-    override fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>) {
-        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, null))
+    override fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>) {
+        getInstance().dIDQueries.insert(DIDDB(did.methodId, did.method, did.methodId, did.schema, null))
         privateKeys.map { privateKey ->
-            getInstance().privateKeyQueries.insert(
-                PrivateKeyDB(
-                    UUID.randomUUID4().toString(),
-                    privateKey.keyCurve.curve.value,
-                    privateKey.value.toString(),
-                    privateKey.keyCurve.index,
-                    did.methodId,
-                ),
-            )
+            storePrivateKeys(privateKey, did, privateKey.keyCurve.index ?: 0)
         }
     }
 
@@ -101,12 +102,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 privateKey.keyCurve.curve.value,
                 privateKey.value.toString(),
                 keyPathIndex,
-                did.methodId,
+                did.toString(),
             ),
         )
     }
 
-    override fun storeMessages(messages: Array<Message>) {
+    override fun storeMessages(messages: List<Message>) {
         messages.map { message ->
             storeMessage(message)
         }
@@ -148,9 +149,10 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> {
         return getInstance().dIDQueries
-            .fetchDIDInfoByDID(did.toString())
+            .fetchDIDInfoByDID(did.methodId)
             .asFlow()
             .mapLatest {
                 try {
@@ -453,7 +455,6 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesOfType(
             type,
-            relatedWithDID.toString(),
             relatedWithDID.toString(),
         )
             .asFlow()

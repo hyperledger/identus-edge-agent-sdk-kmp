@@ -23,6 +23,8 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.findProtocolTypeByValu
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -106,7 +108,9 @@ class PrismAgent {
 
     @Throws()
     suspend fun start() {
-        if (state != State.STOPED) { return }
+        if (state != State.STOPED) {
+            return
+        }
         state = State.STARTING
         try {
             connectionManager.startMediator()
@@ -135,11 +139,10 @@ class PrismAgent {
         alias: String? = null,
         services: Array<DIDDocument.Service> = emptyArray(),
     ): DID {
-        val index = keyPathIndex ?: pluto.getPrismLastKeyPathIndex()
+        val index = keyPathIndex ?: pluto.getPrismLastKeyPathIndex().first()
         val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
         val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
-        pluto.storePrivateKeys(keyPair.privateKey, did, index)
-        pluto.storePrismDID(did = did, keyPathIndex = index, alias = alias)
+        pluto.storePrismDIDAndPrivateKeys(did = did, keyPathIndex = index, alias = alias, listOf(keyPair.privateKey))
         return did
     }
 
@@ -159,9 +162,9 @@ class PrismAgent {
             // TODO: This still needs to be done update the key List
         }
 
-        pluto.storePeerDID(
+        pluto.storePeerDIDAndPrivateKeys(
             did = did,
-            privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
+            privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
         )
 
         // The next logic is a bit tricky, so it's not forgotten this is a reminder.
@@ -225,7 +228,8 @@ class PrismAgent {
     }
 
     suspend fun signWith(did: DID, message: ByteArray): Signature {
-        val privateKey = pluto.getDIDPrivateKeysByDID(did)?.firstOrNull() ?: throw PrismAgentError.cannotFindDIDPrivateKey()
+        val privateKey =
+            pluto.getDIDPrivateKeysByDID(did).first().first() ?: throw PrismAgentError.cannotFindDIDPrivateKey()
         return apollo.signMessage(privateKey, message)
     }
 

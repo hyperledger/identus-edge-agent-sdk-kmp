@@ -7,12 +7,11 @@ import io.iohk.atala.prism.walletsdk.prismagent.helpers.KMMPair
 import kotlin.js.Promise
 
 @OptIn(ExperimentalJsExport::class)
-@JsExport
 actual interface MediationHandler {
     actual val mediator: Mediator?
     actual val mediatorDID: DID
 
-    fun bootRegisteredMediator(): Mediator?
+    suspend fun bootRegisteredMediator(): Mediator?
 
     fun achieveMediation(host: DID): Promise<Mediator>
 
