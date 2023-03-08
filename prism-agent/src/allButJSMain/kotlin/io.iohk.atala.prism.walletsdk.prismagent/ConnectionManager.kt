@@ -62,9 +62,9 @@ actual class ConnectionManager : ConnectionsManager {
                 mediationHandler.registerMessagesAsRead(messagesIds)
                 it.map { it.second }.toTypedArray()
             }
-            .map {
-                pluto.storeMessages(it)
-                it
+            .map { messages ->
+                pluto.storeMessages(messages.toList())
+                messages
             }
     }
 

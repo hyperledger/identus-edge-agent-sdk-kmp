@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.walletsdk.pluto
 
+import com.squareup.sqldelight.runtime.coroutines.asFlow
+import com.squareup.sqldelight.runtime.coroutines.mapToList
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
@@ -17,6 +19,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.W3CVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import ioiohkatalaprismwalletsdkpluto.data.DID as DIDDB
@@ -51,22 +57,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         return this.db ?: throw PlutoError.DatabaseConnectionError()
     }
 
-    override fun storePrismDID(did: DID, keyPathIndex: Int, alias: String?) {
-        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, alias))
+    override fun storePrismDIDAndPrivateKeys(
+        did: DID,
+        keyPathIndex: Int,
+        alias: String?,
+        privateKeys: List<PrivateKey>,
+    ) {
+        getInstance().dIDQueries.insert(DIDDB(did.methodId, did.method, did.methodId, did.schema, alias))
+        privateKeys.map { privateKey ->
+            storePrivateKeys(privateKey, did, keyPathIndex)
+        }
     }
 
-    override fun storePeerDID(did: DID, privateKeys: Array<PrivateKey>) {
-        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, null))
+    override fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>) {
+        getInstance().dIDQueries.insert(DIDDB(did.methodId, did.method, did.methodId, did.schema, null))
         privateKeys.map { privateKey ->
-            getInstance().privateKeyQueries.insert(
-                PrivateKeyDB(
-                    UUID.randomUUID4().toString(),
-                    privateKey.keyCurve.curve.value,
-                    privateKey.value.toString(),
-                    privateKey.keyCurve.index,
-                    did.methodId,
-                ),
-            )
+            storePrivateKeys(privateKey, did, privateKey.keyCurve.index ?: 0)
         }
     }
 
@@ -96,12 +102,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 privateKey.keyCurve.curve.value,
                 privateKey.value.toString(),
                 keyPathIndex,
-                did.methodId,
+                did.toString(),
             ),
         )
     }
 
-    override fun storeMessages(messages: Array<Message>) {
+    override fun storeMessages(messages: List<Message>) {
         messages.map { message ->
             storeMessage(message)
         }
@@ -131,418 +137,466 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
-    override fun getAllPrismDIDs(): Array<PrismDIDInfo> {
+    override fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>> {
         return getInstance().dIDQueries
             .fetchAllPrismDID()
-            .executeAsList()
-            .map {
-                PrismDIDInfo(DID(it.did), it.keyPathIndex, it.alias)
-            }.toTypedArray()
+            .asFlow()
+            .mapToList()
+            .map { list ->
+                list.map {
+                    PrismDIDInfo(DID(it.did), it.keyPathIndex, it.alias)
+                }
+            }
     }
 
-    override fun getDIDInfoByDID(did: DID): PrismDIDInfo? {
-        val didInfo = try {
-            getInstance().dIDQueries
-                .fetchDIDInfoByDID(did.toString())
-                .executeAsOne()
-        } catch (e: NullPointerException) {
-            null
-        } ?: return null
-
-        return PrismDIDInfo(DID(didInfo.did), didInfo.keyPathIndex, didInfo.alias)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> {
+        return getInstance().dIDQueries
+            .fetchDIDInfoByDID(did.methodId)
+            .asFlow()
+            .mapLatest {
+                try {
+                    val didInfo = it.executeAsOne()
+                    PrismDIDInfo(DID(didInfo.did), didInfo.keyPathIndex, didInfo.alias)
+                } catch (e: NullPointerException) {
+                    null
+                }
+            }
     }
 
-    override fun getDIDInfoByAlias(alias: String): Array<PrismDIDInfo> {
+    override fun getDIDInfoByAlias(alias: String): Flow<List<PrismDIDInfo>> {
         return getInstance().dIDQueries
             .fetchDIDInfoByAlias(alias)
-            .executeAsList()
-            .map { PrismDIDInfo(DID(it.did), it.keyPathIndex, it.alias) }
-            .toTypedArray()
+            .asFlow()
+            .map {
+                it.executeAsList()
+                    .map { didInfo ->
+                        PrismDIDInfo(DID(didInfo.did), didInfo.keyPathIndex, didInfo.alias)
+                    }
+            }
     }
 
-    override fun getDIDPrivateKeysByDID(did: DID): Array<PrivateKey>? {
-        val privateKeys = try {
-            getInstance().privateKeyQueries
-                .fetchPrivateKeyByDID(did.toString())
-                .executeAsList()
-        } catch (e: IllegalStateException) {
-            null
-        } ?: return null
-
-        return privateKeys.map {
-            PrivateKey(
-                getKeyCurveByNameAndIndex(
-                    it.curve,
-                    it.keyPathIndex,
-                ),
-                byteArrayOf(),
-            )
-        }
-            .toTypedArray()
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
+        return getInstance().privateKeyQueries
+            .fetchPrivateKeyByDID(did.toString())
+            .asFlow()
+            .map {
+                it.executeAsList()
+                    .map { didInfo ->
+                        try {
+                            PrivateKey(
+                                getKeyCurveByNameAndIndex(
+                                    didInfo.curve,
+                                    didInfo.keyPathIndex,
+                                ),
+                                byteArrayOf(),
+                            )
+                        } catch (e: IllegalStateException) {
+                            null
+                        }
+                    }
+            }
     }
 
-    override fun getDIDPrivateKeyByID(id: String): PrivateKey? {
-        val privateKeys = try {
-            getInstance().privateKeyQueries
-                .fetchPrivateKeyByID(id)
-                .executeAsList()
-        } catch (e: IllegalStateException) {
-            null
-        } ?: return null
-
-        return privateKeys.firstOrNull()?.let {
-            PrivateKey(
-                getKeyCurveByNameAndIndex(
-                    it.curve,
-                    it.keyPathIndex,
-                ),
-                byteArrayOf(),
-            )
-        }
+    override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
+        return getInstance().privateKeyQueries
+            .fetchPrivateKeyByID(id)
+            .asFlow()
+            .map {
+                it.executeAsList().firstOrNull()?.let {
+                    try {
+                        PrivateKey(
+                            getKeyCurveByNameAndIndex(
+                                it.curve,
+                                it.keyPathIndex,
+                            ),
+                            byteArrayOf(),
+                        )
+                    } catch (e: IllegalStateException) {
+                        null
+                    }
+                }
+            }
     }
 
-    override fun getPrismDIDKeyPathIndex(did: DID): Int? {
-        val did = try {
-            getInstance().privateKeyQueries.fetchKeyPathIndexByDID(did.methodId)
-                .executeAsOne()
-        } catch (e: NullPointerException) {
-            null
-        } ?: return null
-
-        return did.keyPathIndex
+    override fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?> {
+        return getInstance().privateKeyQueries.fetchKeyPathIndexByDID(did.methodId)
+            .asFlow()
+            .map {
+                try {
+                    it.executeAsOne().keyPathIndex
+                } catch (e: NullPointerException) {
+                    null
+                }
+            }
     }
 
-    override fun getPrismLastKeyPathIndex(): Int {
+    override fun getPrismLastKeyPathIndex(): Flow<Int> {
         return getInstance().privateKeyQueries.fetchLastkeyPathIndex()
-            .executeAsOne()
-            .keyPathIndex ?: 0
+            .asFlow()
+            .map {
+                it.executeAsOne().keyPathIndex ?: 0
+            }
     }
 
-    override fun getAllPeerDIDs(): Array<PeerDID> {
+    override fun getAllPeerDIDs(): Flow<List<PeerDID>> {
         return getInstance().dIDQueries.fetchAllPeerDID()
-            .executeAsList()
-            .groupBy { it.did }
-            .map {
-                val privateKeyList = it.value.map { data ->
-                    PrivateKey(
-                        getKeyCurveByNameAndIndex(data.curve, data.keyPathIndex),
-                        byteArrayOf(),
-                    )
-                }.toTypedArray()
-                PeerDID(DID(it.key), privateKeyList)
-            }.toTypedArray()
+            .asFlow()
+            .map { allDIDs ->
+                allDIDs.executeAsList()
+                    .groupBy { allPeerDid -> allPeerDid.did }
+                    .map {
+                        val privateKeyList = it.value.map { data ->
+                            PrivateKey(
+                                getKeyCurveByNameAndIndex(data.curve, data.keyPathIndex),
+                                byteArrayOf(),
+                            )
+                        }.toTypedArray()
+                        PeerDID(DID(it.key), privateKeyList)
+                    }
+            }
     }
 
-    override fun getAllDidPairs(): Array<DIDPair> {
+    override fun getAllDidPairs(): Flow<List<DIDPair>> {
         return getInstance().dIDPairQueries.fetchAllDIDPairs()
-            .executeAsList()
-            .map { DIDPair(DID(it.hostDID), DID(it.receiverDID), it.name) }
-            .toTypedArray()
+            .asFlow()
+            .map { didPair ->
+                didPair.executeAsList()
+                    .map { DIDPair(DID(it.hostDID), DID(it.receiverDID), it.name) }
+            }
     }
 
-    override fun getPairByDID(did: DID): DIDPair? {
-        val didPair = try {
-            getInstance().dIDPairQueries.fetchDIDPairByDID(did.toString())
-                .executeAsOne()
-        } catch (e: NullPointerException) {
-            null
-        } ?: return null
-
-        return DIDPair(DID(didPair.hostDID), DID(didPair.receiverDID), didPair.name)
-    }
-
-    override fun getPairByName(name: String): DIDPair? {
-        val didPair = try {
-            getInstance().dIDPairQueries.fetchDIDPairByName(name)
-                .executeAsOne()
-        } catch (e: NullPointerException) {
-            null
-        } ?: return null
-
-        return DIDPair(DID(didPair.hostDID), DID(didPair.receiverDID), didPair.name)
-    }
-
-    override fun getAllMessages(): Array<Message> {
-        return getInstance().messageQueries.fetchAllMessages()
-            .executeAsList()
+    override fun getPairByDID(did: DID): Flow<DIDPair?> {
+        return getInstance().dIDPairQueries.fetchDIDPairByDID(did.toString())
+            .asFlow()
             .map {
-                val messageDb = Json.decodeFromString<Message>(it.dataJson)
-                Message(
-                    messageDb.id,
-                    messageDb.piuri,
-                    messageDb.from,
-                    messageDb.to,
-                    messageDb.fromPrior,
-                    messageDb.body,
-                    messageDb.extraHeaders,
-                    messageDb.createdTime,
-                    messageDb.expiresTimePlus,
-                    messageDb.attachments,
-                    messageDb.thid,
-                    messageDb.pthid,
-                    messageDb.ack,
-                    messageDb.direction,
-                )
-            }.toTypedArray()
+                try {
+                    val didPair = it.executeAsOne()
+                    DIDPair(DID(didPair.hostDID), DID(didPair.receiverDID), didPair.name)
+                } catch (e: NullPointerException) {
+                    null
+                }
+            }
     }
 
-    override fun getAllMessages(did: DID): Array<Message> {
+    override fun getPairByName(name: String): Flow<DIDPair?> {
+        return getInstance().dIDPairQueries.fetchDIDPairByName(name)
+            .asFlow()
+            .map {
+                try {
+                    val didPair = it.executeAsOne()
+                    DIDPair(DID(didPair.hostDID), DID(didPair.receiverDID), didPair.name)
+                } catch (e: NullPointerException) {
+                    null
+                }
+            }
+    }
+
+    override fun getAllMessages(): Flow<List<Message>> {
+        return getInstance().messageQueries.fetchAllMessages()
+            .asFlow()
+            .map {
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
+                }
+            }
+    }
+
+    override fun getAllMessages(did: DID): Flow<List<Message>> {
         return getAllMessages(did, did)
     }
 
-    override fun getAllMessages(from: DID, to: DID): Array<Message> {
+    override fun getAllMessages(from: DID, to: DID): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesFromTo(from.toString(), to.toString())
-            .executeAsList()
+            .asFlow()
             .map {
-                val messageDb = Json.decodeFromString<Message>(it.dataJson)
-                Message(
-                    messageDb.id,
-                    messageDb.piuri,
-                    messageDb.from,
-                    messageDb.to,
-                    messageDb.fromPrior,
-                    messageDb.body,
-                    messageDb.extraHeaders,
-                    messageDb.createdTime,
-                    messageDb.expiresTimePlus,
-                    messageDb.attachments,
-                    messageDb.thid,
-                    messageDb.pthid,
-                    messageDb.ack,
-                    messageDb.direction,
-                )
-            }.toTypedArray()
-    }
-
-    override fun getAllMessagesSent(): Array<Message> {
-        return getInstance().messageQueries.fetchAllSentMessages()
-            .executeAsList()
-            .map {
-                val messageDb = Json.decodeFromString<Message>(it.dataJson)
-                Message(
-                    messageDb.id,
-                    messageDb.piuri,
-                    messageDb.from,
-                    messageDb.to,
-                    messageDb.fromPrior,
-                    messageDb.body,
-                    messageDb.extraHeaders,
-                    messageDb.createdTime,
-                    messageDb.expiresTimePlus,
-                    messageDb.attachments,
-                    messageDb.thid,
-                    messageDb.pthid,
-                    messageDb.ack,
-                    messageDb.direction,
-                )
-            }.toTypedArray()
-    }
-
-    override fun getAllMessagesReceived(): Array<Message> {
-        return getInstance().messageQueries.fetchAllReceivedMessages()
-            .executeAsList()
-            .map {
-                val messageDb = Json.decodeFromString<Message>(it.dataJson)
-                Message(
-                    messageDb.id,
-                    messageDb.piuri,
-                    messageDb.from,
-                    messageDb.to,
-                    messageDb.fromPrior,
-                    messageDb.body,
-                    messageDb.extraHeaders,
-                    messageDb.createdTime,
-                    messageDb.expiresTimePlus,
-                    messageDb.attachments,
-                    messageDb.thid,
-                    messageDb.pthid,
-                    messageDb.ack,
-                    messageDb.direction,
-                )
-            }.toTypedArray()
-    }
-
-    override fun getAllMessagesSentTo(did: DID): Array<Message> {
-        return getInstance().messageQueries.fetchAllMessagesSentTo(did.toString())
-            .executeAsList()
-            .map {
-                val messageDb = Json.decodeFromString<Message>(it.dataJson)
-                Message(
-                    messageDb.id,
-                    messageDb.piuri,
-                    messageDb.from,
-                    messageDb.to,
-                    messageDb.fromPrior,
-                    messageDb.body,
-                    messageDb.extraHeaders,
-                    messageDb.createdTime,
-                    messageDb.expiresTimePlus,
-                    messageDb.attachments,
-                    messageDb.thid,
-                    messageDb.pthid,
-                    messageDb.ack,
-                    messageDb.direction,
-                )
-            }.toTypedArray()
-    }
-
-    override fun getAllMessagesReceivedFrom(did: DID): Array<Message> {
-        return getInstance().messageQueries.fetchAllMessagesReceivedFrom(did.toString())
-            .executeAsList()
-            .map {
-                val messageDb = Json.decodeFromString<Message>(it.dataJson)
-                Message(
-                    messageDb.id,
-                    messageDb.piuri,
-                    messageDb.from,
-                    messageDb.to,
-                    messageDb.fromPrior,
-                    messageDb.body,
-                    messageDb.extraHeaders,
-                    messageDb.createdTime,
-                    messageDb.expiresTimePlus,
-                    messageDb.attachments,
-                    messageDb.thid,
-                    messageDb.pthid,
-                    messageDb.ack,
-                    messageDb.direction,
-                )
-            }.toTypedArray()
-    }
-
-    override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Array<Message> {
-        return getInstance().messageQueries.fetchAllMessagesOfType(type, relatedWithDID.toString(), relatedWithDID.toString())
-            .executeAsList()
-            .map {
-                val messageDb = Json.decodeFromString<Message>(it.dataJson)
-                Message(
-                    messageDb.id,
-                    messageDb.piuri,
-                    messageDb.from,
-                    messageDb.to,
-                    messageDb.fromPrior,
-                    messageDb.body,
-                    messageDb.extraHeaders,
-                    messageDb.createdTime,
-                    messageDb.expiresTimePlus,
-                    messageDb.attachments,
-                    messageDb.thid,
-                    messageDb.pthid,
-                    messageDb.ack,
-                    messageDb.direction,
-                )
-            }.toTypedArray()
-    }
-
-    override fun getMessage(id: String): Message? {
-        val message = try {
-            getInstance().messageQueries.fetchMessageById(id)
-                .executeAsOne()
-        } catch (e: NullPointerException) {
-            null
-        } ?: return null
-
-        val messageDb = Json.decodeFromString<Message>(message.dataJson)
-
-        return Message(
-            messageDb.id,
-            messageDb.piuri,
-            messageDb.from,
-            messageDb.to,
-            messageDb.fromPrior,
-            messageDb.body,
-            messageDb.extraHeaders,
-            messageDb.createdTime,
-            messageDb.expiresTimePlus,
-            messageDb.attachments,
-            messageDb.thid,
-            messageDb.pthid,
-            messageDb.ack,
-            messageDb.direction,
-        )
-    }
-
-    override fun getAllMediators(): Array<Mediator> {
-        return getInstance().mediatorQueries.fetchAllMediators()
-            .executeAsList()
-            .map {
-                Mediator(
-                    it.id,
-                    DID(it.MediatorDID),
-                    DID(it.HostDID),
-                    DID(it.RoutingDID),
-                )
-            }.toTypedArray()
-    }
-
-    override fun getAllCredentials(): Array<VerifiableCredential> {
-        return getInstance().verifiableCredentialQueries.fetchAllCredentials()
-            .executeAsList()
-            .map {
-                val verifiableCredential = Json.decodeFromString<VerifiableCredential>(it.verifiableCredentialJson)
-                when (it.credentialType) {
-                    CredentialType.JWT.type -> {
-                        JWTCredentialPayload.JWTVerifiableCredential(
-                            id = verifiableCredential.id,
-                            credentialType = CredentialType.JWT,
-                            context = verifiableCredential.context,
-                            type = verifiableCredential.type,
-                            credentialSchema = verifiableCredential.credentialSchema,
-                            credentialSubject = verifiableCredential.credentialSubject,
-                            credentialStatus = verifiableCredential.credentialStatus,
-                            refreshService = verifiableCredential.refreshService,
-                            evidence = verifiableCredential.evidence,
-                            termsOfUse = verifiableCredential.termsOfUse,
-                            issuer = verifiableCredential.issuer,
-                            issuanceDate = verifiableCredential.issuanceDate,
-                            expirationDate = verifiableCredential.expirationDate,
-                            validFrom = verifiableCredential.validFrom,
-                            validUntil = verifiableCredential.validUntil,
-                            proof = verifiableCredential.proof,
-                            aud = verifiableCredential.aud,
-                        )
-                    }
-                    CredentialType.W3C.type ->
-                        W3CVerifiableCredential(
-                            id = verifiableCredential.id,
-                            credentialType = CredentialType.JWT,
-                            context = verifiableCredential.context,
-                            type = verifiableCredential.type,
-                            credentialSchema = verifiableCredential.credentialSchema,
-                            credentialSubject = verifiableCredential.credentialSubject,
-                            credentialStatus = verifiableCredential.credentialStatus,
-                            refreshService = verifiableCredential.refreshService,
-                            evidence = verifiableCredential.evidence,
-                            termsOfUse = verifiableCredential.termsOfUse,
-                            issuer = verifiableCredential.issuer,
-                            issuanceDate = verifiableCredential.issuanceDate,
-                            expirationDate = verifiableCredential.expirationDate,
-                            validFrom = verifiableCredential.validFrom,
-                            validUntil = verifiableCredential.validUntil,
-                            proof = verifiableCredential.proof,
-                            aud = verifiableCredential.aud,
-                        )
-                    else ->
-                        JWTCredentialPayload.JWTVerifiableCredential(
-                            id = verifiableCredential.id,
-                            credentialType = CredentialType.JWT,
-                            context = verifiableCredential.context,
-                            type = verifiableCredential.type,
-                            credentialSchema = verifiableCredential.credentialSchema,
-                            credentialSubject = verifiableCredential.credentialSubject,
-                            credentialStatus = verifiableCredential.credentialStatus,
-                            refreshService = verifiableCredential.refreshService,
-                            evidence = verifiableCredential.evidence,
-                            termsOfUse = verifiableCredential.termsOfUse,
-                            issuer = verifiableCredential.issuer,
-                            issuanceDate = verifiableCredential.issuanceDate,
-                            expirationDate = verifiableCredential.expirationDate,
-                            validFrom = verifiableCredential.validFrom,
-                            validUntil = verifiableCredential.validUntil,
-                            proof = verifiableCredential.proof,
-                            aud = verifiableCredential.aud,
-                        )
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
                 }
-            }.toTypedArray()
+            }
+    }
+
+    override fun getAllMessagesSent(): Flow<List<Message>> {
+        return getInstance().messageQueries.fetchAllSentMessages()
+            .asFlow()
+            .map {
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
+                }
+            }
+    }
+
+    override fun getAllMessagesReceived(): Flow<List<Message>> {
+        return getInstance().messageQueries.fetchAllReceivedMessages()
+            .asFlow()
+            .map {
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
+                }
+            }
+    }
+
+    override fun getAllMessagesSentTo(did: DID): Flow<List<Message>> {
+        return getInstance().messageQueries.fetchAllMessagesSentTo(did.toString())
+            .asFlow()
+            .map {
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
+                }
+            }
+    }
+
+    override fun getAllMessagesReceivedFrom(did: DID): Flow<List<Message>> {
+        return getInstance().messageQueries.fetchAllMessagesReceivedFrom(did.toString())
+            .asFlow()
+            .map {
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
+                }
+            }
+    }
+
+    override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>> {
+        return getInstance().messageQueries.fetchAllMessagesOfType(
+            type,
+            relatedWithDID.toString(),
+        )
+            .asFlow()
+            .map {
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
+                }
+            }
+    }
+
+    override fun getMessage(id: String): Flow<Message?> {
+        return getInstance().messageQueries.fetchMessageById(id)
+            .asFlow()
+            .map {
+                try {
+                    val messageDb = Json.decodeFromString<Message>(it.executeAsOne().dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction,
+                    )
+                } catch (e: NullPointerException) {
+                    null
+                }
+            }
+    }
+
+    override fun getAllMediators(): Flow<List<Mediator>> {
+        return getInstance().mediatorQueries.fetchAllMediators()
+            .asFlow()
+            .map {
+                it.executeAsList().map { mediator ->
+                    Mediator(
+                        mediator.id,
+                        DID(mediator.MediatorDID),
+                        DID(mediator.HostDID),
+                        DID(mediator.RoutingDID),
+                    )
+                }
+            }
+    }
+
+    override fun getAllCredentials(): Flow<List<VerifiableCredential>> {
+        return getInstance().verifiableCredentialQueries.fetchAllCredentials()
+            .asFlow()
+            .map {
+                it.executeAsList().map { verifiableCredential ->
+                    val verifiableCredential =
+                        Json.decodeFromString<VerifiableCredential>(verifiableCredential.verifiableCredentialJson)
+                    when (verifiableCredential.credentialType) {
+                        CredentialType.JWT -> {
+                            JWTCredentialPayload.JWTVerifiableCredential(
+                                id = verifiableCredential.id,
+                                credentialType = CredentialType.JWT,
+                                context = verifiableCredential.context,
+                                type = verifiableCredential.type,
+                                credentialSchema = verifiableCredential.credentialSchema,
+                                credentialSubject = verifiableCredential.credentialSubject,
+                                credentialStatus = verifiableCredential.credentialStatus,
+                                refreshService = verifiableCredential.refreshService,
+                                evidence = verifiableCredential.evidence,
+                                termsOfUse = verifiableCredential.termsOfUse,
+                                issuer = verifiableCredential.issuer,
+                                issuanceDate = verifiableCredential.issuanceDate,
+                                expirationDate = verifiableCredential.expirationDate,
+                                validFrom = verifiableCredential.validFrom,
+                                validUntil = verifiableCredential.validUntil,
+                                proof = verifiableCredential.proof,
+                                aud = verifiableCredential.aud,
+                            )
+                        }
+
+                        CredentialType.W3C ->
+                            W3CVerifiableCredential(
+                                id = verifiableCredential.id,
+                                credentialType = CredentialType.JWT,
+                                context = verifiableCredential.context,
+                                type = verifiableCredential.type,
+                                credentialSchema = verifiableCredential.credentialSchema,
+                                credentialSubject = verifiableCredential.credentialSubject,
+                                credentialStatus = verifiableCredential.credentialStatus,
+                                refreshService = verifiableCredential.refreshService,
+                                evidence = verifiableCredential.evidence,
+                                termsOfUse = verifiableCredential.termsOfUse,
+                                issuer = verifiableCredential.issuer,
+                                issuanceDate = verifiableCredential.issuanceDate,
+                                expirationDate = verifiableCredential.expirationDate,
+                                validFrom = verifiableCredential.validFrom,
+                                validUntil = verifiableCredential.validUntil,
+                                proof = verifiableCredential.proof,
+                                aud = verifiableCredential.aud,
+                            )
+
+                        else ->
+                            JWTCredentialPayload.JWTVerifiableCredential(
+                                id = verifiableCredential.id,
+                                credentialType = CredentialType.JWT,
+                                context = verifiableCredential.context,
+                                type = verifiableCredential.type,
+                                credentialSchema = verifiableCredential.credentialSchema,
+                                credentialSubject = verifiableCredential.credentialSubject,
+                                credentialStatus = verifiableCredential.credentialStatus,
+                                refreshService = verifiableCredential.refreshService,
+                                evidence = verifiableCredential.evidence,
+                                termsOfUse = verifiableCredential.termsOfUse,
+                                issuer = verifiableCredential.issuer,
+                                issuanceDate = verifiableCredential.issuanceDate,
+                                expirationDate = verifiableCredential.expirationDate,
+                                validFrom = verifiableCredential.validFrom,
+                                validUntil = verifiableCredential.validUntil,
+                                proof = verifiableCredential.proof,
+                                aud = verifiableCredential.aud,
+                            )
+                    }
+                }
+            }
     }
 }

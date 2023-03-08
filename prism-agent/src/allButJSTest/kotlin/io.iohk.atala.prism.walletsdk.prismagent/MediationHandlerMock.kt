@@ -18,7 +18,7 @@ class MediationHandlerMock(
     var pickupUnreadMessagesResponse: Array<Pair<String, Message>> = emptyArray()
 
     @Throws()
-    override fun bootRegisteredMediator(): Mediator? {
+    override suspend fun bootRegisteredMediator(): Mediator? {
         mediator = bootMediatorResponse
         return bootMediatorResponse
     }

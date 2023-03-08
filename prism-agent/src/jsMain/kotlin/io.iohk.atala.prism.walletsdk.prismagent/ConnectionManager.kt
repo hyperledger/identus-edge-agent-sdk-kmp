@@ -9,6 +9,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import kotlin.js.Promise
 
 actual class ConnectionManager {
@@ -31,7 +33,9 @@ actual class ConnectionManager {
     }
 
     fun startMediator() {
-        mediationHandler.bootRegisteredMediator()
+        GlobalScope.launch {
+            mediationHandler.bootRegisteredMediator()
+        }
     }
 
     fun registerMediator(host: DID): Promise<Mediator> {
@@ -49,12 +53,12 @@ actual class ConnectionManager {
     fun awaitMessages(): Promise<Array<Message>> {
         return mediationHandler.pickupUnreadMessages(NUMBER_OF_MESSAGES)
             .then {
-                val messagesIds = it.map { it.first }.toTypedArray()
+                val messagesIds = it.map { pair -> pair.first }.toTypedArray()
                 mediationHandler.registerMessagesAsRead(messagesIds)
-                it.map { it.second }.toTypedArray()
+                it.map { pair -> pair.second }.toTypedArray()
             }
             .then {
-                pluto.storeMessages(it)
+                pluto.storeMessages(it.asList())
                 it
             }
     }
