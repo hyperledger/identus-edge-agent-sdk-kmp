@@ -10,7 +10,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
-import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.Api
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.ApiImpl
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.HttpClient
@@ -137,18 +136,18 @@ final class PrismAgent {
         }
     }
 
-    fun createNewPrismDID(
-        keyPathIndex: Int? = null,
-        alias: String? = null,
-        services: Array<DIDDocument.Service> = emptyArray(),
-    ): DID {
-        val index = keyPathIndex ?: pluto.getPrismLastKeyPathIndex()
-        val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
-        val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
-        pluto.storePrivateKeys(keyPair.privateKey, did, index)
-        pluto.storePrismDID(did = did, keyPathIndex = index, alias = alias)
-        return did
-    }
+//    fun createNewPrismDID(
+//        keyPathIndex: Int? = null,
+//        alias: String? = null,
+//        services: Array<DIDDocument.Service> = emptyArray(),
+//    ): DID {
+//        val index = keyPathIndex ?: pluto.getPrismLastKeyPathIndex()
+//        val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
+//        val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
+//        pluto.storePrivateKeys(keyPair.privateKey, did, index)
+//        pluto.storePrismDID(did = did, keyPathIndex = index, alias = alias)
+//        return did
+//    }
 
     fun createNewPeerDID(
         services: Array<DIDDocument.Service> = emptyArray(),
@@ -167,16 +166,16 @@ final class PrismAgent {
                 .mediationHandler
                 .updateKeyListWithDIDs(arrayOf(did))
                 .then {
-                    pluto.storePeerDID(
+                    pluto.storePeerDIDAndPrivateKeys(
                         did = did,
-                        privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
+                        privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
                     )
                 }
                 .then { did }
         } else {
-            pluto.storePeerDID(
+            pluto.storePeerDIDAndPrivateKeys(
                 did = did,
-                privateKeys = arrayOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
+                privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
             )
             return Promise.resolve(did)
         }
@@ -214,10 +213,10 @@ final class PrismAgent {
         }
     }
 
-    fun signWith(did: DID, message: ByteArray): Signature {
-        val privateKey = pluto.getDIDPrivateKeysByDID(did)?.firstOrNull() ?: throw PrismAgentError.cannotFindDIDPrivateKey()
-        return apollo.signMessage(privateKey, message)
-    }
+//    fun signWith(did: DID, message: ByteArray): Signature {
+//        val privateKey = pluto.getDIDPrivateKeysByDID(did).first() ?: throw PrismAgentError.cannotFindDIDPrivateKey()
+//        return apollo.signMessage(privateKey, message)
+//    }
 
     fun parsePrismInvitation(str: String): Promise<PrismOnboardingInvitation> {
         try {

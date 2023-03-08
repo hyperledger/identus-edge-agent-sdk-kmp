@@ -17,8 +17,10 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupDelivery
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupReceived
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupRequest
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapNotNull
 
 final class DefaultMediationHandler(
     override val mediatorDID: DID,
@@ -26,8 +28,8 @@ final class DefaultMediationHandler(
     private val store: MediatorRepository,
 ) : MediationHandler {
     final class PlutoMediatorRepositoryImpl(private val pluto: Pluto) : MediatorRepository {
-        override fun getAllMediators(): Array<Mediator> {
-            return pluto.getAllMediators()
+        override suspend fun getAllMediators(): List<Mediator> {
+            return pluto.getAllMediators().first()
         }
 
         override fun storeMediator(mediator: Mediator) {
@@ -42,7 +44,7 @@ final class DefaultMediationHandler(
         this.mediator = null
     }
 
-    override fun bootRegisteredMediator(): Mediator? {
+    override suspend fun bootRegisteredMediator(): Mediator? {
         if (mediator == null) {
             mediator = store.getAllMediators().first()
         }

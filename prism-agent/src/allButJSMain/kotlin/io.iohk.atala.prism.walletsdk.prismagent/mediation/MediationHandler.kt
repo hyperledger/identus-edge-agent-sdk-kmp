@@ -10,7 +10,7 @@ actual interface MediationHandler {
     actual val mediatorDID: DID
 
     @Throws()
-    fun bootRegisteredMediator(): Mediator?
+    suspend fun bootRegisteredMediator(): Mediator?
 
     @Throws()
     fun achieveMediation(host: DID): Flow<Mediator>

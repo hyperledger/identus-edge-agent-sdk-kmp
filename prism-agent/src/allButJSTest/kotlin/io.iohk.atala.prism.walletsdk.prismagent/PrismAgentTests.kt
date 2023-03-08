@@ -12,6 +12,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.core.toByteArray
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -54,12 +55,12 @@ class PrismAgentTests {
             seed = seed,
             api = null,
         )
+        plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
         val newDID = agent.createNewPrismDID()
         assertEquals(newDID, validDID)
         assertEquals(newDID, plutoMock.storedPrismDID.first())
         assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
-        assertTrue { plutoMock.wasStorePrivateKeysCalled }
-        assertTrue { plutoMock.wasStorePrismDIDCalled }
+        assertTrue { plutoMock.wasStorePrismDIDAndPrivateKeysCalled }
     }
 
     @Test
@@ -79,7 +80,7 @@ class PrismAgentTests {
 
         assertEquals(newDID, validDID)
         assertEquals(newDID, plutoMock.storedPeerDID.first())
-        assertTrue { plutoMock.wasStorePeerDIDCalled }
+        assertTrue { plutoMock.wasStorePeerDIDAndPrivateKeysCalled }
     }
 
     @Test
@@ -164,7 +165,7 @@ class PrismAgentTests {
             api = null,
         )
 
-        plutoMock.getDIDPrivateKeysReturn = null
+        plutoMock.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
 
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
@@ -186,8 +187,8 @@ class PrismAgentTests {
             api = null,
         )
 
-        val privateKeys = arrayOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
-        plutoMock.getDIDPrivateKeysReturn = privateKeys
+        val privateKeys = listOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
+        plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
 
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
