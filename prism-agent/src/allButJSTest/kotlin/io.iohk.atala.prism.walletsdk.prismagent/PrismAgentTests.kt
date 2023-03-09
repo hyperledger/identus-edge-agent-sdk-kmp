@@ -265,4 +265,35 @@ class PrismAgentTests {
             agent.parseInvitation(invitationString.trim())
         }
     }
+
+    @Test
+    fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
+        val agent = PrismAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            connectionManager = connectionManager,
+            seed = null,
+            api = null,
+        )
+        assertEquals(PrismAgent.State.STOPPED, agent.state)
+        agent.start()
+        assertEquals(PrismAgent.State.RUNNING, agent.state)
+    }
+
+    @Test
+    fun testStopPrismAgent_whenCalled_thenStatusIsStopped() = runTest {
+        val agent = PrismAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            connectionManager = connectionManager,
+            seed = null,
+            api = null,
+        )
+        agent.stop()
+        assertEquals(PrismAgent.State.STOPPED, agent.state)
+    }
 }
