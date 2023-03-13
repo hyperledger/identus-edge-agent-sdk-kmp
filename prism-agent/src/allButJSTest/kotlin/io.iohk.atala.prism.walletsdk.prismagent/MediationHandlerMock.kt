@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
@@ -19,6 +20,9 @@ class MediationHandlerMock(
 
     @Throws()
     override suspend fun bootRegisteredMediator(): Mediator? {
+        val hostDID = DID("did", "test", "123")
+        val routingDID = DID("did", "test", "123")
+        bootMediatorResponse = Mediator(UUID.randomUUID4().toString(), mediatorDID, hostDID, routingDID)
         mediator = bootMediatorResponse
         return bootMediatorResponse
     }
@@ -30,7 +34,8 @@ class MediationHandlerMock(
     }
 
     @Throws()
-    override suspend fun updateKeyListWithDIDs(dids: Array<DID>) {}
+    override suspend fun updateKeyListWithDIDs(dids: Array<DID>) {
+    }
 
     @Throws()
     override fun pickupUnreadMessages(limit: Int): Flow<Array<Pair<String, Message>>> {
@@ -38,5 +43,6 @@ class MediationHandlerMock(
     }
 
     @Throws()
-    override suspend fun registerMessagesAsRead(ids: Array<String>) {}
+    override suspend fun registerMessagesAsRead(ids: Array<String>) {
+    }
 }
