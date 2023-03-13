@@ -24,7 +24,6 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -32,10 +31,10 @@ import kotlinx.serialization.json.JsonObject
 
 class PrismAgent {
     enum class State {
-        STOPED, STARTING, RUNNING, STOPING
+        STOPPED, STARTING, RUNNING, STOPPING
     }
 
-    var state: State = State.STOPED
+    var state: State = State.STOPPED
         private set
     val seed: Seed
     val apollo: Apollo
@@ -108,7 +107,7 @@ class PrismAgent {
 
     @Throws()
     suspend fun start() {
-        if (state != State.STOPED) {
+        if (state != State.STOPPED) {
             return
         }
         state = State.STARTING
@@ -132,6 +131,14 @@ class PrismAgent {
         } else {
             throw PrismAgentError.mediationRequestFailedError()
         }
+    }
+
+    suspend fun stop() {
+        if (state != State.RUNNING) {
+            return
+        }
+        // TODO: Revise if we need to create a cancellable for an open connection.
+        state = State.STOPPED
     }
 
     suspend fun createNewPrismDID(
