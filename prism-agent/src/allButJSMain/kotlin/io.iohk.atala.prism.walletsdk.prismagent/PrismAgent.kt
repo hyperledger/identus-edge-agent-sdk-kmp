@@ -23,11 +23,16 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.findProtocolTypeByValu
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import java.time.Duration
 
 class PrismAgent {
     enum class State {
@@ -41,6 +46,7 @@ class PrismAgent {
     val castor: Castor
     val pluto: Pluto
     val mercury: Mercury
+    lateinit var fetchingMessagesJob: Job
 
     private val api: Api
     private val connectionManager: ConnectionManager
@@ -137,7 +143,8 @@ class PrismAgent {
         if (state != State.RUNNING) {
             return
         }
-        // TODO: Revise if we need to create a cancellable for an open connection.
+        state = State.STOPPING
+        fetchingMessagesJob.cancel()
         state = State.STOPPED
     }
 
@@ -238,6 +245,22 @@ class PrismAgent {
         val privateKey =
             pluto.getDIDPrivateKeysByDID(did).first().first() ?: throw PrismAgentError.cannotFindDIDPrivateKey()
         return apollo.signMessage(privateKey, message)
+    }
+
+    fun startFetchingMessages(requestInterval: Int = 5) {
+        if (fetchingMessagesJob.isActive) return
+
+        fetchingMessagesJob = GlobalScope.launch {
+            while (true) {
+                connectionManager.awaitMessages()
+                delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
+            }
+        }
+        fetchingMessagesJob.start()
+    }
+
+    fun stopFetchingMessages() {
+        fetchingMessagesJob.cancel()
     }
 
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
