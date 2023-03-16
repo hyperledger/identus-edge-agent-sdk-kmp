@@ -8,6 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
+import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
@@ -26,6 +27,7 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -261,6 +263,14 @@ class PrismAgent {
 
     fun stopFetchingMessages() {
         fetchingMessagesJob.cancel()
+    }
+
+    fun handleMessagesEvents(): Flow<List<Message>> {
+        return pluto.getAllMessages()
+    }
+
+    fun handleReceivedMessagesEvents(): Flow<List<Message>> {
+        return pluto.getAllMessagesReceived()
     }
 
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
