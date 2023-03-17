@@ -79,6 +79,7 @@ kotlin {
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
                 implementation(project(":domain"))
+                implementation("io.iohk.atala.prism:base64:$apolloVersion")
                 implementation("org.didcommx:didcomm:0.3.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("io.iohk.atala.prism:didpeer:1.0.0-alpha")
