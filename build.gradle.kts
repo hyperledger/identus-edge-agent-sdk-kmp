@@ -96,7 +96,7 @@ subprojects {
 }
 
 rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
-    rootProject.extensions.getByType(NodeJsRootExtension::class.java).nodeVersion = "18.15.0"
+    rootProject.extensions.getByType(NodeJsRootExtension::class.java).nodeVersion = "16.17.0"
 }
 
 tasks.dokkaGfmMultiModule.configure {
