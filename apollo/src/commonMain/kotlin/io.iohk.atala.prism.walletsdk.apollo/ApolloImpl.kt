@@ -7,6 +7,7 @@ import io.iohk.atala.prism.apollo.ecdsa.ECDSAType
 import io.iohk.atala.prism.apollo.ecdsa.KMMECDSA
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PrivateKey
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.helpers.Ed25519
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.ApolloError
 import io.iohk.atala.prism.walletsdk.domain.models.CompressedPublicKey
@@ -66,10 +67,12 @@ class ApolloImpl : Apollo {
                         curve = curve,
                         value = publicKey.getEncoded(),
                     ),
-
                 )
             }
-            else -> TODO()
+            Curve.ED25519 -> {
+                Ed25519.createKeyPair()
+            }
+            Curve.X25519 -> TODO()
         }
     }
 
