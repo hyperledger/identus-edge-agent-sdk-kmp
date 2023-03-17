@@ -5,8 +5,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
-import java.security.KeyPair as JavaKeyPair
 import java.security.KeyPairGenerator
+import java.security.KeyPair as JavaKeyPair
 
 /**
  * Ed25519 is a variation of EdDSA
