@@ -7,6 +7,7 @@ import io.iohk.atala.prism.apollo.ecdsa.ECDSAType
 import io.iohk.atala.prism.apollo.ecdsa.KMMECDSA
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PrivateKey
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.helpers.Ed25519
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.ApolloError
 import io.iohk.atala.prism.walletsdk.domain.models.CompressedPublicKey
@@ -49,8 +50,8 @@ class ApolloImpl : Apollo {
     }
 
     override fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair {
-        return when (curve) {
-            KeyCurve(Curve.SECP256K1) -> {
+        return when (curve.curve) {
+            Curve.SECP256K1 -> {
                 val derivationPath = DerivationPath.fromPath("m/${curve.index}'/0'/0'")
                 val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
@@ -66,30 +67,32 @@ class ApolloImpl : Apollo {
                         curve = curve,
                         value = publicKey.getEncoded(),
                     ),
-
                 )
             }
-            else -> TODO()
+            Curve.ED25519 -> {
+                Ed25519.createKeyPair()
+            }
+            Curve.X25519 -> TODO()
         }
     }
 
     override fun createKeyPair(seed: Seed, privateKey: PrivateKey): KeyPair {
-        return when (val curve = privateKey.keyCurve) {
-            KeyCurve(Curve.SECP256K1) -> {
-                val derivationPath = DerivationPath.fromPath("m/${curve.index}'/0'/0'")
+        return when (privateKey.keyCurve.curve) {
+            Curve.SECP256K1 -> {
+                val derivationPath = DerivationPath.fromPath("m/${privateKey.keyCurve.index}'/0'/0'")
                 val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
-                val privateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
-                val publicKey = kmmKeyPair.publicKey as KMMECSecp256k1PublicKey
+                val mPrivateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
+                val mPublicKey = kmmKeyPair.publicKey as KMMECSecp256k1PublicKey
                 KeyPair(
-                    keyCurve = curve,
+                    keyCurve = privateKey.keyCurve,
                     privateKey = PrivateKey(
-                        keyCurve = curve,
-                        value = privateKey.getEncoded(),
+                        keyCurve = privateKey.keyCurve,
+                        value = mPrivateKey.getEncoded(),
                     ),
                     publicKey = PublicKey(
-                        curve = curve,
-                        value = publicKey.getEncoded(),
+                        curve = privateKey.keyCurve,
+                        value = mPublicKey.getEncoded(),
                     ),
                 )
             }
