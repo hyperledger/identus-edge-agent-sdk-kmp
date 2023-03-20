@@ -12,10 +12,10 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class RequestPresentation {
+class ProposePresentation {
 
     lateinit var id: String
-    val type = ProtocolType.DidcommRequestPresentation.value
+    val type = ProtocolType.DidcommProposePresentation.value
     lateinit var body: Body
     lateinit var attachments: Array<AttachmentDescriptor>
     var thid: String? = null
@@ -39,11 +39,11 @@ class RequestPresentation {
     }
 
     constructor(fromMessage: Message) {
-        if (fromMessage.piuri == ProtocolType.DidcommRequestPresentation.value &&
+        if (fromMessage.piuri == ProtocolType.DidcommProposePresentation.value &&
             fromMessage.from != null &&
             fromMessage.to != null
         ) {
-            RequestPresentation(
+            ProposePresentation(
                 id = fromMessage.id,
                 body = Json.decodeFromString(fromMessage.body),
                 attachments = fromMessage.attachments,
@@ -68,15 +68,14 @@ class RequestPresentation {
         )
     }
 
-    fun makeRequestFromProposal(msg: Message): RequestPresentation {
+    fun makeProposalFromRequest(msg: Message): ProposePresentation {
         try {
-            val request = ProposePresentation(msg)
+            val request = RequestPresentation(msg)
 
-            return RequestPresentation(
+            return ProposePresentation(
                 body = Body(
                     goalCode = request.body.goalCode,
                     comment = request.body.comment,
-                    willConfirm = false,
                     proofTypes = request.body.proofTypes
                 ),
                 attachments = request.attachments,
@@ -89,13 +88,24 @@ class RequestPresentation {
         }
     }
 
+    override fun equals(other: Any?): Boolean {
+        if (other == null) return false
+        if (other::class != this::class) return false
+        val otherPresentation = other as ProposePresentation
+        return otherPresentation.type == this.type &&
+            otherPresentation.id == this.id &&
+            otherPresentation.body == this.body &&
+            otherPresentation.attachments.contentEquals(this.attachments) &&
+            otherPresentation.thid == this.thid &&
+            otherPresentation.from == this.from &&
+            otherPresentation.to == this.to
+    }
+
     @Serializable
     data class Body(
         @SerialName("goal_code")
         val goalCode: String? = null,
         val comment: String? = null,
-        @SerialName("will_confirm")
-        val willConfirm: Boolean? = false,
         @SerialName("proof_types")
         val proofTypes: Array<ProofTypes>
     ) {
@@ -107,7 +117,6 @@ class RequestPresentation {
 
             if (goalCode != other.goalCode) return false
             if (comment != other.comment) return false
-            if (willConfirm != other.willConfirm) return false
             if (!proofTypes.contentEquals(other.proofTypes)) return false
 
             return true
@@ -116,7 +125,6 @@ class RequestPresentation {
         override fun hashCode(): Int {
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)
-            result = 31 * result + (willConfirm?.hashCode() ?: 0)
             result = 31 * result + proofTypes.contentHashCode()
             return result
         }
