@@ -68,7 +68,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 implementation(project(":domain"))
-                implementation("io.iohk.atala.prism:apollo:$apolloVersion")
+//                implementation("io.iohk.atala.prism:apollo:$apolloVersion")
                 implementation("io.iohk.atala.prism:base64:$apolloVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")

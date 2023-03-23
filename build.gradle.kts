@@ -38,12 +38,12 @@ java {
     }
 }
 
-version = "1.0.0-alpha"
-group = "io.iohk.atala.prism"
+// version = "1.0.0-alpha"
+// group = "io.iohk.atala.prism"
 
 allprojects {
-    this.group = group
-    this.version = version
+    this.group = "io.iohk.atala.prism.walletsdk"
+    this.version = "1.0.0-local"
 
     repositories {
         mavenCentral()
@@ -70,7 +70,27 @@ allprojects {
         }
     }
 
-//    apply(plugin = "org.gradle.maven-publish")
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                if (requested.group == "org.bouncycastle") {
+                    println(requested.name)
+                    when (requested.name) {
+                        "bcprov-jdk15on", "bcprov-jdk15to18" -> {
+                            useTarget("org.bouncycastle:bcprov-jdk15on:1.68")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    apply(plugin = "org.gradle.maven-publish")
+    publishing {
+        repositories {
+            mavenLocal()
+        }
+    }
 
 //    publishing {
 //        repositories {

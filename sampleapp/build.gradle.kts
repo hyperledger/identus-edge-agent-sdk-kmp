@@ -50,12 +50,15 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.navigation:navigation-fragment-ktx:2.5.3")
     implementation("androidx.navigation:navigation-ui-ktx:2.5.3")
-    implementation(project(":apollo"))
-    implementation(project(":mercury"))
-    implementation(project(":castor"))
-    implementation(project(":pluto"))
-    implementation(project(":prism-agent"))
-    implementation(project(":domain"))
+    implementation("io.iohk.atala.prism.walletsdk:apollo:1.0.0-local") {
+        exclude("io.iohk.atala.prism.walletsdk:domain:1.0.0-local")
+        exclude("io.iohk.atala.prism:utils:1.6.0-alpha")
+    }
+    implementation("io.iohk.atala.prism.walletsdk:mercury:1.0.0-local")
+    implementation("io.iohk.atala.prism.walletsdk:castor:1.0.0-local")
+    implementation("io.iohk.atala.prism.walletsdk:pluto:1.0.0-local")
+    implementation("io.iohk.atala.prism.walletsdk:prism-agent:1.0.0-local")
+    implementation("io.iohk.atala.prism.walletsdk:domain:1.0.0-local")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
