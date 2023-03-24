@@ -74,7 +74,6 @@ allprojects {
         resolutionStrategy {
             eachDependency {
                 if (requested.group == "org.bouncycastle") {
-                    println(requested.name)
                     when (requested.name) {
                         "bcprov-jdk15on", "bcprov-jdk15to18" -> {
                             useTarget("org.bouncycastle:bcprov-jdk15on:1.68")

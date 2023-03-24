@@ -26,14 +26,16 @@ class FirstViewModel : ViewModel() {
     private lateinit var seed: Seed
     private lateinit var agent: PrismAgent
 
-    fun startAgent() {
+    init {
         initializeApollo()
         initializePluto()
         initializeCastor()
         initializeMercury()
         initializeSeed()
         initializeAgent()
+    }
 
+    fun startAgent() {
         GlobalScope.launch {
             agent.start()
         }
@@ -82,7 +84,8 @@ class FirstViewModel : ViewModel() {
             "admit",
             "peanut"
         )
-        seed = apollo.createSeed(words, "")
+//        seed = apollo.createSeed(words, "")
+        seed = apollo.createRandomSeed().seed
     }
 
     private fun initializeAgent() {
