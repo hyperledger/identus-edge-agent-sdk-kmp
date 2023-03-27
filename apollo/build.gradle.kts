@@ -67,6 +67,7 @@ kotlin {
                 implementation("io.iohk.atala.prism:base-asymmetric-encryption:$apolloVersion")
                 implementation("io.iohk.atala.prism:ecdsa:$apolloVersion")
                 implementation("com.nimbusds:nimbus-jose-jwt:9.31")
+                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
                 implementation(project(":domain"))
             }
         }
@@ -91,6 +92,7 @@ kotlin {
         val androidMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
             }
         }
         val androidTest by getting {
