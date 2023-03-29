@@ -175,7 +175,7 @@ class PrismAgent {
         )
 
         if (updateMediator) {
-            // TODO: This still needs to be done update the key List
+            // TODO: Register Peer DID. Take swift as an example
         }
 
         pluto.storePeerDIDAndPrivateKeys(

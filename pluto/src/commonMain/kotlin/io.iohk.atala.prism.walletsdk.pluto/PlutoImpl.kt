@@ -235,7 +235,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         return getInstance().privateKeyQueries.fetchLastkeyPathIndex()
             .asFlow()
             .map {
-                it.executeAsOne().keyPathIndex ?: 0
+                it.executeAsList().firstOrNull()?.keyPathIndex ?: 0
             }
     }
 

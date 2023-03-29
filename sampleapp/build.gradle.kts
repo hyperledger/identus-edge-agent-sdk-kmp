@@ -50,10 +50,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.navigation:navigation-fragment-ktx:2.5.3")
     implementation("androidx.navigation:navigation-ui-ktx:2.5.3")
-    implementation("io.iohk.atala.prism.walletsdk:apollo:1.0.0-local") {
-        isTransitive = false
-        exclude("io.iohk.atala.prism.walletsdk:domain:1.0.0-local")
-    }
+    implementation("io.iohk.atala.prism.walletsdk:apollo:1.0.0-local")
 
     implementation("io.iohk.atala.prism.walletsdk:mercury:1.0.0-local")
     implementation("io.iohk.atala.prism.walletsdk:castor:1.0.0-local") {

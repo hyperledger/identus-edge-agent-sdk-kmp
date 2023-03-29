@@ -46,7 +46,10 @@ final class DefaultMediationHandler(
 
     override suspend fun bootRegisteredMediator(): Mediator? {
         if (mediator == null) {
-            mediator = store.getAllMediators().first()
+            mediator = store.getAllMediators().firstOrNull()
+        }
+        if (mediator == null) {
+            throw PrismAgentError.noMediatorAvailableError()
         }
         return mediator
     }
