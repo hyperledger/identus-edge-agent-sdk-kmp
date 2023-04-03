@@ -30,11 +30,11 @@ android {
         dataBinding = true
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
     }
     buildToolsVersion = "33.0.0"
     buildFeatures {
@@ -50,12 +50,12 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.navigation:navigation-fragment-ktx:2.5.3")
     implementation("androidx.navigation:navigation-ui-ktx:2.5.3")
-    implementation("io.iohk.atala.prism.walletsdk:apollo:1.0.0-local")
+    implementation("io.iohk.atala.prism.walletsdk:apollo:1.0.0-local") /*{
+        exclude("com.github.stephenc.jcip:jcip-annotations:1.0-1")
+    }*/
 
     implementation("io.iohk.atala.prism.walletsdk:mercury:1.0.0-local")
-    implementation("io.iohk.atala.prism.walletsdk:castor:1.0.0-local") {
-        isTransitive = false
-    }
+    implementation("io.iohk.atala.prism.walletsdk:castor:1.0.0-local")
     implementation("io.iohk.atala.prism.walletsdk:pluto:1.0.0-local")
     implementation("io.iohk.atala.prism.walletsdk:prism-agent:1.0.0-local")
     implementation("io.iohk.atala.prism.walletsdk:domain:1.0.0-local")

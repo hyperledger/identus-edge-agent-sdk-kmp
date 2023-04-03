@@ -81,14 +81,15 @@ kotlin {
                 implementation(project(":domain"))
                 implementation("io.iohk.atala.prism:base64:$apolloVersion")
                 implementation("io.iohk.atala.prism:hashing:$apolloVersion")
-                implementation("org.didcommx:didcomm:0.3.0")
+//                implementation("org.didcommx:didcomm:0.3.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("io.iohk.atala.prism:didpeer:1.0.0-alpha")
 //                implementation("io.iohk.atala.prism:apollo:$apolloVersion")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("pro.streem.pbandk:pbandk-runtime:0.14.2") {
-                    exclude("com.google.protobuf")
-                }
+                implementation("com.google.protobuf:protoc:3.12.0")
+//                implementation("pro.streem.pbandk:pbandk-runtime:0.14.2") {
+//                    exclude("com.google.protobuf")
+//                }
             }
         }
         val commonTest by getting {

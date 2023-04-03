@@ -2,20 +2,25 @@ package io.iohk.atala.prism.walletsdk.apollo.helpers
 
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.security.KeyPair
 import java.security.KeyPairGenerator
-import java.security.KeyPair as JavaKeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.KeyPair as KeyPairModel
+
+// import java.security.KeyPairGenerator
+// import java.security.KeyPair as JavaKeyPair
 
 /**
  * Ed25519 is a variation of EdDSA
  */
 actual object Ed25519 {
-    actual fun createKeyPair(): KeyPair {
-        val kpg: KeyPairGenerator = KeyPairGenerator.getInstance("Ed25519")
-        val javaKeyPair: JavaKeyPair = kpg.generateKeyPair()
-        return KeyPair(
+    actual fun createKeyPair(): KeyPairModel {
+        val provider = BouncyCastleProvider()
+        val generator = KeyPairGenerator.getInstance("Ed25519", provider)
+        val javaKeyPair: KeyPair = generator.generateKeyPair()
+        return KeyPairModel(
             KeyCurve(Curve.ED25519),
             PrivateKey(
                 KeyCurve(Curve.ED25519),
