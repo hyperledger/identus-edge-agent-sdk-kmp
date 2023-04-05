@@ -9,7 +9,7 @@ import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
 import org.didcommx.didcomm.secret.Secret
 import org.didcommx.didcomm.secret.SecretResolver
-import java.util.*
+import java.util.Optional
 
 class DIDCommSecretsResolver(val pluto: Pluto): SecretResolver {
     override fun findKeys(kids: List<String>): Set<String> {
@@ -29,8 +29,7 @@ class DIDCommSecretsResolver(val pluto: Pluto): SecretResolver {
                             VerificationMethodType.JSON_WEB_KEY_2020,
                             VerificationMaterial(
                                 VerificationMaterialFormat.MULTIBASE,
-                                privateKey.value.toString()
-//                                privateKey.value.base64UrlEncoded
+                                privateKey.value.base64UrlEncoded
                             )
                         )
                     )

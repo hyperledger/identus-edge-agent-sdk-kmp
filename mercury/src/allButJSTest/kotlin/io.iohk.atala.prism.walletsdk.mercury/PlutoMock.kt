@@ -1,7 +1,14 @@
 package io.iohk.atala.prism.walletsdk.mercury
 
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.models.*
+import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
+import io.iohk.atala.prism.walletsdk.domain.models.Mediator
+import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
+import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
+import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 

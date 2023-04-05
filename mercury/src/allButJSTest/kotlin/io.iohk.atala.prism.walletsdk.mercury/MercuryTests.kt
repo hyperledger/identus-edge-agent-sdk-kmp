@@ -9,10 +9,8 @@ import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
-
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class MercuryTests {
-
     lateinit var apiMock: ApiMock
     lateinit var castorMock: CastorMock
     lateinit var protocolMock: ProtocolMock
@@ -40,14 +38,12 @@ class MercuryTests {
         assertTrue { protocolMock.packEncryptedWasCalledWith === msg }
     }
 
-
     @Test
     fun testUnpackMessage_shouldCall_ProtocolUnpack() = runTest {
         val messageString = "testMessageString"
         sut.unpackMessage(messageString)
         assertTrue { protocolMock.unpackWasCalledWith === messageString }
     }
-
 
     @Test
     fun testSendMessage_shouldThrowError_whenToAbsent() = runTest {
@@ -60,6 +56,4 @@ class MercuryTests {
         val msg = Message(piuri = "", body = "", to = DID("test", "method", "id"))
         assertFailsWith<MercuryError.NoValidServiceFoundError> { sut.sendMessage(msg) }
     }
-
-
 }

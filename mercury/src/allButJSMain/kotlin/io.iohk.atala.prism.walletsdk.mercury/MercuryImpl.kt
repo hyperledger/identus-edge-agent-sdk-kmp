@@ -2,8 +2,10 @@ package io.iohk.atala.prism.walletsdk.mercury
 
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Mercury
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.models.*
+import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -13,6 +15,7 @@ actual class MercuryImpl actual constructor(
     val protocol: DIDCommProtocol,
     val api: Api
 ) : Mercury {
+    @Throws(MercuryError.NoDIDReceiverSetError::class)
     actual override fun packMessage(message: Message): String {
         if(message.to !is DID) throw MercuryError.NoDIDReceiverSetError()
 
@@ -25,6 +28,7 @@ actual class MercuryImpl actual constructor(
         return protocol.unpack(message)
     }
 
+    @Throws(MercuryError.NoDIDReceiverSetError::class)
     override suspend fun sendMessage(message: Message): ByteArray? {
         if(message.to !is DID) throw MercuryError.NoDIDReceiverSetError()
 
@@ -54,19 +58,21 @@ actual class MercuryImpl actual constructor(
 
     private fun prepareForwardMessage(message: Message, encrypted: String, mediatorDid: DID): ForwardMessage {
         return ForwardMessage(
-            body = message.toString(),
+            body = message.to.toString(),
+            encryptedMessage = encrypted,
             from = message.from!!,
             to = mediatorDid,
-            encryptedMessage = encrypted
         )
     }
 
+    @Throws(MercuryError.NoValidServiceFoundError::class)
     private fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
         if(service !is DIDDocument.Service) throw MercuryError.NoValidServiceFoundError()
 
         return api.request("POST", service.serviceEndpoint.uri, message)
     }
 
+    @Throws(MercuryError.NoValidServiceFoundError::class)
     private fun makeRequest(uri: String?, message: String): ByteArray? {
         if(uri !is String) throw MercuryError.NoValidServiceFoundError()
 
@@ -77,4 +83,3 @@ actual class MercuryImpl actual constructor(
         return service?.serviceEndpoint?.uri?.let { uri -> castor.parseDID(uri) }
     }
 }
-

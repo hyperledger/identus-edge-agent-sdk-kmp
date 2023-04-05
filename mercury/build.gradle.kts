@@ -70,6 +70,7 @@ kotlin {
                 implementation(project(":domain"))
                 implementation("io.iohk.atala.prism:apollo:$apolloVersion")
                 implementation("io.iohk.atala.prism:base64:$apolloVersion")
+                implementation("io.iohk.atala.prism:base64:1.6.0-alpha")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
                 implementation("org.didcommx:didcomm:0.3.0")

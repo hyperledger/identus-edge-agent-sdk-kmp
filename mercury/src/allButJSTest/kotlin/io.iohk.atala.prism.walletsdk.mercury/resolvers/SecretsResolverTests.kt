@@ -1,15 +1,16 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
-import io.iohk.atala.prism.walletsdk.domain.models.*
-import io.iohk.atala.prism.walletsdk.mercury.CastorMock
+import io.iohk.atala.prism.walletsdk.domain.models.Curve
+import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
+import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.mercury.PlutoMock
-import kotlinx.coroutines.test.runTest
-import org.didcommx.didcomm.common.VerificationMaterial
 import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
-import org.didcommx.didcomm.diddoc.DIDCommService
-import org.didcommx.didcomm.diddoc.VerificationMethod
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertTrue
+import kotlin.test.assertNotNull
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SecretsResolverTests {

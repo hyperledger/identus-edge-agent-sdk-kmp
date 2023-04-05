@@ -2,7 +2,14 @@ package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.models.*
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentData
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentLinkData
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
+import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.mercury.DIDCommProtocol
 
 import kotlinx.serialization.json.Json
@@ -15,15 +22,9 @@ import org.didcommx.didcomm.model.PackEncryptedParams
 import org.didcommx.didcomm.model.UnpackParams
 
 class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
-    private val didComm: DIDComm
-    private val didDocResolver: DIDCommDIDResolver
-    private val secretsResolver: DIDCommSecretsResolver
-
-    init {
-        didDocResolver = DIDCommDIDResolver(castor)
-        secretsResolver = DIDCommSecretsResolver(pluto)
-        didComm = DIDComm(didDocResolver, secretsResolver)
-    }
+    private val didDocResolver = DIDCommDIDResolver(castor)
+    private val secretsResolver = DIDCommSecretsResolver(pluto)
+    private val didComm = DIDComm(didDocResolver, secretsResolver)
 
     override fun packEncrypted(message: Message): String {
         val toString = message.to.toString()
@@ -71,15 +72,20 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
         }
     }
 
+    @Throws(MercuryError.UnknownAttachmentDataError::class)
     private fun parseAttachmentData(data: AttachmentData): Attachment.Data {
-        if(data is AttachmentBase64) return Attachment.Data.Base64(data.base64)
+        if(data is AttachmentBase64) {
+            return Attachment.Data.Base64(data.base64)
+        }
 
         if(data is AttachmentJsonData) {
             val json = Json.parseToJsonElement(data.data)
             return Attachment.Data.Json(json.jsonObject.toMap())
         }
 
-        if(data is AttachmentLinkData) return Attachment.Data.Links(data.links.toList(), data.hash)
+        if(data is AttachmentLinkData) {
+            return Attachment.Data.Links(data.links.toList(), data.hash)
+        }
 
         throw MercuryError.UnknownAttachmentDataError()
     }
@@ -136,6 +142,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
         }
     }
 
+    @Throws(MercuryError.UnknownAttachmentDataError::class)
     private fun parseAttachmentDataToDomain(data: Attachment.Data): AttachmentData {
         val jsonObj = data.toJSONObject()
 

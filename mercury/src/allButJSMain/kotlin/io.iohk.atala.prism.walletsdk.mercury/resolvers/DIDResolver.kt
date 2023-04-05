@@ -11,7 +11,7 @@ import org.didcommx.didcomm.diddoc.DIDCommService
 import org.didcommx.didcomm.diddoc.DIDDoc
 import org.didcommx.didcomm.diddoc.DIDDocResolver
 import org.didcommx.didcomm.diddoc.VerificationMethod
-import java.util.*
+import java.util.Optional
 
 class DIDCommDIDResolver(val castor: Castor): DIDDocResolver {
     override fun resolve(did: String): Optional<DIDDoc> {

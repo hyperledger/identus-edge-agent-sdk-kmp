@@ -11,7 +11,11 @@ import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
 import org.didcommx.didcomm.diddoc.DIDCommService
 import org.didcommx.didcomm.diddoc.VerificationMethod
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertContains
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class DIDResolverTests {
@@ -112,6 +116,4 @@ class DIDResolverTests {
             verificationMaterial = VerificationMaterial(VerificationMaterialFormat.JWK, vmKeyAgreement.publicKeyJwk.toString())
         ))
     }
-
-
 }
