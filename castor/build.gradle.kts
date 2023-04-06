@@ -86,10 +86,9 @@ kotlin {
                 implementation("io.iohk.atala.prism:didpeer:1.0.0-alpha")
 //                implementation("io.iohk.atala.prism:apollo:$apolloVersion")
                 api("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("com.google.protobuf:protoc:3.12.0")
-//                implementation("pro.streem.pbandk:pbandk-runtime:0.14.2") {
-//                    exclude("com.google.protobuf")
-//                }
+                api("pro.streem.pbandk:pbandk-runtime:0.14.2") {
+                    exclude("com.google.protobuf")
+                }
             }
         }
         val commonTest by getting {

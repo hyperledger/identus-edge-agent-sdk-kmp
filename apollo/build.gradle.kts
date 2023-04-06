@@ -64,9 +64,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("io.iohk.atala.prism:base-asymmetric-encryption:$apolloVersion") {
-                    exclude("net.jcip", "jcip-annotations")
-                }
+                implementation("io.iohk.atala.prism:base-asymmetric-encryption:$apolloVersion")
                 implementation("io.iohk.atala.prism:ecdsa:$apolloVersion")
                 implementation("com.nimbusds:nimbus-jose-jwt:9.31")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")

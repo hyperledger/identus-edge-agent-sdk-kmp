@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.sampleapp
 
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
@@ -9,6 +11,9 @@ import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
@@ -16,8 +21,13 @@ import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.DefaultMediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 class FirstViewModel : ViewModel() {
 
@@ -28,9 +38,7 @@ class FirstViewModel : ViewModel() {
     private lateinit var handler: MediationHandler
     private lateinit var seed: Seed
     private lateinit var agent: PrismAgent
-
-    init {
-    }
+    private val messageList: MutableLiveData<List<Message>> = MutableLiveData(listOf())
 
     fun startAgent(context: Context) {
         GlobalScope.launch {
@@ -43,8 +51,74 @@ class FirstViewModel : ViewModel() {
             initializeAgent()
 
             agent.start()
+            agent.startFetchingMessages()
+            agent.handleReceivedMessagesEvents().collect { messages ->
+                messages.map {
+                    if (it.piuri == ProtocolType.PrismOnboarding.value) {
+                    } else if (it.piuri == ProtocolType.Didcomminvitation.value) {
+                    }
+                }
+            }
 //            val prismDID = agent.createNewPrismDID()
 //            println("Prism DID: $prismDID")
+        }
+    }
+
+    fun messageListStream(): LiveData<List<Message>> {
+        return messageList
+    }
+
+    fun parseAndAcceptOOB(oobUrl: String) {
+        GlobalScope.launch {
+            val invitationType = agent.parseInvitation(oobUrl)
+            var invitation: Any
+            if (invitationType is OutOfBandInvitation) {
+                invitation = Json.decodeFromString<OutOfBandInvitation>(oobUrl)
+//                agent.acceptOutOfBandInvitation(invitation)
+            } else if (invitationType is PrismOnboardingInvitation) {
+                invitation = Json.decodeFromString<PrismOnboardingInvitation>(oobUrl)
+                agent.acceptInvitation(invitation)
+            } else {
+                throw PrismAgentError.unknownInvitationTypeError()
+            }
+        }
+    }
+
+    fun sendTestMessage() {
+        GlobalScope.launch {
+            val senderPeerDid = agent.createNewPeerDID(
+                arrayOf(),
+                true
+            )
+            val message = Message(
+                piuri = "https://didcomm.org/basicmessage/2.0/message", // TODO: This should be on ProtocolTypes as an enum
+                from = senderPeerDid,
+                to = senderPeerDid,
+                body = "This is a test message"
+            )
+
+//            agent.sendMessage(message)
+        }
+    }
+
+    fun createPeerDid() {
+        GlobalScope.launch {
+            agent.createNewPeerDID(
+                arrayOf(
+                    DIDDocument.Service(
+                        "#didcomm-1",
+                        arrayOf("DIDCommMessaging"),
+                        DIDDocument.ServiceEndpoint(handler.mediatorDID.toString()),
+                    ),
+                ),
+                false
+            )
+        }
+    }
+
+    fun createPrismDid() {
+        GlobalScope.launch {
+            agent.createNewPrismDID()
         }
     }
 
