@@ -8,7 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.UUID
+import java.util.*
 
 class ForwardMessage @JvmOverloads constructor(
     val body: String,
@@ -39,4 +39,4 @@ class ForwardMessage @JvmOverloads constructor(
 }
 
 @Serializable
-data class ForwardBody (val next: String)
+data class ForwardBody(val next: String)

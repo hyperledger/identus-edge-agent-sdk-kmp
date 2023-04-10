@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.mercury
 
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import kotlinx.coroutines.test.runTest
@@ -33,7 +34,8 @@ class MercuryTests {
     @Test
     fun testPackMessage_shouldCall_ProtocolPackEncrypted() = runTest {
         val to = DID("test", "method", "id")
-        val msg = Message(piuri = "", body = "", to = to)
+        val from = DID("test", "method", "id")
+        val msg = Message(piuri = "", body = "", from = from, to = to)
         sut.packMessage(msg)
         assertTrue { protocolMock.packEncryptedWasCalledWith === msg }
     }
@@ -53,7 +55,11 @@ class MercuryTests {
 
     @Test
     fun testSendMessage_shouldThrowError_whenServiceAbsent() = runTest {
-        val msg = Message(piuri = "", body = "", to = DID("test", "method", "id"))
+        val idDid = DID("did", "prism", "123")
+        val allAuthentication = DIDDocument.Authentication(arrayOf(), arrayOf())
+        val resolveDIDReturn = DIDDocument(idDid, arrayOf(/*service,*/ allAuthentication))
+        castorMock.resolveDIDReturn = resolveDIDReturn
+        val msg = Message(piuri = "", body = "", from = DID("test", "method", "id"), to = DID("test", "method", "id"))
         assertFailsWith<MercuryError.NoValidServiceFoundError> { sut.sendMessage(msg) }
     }
 }

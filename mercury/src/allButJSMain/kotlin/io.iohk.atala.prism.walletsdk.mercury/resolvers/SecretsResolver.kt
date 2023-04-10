@@ -9,9 +9,9 @@ import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
 import org.didcommx.didcomm.secret.Secret
 import org.didcommx.didcomm.secret.SecretResolver
-import java.util.Optional
+import java.util.*
 
-class DIDCommSecretsResolver(val pluto: Pluto): SecretResolver {
+class DIDCommSecretsResolver(val pluto: Pluto) : SecretResolver {
     override fun findKeys(kids: List<String>): Set<String> {
         return runBlocking {
             kids.filter { pluto.getDIDPrivateKeyByID(it).firstOrNull() != null }.toSet()

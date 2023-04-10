@@ -11,9 +11,9 @@ import org.didcommx.didcomm.diddoc.DIDCommService
 import org.didcommx.didcomm.diddoc.DIDDoc
 import org.didcommx.didcomm.diddoc.DIDDocResolver
 import org.didcommx.didcomm.diddoc.VerificationMethod
-import java.util.Optional
+import java.util.*
 
-class DIDCommDIDResolver(val castor: Castor): DIDDocResolver {
+class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
     override fun resolve(did: String): Optional<DIDDoc> {
         return runBlocking {
             val doc = castor.resolveDID(did)
@@ -23,7 +23,7 @@ class DIDCommDIDResolver(val castor: Castor): DIDDocResolver {
             val verificationMethods = mutableListOf<VerificationMethod>()
 
             doc.coreProperties.forEach { coreProperty ->
-                val methods = when(coreProperty) {
+                val methods = when (coreProperty) {
                     is DIDDocument.Authentication -> coreProperty.verificationMethods
                     is DIDDocument.AssertionMethod -> coreProperty.verificationMethods
                     is DIDDocument.KeyAgreement -> coreProperty.verificationMethods
@@ -35,11 +35,11 @@ class DIDCommDIDResolver(val castor: Castor): DIDDocResolver {
                 methods.forEach { method ->
                     val curve = DIDDocument.VerificationMethod.getCurveByType(method.publicKeyJwk?.get("crv")!!)
 
-                    if(curve === Curve.ED25519) {
+                    if (curve === Curve.ED25519) {
                         authentications.add(method.id.string())
                     }
 
-                    if(curve === Curve.X25519) {
+                    if (curve === Curve.X25519) {
                         keyAgreements.add(method.id.string())
                     }
 
@@ -48,12 +48,15 @@ class DIDCommDIDResolver(val castor: Castor): DIDDocResolver {
                             id = method.id.string(),
                             controller = method.controller.toString(),
                             type = VerificationMethodType.JSON_WEB_KEY_2020,
-                            verificationMaterial = VerificationMaterial(VerificationMaterialFormat.JWK, method.publicKeyJwk.toString() ?: "")
+                            verificationMaterial = VerificationMaterial(
+                                VerificationMaterialFormat.JWK,
+                                method.publicKeyJwk.toString() ?: ""
+                            )
                         )
                     )
                 }
 
-                if(coreProperty is DIDDocument.Service && coreProperty.type.contains("DIDCommMessaging")) {
+                if (coreProperty is DIDDocument.Service && coreProperty.type.contains("DIDCommMessaging")) {
                     services.add(
                         DIDCommService(
                             id = coreProperty.id,
@@ -65,13 +68,15 @@ class DIDCommDIDResolver(val castor: Castor): DIDDocResolver {
                 }
             }
 
-            Optional.of(DIDDoc(
-                doc.id.toString(),
-                keyAgreements,
-                authentications,
-                verificationMethods,
-                services
-            ))
+            Optional.of(
+                DIDDoc(
+                    doc.id.toString(),
+                    keyAgreements,
+                    authentications,
+                    verificationMethods,
+                    services
+                )
+            )
         }
     }
 }

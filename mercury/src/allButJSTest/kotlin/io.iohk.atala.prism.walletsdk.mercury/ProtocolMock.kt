@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.mercury
 
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 
-class ProtocolMock: DIDCommProtocol {
+class ProtocolMock : DIDCommProtocol {
     var packEncryptedWasCalledWith: Message? = null
 
     override fun packEncrypted(message: Message): String {

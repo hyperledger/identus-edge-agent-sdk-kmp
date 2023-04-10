@@ -64,12 +64,15 @@ class DIDResolverTests {
         val result = sut.resolve("didString")
         val didDoc = result.get()
 
-        assertContains(didDoc.didCommServices, DIDCommService(
-            id = service.id,
-            serviceEndpoint = service.serviceEndpoint.uri,
-            routingKeys = seRoutingKeys.toList(),
-            accept = seAccept.toList()
-        ))
+        assertContains(
+            didDoc.didCommServices,
+            DIDCommService(
+                id = service.id,
+                serviceEndpoint = service.serviceEndpoint.uri,
+                routingKeys = seRoutingKeys.toList(),
+                accept = seAccept.toList()
+            )
+        )
     }
 
     @Test
@@ -101,19 +104,31 @@ class DIDResolverTests {
         val didDoc = result.get()
 
         assertContains(didDoc.authentications, vmAuthentication.id.string())
-        assertContains(didDoc.verificationMethods, VerificationMethod(
-            id = vmAuthentication.id.string(),
-            controller = vmAuthentication.controller.toString(),
-            type = VerificationMethodType.JSON_WEB_KEY_2020,
-            verificationMaterial = VerificationMaterial(VerificationMaterialFormat.JWK, vmAuthentication.publicKeyJwk.toString())
-        ))
+        assertContains(
+            didDoc.verificationMethods,
+            VerificationMethod(
+                id = vmAuthentication.id.string(),
+                controller = vmAuthentication.controller.toString(),
+                type = VerificationMethodType.JSON_WEB_KEY_2020,
+                verificationMaterial = VerificationMaterial(
+                    VerificationMaterialFormat.JWK,
+                    vmAuthentication.publicKeyJwk.toString()
+                )
+            )
+        )
 
         assertContains(didDoc.keyAgreements, vmKeyAgreement.id.string())
-        assertContains(didDoc.verificationMethods, VerificationMethod(
-            id = vmKeyAgreement.id.string(),
-            controller = vmKeyAgreement.controller.toString(),
-            type = VerificationMethodType.JSON_WEB_KEY_2020,
-            verificationMaterial = VerificationMaterial(VerificationMaterialFormat.JWK, vmKeyAgreement.publicKeyJwk.toString())
-        ))
+        assertContains(
+            didDoc.verificationMethods,
+            VerificationMethod(
+                id = vmKeyAgreement.id.string(),
+                controller = vmKeyAgreement.controller.toString(),
+                type = VerificationMethodType.JSON_WEB_KEY_2020,
+                verificationMaterial = VerificationMaterial(
+                    VerificationMaterialFormat.JWK,
+                    vmKeyAgreement.publicKeyJwk.toString()
+                )
+            )
+        )
     }
 }
