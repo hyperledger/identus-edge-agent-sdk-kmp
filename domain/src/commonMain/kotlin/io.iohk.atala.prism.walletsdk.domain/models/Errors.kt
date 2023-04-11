@@ -25,6 +25,7 @@ sealed class CastorError(message: String? = null) : Throwable(message) {
 sealed class MercuryError(message: String? = null) : Throwable(message) {
     class InvalidURLError(message: String? = null) : MercuryError(message)
     class NoDIDReceiverSetError(message: String? = null) : MercuryError(message)
+    class NoDIDSenderSetError(message: String? = null) : MercuryError(message)
     class NoValidServiceFoundError(message: String? = null) : MercuryError(message)
     class FromFieldNotSetError(message: String? = null) : MercuryError(message)
     class UnknownAttachmentDataError(message: String? = null) : MercuryError(message)
