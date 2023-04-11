@@ -18,6 +18,7 @@ import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.message.Attachment
 import org.didcommx.didcomm.model.PackEncryptedParams
 import org.didcommx.didcomm.model.UnpackParams
+import java.time.Instant.now
 
 class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
     private val didDocResolver = DIDCommDIDResolver(castor)
@@ -111,7 +112,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
             thid = result.message.thid,
             pthid = result.message.pthid,
             ack = result.message.ack?.let { arrayOf(it) } ?: emptyArray(),
-            createdTime = result.message.createdTime?.toString() ?: "",
+            createdTime = result.message.createdTime?.toString() ?: now().toEpochMilli().toString(),
 //            expiresTimePlus = result.message.expiresTime?.toString()
 //            extraHeaders = result.message.customHeaders
             attachments = parseAttachmentsToDomain(result.message.attachments)
