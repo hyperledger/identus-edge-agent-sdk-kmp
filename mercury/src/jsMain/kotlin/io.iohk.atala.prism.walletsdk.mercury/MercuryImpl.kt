@@ -8,12 +8,12 @@ import kotlin.js.Promise
 
 @OptIn(ExperimentalJsExport::class)
 @JsExport
-actual class MercuryImpl actual constructor(castor: Castor, pluto: Pluto) : Mercury {
-    actual override fun packMessage(message: Message): String {
+class MercuryImpl constructor(castor: Castor, pluto: Pluto) : Mercury {
+    override fun packMessage(message: Message): String {
         TODO("Not yet implemented")
     }
 
-    actual override fun unpackMessage(message: String): Message {
+    override fun unpackMessage(message: String): Message {
         TODO("Not yet implemented")
     }
 
