@@ -67,7 +67,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation(project(":domain"))
+                // implementation(project(":domain"))
 //                implementation("io.iohk.atala.prism:apollo:$apolloVersion")
                 implementation("io.iohk.atala.prism:uuid:$apolloVersion")
                 implementation("io.iohk.atala.prism:base64:$apolloVersion")
@@ -82,7 +82,7 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
-                implementation(project(":domain"))
+                // implementation(project(":domain"))
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
                 implementation("io.ktor:ktor-client-mock:2.1.3")
@@ -162,9 +162,6 @@ android {
             allVariants()
         }
     }
-}
-dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
 }
 
 // Dokka implementation

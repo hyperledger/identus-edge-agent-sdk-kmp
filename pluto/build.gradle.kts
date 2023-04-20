@@ -73,7 +73,7 @@ kotlin {
                 implementation("com.squareup.sqldelight:runtime:1.5.4")
                 implementation("io.iohk.atala.prism:uuid:$apolloVersion")
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.5.4")
-                implementation(project(":domain"))
+                // implementation(project(":domain"))
             }
         }
         val commonTest by getting {

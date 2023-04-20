@@ -78,7 +78,7 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                implementation(project(":domain"))
+                // implementation(project(":domain"))
                 implementation("io.iohk.atala.prism:base64:$apolloVersion")
                 implementation("io.iohk.atala.prism:hashing:$apolloVersion")
 //                implementation("org.didcommx:didcomm:0.3.0")
@@ -94,7 +94,7 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
-                implementation(project(":apollo"))
+                // implementation(project(":apollo"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
                 implementation(kotlin("test"))
             }

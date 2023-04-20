@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
 plugins {
-    id("org.jetbrains.kotlin.android") version "1.7.20" apply false
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
     id("maven-publish")
@@ -16,11 +15,6 @@ buildscript {
         mavenLocal()
         google()
         gradlePluginPortal()
-        maven("https://plugins.gradle.org/m2/")
-        // Needed for Kotlin coroutines that support new memory management mode
-        maven {
-            url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
-        }
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
@@ -37,9 +31,6 @@ java {
         vendor.set(JvmVendorSpec.ADOPTOPENJDK)
     }
 }
-
-// version = "1.0.0-alpha"
-// group = "io.iohk.atala.prism"
 
 allprojects {
     this.group = "io.iohk.atala.prism.walletsdk"
@@ -108,9 +99,26 @@ allprojects {
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
-    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    ktlint {
         verbose.set(true)
         outputToConsole.set(true)
+        filter {
+            exclude(
+                "build/generated-src/**",
+                "**/generated/**",
+                "**/generated-src/**",
+                "build/**",
+                "build/generated/**",
+                "**/antlrgrammar/**"
+            )
+            exclude {
+                it.file.path.contains("generated-src") ||
+                    it.file.toString().contains("generated") ||
+                    it.file.path.contains("generated") ||
+                    it.file.path.contains("antlrgrammar") ||
+                    it.file.toString().contains("antlrgrammar")
+            }
+        }
     }
 }
 
@@ -120,13 +128,4 @@ rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
 
 tasks.dokkaGfmMultiModule.configure {
     outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
-}
-
-ktlint {
-    filter {
-        exclude("**/generated/**", "/pluto/build/generated/**")
-        exclude { entry ->
-            entry.file.toString().contains("generated")
-        }
-    }
 }
