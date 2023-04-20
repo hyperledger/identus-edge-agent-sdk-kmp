@@ -8,10 +8,12 @@ import org.antlr.v4.kotlinruntime.CharStreams
 import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.tree.ParseTree
 import org.antlr.v4.kotlinruntime.tree.ParseTreeWalker
+import kotlin.jvm.Throws
 
 object DIDUrlParser {
+    @Throws(InvalidDIDStringError::class)
     fun parse(didUrlString: String): DIDUrl {
-        var inputStream = CharStreams.fromString(didUrlString)
+        val inputStream = CharStreams.fromString(didUrlString)
         val lexer = DIDUrlAbnfLexer(inputStream)
         val tokenStream = CommonTokenStream(lexer)
         val parser = DIDUrlAbnfParser(tokenStream)

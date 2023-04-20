@@ -20,7 +20,7 @@ data class JWTCredentialPayload(
     val verifiableCredential: JWTVerifiableCredential,
     val nbf: String,
     val exp: String?,
-    val jti: String,
+    val jti: String
 ) : VerifiableCredential {
 
     @Serializable
@@ -41,7 +41,7 @@ data class JWTCredentialPayload(
         override val validFrom: VerifiableCredentialTypeContainer? = null,
         override val validUntil: VerifiableCredentialTypeContainer? = null,
         override val proof: JsonString?,
-        override val aud: Array<String> = arrayOf(),
+        override val aud: Array<String> = arrayOf()
     ) : VerifiableCredential {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -227,6 +227,7 @@ data class JWTCredentialPayload(
 
     companion object {
 
+        @JvmStatic
         fun fromJson(json: JsonString): JWTCredentialPayload {
             val jsonObject = Json.decodeFromString<JsonObject>(json)
 

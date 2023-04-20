@@ -13,7 +13,7 @@ data class DID @JvmOverloads constructor(
 
     // @JsName("fromString")
     constructor(
-        string: String,
+        string: String
     ) : this(getSchemaFromString(string), getMethodFromString(string), getMethodIdFromString(string))
 
     override fun toString(): String {

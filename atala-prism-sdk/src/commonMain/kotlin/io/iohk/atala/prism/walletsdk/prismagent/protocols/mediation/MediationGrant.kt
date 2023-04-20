@@ -6,6 +6,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
 sealed class MediationProtocolError : Throwable() {
     class InvalidMediationGrantError : MediationProtocolError()
@@ -18,12 +19,13 @@ class MediationGrant {
 
     constructor(
         id: String = UUID.randomUUID4().toString(),
-        body: Body,
+        body: Body
     ) {
         this.id = id
         this.body = body
     }
 
+    @Throws(MediationProtocolError.InvalidMediationGrantError::class)
     constructor(fromMessage: Message) {
         if (fromMessage.piuri != ProtocolType.DidcommMediationGrant.value) {
             throw MediationProtocolError.InvalidMediationGrantError()

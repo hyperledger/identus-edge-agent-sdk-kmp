@@ -5,7 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 
-class MercuryImpl(castor: Castor, pluto: Pluto) : Mercury {
+class MercuryImpl(private val castor: Castor, private val pluto: Pluto) : Mercury {
     override fun packMessage(message: Message): String {
         TODO("Not yet implemented")
     }

@@ -21,7 +21,7 @@ data class W3CVerifiableCredential @JvmOverloads constructor(
     override val validFrom: VerifiableCredentialTypeContainer? = null,
     override val validUntil: VerifiableCredentialTypeContainer? = null,
     override val proof: JsonString?,
-    override val aud: Array<String> = arrayOf(),
+    override val aud: Array<String> = arrayOf()
 ) : VerifiableCredential {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

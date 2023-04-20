@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import kotlin.jvm.Throws
 
 enum class ProtocolType(val value: String) {
     DidcommMediationRequest("https://didcomm.org/coordinate-mediation/2.0/mediate-request"),
@@ -25,6 +26,7 @@ enum class ProtocolType(val value: String) {
     PickupReceived("https://didcomm.org/messagepickup/3.0/messages-received"),
 }
 
+@Throws(PrismAgentError.UnknownInvitationTypeError::class)
 fun findProtocolTypeByValue(string: String): ProtocolType {
     val it = ProtocolType.values().iterator()
     while (it.hasNext()) {

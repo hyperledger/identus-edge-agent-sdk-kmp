@@ -4,16 +4,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
-class PrismOnboardingInvitation(jsonString: String) {
-
-    @Serializable
-    data class Body(
-        val type: String,
-        val onboardEndpoint: String,
-        val from: String,
-    )
-
+class PrismOnboardingInvitation
+@Throws(PrismAgentError.InvitationIsInvalidError::class)
+constructor(jsonString: String) {
     var body: Body
 
     init {
@@ -28,4 +23,11 @@ class PrismOnboardingInvitation(jsonString: String) {
             throw PrismAgentError.InvitationIsInvalidError()
         }
     }
+
+    @Serializable
+    data class Body(
+        val type: String,
+        val onboardEndpoint: String,
+        val from: String
+    )
 }

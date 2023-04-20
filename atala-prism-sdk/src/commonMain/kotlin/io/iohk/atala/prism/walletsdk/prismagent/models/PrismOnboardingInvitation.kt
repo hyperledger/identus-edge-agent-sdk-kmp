@@ -14,7 +14,7 @@ data class PrismOnboardingInvitation @JvmOverloads constructor(
     private val fromString: String,
     @Transient
     var from: DID? = null,
-    val type: String,
+    val type: String
 ) : InvitationType() {
 
     init {

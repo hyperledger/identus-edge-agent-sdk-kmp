@@ -15,7 +15,7 @@ open class ApiImpl(override var client: HttpClient) : Api {
         url: String,
         urlParameters: Array<KeyValue>,
         httpHeaders: Array<KeyValue>,
-        body: Any?,
+        body: Any?
     ): HttpResponse {
         val request = PrismShared.getRequestBuilder(
             httpMethod = HttpMethod(httpMethod),

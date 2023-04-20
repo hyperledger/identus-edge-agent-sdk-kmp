@@ -21,11 +21,12 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlin.jvm.Throws
 
 final class DefaultMediationHandler(
     override val mediatorDID: DID,
     private val mercury: Mercury,
-    private val store: MediatorRepository,
+    private val store: MediatorRepository
 ) : MediationHandler {
     final class PlutoMediatorRepositoryImpl(private val pluto: Pluto) : MediatorRepository {
         override suspend fun getAllMediators(): List<Mediator> {
@@ -44,6 +45,7 @@ final class DefaultMediationHandler(
         this.mediator = null
     }
 
+    @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override suspend fun bootRegisteredMediator(): Mediator? {
         if (mediator == null) {
             mediator = store.getAllMediators().firstOrNull()
@@ -54,6 +56,7 @@ final class DefaultMediationHandler(
         return mediator
     }
 
+    @Throws(PrismAgentError.MediationRequestFailedError::class)
     override fun achieveMediation(host: DID): Flow<Mediator> {
         val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
         return flow {
@@ -65,28 +68,30 @@ final class DefaultMediationHandler(
                 id = UUID.randomUUID4().toString(),
                 mediatorDID = mediatorDID,
                 hostDID = host,
-                routingDID = routingDID,
+                routingDID = routingDID
             )
         }
     }
 
+    @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override suspend fun updateKeyListWithDIDs(dids: Array<DID>) {
         val keyListUpdateMessage = mediator?.let {
             MediationKeysUpdateList(
                 from = it.hostDID,
                 to = it.mediatorDID,
-                recipientDids = dids,
+                recipientDids = dids
             ).makeMessage()
         } ?: throw PrismAgentError.NoMediatorAvailableError()
         keyListUpdateMessage.let { message -> mercury.sendMessage(message) }
     }
 
+    @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override fun pickupUnreadMessages(limit: Int): Flow<Array<Pair<String, Message>>> {
         val requestMessage = mediator?.let {
             PickupRequest(
                 from = it.hostDID,
                 to = it.mediatorDID,
-                body = PickupRequest.Body(null, limit.toString()),
+                body = PickupRequest.Body(null, limit.toString())
             ).makeMessage()
         } ?: throw PrismAgentError.NoMediatorAvailableError()
 
@@ -109,12 +114,13 @@ final class DefaultMediationHandler(
         }
     }
 
+    @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override suspend fun registerMessagesAsRead(ids: Array<String>) {
         val requestMessage = mediator?.let {
             PickupReceived(
                 from = it.hostDID,
                 to = it.mediatorDID,
-                body = PickupReceived.Body(messageIdList = ids),
+                body = PickupReceived.Body(messageIdList = ids)
             ).makeMessage()
         } ?: throw PrismAgentError.NoMediatorAvailableError()
         mercury.sendMessage(requestMessage)

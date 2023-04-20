@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Signature(
-    val value: ByteArray,
+    val value: ByteArray
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

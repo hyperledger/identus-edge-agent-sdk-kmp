@@ -10,6 +10,7 @@ import io.ktor.http.contentType
 import io.ktor.http.path
 
 object PrismShared {
+    @JvmStatic
     fun mapFromKeyValueArray(array: Array<KeyValue>): Map<String, String> {
         val response = mutableMapOf<String, String>()
         array.forEach {
@@ -18,6 +19,7 @@ object PrismShared {
         return response
     }
 
+    @JvmStatic
     fun getRequestBuilder(
         httpMethod: HttpMethod,
         url: Url,

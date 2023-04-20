@@ -5,7 +5,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
 
 @Serializable
-class OutOfBandInvitation(
+class OutOfBandInvitation @JvmOverloads constructor(
     val body: Body,
     val from: String,
     val id: String = UUID.randomUUID4().toString()
@@ -16,6 +16,6 @@ class OutOfBandInvitation(
     data class Body(
         val goalCode: String?,
         val goal: String?,
-        val accept: List<String>?,
+        val accept: List<String>?
     )
 }

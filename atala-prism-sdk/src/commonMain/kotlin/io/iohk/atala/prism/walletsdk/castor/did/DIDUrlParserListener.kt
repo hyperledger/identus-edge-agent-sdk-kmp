@@ -25,17 +25,23 @@ class DIDUrlParserListener : DIDUrlAbnfBaseListener() {
     }
 
     override fun exitPath(ctx: DIDUrlAbnfParser.PathContext) {
-        if (ctx.isEmpty) return
+        if (ctx.isEmpty) {
+            return
+        }
         path = ctx.children?.map { it.text }?.filter { it != "/" }?.toTypedArray()
     }
 
     override fun exitFrag(ctx: DIDUrlAbnfParser.FragContext) {
-        if (ctx.isEmpty) return
+        if (ctx.isEmpty) {
+            return
+        }
         fragment = ctx.text
     }
 
     override fun exitSearchparameter(ctx: DIDUrlAbnfParser.SearchparameterContext) {
-        if (ctx.isEmpty) return
+        if (ctx.isEmpty) {
+            return
+        }
         val key = ctx.children?.get(0)!!.text
         val value = ctx.children?.get(2)!!.text
         query[key] = value

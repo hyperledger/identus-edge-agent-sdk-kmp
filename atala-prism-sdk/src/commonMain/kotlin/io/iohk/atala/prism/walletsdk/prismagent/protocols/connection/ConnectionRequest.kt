@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
 class ConnectionRequest {
 
@@ -33,6 +34,7 @@ class ConnectionRequest {
         this.body = body
     }
 
+    @Throws(PrismAgentError.InvitationIsInvalidError::class)
     constructor(inviteMessage: Message, from: DID) {
         inviteMessage.from?.let { toDID ->
             val body = Json.decodeFromString<Body>(inviteMessage.body)
@@ -54,6 +56,7 @@ class ConnectionRequest {
         )
     }
 
+    @Throws(PrismAgentError.InvalidMessageError::class)
     constructor(fromMessage: Message) {
         if (
             fromMessage.piuri == ProtocolType.DidcommconnectionRequest.value &&
@@ -83,9 +86,10 @@ class ConnectionRequest {
 
     @Serializable
     data class Body(
-        @SerialName("goal_code") val goalCode: String? = null,
+        @SerialName("goal_code")
+        val goalCode: String? = null,
         val goal: String? = null,
-        val accept: Array<String>? = null,
+        val accept: Array<String>? = null
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

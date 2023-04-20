@@ -8,24 +8,13 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-final class PickupRequest {
-    var id: String
-    var type = ProtocolType.PickupRequest.value
-    val from: DID
-    val to: DID
+final class PickupRequest @JvmOverloads constructor(
+    var id: String = UUID.randomUUID4().toString(),
+    val from: DID,
+    val to: DID,
     var body: Body
-
-    constructor(
-        id: String = UUID.randomUUID4().toString(),
-        from: DID,
-        to: DID,
-        body: Body,
-    ) {
-        this.id = id
-        this.from = from
-        this.to = to
-        this.body = body
-    }
+) {
+    var type = ProtocolType.PickupRequest.value
 
     fun makeMessage(): Message {
         return Message(
@@ -42,7 +31,7 @@ final class PickupRequest {
             thid = null,
             pthid = null,
             ack = emptyArray(),
-            direction = Message.Direction.SENT,
+            direction = Message.Direction.SENT
         )
     }
 

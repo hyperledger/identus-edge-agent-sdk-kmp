@@ -11,6 +11,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyPair as KeyPairModel
 
 /**
  * Ed25519 is a variation of EdDSA
+ * TODO(Future Moussa -> Use Apollo instead)
  */
 actual object Ed25519 {
     actual fun createKeyPair(): KeyPairModel {

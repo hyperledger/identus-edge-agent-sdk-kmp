@@ -23,7 +23,7 @@ data class Message @JvmOverloads constructor(
     val thid: String? = null,
     val pthid: String? = null,
     val ack: Array<String>? = emptyArray(),
-    val direction: Direction = Direction.RECEIVED,
+    val direction: Direction = Direction.RECEIVED
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

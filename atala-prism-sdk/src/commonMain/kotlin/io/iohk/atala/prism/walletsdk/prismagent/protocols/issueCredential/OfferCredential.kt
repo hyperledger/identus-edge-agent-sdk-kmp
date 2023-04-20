@@ -13,7 +13,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class OfferCredential(
+data class OfferCredential @JvmOverloads constructor(
     val id: String? = UUID.randomUUID4().toString(),
     val body: Body,
     val attachments: Array<AttachmentDescriptor>,
@@ -37,6 +37,7 @@ data class OfferCredential(
 
     companion object {
 
+        @JvmStatic
         fun makeOfferFromProposedCredential(proposed: ProposeCredential): OfferCredential {
             return OfferCredential(
                 body = Body(
@@ -52,6 +53,7 @@ data class OfferCredential(
             )
         }
 
+        @JvmStatic
         @Throws(PrismAgentError.InvalidOfferCredentialMessageError::class)
         fun fromMessage(fromMessage: Message): OfferCredential {
             require(
@@ -106,7 +108,7 @@ data class OfferCredential(
     }
 
     @Serializable
-    data class Body(
+    data class Body @JvmOverloads constructor(
         val goalCode: String? = null,
         val comment: String? = null,
         val replacementId: String? = null,
@@ -142,6 +144,7 @@ data class OfferCredential(
     }
 }
 
+@JvmOverloads
 inline fun <reified T : Serializable> OfferCredential.Companion.build(
     fromDID: DID,
     toDID: DID,

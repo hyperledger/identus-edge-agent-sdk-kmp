@@ -21,7 +21,7 @@ data class JWTCredential(val id: String, val json: JsonString) {
             verifiableCredential = jwtVerifiableCredential.verifiableCredential,
             nbf = jwtVerifiableCredential.nbf,
             exp = jwtVerifiableCredential.exp,
-            jti = id,
+            jti = id
         )
     }
 }

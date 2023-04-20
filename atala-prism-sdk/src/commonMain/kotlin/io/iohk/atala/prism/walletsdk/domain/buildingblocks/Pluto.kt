@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 /**
  * TODO(Clarify what Castor methods stand for)
  * TODO(Add method documentations)
+ * TODO(Update functions with @throws that are represented in their implementation)
  */
 interface Pluto {
 

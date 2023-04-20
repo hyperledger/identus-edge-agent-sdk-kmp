@@ -7,5 +7,5 @@ data class Mediator(
     val id: String,
     val mediatorDID: DID,
     val hostDID: DID,
-    val routingDID: DID,
+    val routingDID: DID
 )

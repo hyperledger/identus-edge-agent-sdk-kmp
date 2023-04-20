@@ -14,7 +14,7 @@ data class OutOfBandInvitation @JvmOverloads constructor(
     private val fromString: String,
     @Transient
     var from: DID = DID(fromString),
-    val type: String,
+    val type: String
 ) : InvitationType() {
 
     @Serializable
@@ -22,7 +22,7 @@ data class OutOfBandInvitation @JvmOverloads constructor(
         @SerialName("goal_code")
         val goalCode: String? = null,
         val goal: String? = null,
-        val accept: Array<String>? = null,
+        val accept: Array<String>? = null
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

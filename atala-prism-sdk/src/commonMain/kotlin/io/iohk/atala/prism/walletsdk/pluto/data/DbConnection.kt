@@ -5,9 +5,7 @@ import io.iohk.atala.prism.walletsdk.pluto.PrismPlutoDb
 
 expect class DbConnection() {
     var driver: SqlDriver?
-    suspend fun connectDb(
-        context: Any?,
-    ): PrismPlutoDb
+    suspend fun connectDb(context: Any?): PrismPlutoDb
 }
 
 expect val SqlDriver.isConnected: Boolean

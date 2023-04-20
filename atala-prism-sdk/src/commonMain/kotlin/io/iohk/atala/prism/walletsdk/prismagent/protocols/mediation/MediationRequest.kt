@@ -5,15 +5,15 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 
-final class MediationRequest(
+final class MediationRequest @JvmOverloads constructor(
     val id: String,
     val type: String = ProtocolType.DidcommMediationRequest.value,
     val from: DID,
-    val to: DID,
+    val to: DID
 ) {
     constructor(
         from: DID,
-        to: DID,
+        to: DID
     ) : this(
         id = UUID.randomUUID4().toString(),
         from = from,
@@ -35,7 +35,7 @@ final class MediationRequest(
             thid = null,
             pthid = null,
             ack = emptyArray(),
-            direction = Message.Direction.SENT,
+            direction = Message.Direction.SENT
         )
     }
 

@@ -13,39 +13,24 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
-class ConnectionManager : ConnectionsManager {
-    private val mercury: Mercury
-    private val castor: Castor
-    private val pluto: Pluto
+class ConnectionManager(
+    private val mercury: Mercury,
+    private val castor: Castor,
+    private val pluto: Pluto,
+    internal val mediationHandler: MediationHandler,
     private var pairings: MutableList<DIDPair>
-    internal val mediationHandler: MediationHandler
+) : ConnectionsManager {
 
-    constructor(
-        mercury: Mercury,
-        castor: Castor,
-        pluto: Pluto,
-        mediationHandler: MediationHandler,
-        pairings: MutableList<DIDPair>,
-    ) {
-        this.mercury = mercury
-        this.castor = castor
-        this.pluto = pluto
-        this.mediationHandler = mediationHandler
-        this.pairings = pairings
-    }
-
-    @Throws()
     suspend fun startMediator() {
         mediationHandler.bootRegisteredMediator()
     }
 
-    @Throws()
     suspend fun registerMediator(host: DID) {
         mediationHandler.achieveMediation(host)
             .first()
     }
 
-    @Throws()
+    @Throws(PrismAgentError.NoMediatorAvailableError::class)
     suspend fun sendMessage(message: Message): Message? {
         if (mediationHandler.mediator == null) {
             throw PrismAgentError.NoMediatorAvailableError()
@@ -54,7 +39,6 @@ class ConnectionManager : ConnectionsManager {
         return mercury.sendMessageParseMessage(message)
     }
 
-    @Throws()
     fun awaitMessages(): Flow<Array<Message>> {
         return mediationHandler.pickupUnreadMessages(NUMBER_OF_MESSAGES)
             .map {

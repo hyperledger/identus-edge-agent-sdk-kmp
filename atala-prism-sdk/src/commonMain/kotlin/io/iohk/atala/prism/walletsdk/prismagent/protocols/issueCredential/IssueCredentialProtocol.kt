@@ -4,17 +4,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import kotlinx.serialization.Serializable
+import kotlin.jvm.Throws
 
 @Serializable
 class IssueCredentialProtocol {
-
-    enum class Stage {
-        PROPOSE,
-        OFFER,
-        REQUEST,
-        COMPLETED,
-        REFUSED
-    }
 
     var stage: Stage
     var propose: ProposeCredential? = null
@@ -22,6 +15,7 @@ class IssueCredentialProtocol {
     var request: RequestCredential? = null
     val connector: DIDCommConnection
 
+    @JvmOverloads
     constructor(
         stage: Stage,
         proposeMessage: Message? = null,
@@ -54,6 +48,7 @@ class IssueCredentialProtocol {
         }
     }
 
+    @Throws(PrismAgentError.InvalidStepError::class)
     constructor(message: Message, connector: DIDCommConnection) {
         this.connector = connector
         val proposed = try {
@@ -149,5 +144,13 @@ class IssueCredentialProtocol {
                 this.request = requested
             }
         }
+    }
+
+    enum class Stage {
+        PROPOSE,
+        OFFER,
+        REQUEST,
+        COMPLETED,
+        REFUSED
     }
 }

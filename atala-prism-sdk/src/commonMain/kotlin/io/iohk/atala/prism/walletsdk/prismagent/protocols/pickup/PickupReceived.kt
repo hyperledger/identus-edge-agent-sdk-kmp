@@ -15,11 +15,12 @@ final class PickupReceived {
     val to: DID
     var body: Body
 
+    @JvmOverloads
     constructor(
         id: String = UUID.randomUUID4().toString(),
         from: DID,
         to: DID,
-        body: Body,
+        body: Body
     ) {
         this.id = id
         this.from = from
@@ -42,10 +43,25 @@ final class PickupReceived {
             thid = null,
             pthid = null,
             ack = emptyArray(),
-            direction = Message.Direction.SENT,
+            direction = Message.Direction.SENT
         )
     }
 
     @Serializable
-    data class Body(var messageIdList: Array<String>)
+    data class Body(var messageIdList: Array<String>) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as Body
+
+            if (!messageIdList.contentEquals(other.messageIdList)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return messageIdList.contentHashCode()
+        }
+    }
 }

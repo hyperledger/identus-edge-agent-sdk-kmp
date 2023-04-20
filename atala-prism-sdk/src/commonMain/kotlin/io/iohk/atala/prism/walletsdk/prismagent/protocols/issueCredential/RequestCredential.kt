@@ -11,9 +11,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
 @Serializable
-data class RequestCredential(
+data class RequestCredential @JvmOverloads constructor(
     val id: String? = UUID.randomUUID4().toString(),
     val body: Body,
     val attachments: Array<AttachmentDescriptor>,
@@ -36,6 +37,8 @@ data class RequestCredential(
     }
 
     companion object {
+        @JvmStatic
+        @Throws(PrismAgentError.InvalidRequestCredentialMessageError::class)
         fun fromMessage(fromMessage: Message): RequestCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommRequestCredential.value &&
@@ -59,6 +62,7 @@ data class RequestCredential(
             )
         }
 
+        @JvmStatic
         fun makeRequestFromOfferCredential(offer: OfferCredential): RequestCredential {
             return RequestCredential(
                 body = Body(
@@ -75,7 +79,7 @@ data class RequestCredential(
     }
 
     @Serializable
-    data class Body(
+    data class Body @JvmOverloads constructor(
         val goalCode: String? = null,
         val comment: String? = null,
         val formats: Array<CredentialFormat>
@@ -130,6 +134,7 @@ data class RequestCredential(
     }
 }
 
+@JvmOverloads
 inline fun <reified T : Serializable> RequestCredential.Companion.build(
     fromDID: DID,
     toDID: DID,

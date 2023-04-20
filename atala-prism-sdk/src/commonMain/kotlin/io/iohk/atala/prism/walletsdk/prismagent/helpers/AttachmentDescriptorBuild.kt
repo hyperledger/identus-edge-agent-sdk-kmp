@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+@JvmOverloads
 inline fun <reified T : Serializable> AttachmentDescriptor.Companion.build(
     id: String = UUID.randomUUID4().toString(),
     payload: T,

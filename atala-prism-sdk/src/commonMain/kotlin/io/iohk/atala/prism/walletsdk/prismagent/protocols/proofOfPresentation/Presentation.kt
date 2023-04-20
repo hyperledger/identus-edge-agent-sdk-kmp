@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
 @Serializable
 data class ProofTypes(
@@ -56,6 +57,7 @@ class Presentation {
     lateinit var from: DID
     lateinit var to: DID
 
+    @JvmOverloads
     constructor(
         id: String? = null,
         body: Body,
@@ -72,6 +74,7 @@ class Presentation {
         this.to = to
     }
 
+    @Throws(PrismAgentError.InvalidMessageError::class)
     constructor(fromMessage: Message) {
         if (
             fromMessage.piuri == ProtocolType.DidcommPresentation.value &&
@@ -104,6 +107,7 @@ class Presentation {
         )
     }
 
+    @Throws(PrismAgentError.InvalidRequestPresentationMessageError::class)
     fun makePresentationFromRequest(msg: Message): Presentation {
         try {
             val requestPresentation = RequestPresentation(msg)
@@ -135,8 +139,19 @@ class Presentation {
             otherPresentation.to == this.to
     }
 
+    override fun hashCode(): Int {
+        var result = type.hashCode()
+        result = 31 * result + id.hashCode()
+        result = 31 * result + body.hashCode()
+        result = 31 * result + attachments.contentHashCode()
+        result = 31 * result + (thid?.hashCode() ?: 0)
+        result = 31 * result + from.hashCode()
+        result = 31 * result + to.hashCode()
+        return result
+    }
+
     @Serializable
-    data class Body(
+    data class Body @JvmOverloads constructor(
         val goalCode: String? = null,
         val comment: String? = null
     )

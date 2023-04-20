@@ -7,14 +7,14 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class VerifiableCredentialTypeContainer(
     val id: String,
-    val type: String,
+    val type: String
 )
 
 @Serializable
 enum class CredentialType(val type: String) {
     JWT("jwt"),
     W3C("w3c"),
-    Unknown("Unknown"),
+    Unknown("Unknown")
 }
 
 interface VerifiableCredential {
@@ -29,8 +29,8 @@ interface VerifiableCredential {
     val evidence: VerifiableCredentialTypeContainer?
     val termsOfUse: VerifiableCredentialTypeContainer?
     val issuer: DID
-    val issuanceDate: String // Date
-    val expirationDate: String? // Date
+    val issuanceDate: String // TODO(Date)
+    val expirationDate: String? // TODO(Date)
     val validFrom: VerifiableCredentialTypeContainer?
     val validUntil: VerifiableCredentialTypeContainer?
     val proof: JsonString?

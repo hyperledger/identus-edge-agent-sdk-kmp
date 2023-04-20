@@ -41,14 +41,18 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray
+import kotlin.jvm.Throws
 import io.iohk.atala.prism.didcomm.didpeer.resolvePeerDID as mercuryPeerDIDResolve
 
 internal class CastorShared {
     companion object {
+        @JvmStatic
         fun parseDID(did: String): DID {
             return DIDParser.parse(did)
         }
 
+        @JvmStatic
+        @Throws(CastorError.InvalidPeerDIDError::class, CastorError.NotPossibleToResolveDID::class)
         suspend fun resolvePeerDID(didString: String): DIDDocument {
             val peerDIDDocument = try {
                 DIDDocPeerDID.fromJson(mercuryPeerDIDResolve(didString))
@@ -111,6 +115,9 @@ internal class CastorShared {
                 coreProperties = coreProperties.toTypedArray(),
             )
         }
+
+        @JvmStatic
+        @Throws(CastorError.InvalidKeyError::class)
         fun fromVerificationMethodPeerDID(
             did: String,
             verificationMethod: VerificationMethodPeerDID,
@@ -171,6 +178,8 @@ internal class CastorShared {
             }
         }
 
+        @JvmStatic
+        @Throws(CastorError.InitialStateOfDIDChanged::class)
         suspend fun resolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
             val did = DIDParser.parse(didString)
             val prismDID = LongFormPrismDID(did)
@@ -210,6 +219,9 @@ internal class CastorShared {
                 coreProperties = coreProperties.toTypedArray(),
             )
         }
+
+        @JvmStatic
+        @Throws(CastorError.InitialStateOfDIDChanged::class, Exception::class)
         fun decodeState(
             apollo: Apollo,
             did: DID,
@@ -262,11 +274,14 @@ internal class CastorShared {
             return Pair(verificationMethods, services)
         }
 
+        @JvmStatic
+        @Throws(CastorError.NotPossibleToResolveDID::class)
         fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): DIDResolver {
             val parsedDID = parseDID(did)
             return resolvers.find { it.method == parsedDID.method } ?: throw CastorError.NotPossibleToResolveDID()
         }
 
+        @JvmStatic
         fun getKeyPairFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
             return coreProperties
                 .filterIsInstance<DIDDocument.Authentication>()
@@ -281,6 +296,8 @@ internal class CastorShared {
                 }
         }
 
+        @JvmStatic
+        @Throws(CastorError.InvalidKeyError::class)
         fun createPeerDID(
             keyPairs: Array<KeyPair>,
             services: Array<DIDDocument.Service>,
@@ -343,6 +360,7 @@ internal class CastorShared {
             return DIDParser.parse(peerDID)
         }
 
+        @JvmStatic
         fun createPrismDID(
             apollo: Apollo,
             masterPublicKey: PublicKey,

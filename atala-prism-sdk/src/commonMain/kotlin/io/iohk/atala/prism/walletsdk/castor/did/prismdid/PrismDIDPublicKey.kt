@@ -7,19 +7,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.CompressedPublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import pbandk.ByteArr
+import kotlin.jvm.Throws
 
 class PrismDIDPublicKey {
-    enum class Usage(val value: String) {
-        MASTER_KEY("masterKey"),
-        ISSUING_KEY("issuingKey"),
-        AUTHENTICATION_KEY("authenticationKey"),
-        REVOCATION_KEY("revocationKey"),
-        CAPABILITY_DELEGATION_KEY("capabilityDelegationKey"),
-        CAPABILITY_INVOCATION_KEY("capabilityInvocationKey"),
-        KEY_AGREEMENT_KEY("keyAgreementKey"),
-        UNKNOWN_KEY("unknownKey"),
-    }
-
     private val apollo: Apollo
     val id: String
     val usage: Usage
@@ -32,6 +22,7 @@ class PrismDIDPublicKey {
         this.keyData = keyData
     }
 
+    @Throws(CastorError.InvalidPublicKeyEncoding::class)
     constructor(apollo: Apollo, proto: io.iohk.atala.prism.protos.PublicKey) {
         this.apollo = apollo
         this.id = proto.id
@@ -56,6 +47,17 @@ class PrismDIDPublicKey {
                 compressed.toProto(),
             ),
         )
+    }
+
+    enum class Usage(val value: String) {
+        MASTER_KEY("masterKey"),
+        ISSUING_KEY("issuingKey"),
+        AUTHENTICATION_KEY("authenticationKey"),
+        REVOCATION_KEY("revocationKey"),
+        CAPABILITY_DELEGATION_KEY("capabilityDelegationKey"),
+        CAPABILITY_INVOCATION_KEY("capabilityInvocationKey"),
+        KEY_AGREEMENT_KEY("keyAgreementKey"),
+        UNKNOWN_KEY("unknownKey"),
     }
 }
 

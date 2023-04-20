@@ -16,11 +16,12 @@ final class MediationKeysUpdateList {
     var type = ProtocolType.DidcommMediationKeysUpdate.value
     var body: Body
 
+    @JvmOverloads
     constructor(
         id: String = UUID.randomUUID4().toString(),
         from: DID,
         to: DID,
-        recipientDids: Array<DID>,
+        recipientDids: Array<DID>
     ) {
         this.id = id
         this.from = from
@@ -28,7 +29,7 @@ final class MediationKeysUpdateList {
         this.body = Body(
             updates = recipientDids.map {
                 Update(recipientDid = it.toString())
-            }.toTypedArray(),
+            }.toTypedArray()
         )
     }
 
@@ -47,15 +48,15 @@ final class MediationKeysUpdateList {
             thid = null,
             pthid = null,
             ack = emptyArray(),
-            direction = Message.Direction.SENT,
+            direction = Message.Direction.SENT
         )
     }
 
     @Serializable
-    data class Update(var recipientDid: String, var action: String = "add")
+    data class Update @JvmOverloads constructor(var recipientDid: String, var action: String = "add")
 
     @Serializable
-    data class Body(var updates: Array<Update> = emptyArray()) {
+    data class Body @JvmOverloads constructor(var updates: Array<Update> = emptyArray()) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false

@@ -37,10 +37,6 @@ import kotlinx.serialization.json.JsonObject
 import java.time.Duration
 
 class PrismAgent {
-    enum class State {
-        STOPPED, STARTING, RUNNING, STOPPING
-    }
-
     var state: State = State.STOPPED
         private set
     val seed: Seed
@@ -60,7 +56,7 @@ class PrismAgent {
         mercury: Mercury,
         connectionManager: ConnectionManager,
         seed: Seed?,
-        api: Api?,
+        api: Api?
     ) {
         this.apollo = apollo
         this.castor = castor
@@ -76,13 +72,14 @@ class PrismAgent {
                             ignoreUnknownKeys = true
                             prettyPrint = true
                             isLenient = true
-                        },
+                        }
                     )
                 }
-            },
+            }
         )
     }
 
+    @JvmOverloads
     constructor(
         apollo: Apollo,
         castor: Castor,
@@ -90,7 +87,7 @@ class PrismAgent {
         mercury: Mercury,
         seed: Seed? = null,
         api: Api? = null,
-        mediatorHandler: MediationHandler,
+        mediatorHandler: MediationHandler
     ) {
         this.apollo = apollo
         this.castor = castor
@@ -105,16 +102,16 @@ class PrismAgent {
                             ignoreUnknownKeys = true
                             prettyPrint = true
                             isLenient = true
-                        },
+                        }
                     )
                 }
-            },
+            }
         )
         // TODO: Someone to check this one => Had to add mutableListOf()
         this.connectionManager = ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
     }
 
-    @Throws()
+    @Throws(PrismAgentError.MediationRequestFailedError::class)
     suspend fun start() {
         if (state != State.STOPPED) {
             return
@@ -128,8 +125,8 @@ class PrismAgent {
                     DIDDocument.Service(
                         "#didcomm-1",
                         arrayOf("DIDCommMessaging"),
-                        DIDDocument.ServiceEndpoint(connectionManager.mediationHandler.mediatorDID.toString()),
-                    ),
+                        DIDDocument.ServiceEndpoint(connectionManager.mediationHandler.mediatorDID.toString())
+                    )
                 ),
                 false,
             )
@@ -151,10 +148,11 @@ class PrismAgent {
         state = State.STOPPED
     }
 
+    @JvmOverloads
     suspend fun createNewPrismDID(
         keyPathIndex: Int? = null,
         alias: String? = null,
-        services: Array<DIDDocument.Service> = emptyArray(),
+        services: Array<DIDDocument.Service> = emptyArray()
     ): DID {
         val index = keyPathIndex ?: pluto.getPrismLastKeyPathIndex().first()
         val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
@@ -163,16 +161,17 @@ class PrismAgent {
         return did
     }
 
+    @JvmOverloads
     suspend fun createNewPeerDID(
         services: Array<DIDDocument.Service> = emptyArray(),
-        updateMediator: Boolean,
+        updateMediator: Boolean
     ): DID {
         val keyAgreementKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.X25519))
         val authenticationKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.ED25519))
 
         val did = castor.createPeerDID(
             arrayOf(keyAgreementKeyPair, authenticationKeyPair),
-            services = services,
+            services = services
         )
 
         if (updateMediator) {
@@ -181,7 +180,7 @@ class PrismAgent {
 
         pluto.storePeerDIDAndPrivateKeys(
             did = did,
-            privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey),
+            privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey)
         )
 
         // The next logic is a bit tricky, so it's not forgotten this is a reminder.
@@ -227,6 +226,7 @@ class PrismAgent {
         return invite
     }
 
+    @Throws(PrismAgentError.FailedToOnboardError::class)
     suspend fun acceptInvitation(invitation: PrismOnboardingInvitation) {
         @Serializable
         data class SendDID(val did: String)
@@ -236,7 +236,7 @@ class PrismAgent {
             invitation.onboardEndpoint,
             arrayOf(),
             arrayOf(),
-            SendDID(invitation.from.toString()),
+            SendDID(invitation.from.toString())
         )
 
         if (response.status != 200) {
@@ -244,12 +244,14 @@ class PrismAgent {
         }
     }
 
+    @Throws(PrismAgentError.CannotFindDIDPrivateKey::class)
     suspend fun signWith(did: DID, message: ByteArray): Signature {
         val privateKey =
             pluto.getDIDPrivateKeysByDID(did).first().first() ?: throw PrismAgentError.CannotFindDIDPrivateKey()
         return apollo.signMessage(privateKey, message)
     }
 
+    @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
         if (fetchingMessagesJob.isActive) return
 
@@ -274,6 +276,7 @@ class PrismAgent {
         return pluto.getAllMessagesReceived()
     }
 
+    @Throws(PrismAgentError.UnknownInvitationTypeError::class)
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
         try {
             val prismOnboarding = PrismOnboardingInvitation.prismOnboardingInvitationFromJsonString(str)
@@ -286,9 +289,9 @@ class PrismAgent {
                         serviceEndpoint = DIDDocument.ServiceEndpoint(
                             uri = url,
                             accept = arrayOf("DIDCommMessaging"),
-                            routingKeys = arrayOf(),
-                        ),
-                    ),
+                            routingKeys = arrayOf()
+                        )
+                    )
                 ),
                 true,
             )
@@ -299,11 +302,16 @@ class PrismAgent {
         }
     }
 
+    @Throws(PrismAgentError.UnknownInvitationTypeError::class)
     private fun parseOOBInvitation(str: String): OutOfBandInvitation {
         try {
             return Json.decodeFromString(str)
         } catch (e: Exception) {
             throw PrismAgentError.UnknownInvitationTypeError()
         }
+    }
+
+    enum class State {
+        STOPPED, STARTING, RUNNING, STOPPING
     }
 }

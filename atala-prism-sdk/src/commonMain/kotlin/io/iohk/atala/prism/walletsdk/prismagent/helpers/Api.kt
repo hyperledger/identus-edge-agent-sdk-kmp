@@ -11,6 +11,6 @@ interface Api {
         url: String,
         urlParameters: Array<KeyValue>,
         httpHeaders: Array<KeyValue>,
-        body: Any?,
+        body: Any?
     ): HttpResponse
 }

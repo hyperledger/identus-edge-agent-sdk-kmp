@@ -7,7 +7,7 @@ import kotlin.jvm.JvmOverloads
 data class KeyPair(
     val keyCurve: KeyCurve = KeyCurve(Curve.SECP256K1),
     val privateKey: PrivateKey,
-    val publicKey: PublicKey,
+    val publicKey: PublicKey
 )
 
 @Serializable

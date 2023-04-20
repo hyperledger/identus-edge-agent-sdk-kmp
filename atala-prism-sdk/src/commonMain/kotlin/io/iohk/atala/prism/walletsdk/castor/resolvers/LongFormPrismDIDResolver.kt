@@ -6,7 +6,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 
 class LongFormPrismDIDResolver(
-    private val apollo: Apollo,
+    private val apollo: Apollo
 ) : DIDResolver {
     override val method: String = "prism"
 

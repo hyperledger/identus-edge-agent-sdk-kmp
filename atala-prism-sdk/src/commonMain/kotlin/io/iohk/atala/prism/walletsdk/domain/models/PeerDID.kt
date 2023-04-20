@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.domain.models
 
 data class PeerDID(
     val did: DID,
-    val privateKeys: Array<PrivateKey>,
+    val privateKeys: Array<PrivateKey>
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

@@ -10,9 +10,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.W3CVerifiableCredential
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
 class PolluxImpl(override val castor: Castor) : Pollux {
 
+    @Throws(PolluxError.InvalidJWTString::class, PolluxError.InvalidCredentialError::class)
     override fun parseVerifiableCredential(jwtString: String): VerifiableCredential {
         val jwtParts = jwtString.split(".")
         if (jwtParts.size != 3) {

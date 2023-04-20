@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
 @Serializable
 data class IssueCredential(
@@ -21,7 +22,7 @@ data class IssueCredential(
     val attachments: Array<AttachmentDescriptor>,
     val thid: String?,
     val from: DID,
-    val to: DID,
+    val to: DID
 ) {
     val type: String = ProtocolType.DidcommIssueCredential.value
 
@@ -33,7 +34,7 @@ data class IssueCredential(
             to = to,
             body = Json.encodeToString(body),
             attachments = attachments,
-            thid = thid,
+            thid = thid
         )
     }
 
@@ -41,7 +42,7 @@ data class IssueCredential(
         return attachments.mapNotNull {
             when (it.data) {
                 is AttachmentBase64 -> {
-                    (it.data as AttachmentBase64).base64.base64UrlEncoded
+                    it.data.base64.base64UrlEncoded
                 }
                 else -> null
             }
@@ -49,11 +50,13 @@ data class IssueCredential(
     }
 
     companion object {
+        @JvmStatic
+        @Throws(PrismAgentError.InvalidIssueCredentialMessageError::class)
         fun fromMessage(fromMessage: Message): IssueCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommIssueCredential.value &&
                     fromMessage.from != null &&
-                    fromMessage.to != null,
+                    fromMessage.to != null
             ) {
                 throw PrismAgentError.InvalidIssueCredentialMessageError()
             }
@@ -68,22 +71,23 @@ data class IssueCredential(
                 attachments = fromMessage.attachments,
                 thid = fromMessage.thid,
                 from = fromDID,
-                to = toDID,
+                to = toDID
             )
         }
 
+        @JvmStatic
         fun makeIssueFromRequestCedential(msg: Message): IssueCredential {
             val request = RequestCredential.fromMessage(msg)
             return IssueCredential(
                 body = Body(
                     goalCode = request.body.goalCode,
                     comment = request.body.comment,
-                    formats = request.body.formats,
+                    formats = request.body.formats
                 ),
                 attachments = request.attachments,
                 thid = msg.id,
                 from = request.to,
-                to = request.from,
+                to = request.from
             )
         }
     }
@@ -94,7 +98,7 @@ data class IssueCredential(
         val comment: String? = null,
         val replacementId: String? = null,
         val moreAvailable: String? = null,
-        val formats: Array<CredentialFormat>,
+        val formats: Array<CredentialFormat>
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -150,6 +154,7 @@ data class IssueCredential(
     }
 }
 
+@JvmOverloads
 inline fun <reified T : Serializable> IssueCredential.Companion.build(
     fromDID: DID,
     toDID: DID,
@@ -157,19 +162,17 @@ inline fun <reified T : Serializable> IssueCredential.Companion.build(
     credentials: Map<String, T> = mapOf(),
 ): IssueCredential {
     val aux = credentials.map { (key, value) ->
-        val attachment = AttachmentDescriptor.build(
-            payload = value,
-        )
+        val attachment = AttachmentDescriptor.build(payload = value)
         val format = CredentialFormat(attachId = attachment.id, format = key)
         format to attachment
     }
     return IssueCredential(
         body = IssueCredential.Body(
-            formats = aux.map { it.first }.toTypedArray(),
+            formats = aux.map { it.first }.toTypedArray()
         ),
         attachments = aux.map { it.second }.toTypedArray(),
         thid = thid,
         from = fromDID,
-        to = toDID,
+        to = toDID
     )
 }

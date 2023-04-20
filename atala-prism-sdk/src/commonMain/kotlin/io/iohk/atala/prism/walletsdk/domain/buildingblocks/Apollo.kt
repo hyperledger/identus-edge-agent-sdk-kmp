@@ -12,6 +12,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Signature
 /**
  * TODO(Clarify what Castor methods stand for)
  * TODO(Add method documentations)
+ * TODO(Update functions with @throws that are represented in their implementation)
  */
 interface Apollo {
 

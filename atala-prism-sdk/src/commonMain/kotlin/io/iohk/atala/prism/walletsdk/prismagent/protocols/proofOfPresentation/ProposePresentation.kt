@@ -11,6 +11,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 
 class ProposePresentation {
 
@@ -22,6 +23,7 @@ class ProposePresentation {
     lateinit var from: DID
     lateinit var to: DID
 
+    @JvmOverloads
     constructor(
         id: String? = UUID.randomUUID4().toString(),
         body: Body,
@@ -38,6 +40,7 @@ class ProposePresentation {
         this.to = to
     }
 
+    @Throws(PrismAgentError.InvalidMessageError::class)
     constructor(fromMessage: Message) {
         if (fromMessage.piuri == ProtocolType.DidcommProposePresentation.value &&
             fromMessage.from != null &&
@@ -68,6 +71,7 @@ class ProposePresentation {
         )
     }
 
+    @Throws(PrismAgentError.InvalidMessageError::class)
     fun makeProposalFromRequest(msg: Message): ProposePresentation {
         try {
             val request = RequestPresentation(msg)
@@ -102,7 +106,7 @@ class ProposePresentation {
     }
 
     @Serializable
-    data class Body(
+    data class Body @JvmOverloads constructor(
         @SerialName("goal_code")
         val goalCode: String? = null,
         val comment: String? = null,

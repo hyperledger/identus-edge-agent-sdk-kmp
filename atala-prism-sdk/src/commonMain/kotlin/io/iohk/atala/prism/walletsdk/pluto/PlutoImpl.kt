@@ -25,6 +25,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import kotlin.jvm.Throws
 import ioiohkatalaprismwalletsdkpluto.data.DID as DIDDB
 import ioiohkatalaprismwalletsdkpluto.data.DIDPair as DIDPairDB
 import ioiohkatalaprismwalletsdkpluto.data.Mediator as MediatorDB
@@ -40,6 +41,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             return this.connection.driver?.isConnected ?: false
         }
 
+    @Throws(PlutoError.DatabaseServiceAlreadyRunning::class)
+    @JvmOverloads
     public suspend fun start(context: Any? = null) {
         if (this.db != null) {
             throw PlutoError.DatabaseServiceAlreadyRunning()
@@ -47,12 +50,14 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         this.db = this.connection.connectDb(context)
     }
 
+    @Throws(PlutoError.DatabaseConnectionError::class)
     public fun stop() {
         val driver = this.connection.driver ?: throw PlutoError.DatabaseConnectionError()
         this.db = null
         driver.close()
     }
 
+    @Throws(PlutoError.DatabaseConnectionError::class)
     private fun getInstance(): PrismPlutoDb {
         return this.db ?: throw PlutoError.DatabaseConnectionError()
     }
@@ -61,7 +66,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         did: DID,
         keyPathIndex: Int,
         alias: String?,
-        privateKeys: List<PrivateKey>,
+        privateKeys: List<PrivateKey>
     ) {
         getInstance().dIDQueries.insert(DIDDB(did.methodId, did.method, did.methodId, did.schema, alias))
         privateKeys.map { privateKey ->
@@ -90,8 +95,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 message.thid,
                 message.to.toString(),
                 message.piuri,
-                message.direction.value,
-            ),
+                message.direction.value
+            )
         )
     }
 
@@ -102,8 +107,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 privateKey.keyCurve.curve.value,
                 privateKey.value.toString(),
                 keyPathIndex,
-                did.toString(),
-            ),
+                did.toString()
+            )
         )
     }
 
@@ -119,8 +124,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 UUID.randomUUID4().toString(),
                 mediator.methodId,
                 host.methodId,
-                routing.methodId,
-            ),
+                routing.methodId
+            )
         )
     }
 
@@ -132,8 +137,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 credential.expirationDate,
                 credential.issuanceDate,
                 credential.toJsonString(),
-                credential.issuer.toString(),
-            ),
+                credential.issuer.toString()
+            )
         )
     }
 
@@ -187,9 +192,9 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             PrivateKey(
                                 getKeyCurveByNameAndIndex(
                                     didInfo.curve,
-                                    didInfo.keyPathIndex,
+                                    didInfo.keyPathIndex
                                 ),
-                                byteArrayOf(),
+                                byteArrayOf()
                             )
                         } catch (e: IllegalStateException) {
                             null
@@ -202,13 +207,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         return getInstance().privateKeyQueries
             .fetchPrivateKeyByID(id)
             .asFlow()
-            .map {
+            .map { it ->
                 it.executeAsList().firstOrNull()?.let {
                     try {
                         PrivateKey(
                             getKeyCurveByNameAndIndex(
                                 it.curve,
-                                it.keyPathIndex,
+                                it.keyPathIndex
                             ),
                             byteArrayOf(),
                         )
@@ -249,7 +254,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         val privateKeyList = it.value.map { data ->
                             PrivateKey(
                                 getKeyCurveByNameAndIndex(data.curve, data.keyPathIndex),
-                                byteArrayOf(),
+                                byteArrayOf()
                             )
                         }.toTypedArray()
                         PeerDID(DID(it.key), privateKeyList)
@@ -312,7 +317,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 }
             }
@@ -342,7 +347,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 }
             }
@@ -368,7 +373,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 }
             }
@@ -394,7 +399,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 }
             }
@@ -420,7 +425,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 }
             }
@@ -446,7 +451,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 }
             }
@@ -475,7 +480,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 }
             }
@@ -501,7 +506,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         messageDb.thid,
                         messageDb.pthid,
                         messageDb.ack,
-                        messageDb.direction,
+                        messageDb.direction
                     )
                 } catch (e: NullPointerException) {
                     null
@@ -518,7 +523,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         mediator.id,
                         DID(mediator.MediatorDID),
                         DID(mediator.HostDID),
-                        DID(mediator.RoutingDID),
+                        DID(mediator.RoutingDID)
                     )
                 }
             }
@@ -550,7 +555,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                                 validFrom = verifiableCredential.validFrom,
                                 validUntil = verifiableCredential.validUntil,
                                 proof = verifiableCredential.proof,
-                                aud = verifiableCredential.aud,
+                                aud = verifiableCredential.aud
                             )
                         }
 
@@ -572,7 +577,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                                 validFrom = verifiableCredential.validFrom,
                                 validUntil = verifiableCredential.validUntil,
                                 proof = verifiableCredential.proof,
-                                aud = verifiableCredential.aud,
+                                aud = verifiableCredential.aud
                             )
 
                         else ->
@@ -593,7 +598,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                                 validFrom = verifiableCredential.validFrom,
                                 validUntil = verifiableCredential.validUntil,
                                 proof = verifiableCredential.proof,
-                                aud = verifiableCredential.aud,
+                                aud = verifiableCredential.aud
                             )
                     }
                 }
