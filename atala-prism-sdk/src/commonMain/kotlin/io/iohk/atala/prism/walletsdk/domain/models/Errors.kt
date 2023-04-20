@@ -27,6 +27,7 @@ sealed class CastorError @JvmOverloads constructor(message: String? = null) : Th
 sealed class MercuryError @JvmOverloads constructor(message: String? = null) : Throwable(message) {
     class InvalidURLError @JvmOverloads constructor(message: String? = null) : MercuryError(message)
     class NoDIDReceiverSetError @JvmOverloads constructor(message: String? = null) : MercuryError(message)
+    class NoDIDSenderSetError @JvmOverloads constructor(message: String? = null) : MercuryError(message)
     class NoValidServiceFoundError @JvmOverloads constructor(message: String? = null) : MercuryError(message)
     class FromFieldNotSetError @JvmOverloads constructor(message: String? = null) : MercuryError(message)
     class UnknownAttachmentDataError @JvmOverloads constructor(message: String? = null) : MercuryError(message)
