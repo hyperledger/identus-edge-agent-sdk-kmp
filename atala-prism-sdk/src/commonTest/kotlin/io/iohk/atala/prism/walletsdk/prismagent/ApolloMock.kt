@@ -67,7 +67,7 @@ class ApolloMock : Apollo {
     override fun signMessage(privateKey: PrivateKey, message: ByteArray): Signature =
         signMessageByteArrayReturn
 
-    @Throws() // TODO: Add throw classes
+    // TODO: Add throw classes
     override fun signMessage(privateKey: PrivateKey, message: String): Signature =
         signMessageStringReturn
 

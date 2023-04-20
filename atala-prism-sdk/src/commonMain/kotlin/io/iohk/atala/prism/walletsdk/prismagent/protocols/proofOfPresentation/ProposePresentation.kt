@@ -105,6 +105,17 @@ class ProposePresentation {
             otherPresentation.to == this.to
     }
 
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + body.hashCode()
+        result = 31 * result + attachments.contentHashCode()
+        result = 31 * result + (thid?.hashCode() ?: 0)
+        result = 31 * result + from.hashCode()
+        result = 31 * result + to.hashCode()
+        return result
+    }
+
     @Serializable
     data class Body @JvmOverloads constructor(
         @SerialName("goal_code")
