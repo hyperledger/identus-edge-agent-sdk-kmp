@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor.did
 
+import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import org.antlr.v4.kotlinruntime.DefaultErrorStrategy
 import org.antlr.v4.kotlinruntime.Parser
 import org.antlr.v4.kotlinruntime.ParserRuleContext
@@ -19,13 +20,13 @@ class ErrorStrategy : DefaultErrorStrategy() {
         throw e
     }
 
-    @Throws(InvalidDIDStringError::class)
+    @Throws(CastorError.InvalidDIDString::class)
     override fun recoverInline(recognizer: Parser): Token {
         var context = recognizer.context
         while (context != null) {
             context = context.readParent() as ParserRuleContext?
         }
-        throw InvalidDIDStringError("Invalid Did char found at [line ${recognizer.currentToken?.line}, col ${recognizer.currentToken?.charPositionInLine}] \"${recognizer.currentToken?.text}\"")
+        throw CastorError.InvalidDIDString("Invalid Did char found at [line ${recognizer.currentToken?.line}, col ${recognizer.currentToken?.charPositionInLine}] \"${recognizer.currentToken?.text}\"")
     }
 
     override fun sync(recognizer: Parser) {}

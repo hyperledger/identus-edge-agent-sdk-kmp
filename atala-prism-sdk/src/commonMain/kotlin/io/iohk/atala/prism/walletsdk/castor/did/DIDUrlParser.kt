@@ -2,6 +2,7 @@ package io.iohk.atala.prism.walletsdk.castor.did
 
 import io.iohk.atala.prism.walletsdk.castor.antlrgrammar.DIDUrlAbnfLexer
 import io.iohk.atala.prism.walletsdk.castor.antlrgrammar.DIDUrlAbnfParser
+import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
 import org.antlr.v4.kotlinruntime.CharStreams
@@ -11,7 +12,7 @@ import org.antlr.v4.kotlinruntime.tree.ParseTreeWalker
 import kotlin.jvm.Throws
 
 object DIDUrlParser {
-    @Throws(InvalidDIDStringError::class)
+    @Throws(CastorError.InvalidDIDString::class)
     fun parse(didUrlString: String): DIDUrl {
         val inputStream = CharStreams.fromString(didUrlString)
         val lexer = DIDUrlAbnfLexer(inputStream)
@@ -24,9 +25,9 @@ object DIDUrlParser {
         val listener = DIDUrlParserListener()
         ParseTreeWalker().walk(listener, context as ParseTree)
 
-        val scheme = listener.scheme ?: throw InvalidDIDStringError("Invalid DID string, missing scheme")
-        val methodName = listener.methodName ?: throw InvalidDIDStringError("Invalid DID string, missing method name")
-        val methodId = listener.methodId ?: throw InvalidDIDStringError("Invalid DID string, missing method ID")
+        val scheme = listener.scheme ?: throw CastorError.InvalidDIDString("Invalid DID string, missing scheme")
+        val methodName = listener.methodName ?: throw CastorError.InvalidDIDString("Invalid DID string, missing method name")
+        val methodId = listener.methodId ?: throw CastorError.InvalidDIDString("Invalid DID string, missing method ID")
 
         val did = DID(scheme, methodName, methodId)
 
