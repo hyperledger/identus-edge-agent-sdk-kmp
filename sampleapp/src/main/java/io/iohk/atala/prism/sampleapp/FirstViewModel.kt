@@ -97,7 +97,7 @@ class FirstViewModel : ViewModel() {
                 body = "This is a test message"
             )
 
-//            agent.sendMessage(message)
+            mercury.sendMessage(message)
         }
     }
 
