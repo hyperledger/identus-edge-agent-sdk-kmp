@@ -2,7 +2,6 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
 plugins {
-    java
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
     id("maven-publish")
@@ -16,11 +15,6 @@ buildscript {
         mavenLocal()
         google()
         gradlePluginPortal()
-        maven("https://plugins.gradle.org/m2/")
-        // Needed for Kotlin coroutines that support new memory management mode
-        maven {
-            url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
-        }
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
@@ -38,12 +32,9 @@ java {
     }
 }
 
-version = "1.0.0-alpha"
-group = "io.iohk.atala.prism"
-
 allprojects {
-    this.group = group
-    this.version = version
+    this.group = "io.iohk.atala.prism.walletsdk"
+    this.version = "1.0.0-local"
 
     repositories {
         mavenCentral()
@@ -70,7 +61,26 @@ allprojects {
         }
     }
 
-//    apply(plugin = "org.gradle.maven-publish")
+    configurations.all {
+        resolutionStrategy {
+            eachDependency {
+                if (requested.group == "org.bouncycastle") {
+                    when (requested.name) {
+                        "bcprov-jdk15on", "bcprov-jdk15to18" -> {
+                            useTarget("org.bouncycastle:bcprov-jdk15on:1.68")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    apply(plugin = "org.gradle.maven-publish")
+    publishing {
+        repositories {
+            mavenLocal()
+        }
+    }
 
 //    publishing {
 //        repositories {
@@ -89,9 +99,26 @@ allprojects {
 subprojects {
     apply(plugin = "org.jlleitschuh.gradle.ktlint")
 
-    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+    ktlint {
         verbose.set(true)
         outputToConsole.set(true)
+        filter {
+            exclude(
+                "build/generated-src/**",
+                "**/generated/**",
+                "**/generated-src/**",
+                "build/**",
+                "build/generated/**",
+                "**/antlrgrammar/**"
+            )
+            exclude {
+                it.file.path.contains("generated-src") ||
+                    it.file.toString().contains("generated") ||
+                    it.file.path.contains("generated") ||
+                    it.file.path.contains("antlrgrammar") ||
+                    it.file.toString().contains("antlrgrammar")
+            }
+        }
     }
 }
 
@@ -101,13 +128,4 @@ rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
 
 tasks.dokkaGfmMultiModule.configure {
     outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
-}
-
-ktlint {
-    filter {
-        exclude("**/generated/**", "/pluto/build/generated/**")
-        exclude { entry ->
-            entry.file.toString().contains("generated")
-        }
-    }
 }
