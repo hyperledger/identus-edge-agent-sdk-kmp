@@ -38,7 +38,7 @@ class PrismAgentTests {
         plutoMock = PlutoMock()
         mercuryMock = MercuryMock()
         mediationHandlerMock = MediationHandlerMock()
-        // TODO: Someone Please check this one had to add => mutableListOf()
+        // Pairing will be removed in the future
         connectionManager = ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf())
     }
 

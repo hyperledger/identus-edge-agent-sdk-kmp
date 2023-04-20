@@ -108,7 +108,7 @@ class PrismAgent {
                 }
             }
         )
-        // TODO: Someone to check this one => Had to add mutableListOf()
+        // Pairing will be removed in the future
         this.connectionManager = ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
     }
 
