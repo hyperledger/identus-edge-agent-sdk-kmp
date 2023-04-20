@@ -5,6 +5,7 @@ import org.antlr.v4.kotlinruntime.Parser
 import org.antlr.v4.kotlinruntime.ParserRuleContext
 import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Token
+import kotlin.jvm.Throws
 
 class ErrorStrategy : DefaultErrorStrategy() {
     @Throws(RecognitionException::class)
