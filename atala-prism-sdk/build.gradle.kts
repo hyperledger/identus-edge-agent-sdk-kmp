@@ -92,6 +92,7 @@ kotlin {
                 implementation("io.iohk.atala.prism.apollo:ecdsa:$apolloVersion")
                 implementation("io.iohk.atala.prism.apollo:hashing:$apolloVersion")
                 implementation("io.iohk.atala.prism.apollo:uuid:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:multibase:$apolloVersion")
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 

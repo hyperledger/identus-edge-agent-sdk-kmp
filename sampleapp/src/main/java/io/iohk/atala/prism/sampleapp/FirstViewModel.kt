@@ -108,7 +108,7 @@ class FirstViewModel : ViewModel() {
 
     fun createPeerDid() {
         GlobalScope.launch {
-            agent.createNewPeerDID(
+            val did = agent.createNewPeerDID(
                 arrayOf(
                     DIDDocument.Service(
                         "#didcomm-1",
@@ -118,12 +118,15 @@ class FirstViewModel : ViewModel() {
                 ),
                 false
             )
+
+            println(did.toString())
         }
     }
 
     fun createPrismDid() {
         GlobalScope.launch {
-            agent.createNewPrismDID()
+            val did = agent.createNewPrismDID()
+            println(did.toString())
         }
     }
 
