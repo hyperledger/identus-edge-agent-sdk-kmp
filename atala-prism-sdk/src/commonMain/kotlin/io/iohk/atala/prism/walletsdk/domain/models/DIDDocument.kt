@@ -15,6 +15,11 @@ data class DIDDocument(
             if (property is DIDDocument.Services) acc.plus(property.values) else acc
         }
 
+    val services: Array<Service>
+        get() = coreProperties.fold(arrayOf()) { acc, property ->
+            if (property is DIDDocument.Services) acc.plus(property.values) else acc
+        }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
