@@ -6,16 +6,18 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Mercury
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.mercury.Api
 import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
+import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
@@ -39,6 +41,9 @@ class FirstViewModel : ViewModel() {
     private lateinit var seed: Seed
     private lateinit var agent: PrismAgent
     private val messageList: MutableLiveData<List<Message>> = MutableLiveData(listOf())
+
+    init {
+    }
 
     fun startAgent(context: Context) {
         GlobalScope.launch {
@@ -79,7 +84,7 @@ class FirstViewModel : ViewModel() {
                 invitation = Json.decodeFromString<PrismOnboardingInvitation>(oobUrl)
                 agent.acceptInvitation(invitation)
             } else {
-                throw PrismAgentError.unknownInvitationTypeError()
+                throw PrismAgentError.UnknownInvitationTypeError()
             }
         }
     }
@@ -136,7 +141,16 @@ class FirstViewModel : ViewModel() {
     }
 
     private fun initializeMercury() {
-        mercury = MercuryImpl(castor, pluto)
+        // This is just to make the code compile, it should be changed accordingly
+        mercury = MercuryImpl(
+            castor,
+            DIDCommWrapper(CastorImpl(ApolloImpl()), PlutoImpl(DbConnection())),
+            object : Api {
+                override fun request(httpMethod: String, url: String, body: Any): ByteArray? {
+                    TODO("Not yet implemented")
+                }
+            }
+        )
     }
 
     private fun initializeSeed() {

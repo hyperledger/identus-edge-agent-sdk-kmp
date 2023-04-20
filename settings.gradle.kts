@@ -29,11 +29,5 @@ buildscript {
 
 rootProject.name = "wallet-sdk"
 include(":protosLib")
-include(":domain")
-include(":apollo")
-include(":castor")
-include(":mercury")
-include(":pluto")
-include(":pollux")
-include(":prism-agent")
+include(":atala-prism-sdk")
 include(":sampleapp")
