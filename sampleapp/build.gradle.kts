@@ -16,6 +16,11 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+    packagingOptions {
+        resources {
+            merges += "**/**.proto"
+        }
+    }
 
     buildTypes {
         release {

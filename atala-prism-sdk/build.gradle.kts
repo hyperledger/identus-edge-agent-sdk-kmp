@@ -85,19 +85,21 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.3")
                 implementation("io.ktor:ktor-client-logging:2.1.3")
 
-                implementation("io.iohk.atala.prism:didpeer:$didpeerVersion")
+                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
-                implementation("io.iohk.atala.prism:base64:$apolloVersion")
-                implementation("io.iohk.atala.prism:base-asymmetric-encryption:$apolloVersion")
-                implementation("io.iohk.atala.prism:ecdsa:$apolloVersion")
-                implementation("io.iohk.atala.prism:hashing:$apolloVersion")
-                implementation("io.iohk.atala.prism:uuid:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:base64:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:base-asymmetric-encryption:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:ecdsa:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:hashing:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:uuid:$apolloVersion")
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 
                 implementation("org.didcommx:didcomm:0.3.0")
 
-                implementation("com.google.protobuf:protoc:3.12.0")
+                implementation("com.google.protobuf:protoc:3.12.0") {
+                    exclude("com.google.protobuf")
+                }
 
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.5.4")
             }
