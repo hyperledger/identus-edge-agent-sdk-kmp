@@ -87,8 +87,8 @@ class Presentation {
                 body,
                 fromMessage.attachments,
                 fromMessage.thid,
-                fromMessage.from!!,
-                fromMessage.to!!
+                fromMessage.from,
+                fromMessage.to
             )
         } else {
             throw PrismAgentError.InvalidMessageError()

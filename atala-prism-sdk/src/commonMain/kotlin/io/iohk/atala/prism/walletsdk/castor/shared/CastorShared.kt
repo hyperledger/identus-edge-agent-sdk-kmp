@@ -309,7 +309,7 @@ internal class CastorShared {
                 if (it.keyCurve == null) {
                     throw CastorError.InvalidKeyError()
                 } else {
-                    when (it.keyCurve!!.curve) {
+                    when (it.keyCurve.curve) {
                         Curve.X25519 -> {
                             encryptionKeys.add(
                                 VerificationMaterialAgreement(

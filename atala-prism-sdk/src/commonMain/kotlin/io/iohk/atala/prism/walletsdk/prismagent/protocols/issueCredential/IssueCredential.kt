@@ -61,8 +61,8 @@ data class IssueCredential(
                 throw PrismAgentError.InvalidIssueCredentialMessageError()
             }
 
-            val fromDID = fromMessage.from!!
-            val toDID = fromMessage.to!!
+            val fromDID = fromMessage.from
+            val toDID = fromMessage.to
             val body = Json.decodeFromString<IssueCredential.Body>(fromMessage.body)
 
             return IssueCredential(

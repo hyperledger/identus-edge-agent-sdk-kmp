@@ -48,8 +48,8 @@ data class ProposeCredential @JvmOverloads constructor(
                 throw PrismAgentError.InvalidProposedCredentialMessageError()
             }
 
-            val fromDID = fromMessage.from!!
-            val toDID = fromMessage.to!!
+            val fromDID = fromMessage.from
+            val toDID = fromMessage.to
             val body = Json.decodeFromString<Body>(fromMessage.body)
 
             return ProposeCredential(

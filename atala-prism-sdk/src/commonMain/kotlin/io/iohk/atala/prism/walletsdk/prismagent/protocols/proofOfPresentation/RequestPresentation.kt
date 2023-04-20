@@ -51,8 +51,8 @@ class RequestPresentation {
                 body = Json.decodeFromString(fromMessage.body),
                 attachments = fromMessage.attachments,
                 thid = fromMessage.thid,
-                from = fromMessage.from!!,
-                to = fromMessage.to!!
+                from = fromMessage.from,
+                to = fromMessage.to
             )
         } else {
             throw PrismAgentError.InvalidMessageError()

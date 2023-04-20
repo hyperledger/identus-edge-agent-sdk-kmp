@@ -64,8 +64,8 @@ class ConnectionRequest {
             fromMessage.to != null
         ) {
             ConnectionRequest(
-                from = fromMessage.from!!,
-                to = fromMessage.to!!,
+                from = fromMessage.from,
+                to = fromMessage.to,
                 thid = fromMessage.id,
                 body = Json.decodeFromString(fromMessage.body)
             )

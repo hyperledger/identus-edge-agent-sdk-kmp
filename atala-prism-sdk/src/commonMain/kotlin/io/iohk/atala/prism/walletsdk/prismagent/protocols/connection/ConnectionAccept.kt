@@ -35,7 +35,7 @@ class ConnectionAccept {
     @Throws(PrismAgentError.InvalidMessageError::class)
     constructor(fromMessage: Message) {
         if (fromMessage.piuri == ProtocolType.DidcommconnectionResponse.value && fromMessage.from != null && fromMessage.to != null) {
-            ConnectionAccept(from = fromMessage.from!!, to = fromMessage.to!!, body = Body(fromMessage.body))
+            ConnectionAccept(from = fromMessage.from, to = fromMessage.to, body = Body(fromMessage.body))
         } else {
             throw PrismAgentError.InvalidMessageError()
         }
