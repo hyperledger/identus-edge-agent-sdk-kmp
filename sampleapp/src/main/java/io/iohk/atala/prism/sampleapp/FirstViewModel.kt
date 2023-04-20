@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Apollo
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Castor
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Mercury
-import io.iohk.atala.prism.walletsdk.domain.buildingBlocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl

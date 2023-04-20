@@ -30,4 +30,4 @@ buildscript {
 rootProject.name = "wallet-sdk"
 include(":protosLib")
 include(":atala-prism-sdk")
-// include(":sampleapp")
+include(":sampleapp")

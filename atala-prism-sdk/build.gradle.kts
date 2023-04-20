@@ -212,7 +212,7 @@ val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin
     // outputDirectory = File("src/commonAntlr/kotlin")
 }
 
-tasks.matching { // runKtlintCheckOverCommonMainSourceSet
+tasks.matching {
     it.name == "compileCommonAntlrKotlinMetadata" ||
         it.name == "runKtlintCheckOverCommonMainSourceSet" ||
         it.name == "jvmSourcesJar" ||
