@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.castor
 
 import io.iohk.atala.prism.walletsdk.castor.did.DIDParser
-import io.iohk.atala.prism.walletsdk.castor.did.InvalidDIDStringError
+import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -43,44 +43,39 @@ class DIDParserTest {
         val didExample4 = "did::prism:aaaaaaaaaaa:aaaa"
         val didExample5 = "did:prism::aaaaaaaaaaa:bbbb"
 
-        val exception = assertFailsWith(
-            exceptionClass = InvalidDIDStringError::class,
+        assertFailsWith(
+            exceptionClass = CastorError.InvalidDIDString::class,
             block = {
                 DIDParser.parse(didExample1)
             }
         )
-        assertEquals(exception.code, "InvalidDIDStringError")
 
-        val exception2 = assertFailsWith(
-            exceptionClass = InvalidDIDStringError::class,
+        assertFailsWith(
+            exceptionClass = CastorError.InvalidDIDString::class,
             block = {
                 DIDParser.parse(didExample2)
             }
         )
-        assertEquals(exception2.code, "InvalidDIDStringError")
 
-        val exception3 = assertFailsWith(
-            exceptionClass = InvalidDIDStringError::class,
+        assertFailsWith(
+            exceptionClass = CastorError.InvalidDIDString::class,
             block = {
                 DIDParser.parse(didExample3)
             }
         )
-        assertEquals(exception3.code, "InvalidDIDStringError")
 
-        val exception4 = assertFailsWith(
-            exceptionClass = InvalidDIDStringError::class,
+        assertFailsWith(
+            exceptionClass = CastorError.InvalidDIDString::class,
             block = {
                 DIDParser.parse(didExample4)
             }
         )
-        assertEquals(exception4.code, "InvalidDIDStringError")
 
-        val exception5 = assertFailsWith(
-            exceptionClass = InvalidDIDStringError::class,
+        assertFailsWith(
+            exceptionClass = CastorError.InvalidDIDString::class,
             block = {
                 DIDParser.parse(didExample5)
             }
         )
-        assertEquals(exception5.code, "InvalidDIDStringError")
     }
 }
