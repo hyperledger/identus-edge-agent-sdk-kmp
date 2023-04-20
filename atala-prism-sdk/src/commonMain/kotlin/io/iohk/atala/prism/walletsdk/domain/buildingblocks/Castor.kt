@@ -5,11 +5,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 
-/**
- * TODO(Clarify what Castor methods stand for)
- * TODO(Add method documentations)
- * TODO(Update functions with @throws that are represented in their implementation)
- */
 interface Castor {
     fun parseDID(did: String): DID
     fun createPrismDID(

@@ -10,11 +10,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import kotlinx.coroutines.flow.Flow
 
-/**
- * TODO(Clarify what Castor methods stand for)
- * TODO(Add method documentations)
- * TODO(Update functions with @throws that are represented in their implementation)
- */
 interface Pluto {
 
     fun storePrismDIDAndPrivateKeys(

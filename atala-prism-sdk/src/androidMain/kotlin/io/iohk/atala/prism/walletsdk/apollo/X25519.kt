@@ -11,7 +11,6 @@ import java.security.KeyPairGenerator
 
 /**
  * X25519
- * TODO(Future Moussa -> Use Apollo instead)
  */
 actual object X25519 {
     actual fun createKeyPair(): KeyPair {
