@@ -18,10 +18,10 @@ interface Apollo {
     fun createRandomSeed(passphrase: String? = ""): SeedWords
 
     // @JsName("createKeyPairFromKeyCurve")
-    fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair
+    fun createKeyPair(seed: Seed? = null, curve: KeyCurve): KeyPair
 
     // @JsName("createKeyPairFromPrivateKey")
-    fun createKeyPair(seed: Seed, privateKey: PrivateKey): KeyPair
+    fun createKeyPair(seed: Seed? = null, privateKey: PrivateKey): KeyPair
 
     // @JsName("compressedPublicKeyFromPublicKey")
     fun compressedPublicKey(publicKey: PublicKey): CompressedPublicKey
