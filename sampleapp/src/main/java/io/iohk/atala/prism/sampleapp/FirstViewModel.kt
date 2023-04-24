@@ -8,6 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.mercury.Api
@@ -15,6 +16,7 @@ import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
+import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.DefaultMediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
@@ -30,6 +32,7 @@ class FirstViewModel : ViewModel() {
     private lateinit var handler: MediationHandler
     private lateinit var seed: Seed
     private lateinit var agent: PrismAgent
+    private lateinit var pollux: Pollux
 
     init {
     }
@@ -39,6 +42,7 @@ class FirstViewModel : ViewModel() {
             initializeApollo()
             initializePluto(context)
             initializeCastor()
+            initializePollux()
             initializeMercury()
             initializeSeed()
             initializeHandler()
@@ -61,6 +65,10 @@ class FirstViewModel : ViewModel() {
 
     private fun initializeCastor() {
         castor = CastorImpl(apollo)
+    }
+
+    private fun initializePollux() {
+        pollux = PolluxImpl(castor)
     }
 
     private fun initializeMercury() {
@@ -120,6 +128,7 @@ class FirstViewModel : ViewModel() {
             castor = castor,
             pluto = pluto,
             mercury = mercury,
+            pollux = pollux,
             seed = seed,
             mediatorHandler = handler
         )

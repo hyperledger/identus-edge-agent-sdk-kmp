@@ -93,6 +93,8 @@ kotlin {
                 implementation("io.iohk.atala.prism.apollo:hashing:$apolloVersion")
                 implementation("io.iohk.atala.prism.apollo:uuid:$apolloVersion")
 
+                // implementation("com.nimbusds:nimbus-jose-jwt:9.31") // We are going to use the `nimbus-jose-jwt` that resides in `didcomm` lib
+
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 
                 implementation("org.didcommx:didcomm:0.3.0")
