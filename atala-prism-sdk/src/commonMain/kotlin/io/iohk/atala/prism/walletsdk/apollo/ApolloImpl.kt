@@ -48,10 +48,13 @@ class ApolloImpl : Apollo {
         )
     }
 
-    override fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair {
+    override fun createKeyPair(seed: Seed?, curve: KeyCurve): KeyPair {
         return when (curve.curve) {
             Curve.SECP256K1 -> {
                 val derivationPath = DerivationPath.fromPath("m/${curve.index}'/0'/0'")
+                if (seed == null) {
+                    throw ApolloError.InvalidMnemonicWord()
+                }
                 val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
                 val privateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
@@ -77,10 +80,13 @@ class ApolloImpl : Apollo {
         }
     }
 
-    override fun createKeyPair(seed: Seed, privateKey: PrivateKey): KeyPair {
+    override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
                 val derivationPath = DerivationPath.fromPath("m/${privateKey.keyCurve.index}'/0'/0'")
+                if (seed == null) {
+                    throw ApolloError.InvalidMnemonicWord()
+                }
                 val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
                 val mPrivateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
