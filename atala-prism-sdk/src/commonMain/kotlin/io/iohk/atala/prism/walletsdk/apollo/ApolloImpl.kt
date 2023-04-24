@@ -48,10 +48,13 @@ class ApolloImpl : Apollo {
         )
     }
 
-    override fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair {
+    override fun createKeyPair(seed: Seed?, curve: KeyCurve): KeyPair {
         return when (curve.curve) {
             Curve.SECP256K1 -> {
                 val derivationPath = DerivationPath.fromPath("m/${curve.index}'/0'/0'")
+                if (seed == null) {
+                    throw ApolloError.InvalidMnemonicWord()
+                }
                 val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
                 val privateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
@@ -68,19 +71,24 @@ class ApolloImpl : Apollo {
                     ),
                 )
             }
+
             Curve.ED25519 -> {
                 Ed25519.createKeyPair()
             }
+
             Curve.X25519 -> {
                 X25519.createKeyPair()
             }
         }
     }
 
-    override fun createKeyPair(seed: Seed, privateKey: PrivateKey): KeyPair {
+    override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
                 val derivationPath = DerivationPath.fromPath("m/${privateKey.keyCurve.index}'/0'/0'")
+                if (seed == null) {
+                    throw ApolloError.InvalidMnemonicWord()
+                }
                 val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
                 val mPrivateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
@@ -97,8 +105,14 @@ class ApolloImpl : Apollo {
                     ),
                 )
             }
-            Curve.ED25519 -> TODO()
-            Curve.X25519 -> TODO()
+
+            Curve.ED25519 -> {
+                Ed25519.createKeyPair()
+            }
+
+            Curve.X25519 -> {
+                X25519.createKeyPair()
+            }
         }
     }
 
@@ -133,6 +147,7 @@ class ApolloImpl : Apollo {
                     value = kmmPublicKey.getEncoded(),
                 )
             }
+
             else -> {
                 // Only SECP256K1 can be initialised by using byte Coordinates for EC Curve
                 throw ApolloError.InvalidKeyCurve()
@@ -149,6 +164,7 @@ class ApolloImpl : Apollo {
                     value = kmmPublicKey.getEncoded(),
                 )
             }
+
             else -> {
                 // Other type of keys are initialised using a ByteArray, for now we just support SECP256K1
                 TODO()
@@ -169,6 +185,7 @@ class ApolloImpl : Apollo {
                     value = kmmSignature,
                 )
             }
+
             else -> {
                 TODO()
             }
@@ -180,6 +197,7 @@ class ApolloImpl : Apollo {
             Curve.SECP256K1 -> {
                 signMessage(privateKey, message.encodeToByteArray())
             }
+
             else -> {
                 TODO()
             }
@@ -197,6 +215,7 @@ class ApolloImpl : Apollo {
                     signature = signature.value,
                 )
             }
+
             else -> {
                 TODO()
             }
