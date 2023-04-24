@@ -5,7 +5,6 @@ import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.hashing.SHA256
 import io.iohk.atala.prism.apollo.hashing.internal.toHexString
-import io.iohk.atala.prism.apollo.multibase.MultiBase
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
 import io.iohk.atala.prism.didcomm.didpeer.DIDDocPeerDID
 import io.iohk.atala.prism.didcomm.didpeer.MalformedPeerDIDException
@@ -299,10 +298,10 @@ internal class CastorShared {
         }
 
         @Serializable
-        data class OctetPublicKey(val kty: String = "OKP", val crv: String, val x: ByteArray)
+        data class OctetPublicKey(val kty: String = "OKP", val crv: String, val x: String)
 
         private fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
-            return OctetPublicKey(crv = keyPair.keyCurve.curve.value, x = MultiBase.encode(MultiBase.Base.BASE64_URL_PAD, keyPair.publicKey.value).toByteArray())
+            return OctetPublicKey(crv = keyPair.keyCurve.curve.value, x = keyPair.publicKey.value.base64UrlEncoded)
         }
 
         @JvmStatic
@@ -320,21 +319,25 @@ internal class CastorShared {
                 } else {
                     when (it.keyCurve.curve) {
                         Curve.X25519 -> {
+                            val octetString = Json.encodeToString(octetPublicKey(it))
                             encryptionKeys.add(
                                 VerificationMaterialAgreement(
                                     format = VerificationMaterialFormatPeerDID.JWK,
-                                    value = Json.encodeToString(octetPublicKey(it)),
-                                    type = VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020,
+                                    value = octetString,
+//                                    value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAgreement.JSON_WEB_KEY_2020)),
+                                    type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020,
                                 ),
                             )
                         }
 
                         Curve.ED25519 -> {
+                            val octetString = Json.encodeToString(octetPublicKey(it))
                             signingKeys.add(
                                 VerificationMaterialAuthentication(
                                     format = VerificationMaterialFormatPeerDID.JWK,
-                                    value = Json.encodeToString(octetPublicKey(it)),
-                                    type = VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020,
+                                    value = octetString,
+//                                    value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020)),
+                                    type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020,
                                 ),
                             )
                         }
