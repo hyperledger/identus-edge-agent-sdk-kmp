@@ -28,6 +28,7 @@ class PrismAgentTests {
     lateinit var castorMock: CastorMock
     lateinit var plutoMock: PlutoMock
     lateinit var mercuryMock: MercuryMock
+    lateinit var polluxMock: PolluxMock
     lateinit var mediationHandlerMock: MediationHandlerMock
     lateinit var connectionManager: ConnectionManager
 
@@ -37,6 +38,7 @@ class PrismAgentTests {
         castorMock = CastorMock()
         plutoMock = PlutoMock()
         mercuryMock = MercuryMock()
+        polluxMock = PolluxMock()
         mediationHandlerMock = MediationHandlerMock()
         // Pairing will be removed in the future
         connectionManager = ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf())
@@ -52,6 +54,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = seed,
             api = null,
@@ -73,6 +76,7 @@ class PrismAgentTests {
             castorMock,
             plutoMock,
             mercuryMock,
+            polluxMock,
             connectionManager,
             null,
             null,
@@ -91,6 +95,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
@@ -114,6 +119,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}"),
@@ -138,6 +144,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
@@ -161,6 +168,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = null,
@@ -183,6 +191,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = null,
@@ -205,6 +214,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = null,
@@ -248,6 +258,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = null,
@@ -274,6 +285,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = null,
@@ -290,6 +302,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = null,

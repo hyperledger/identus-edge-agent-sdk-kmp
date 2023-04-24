@@ -52,8 +52,10 @@ sealed class PlutoError @JvmOverloads constructor(message: String? = null) : Thr
 }
 
 sealed class PolluxError @JvmOverloads constructor(message: String? = null) : Throwable(message) {
+    class InvalidPrismDID @JvmOverloads constructor(message: String? = null) : PolluxError(message)
     class InvalidCredentialError @JvmOverloads constructor(message: String? = null) : PolluxError(message)
     class InvalidJWTString @JvmOverloads constructor(message: String? = null) : PolluxError(message)
+    class NoDomainOrChallengeFound @JvmOverloads constructor(message: String? = null) : PolluxError(message)
 }
 
 sealed class PrismAgentError @JvmOverloads constructor(message: String? = null) : Throwable(message) {
