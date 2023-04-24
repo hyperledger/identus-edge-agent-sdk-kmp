@@ -71,9 +71,11 @@ class ApolloImpl : Apollo {
                     ),
                 )
             }
+
             Curve.ED25519 -> {
                 Ed25519.createKeyPair()
             }
+
             Curve.X25519 -> {
                 X25519.createKeyPair()
             }
@@ -103,8 +105,14 @@ class ApolloImpl : Apollo {
                     ),
                 )
             }
-            Curve.ED25519 -> TODO()
-            Curve.X25519 -> TODO()
+
+            Curve.ED25519 -> {
+                Ed25519.createKeyPair()
+            }
+
+            Curve.X25519 -> {
+                X25519.createKeyPair()
+            }
         }
     }
 
@@ -139,6 +147,7 @@ class ApolloImpl : Apollo {
                     value = kmmPublicKey.getEncoded(),
                 )
             }
+
             else -> {
                 // Only SECP256K1 can be initialised by using byte Coordinates for EC Curve
                 throw ApolloError.InvalidKeyCurve()
@@ -155,6 +164,7 @@ class ApolloImpl : Apollo {
                     value = kmmPublicKey.getEncoded(),
                 )
             }
+
             else -> {
                 // Other type of keys are initialised using a ByteArray, for now we just support SECP256K1
                 TODO()
@@ -175,6 +185,7 @@ class ApolloImpl : Apollo {
                     value = kmmSignature,
                 )
             }
+
             else -> {
                 TODO()
             }
@@ -186,6 +197,7 @@ class ApolloImpl : Apollo {
             Curve.SECP256K1 -> {
                 signMessage(privateKey, message.encodeToByteArray())
             }
+
             else -> {
                 TODO()
             }
@@ -203,6 +215,7 @@ class ApolloImpl : Apollo {
                     signature = signature.value,
                 )
             }
+
             else -> {
                 TODO()
             }
