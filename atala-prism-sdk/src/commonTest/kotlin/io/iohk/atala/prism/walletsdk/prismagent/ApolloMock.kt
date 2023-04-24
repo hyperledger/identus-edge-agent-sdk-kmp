@@ -43,11 +43,11 @@ class ApolloMock : Apollo {
         return createRandomSeedReturn
     }
 
-    override fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair {
+    override fun createKeyPair(seed: Seed?, curve: KeyCurve): KeyPair {
         return createKeyPairReturn
     }
 
-    override fun createKeyPair(seed: Seed, privateKey: PrivateKey): KeyPair {
+    override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
         return createKeyPairReturn
     }
 
