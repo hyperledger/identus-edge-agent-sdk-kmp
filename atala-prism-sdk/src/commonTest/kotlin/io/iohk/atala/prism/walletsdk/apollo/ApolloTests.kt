@@ -107,7 +107,7 @@ class ApolloTests {
         assertEquals(32, privateKey.value.size)
         assertEquals(32, publicKey.value.size)
     }
-    
+
     @Test
     fun testCreateKeyPair_whenNoSeedAndKeyCurveX25519_thenPrivateKeyLengthIsCorrect() {
         val keyPair = apollo.createKeyPair(curve = KeyCurve(Curve.X25519))
