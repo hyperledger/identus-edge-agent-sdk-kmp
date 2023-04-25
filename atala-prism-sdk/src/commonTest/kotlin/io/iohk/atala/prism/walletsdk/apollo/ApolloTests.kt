@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.apollo
 
+import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.derivation.MnemonicChecksumException
 import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
 import io.iohk.atala.prism.apollo.utils.ECConfig
@@ -128,5 +129,16 @@ class ApolloTests {
 
         assertEquals(expectedPublicKey, resultKeyPair.publicKey)
         assertEquals(expectedPrivateKey, resultKeyPair.privateKey)
+    }
+
+    @Test
+    fun testCreateKeyPair_whenUsingSeedAndMnemonics_thenKeyPairIsCorrect() {
+        val mnemonics = arrayOf("blade", "multiply", "coil", "rare", "fox", "doll", "tongue", "please", "icon", "mind", "gesture", "moral", "old", "laugh", "symptom", "assume", "burden", "appear", "always", "oil", "ticket", "vault", "return", "height")
+        val seed = apollo.createSeed(mnemonics, "")
+
+        val expectedPrivateKeyBase64Url = "xURclKhT6as1Tb9vg4AJRRLPAMWb9dYTTthDvXEKjMc"
+
+        val keyPair = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1))
+        assertEquals(expectedPrivateKeyBase64Url, keyPair.privateKey.value.base64UrlEncoded)
     }
 }
