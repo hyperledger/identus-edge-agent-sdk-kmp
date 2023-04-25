@@ -180,6 +180,16 @@ class ApolloImpl : Apollo {
                 )
             }
 
+            Curve.ED25519 -> {
+                val signature = Ed25519.sign(
+                    privateKey = privateKey,
+                    message = message
+                )
+                Signature(
+                    value = signature
+                )
+            }
+
             else -> {
                 TODO()
             }
@@ -190,6 +200,16 @@ class ApolloImpl : Apollo {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
                 signMessage(privateKey, message.encodeToByteArray())
+            }
+
+            Curve.ED25519 -> {
+                val signature = Ed25519.sign(
+                    privateKey = privateKey,
+                    message = message.toByteArray()
+                )
+                Signature(
+                    value = signature
+                )
             }
 
             else -> {
@@ -209,7 +229,9 @@ class ApolloImpl : Apollo {
                     signature = signature.value,
                 )
             }
-
+            Curve.ED25519 -> {
+                Ed25519.verify(publicKey, signature, challenge)
+            }
             else -> {
                 TODO()
             }

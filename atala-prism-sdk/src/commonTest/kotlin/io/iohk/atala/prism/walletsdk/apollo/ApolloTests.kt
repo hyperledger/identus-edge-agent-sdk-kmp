@@ -16,6 +16,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ApolloTests {
@@ -133,12 +134,56 @@ class ApolloTests {
 
     @Test
     fun testCreateKeyPair_whenUsingSeedAndMnemonics_thenKeyPairIsCorrect() {
-        val mnemonics = arrayOf("blade", "multiply", "coil", "rare", "fox", "doll", "tongue", "please", "icon", "mind", "gesture", "moral", "old", "laugh", "symptom", "assume", "burden", "appear", "always", "oil", "ticket", "vault", "return", "height")
+        val mnemonics = arrayOf(
+            "blade",
+            "multiply",
+            "coil",
+            "rare",
+            "fox",
+            "doll",
+            "tongue",
+            "please",
+            "icon",
+            "mind",
+            "gesture",
+            "moral",
+            "old",
+            "laugh",
+            "symptom",
+            "assume",
+            "burden",
+            "appear",
+            "always",
+            "oil",
+            "ticket",
+            "vault",
+            "return",
+            "height"
+        )
         val seed = apollo.createSeed(mnemonics, "")
 
         val expectedPrivateKeyBase64Url = "xURclKhT6as1Tb9vg4AJRRLPAMWb9dYTTthDvXEKjMc"
 
         val keyPair = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1))
         assertEquals(expectedPrivateKeyBase64Url, keyPair.privateKey.value.base64UrlEncoded)
+    }
+
+    @Test
+    fun testSignAndVerify_whenSignatureIsCorrect_thenVerifiedCorrectly() {
+        val keyPair = apollo.createKeyPair(curve = KeyCurve(Curve.ED25519))
+        val message = "This is a test message"
+        val signature = apollo.signMessage(keyPair.privateKey, message)
+
+        assertTrue(apollo.verifySignature(keyPair.publicKey, message.toByteArray(), signature))
+    }
+
+    @Test
+    fun testSignAndVerify_whenSignatureIsIncorrect_thenVerifyFails() {
+        val keyPair = apollo.createKeyPair(curve = KeyCurve(Curve.ED25519))
+        val message = "This is a test message"
+        val signature = apollo.signMessage(keyPair.privateKey, message)
+        val modifiedSignature = signature.value
+        modifiedSignature[0] = 1
+        assertFalse(apollo.verifySignature(keyPair.publicKey, message.toByteArray(), signature))
     }
 }
