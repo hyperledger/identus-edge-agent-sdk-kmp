@@ -133,6 +133,19 @@ class ApolloTests {
     }
 
     @Test
+    fun testCreateKeyPair_whenEd25519FromPrivateKey_thenPublicKeyCorrect() {
+        val seed = apollo.createRandomSeed()
+        val keyPair = apollo.createKeyPair(seed = seed.seed, curve = KeyCurve(Curve.ED25519))
+        val expectedPrivateKey = keyPair.privateKey
+        val expectedPublicKey = keyPair.publicKey
+
+        val resultKeyPair = apollo.createKeyPair(privateKey = keyPair.privateKey)
+
+        assertEquals(expectedPublicKey, resultKeyPair.publicKey)
+        assertEquals(expectedPrivateKey, resultKeyPair.privateKey)
+    }
+
+    @Test
     fun testCreateKeyPair_whenUsingSeedAndMnemonics_thenKeyPairIsCorrect() {
         val mnemonics = arrayOf(
             "blade",
@@ -166,6 +179,19 @@ class ApolloTests {
 
         val keyPair = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1))
         assertEquals(expectedPrivateKeyBase64Url, keyPair.privateKey.value.base64UrlEncoded)
+    }
+
+    @Test
+    fun testCreateKeyPair_whenX25519FromPrivateKey_thenPublicKeyCorrect() {
+        val seed = apollo.createRandomSeed()
+        val keyPair = apollo.createKeyPair(seed = seed.seed, curve = KeyCurve(Curve.X25519))
+        val expectedPrivateKey = keyPair.privateKey
+        val expectedPublicKey = keyPair.publicKey
+
+        val resultKeyPair = apollo.createKeyPair(privateKey = keyPair.privateKey)
+
+        assertEquals(expectedPublicKey, resultKeyPair.publicKey)
+        assertEquals(expectedPrivateKey, resultKeyPair.privateKey)
     }
 
     @Test
