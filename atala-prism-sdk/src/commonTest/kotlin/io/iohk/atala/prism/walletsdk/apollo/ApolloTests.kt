@@ -129,4 +129,17 @@ class ApolloTests {
         assertEquals(expectedPublicKey, resultKeyPair.publicKey)
         assertEquals(expectedPrivateKey, resultKeyPair.privateKey)
     }
+
+    @Test
+    fun testCreateKeyPair_whenEd25519FromPrivateKey_thenPublicKeyCorrect() {
+        val seed = apollo.createRandomSeed()
+        val keyPair = apollo.createKeyPair(seed = seed.seed, curve = KeyCurve(Curve.ED25519))
+        val expectedPrivateKey = keyPair.privateKey
+        val expectedPublicKey = keyPair.publicKey
+
+        val resultKeyPair = apollo.createKeyPair(privateKey = keyPair.privateKey)
+
+        assertEquals(expectedPublicKey, resultKeyPair.publicKey)
+        assertEquals(expectedPrivateKey, resultKeyPair.privateKey)
+    }
 }
