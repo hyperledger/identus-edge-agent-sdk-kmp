@@ -18,6 +18,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 
 class ApolloImpl : Apollo {
     override fun createRandomMnemonics(): Array<String> {
@@ -101,7 +102,20 @@ class ApolloImpl : Apollo {
             }
 
             Curve.ED25519 -> {
-                Ed25519.createKeyPair()
+                val edPrivateKey = Ed25519PrivateKeyParameters(privateKey.value, 0)
+                val edPublicKey = edPrivateKey.generatePublicKey()
+
+                KeyPair(
+                    keyCurve = privateKey.keyCurve,
+                    privateKey = PrivateKey(
+                        keyCurve = privateKey.keyCurve,
+                        value = edPrivateKey.encoded,
+                    ),
+                    publicKey = PublicKey(
+                        curve = privateKey.keyCurve,
+                        value = edPublicKey.encoded,
+                    ),
+                )
             }
 
             Curve.X25519 -> {
