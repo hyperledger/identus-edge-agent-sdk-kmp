@@ -11,7 +11,6 @@ import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.params.Ed25519PublicKeyParameters
 import org.bouncycastle.crypto.signers.Ed25519Signer
 import java.security.SecureRandom
-import java.util.*
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair as KeyPairModel
 
 /**
