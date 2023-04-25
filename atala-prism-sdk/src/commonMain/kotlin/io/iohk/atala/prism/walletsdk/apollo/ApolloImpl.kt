@@ -85,23 +85,17 @@ class ApolloImpl : Apollo {
     override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
-                val derivationPath = DerivationPath.fromPath("m/${privateKey.keyCurve.index}'/0'/0'")
-                if (seed == null) {
-                    throw ApolloError.InvalidMnemonicWord()
-                }
-                val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
-                val kmmKeyPair = extendedKey.keyPair()
-                val mPrivateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
-                val mPublicKey = kmmKeyPair.publicKey as KMMECSecp256k1PublicKey
+                val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromBytes(privateKey.value)
+
                 KeyPair(
                     keyCurve = privateKey.keyCurve,
                     privateKey = PrivateKey(
                         keyCurve = privateKey.keyCurve,
-                        value = mPrivateKey.getEncoded(),
+                        value = kmmPrivateKey.getEncoded(),
                     ),
                     publicKey = PublicKey(
                         curve = privateKey.keyCurve,
-                        value = mPublicKey.getEncoded(),
+                        value = kmmPrivateKey.getPublicKey().getEncoded(),
                     ),
                 )
             }
