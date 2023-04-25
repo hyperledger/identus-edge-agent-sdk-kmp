@@ -132,8 +132,46 @@ class ApolloTests {
     }
 
     @Test
+    fun testCreateKeyPair_whenEd25519FromPrivateKey_thenPublicKeyCorrect() {
+        val seed = apollo.createRandomSeed()
+        val keyPair = apollo.createKeyPair(seed = seed.seed, curve = KeyCurve(Curve.ED25519))
+        val expectedPrivateKey = keyPair.privateKey
+        val expectedPublicKey = keyPair.publicKey
+
+        val resultKeyPair = apollo.createKeyPair(privateKey = keyPair.privateKey)
+
+        assertEquals(expectedPublicKey, resultKeyPair.publicKey)
+        assertEquals(expectedPrivateKey, resultKeyPair.privateKey)
+    }
+
+    @Test
     fun testCreateKeyPair_whenUsingSeedAndMnemonics_thenKeyPairIsCorrect() {
-        val mnemonics = arrayOf("blade", "multiply", "coil", "rare", "fox", "doll", "tongue", "please", "icon", "mind", "gesture", "moral", "old", "laugh", "symptom", "assume", "burden", "appear", "always", "oil", "ticket", "vault", "return", "height")
+        val mnemonics = arrayOf(
+            "blade",
+            "multiply",
+            "coil",
+            "rare",
+            "fox",
+            "doll",
+            "tongue",
+            "please",
+            "icon",
+            "mind",
+            "gesture",
+            "moral",
+            "old",
+            "laugh",
+            "symptom",
+            "assume",
+            "burden",
+            "appear",
+            "always",
+            "oil",
+            "ticket",
+            "vault",
+            "return",
+            "height"
+        )
         val seed = apollo.createSeed(mnemonics, "")
 
         val expectedPrivateKeyBase64Url = "xURclKhT6as1Tb9vg4AJRRLPAMWb9dYTTthDvXEKjMc"
