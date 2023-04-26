@@ -16,6 +16,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ApolloTests {
@@ -191,5 +192,24 @@ class ApolloTests {
 
         assertEquals(expectedPublicKey, resultKeyPair.publicKey)
         assertEquals(expectedPrivateKey, resultKeyPair.privateKey)
+    }
+
+    @Test
+    fun testSignAndVerify_whenSignatureIsCorrect_thenVerifiedCorrectly() {
+        val keyPair = apollo.createKeyPair(curve = KeyCurve(Curve.ED25519))
+        val message = "This is a test message"
+        val signature = apollo.signMessage(keyPair.privateKey, message)
+
+        assertTrue(apollo.verifySignature(keyPair.publicKey, message.toByteArray(), signature))
+    }
+
+    @Test
+    fun testSignAndVerify_whenSignatureIsIncorrect_thenVerifyFails() {
+        val keyPair = apollo.createKeyPair(curve = KeyCurve(Curve.ED25519))
+        val message = "This is a test message"
+        val signature = apollo.signMessage(keyPair.privateKey, message)
+        val modifiedSignature = signature.value
+        modifiedSignature[0] = 1
+        assertFalse(apollo.verifySignature(keyPair.publicKey, message.toByteArray(), signature))
     }
 }
