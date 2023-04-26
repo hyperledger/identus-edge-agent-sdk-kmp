@@ -18,6 +18,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
+import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
 
 class ApolloImpl : Apollo {
     override fun createRandomMnemonics(): Array<String> {
@@ -48,10 +50,13 @@ class ApolloImpl : Apollo {
         )
     }
 
-    override fun createKeyPair(seed: Seed, curve: KeyCurve): KeyPair {
+    override fun createKeyPair(seed: Seed?, curve: KeyCurve): KeyPair {
         return when (curve.curve) {
             Curve.SECP256K1 -> {
                 val derivationPath = DerivationPath.fromPath("m/${curve.index}'/0'/0'")
+                if (seed == null) {
+                    throw ApolloError.InvalidMnemonicWord()
+                }
                 val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
                 val kmmKeyPair = extendedKey.keyPair()
                 val privateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
@@ -68,37 +73,68 @@ class ApolloImpl : Apollo {
                     ),
                 )
             }
+
             Curve.ED25519 -> {
                 Ed25519.createKeyPair()
             }
+
             Curve.X25519 -> {
                 X25519.createKeyPair()
             }
         }
     }
 
-    override fun createKeyPair(seed: Seed, privateKey: PrivateKey): KeyPair {
+    override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
-                val derivationPath = DerivationPath.fromPath("m/${privateKey.keyCurve.index}'/0'/0'")
-                val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
-                val kmmKeyPair = extendedKey.keyPair()
-                val mPrivateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
-                val mPublicKey = kmmKeyPair.publicKey as KMMECSecp256k1PublicKey
+                val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromBytes(privateKey.value)
+
                 KeyPair(
                     keyCurve = privateKey.keyCurve,
                     privateKey = PrivateKey(
                         keyCurve = privateKey.keyCurve,
-                        value = mPrivateKey.getEncoded(),
+                        value = kmmPrivateKey.getEncoded(),
                     ),
                     publicKey = PublicKey(
                         curve = privateKey.keyCurve,
-                        value = mPublicKey.getEncoded(),
+                        value = kmmPrivateKey.getPublicKey().getEncoded(),
                     ),
                 )
             }
-            Curve.ED25519 -> TODO()
-            Curve.X25519 -> TODO()
+
+            Curve.ED25519 -> {
+                val edPrivateKey = Ed25519PrivateKeyParameters(privateKey.value, 0)
+                val edPublicKey = edPrivateKey.generatePublicKey()
+
+                KeyPair(
+                    keyCurve = privateKey.keyCurve,
+                    privateKey = PrivateKey(
+                        keyCurve = privateKey.keyCurve,
+                        value = edPrivateKey.encoded,
+                    ),
+                    publicKey = PublicKey(
+                        curve = privateKey.keyCurve,
+                        value = edPublicKey.encoded,
+                    ),
+                )
+            }
+
+            Curve.X25519 -> {
+                val xPrivateKey = X25519PrivateKeyParameters(privateKey.value, 0)
+                val xPublicKey = xPrivateKey.generatePublicKey()
+
+                KeyPair(
+                    keyCurve = privateKey.keyCurve,
+                    privateKey = PrivateKey(
+                        keyCurve = privateKey.keyCurve,
+                        value = xPrivateKey.encoded,
+                    ),
+                    publicKey = PublicKey(
+                        curve = privateKey.keyCurve,
+                        value = xPublicKey.encoded,
+                    ),
+                )
+            }
         }
     }
 
@@ -133,6 +169,7 @@ class ApolloImpl : Apollo {
                     value = kmmPublicKey.getEncoded(),
                 )
             }
+
             else -> {
                 // Only SECP256K1 can be initialised by using byte Coordinates for EC Curve
                 throw ApolloError.InvalidKeyCurve()
@@ -149,6 +186,7 @@ class ApolloImpl : Apollo {
                     value = kmmPublicKey.getEncoded(),
                 )
             }
+
             else -> {
                 // Other type of keys are initialised using a ByteArray, for now we just support SECP256K1
                 TODO()
@@ -169,6 +207,17 @@ class ApolloImpl : Apollo {
                     value = kmmSignature,
                 )
             }
+
+            Curve.ED25519 -> {
+                val signature = Ed25519.sign(
+                    privateKey = privateKey,
+                    message = message
+                )
+                Signature(
+                    value = signature
+                )
+            }
+
             else -> {
                 TODO()
             }
@@ -180,6 +229,17 @@ class ApolloImpl : Apollo {
             Curve.SECP256K1 -> {
                 signMessage(privateKey, message.encodeToByteArray())
             }
+
+            Curve.ED25519 -> {
+                val signature = Ed25519.sign(
+                    privateKey = privateKey,
+                    message = message.toByteArray()
+                )
+                Signature(
+                    value = signature
+                )
+            }
+
             else -> {
                 TODO()
             }
@@ -196,6 +256,9 @@ class ApolloImpl : Apollo {
                     publicKey = kmmPublicKey,
                     signature = signature.value,
                 )
+            }
+            Curve.ED25519 -> {
+                Ed25519.verify(publicKey, signature, challenge)
             }
             else -> {
                 TODO()
