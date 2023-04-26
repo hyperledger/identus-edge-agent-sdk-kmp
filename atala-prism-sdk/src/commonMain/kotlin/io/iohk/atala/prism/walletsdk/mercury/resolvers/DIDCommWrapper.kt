@@ -11,6 +11,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.DIDCommProtocol
+import kotlinx.datetime.Clock
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.didcommx.didcomm.DIDComm
@@ -39,7 +40,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
             // fromPrior = message.fromPrior,
             fromPriorJwt = null,
             attachments = parseAttachments(message.attachments),
-            createdTime = message.createdTime.toLong(),
+            createdTime = if (message.createdTime == "") Clock.System.now().epochSeconds else message.createdTime.toLong(),
             expiresTime = null,
             thid = message.thid,
             pthid = message.pthid,

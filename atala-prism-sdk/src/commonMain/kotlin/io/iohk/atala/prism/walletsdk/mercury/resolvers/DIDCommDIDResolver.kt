@@ -33,7 +33,7 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                 }
 
                 methods.forEach { method ->
-                    val curve = DIDDocument.VerificationMethod.getCurveByType(method.publicKeyJwk?.get("crv")!!)
+                    val curve = DIDDocument.VerificationMethod.getCurveByType(method.type)
 
                     if (curve === Curve.ED25519) {
                         authentications.add(method.id.string())

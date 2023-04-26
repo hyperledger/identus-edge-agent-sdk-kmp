@@ -9,5 +9,5 @@ interface Mercury {
 
     suspend fun sendMessage(message: Message): ByteArray?
 
-    suspend fun sendMessageParseMessage(message: Message): Message?
+    suspend fun sendMessageParseResponse(message: Message): Message?
 }

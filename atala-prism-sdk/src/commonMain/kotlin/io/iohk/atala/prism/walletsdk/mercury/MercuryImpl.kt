@@ -67,8 +67,16 @@ class MercuryImpl(
         return makeRequest(service, packedMessage)
     }
 
-    override suspend fun sendMessageParseMessage(message: Message): Message? {
-        TODO("Not yet implemented")
+    override suspend fun sendMessageParseResponse(message: Message): Message? {
+        val msg = sendMessage(message)
+        try {
+            val msgString = msg.toString()
+            if (msgString != "null" && msgString != "") {
+                return unpackMessage(msgString)
+            }
+        } catch (_: Exception) {
+        }
+        return null
     }
 
     private fun prepareForwardMessage(message: Message, encrypted: String, mediatorDid: DID): ForwardMessage {
