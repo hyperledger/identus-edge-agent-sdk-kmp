@@ -1,9 +1,14 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
+import io.iohk.atala.prism.apollo.multibase.MultiBase
+import io.iohk.atala.prism.didcomm.didpeer.core.toJwk
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.didcommx.didcomm.common.VerificationMaterial
 import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
@@ -43,6 +48,26 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                         keyAgreements.add(method.id.string())
                     }
 
+                    // In this method we need to send th key as JWK while sometimes we get it as
+                    // MultiBase, therefore the following lines of code convert it
+                    val publicKeyJWK: Map<String, String>
+                    if (method.publicKeyMultibase != null) {
+                        val keyBytes = MultiBase.decode(method.publicKeyMultibase)
+                        publicKeyJWK = when (curve) {
+                            Curve.ED25519 -> {
+                                toJwk(keyBytes, io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020)
+                            }
+                            Curve.X25519 -> {
+                                toJwk(keyBytes, io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAgreement.JSON_WEB_KEY_2020)
+                            }
+                            else -> throw RuntimeException("")
+                        }
+                    } else if (method.publicKeyJwk != null) {
+                        publicKeyJWK = method.publicKeyJwk
+                    } else {
+                        throw RuntimeException("")
+                    }
+
                     verificationMethods.add(
                         VerificationMethod(
                             id = method.id.string(),
@@ -50,7 +75,7 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                             type = VerificationMethodType.JSON_WEB_KEY_2020,
                             verificationMaterial = VerificationMaterial(
                                 VerificationMaterialFormat.JWK,
-                                method.publicKeyJwk.toString() ?: ""
+                                Json.encodeToString(OctetPublicKey(crv = publicKeyJWK["crv"]!!, x = publicKeyJWK["x"]!!))
                             )
                         )
                     )
