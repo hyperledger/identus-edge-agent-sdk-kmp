@@ -35,8 +35,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -296,9 +296,6 @@ internal class CastorShared {
                     }
                 }
         }
-
-        @Serializable
-        data class OctetPublicKey(val kty: String = "OKP", val crv: String, val x: String)
 
         private fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
             return OctetPublicKey(crv = keyPair.keyCurve.curve.value, x = keyPair.publicKey.value.base64UrlEncoded)
