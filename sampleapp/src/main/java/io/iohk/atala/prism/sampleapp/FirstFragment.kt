@@ -24,7 +24,7 @@ class FirstFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // TODO:
         // Create Peer and Prism DID
         // Connect with mediator
