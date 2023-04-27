@@ -7,12 +7,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
+import io.iohk.atala.prism.walletsdk.domain.models.Api
 import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
-
-interface Api {
-    fun request(httpMethod: String, url: String, body: Any): ByteArray?
-}
 
 interface DIDCommProtocol {
     fun packEncrypted(message: Message): String

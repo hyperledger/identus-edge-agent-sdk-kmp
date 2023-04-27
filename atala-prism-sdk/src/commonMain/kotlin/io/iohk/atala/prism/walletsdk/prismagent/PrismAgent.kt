@@ -12,9 +12,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
-import io.iohk.atala.prism.walletsdk.prismagent.helpers.Api
-import io.iohk.atala.prism.walletsdk.prismagent.helpers.ApiImpl
-import io.iohk.atala.prism.walletsdk.prismagent.helpers.HttpClient
+import io.iohk.atala.prism.walletsdk.domain.models.Api
+import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
+import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.models.InvitationType
 import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
@@ -24,6 +24,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.findProtocolTypeByValu
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -66,7 +67,7 @@ class PrismAgent {
         this.connectionManager = connectionManager
         this.seed = seed ?: apollo.createRandomSeed().seed
         this.api = api ?: ApiImpl(
-            HttpClient {
+            httpClient {
                 install(ContentNegotiation) {
                     json(
                         Json {
@@ -96,7 +97,7 @@ class PrismAgent {
         this.mercury = mercury
         this.seed = seed ?: apollo.createRandomSeed().seed
         this.api = api ?: ApiImpl(
-            HttpClient {
+            httpClient {
                 install(ContentNegotiation) {
                     json(
                         Json {
@@ -259,6 +260,7 @@ class PrismAgent {
         return apollo.signMessage(privateKey, message)
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
         if (fetchingMessagesJob.isActive) return

@@ -1,6 +1,5 @@
-package io.iohk.atala.prism.walletsdk.prismagent.helpers
+package io.iohk.atala.prism.walletsdk.domain.models
 
-import io.iohk.atala.prism.walletsdk.domain.models.HttpResponse
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.iohk.atala.prism.walletsdk.prismagent.shared.PrismShared
 import io.ktor.client.HttpClient
