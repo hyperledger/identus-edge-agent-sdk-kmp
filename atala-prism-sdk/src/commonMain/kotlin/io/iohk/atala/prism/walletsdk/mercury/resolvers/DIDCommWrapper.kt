@@ -49,7 +49,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
             customHeaders = mapOf()
         )
 
-        val builder = PackEncryptedParams.builder(didCommMsg, toString)
+        val builder = PackEncryptedParams.builder(didCommMsg, toString).forward(false)
         val params = builder.build()
         val result = didComm.packEncrypted(params)
 
