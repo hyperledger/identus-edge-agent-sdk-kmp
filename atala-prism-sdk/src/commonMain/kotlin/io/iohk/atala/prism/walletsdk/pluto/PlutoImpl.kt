@@ -101,15 +101,32 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     }
 
     override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String?) {
-        getInstance().privateKeyQueries.insert(
-            PrivateKeyDB(
-                metaId ?: UUID.randomUUID4().toString(),
-                privateKey.keyCurve.curve.value,
-                privateKey.value.toString(),
-                keyPathIndex,
-                did.toString()
+        metaId?.let { id ->
+            val list = getInstance().privateKeyQueries.fetchPrivateKeyByID(id).executeAsList()
+            if (list.isEmpty()) {
+                getInstance().privateKeyQueries.insert(
+                    PrivateKeyDB(
+                        metaId,
+                        privateKey.keyCurve.curve.value,
+                        privateKey.value.toString(),
+                        keyPathIndex,
+                        did.toString()
+                    )
+                )
+            } else {
+                // TODO: Implement Delete, Update
+            }
+        } ?: run {
+            getInstance().privateKeyQueries.insert(
+                PrivateKeyDB(
+                    UUID.randomUUID4().toString(),
+                    privateKey.keyCurve.curve.value,
+                    privateKey.value.toString(),
+                    keyPathIndex,
+                    did.toString()
+                )
             )
-        )
+        }
     }
 
     override fun storeMessages(messages: List<Message>) {
