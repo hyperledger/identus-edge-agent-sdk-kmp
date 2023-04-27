@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
+import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
 
 interface Api {
@@ -107,6 +108,15 @@ class MercuryImpl(
     }
 
     private fun getMediatorDID(service: DIDDocument.Service?): DID? {
-        return service?.serviceEndpoint?.uri?.let { uri -> castor.parseDID(uri) }
+        // TODO: Handle when service endpoint uri is HTTP or HTTPS
+        return service?.serviceEndpoint?.uri?.let { uri ->
+            if (isDID(uri)) {
+                castor.parseDID(uri)
+            } else if (uri.startsWith("https") || uri.startsWith("http")) {
+                throw NotImplementedError("Can't handle HTTPS or HTTP Yet")
+            } else {
+                throw NotImplementedError("Unknown uri format $uri")
+            }
+        }
     }
 }
