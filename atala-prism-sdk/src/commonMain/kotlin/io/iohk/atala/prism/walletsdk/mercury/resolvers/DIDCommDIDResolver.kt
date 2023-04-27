@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
 import io.iohk.atala.prism.apollo.multibase.MultiBase
+import io.iohk.atala.prism.didcomm.didpeer.core.fromMulticodec
 import io.iohk.atala.prism.didcomm.didpeer.core.toJwk
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
@@ -52,7 +53,11 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                     // MultiBase, therefore the following lines of code convert it
                     val publicKeyJWK: Map<String, String>
                     if (method.publicKeyMultibase != null) {
-                        val keyBytes = MultiBase.decode(method.publicKeyMultibase)
+                        var keyBytes = MultiBase.decode(method.publicKeyMultibase)
+                        // In the case of MultiBase make sure to remove the MultiCodec from the ByteArray
+                        if (keyBytes.size == 34) {
+                            keyBytes = fromMulticodec(keyBytes).second
+                        }
                         publicKeyJWK = when (curve) {
                             Curve.ED25519 -> {
                                 toJwk(keyBytes, io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020)
