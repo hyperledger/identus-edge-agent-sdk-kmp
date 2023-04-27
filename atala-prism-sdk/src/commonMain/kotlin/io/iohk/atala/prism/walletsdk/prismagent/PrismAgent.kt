@@ -193,11 +193,18 @@ class PrismAgent {
         // So when the secret resolver asks for the secret we can identify it.
         val document = castor.resolveDID(did.toString())
 
-        val verificationMethods = document.coreProperties.firstOrNull {
-            it is DIDDocument.VerificationMethods
-        } as? DIDDocument.VerificationMethods
+        val listOfVerificationMethods: MutableList<DIDDocument.VerificationMethod> = mutableListOf()
+        document.coreProperties.forEach {
+            if (it is DIDDocument.Authentication) {
+                listOfVerificationMethods.addAll(it.verificationMethods)
+            }
+            if (it is DIDDocument.KeyAgreement) {
+                listOfVerificationMethods.addAll(it.verificationMethods)
+            }
+        }
+        val verificationMethods = DIDDocument.VerificationMethods(listOfVerificationMethods.toTypedArray())
 
-        verificationMethods?.values?.forEach {
+        verificationMethods.values.forEach {
             if (it.type.contains("X25519")) {
                 pluto.storePrivateKeys(keyAgreementKeyPair.privateKey, did, 0, it.id.toString())
             } else if (it.type.contains("Ed25519")) {
