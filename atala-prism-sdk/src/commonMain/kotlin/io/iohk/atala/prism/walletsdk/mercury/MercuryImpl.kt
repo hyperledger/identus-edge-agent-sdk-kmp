@@ -87,21 +87,31 @@ class MercuryImpl(
     }
 
     @Throws(MercuryError.NoValidServiceFoundError::class)
-    private fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
+    private suspend fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
         if (service !is DIDDocument.Service) {
             throw MercuryError.NoValidServiceFoundError()
         }
 
-        return api.request("POST", service.serviceEndpoint.uri, message)
+        val result = api.request("POST", service.serviceEndpoint.uri, emptyArray(), emptyArray(), message)
+        if (result.jsonString == "") {
+            // SUCCESS
+            throw NotImplementedError()
+        }
+        throw NotImplementedError()
     }
 
     @Throws(MercuryError.NoValidServiceFoundError::class)
-    private fun makeRequest(uri: String?, message: String): ByteArray? {
+    private suspend fun makeRequest(uri: String?, message: String): ByteArray? {
         if (uri !is String) {
             throw MercuryError.NoValidServiceFoundError()
         }
 
-        return api.request("POST", uri, message)
+        val result = api.request("POST", uri, emptyArray(), emptyArray(), message)
+        if (result.jsonString == "") {
+            // SUCCESS
+            throw NotImplementedError()
+        }
+        throw NotImplementedError()
     }
 
     private fun getMediatorDID(service: DIDDocument.Service?): DID? {
@@ -109,10 +119,8 @@ class MercuryImpl(
         return service?.serviceEndpoint?.uri?.let { uri ->
             if (isDID(uri)) {
                 castor.parseDID(uri)
-            } else if (uri.startsWith("https") || uri.startsWith("http")) {
-                throw NotImplementedError("Can't handle HTTPS or HTTP Yet")
             } else {
-                throw NotImplementedError("Unknown uri format $uri")
+                null
             }
         }
     }

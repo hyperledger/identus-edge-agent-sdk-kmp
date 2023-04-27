@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -95,7 +96,7 @@ class PrismAgentTests {
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
         )
-        var invitationString = """
+        val invitationString = """
             {
                 "type":"${ProtocolType.PrismOnboarding.value}",
                 "onboardEndpoint":"http://localhost/onboarding",
@@ -118,7 +119,7 @@ class PrismAgentTests {
             seed = null,
             api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}"),
         )
-        var invitationString = """
+        val invitationString = """
             {
                 "type":"${ProtocolType.PrismOnboarding.value}",
                 "onboardEndpoint":"http://localhost/onboarding",
@@ -142,7 +143,7 @@ class PrismAgentTests {
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
         )
-        var invitationString = """
+        val invitationString = """
             {
                 "type":"${ProtocolType.PrismOnboarding.value}",
                 "errorField":"http://localhost/onboarding",
