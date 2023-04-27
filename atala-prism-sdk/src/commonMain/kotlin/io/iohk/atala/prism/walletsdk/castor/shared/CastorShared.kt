@@ -67,17 +67,17 @@ internal class CastorShared {
 
             coreProperties.add(
                 DIDDocument.Authentication(
-                    urls = arrayOf(didString),
+                    urls = arrayOf(),
                     verificationMethods = peerDIDDocument.authentication.map {
-                        fromVerificationMethodPeerDID(didString, it)
+                        fromVerificationMethodPeerDID(it.id, it)
                     }.toTypedArray(),
                 ),
             )
             coreProperties.add(
                 DIDDocument.KeyAgreement(
-                    urls = arrayOf(didString),
+                    urls = arrayOf(),
                     verificationMethods = peerDIDDocument.keyAgreement.map {
-                        fromVerificationMethodPeerDID(didString, it)
+                        fromVerificationMethodPeerDID(it.id, it)
                     }.toTypedArray(),
                 ),
             )
@@ -311,37 +311,31 @@ internal class CastorShared {
             val signingKeys: MutableList<VerificationMaterialAuthentication> = mutableListOf()
 
             keyPairs.forEach {
-                if (it.keyCurve == null) {
-                    throw CastorError.InvalidKeyError()
-                } else {
-                    when (it.keyCurve.curve) {
-                        Curve.X25519 -> {
-                            val octetString = Json.encodeToString(octetPublicKey(it))
-                            encryptionKeys.add(
-                                VerificationMaterialAgreement(
-                                    format = VerificationMaterialFormatPeerDID.JWK,
-                                    value = octetString,
-//                                    value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAgreement.JSON_WEB_KEY_2020)),
-                                    type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020,
-                                ),
-                            )
-                        }
-
-                        Curve.ED25519 -> {
-                            val octetString = Json.encodeToString(octetPublicKey(it))
-                            signingKeys.add(
-                                VerificationMaterialAuthentication(
-                                    format = VerificationMaterialFormatPeerDID.JWK,
-                                    value = octetString,
-//                                    value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020)),
-                                    type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020,
-                                ),
-                            )
-                        }
-
-                        else -> {
-                            throw CastorError.InvalidKeyError()
-                        }
+                when (it.keyCurve.curve) {
+                    Curve.X25519 -> {
+                        val octetString = Json.encodeToString(octetPublicKey(it))
+                        encryptionKeys.add(
+                            VerificationMaterialAgreement(
+                                format = VerificationMaterialFormatPeerDID.JWK,
+                                value = octetString,
+//                              value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAgreement.JSON_WEB_KEY_2020)),
+                                type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020,
+                            ),
+                        )
+                    }
+                    Curve.ED25519 -> {
+                        val octetString = Json.encodeToString(octetPublicKey(it))
+                        signingKeys.add(
+                            VerificationMaterialAuthentication(
+                                format = VerificationMaterialFormatPeerDID.JWK,
+                                value = octetString,
+//                              value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020)),
+                                type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020,
+                            ),
+                        )
+                    }
+                    else -> {
+                        throw CastorError.InvalidKeyError()
                     }
                 }
             }
