@@ -2,12 +2,13 @@ package io.iohk.atala.prism.walletsdk.mercury
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
+import io.iohk.atala.prism.walletsdk.domain.models.Api
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
-import io.iohk.atala.prism.walletsdk.domain.models.Api
+import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
 
@@ -92,7 +93,25 @@ class MercuryImpl(
             throw MercuryError.NoValidServiceFoundError()
         }
 
-        val result = api.request("POST", service.serviceEndpoint.uri, emptyArray(), emptyArray(), message)
+        val result = api.request(
+            "POST",
+            service.serviceEndpoint.uri,
+            emptyArray(),
+            arrayOf(KeyValue("Content-type", "application/didcomm-encrypted+json")),
+            message
+        )
+        println("${result.status} ${result.jsonString}")
+        when (result.status) {
+            200 -> {
+                if (result.jsonString.isNotEmpty()) {
+                    // Continue execution
+                }
+            }
+
+            else -> {
+                // Handle errors
+            }
+        }
         if (result.jsonString == "") {
             // SUCCESS
             throw NotImplementedError()

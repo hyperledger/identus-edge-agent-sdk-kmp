@@ -4,8 +4,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
+import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommDIDResolver
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.didcommx.didcomm.common.VerificationMaterial
 import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
@@ -82,15 +85,15 @@ class DIDResolverTests {
         val vmAuthentication = DIDDocument.VerificationMethod(
             id = DIDUrl(DID("2", "1", "0")),
             controller = DID("2", "2", "0"),
-            type = "type-auth",
-            publicKeyJwk = mapOf("crv" to Curve.ED25519.value)
+            type = Curve.ED25519.value,
+            publicKeyJwk = mapOf("crv" to Curve.ED25519.value, "x" to "")
         )
 
         val vmKeyAgreement = DIDDocument.VerificationMethod(
             id = DIDUrl(DID("3", "1", "0")),
             controller = DID("3", "2", "0"),
-            type = "type-keyAgree",
-            publicKeyJwk = mapOf("crv" to Curve.X25519.value)
+            type = Curve.X25519.value,
+            publicKeyJwk = mapOf("crv" to Curve.X25519.value, "x" to "")
         )
 
         val allAuthentication = DIDDocument.Authentication(
@@ -112,7 +115,7 @@ class DIDResolverTests {
                 type = VerificationMethodType.JSON_WEB_KEY_2020,
                 verificationMaterial = VerificationMaterial(
                     VerificationMaterialFormat.JWK,
-                    vmAuthentication.publicKeyJwk.toString()
+                    Json.encodeToString(OctetPublicKey(crv = vmAuthentication.publicKeyJwk!!["crv"]!!, x = vmAuthentication.publicKeyJwk!!["x"]!!))
                 )
             )
         )
@@ -126,7 +129,7 @@ class DIDResolverTests {
                 type = VerificationMethodType.JSON_WEB_KEY_2020,
                 verificationMaterial = VerificationMaterial(
                     VerificationMaterialFormat.JWK,
-                    vmKeyAgreement.publicKeyJwk.toString()
+                    Json.encodeToString(OctetPublicKey(crv = vmKeyAgreement.publicKeyJwk!!["crv"]!!, x = vmKeyAgreement.publicKeyJwk!!["x"]!!))
                 )
             )
         )

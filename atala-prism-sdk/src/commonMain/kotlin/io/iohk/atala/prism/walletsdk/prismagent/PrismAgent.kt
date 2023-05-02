@@ -4,6 +4,8 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.models.Api
+import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
@@ -12,8 +14,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
-import io.iohk.atala.prism.walletsdk.domain.models.Api
-import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.models.InvitationType
@@ -123,13 +123,7 @@ class PrismAgent {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
             val hostDID = createNewPeerDID(
-                arrayOf(
-                    DIDDocument.Service(
-                        "#didcomm-1",
-                        arrayOf("DIDCommMessaging"),
-                        DIDDocument.ServiceEndpoint(connectionManager.mediationHandler.mediatorDID.toString())
-                    )
-                ),
+                emptyArray(),
                 false,
             )
             connectionManager.registerMediator(hostDID)
@@ -212,7 +206,6 @@ class PrismAgent {
                 pluto.storePrivateKeys(authenticationKeyPair.privateKey, did, 0, it.id.toString())
             }
         }
-
         return did
     }
 

@@ -110,6 +110,7 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenStatusIsNot200() = runTest {
+        val api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
         val agent = PrismAgent(
             apollo = apolloMock,
             castor = castorMock,
@@ -117,7 +118,7 @@ class PrismAgentTests {
             mercury = mercuryMock,
             connectionManager = connectionManager,
             seed = null,
-            api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}"),
+            api = api,
         )
         val invitationString = """
             {

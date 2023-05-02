@@ -2,6 +2,9 @@ package io.iohk.atala.prism.walletsdk.pluto
 
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
+import io.iohk.atala.prism.apollo.base64.base64DecodedBytes
+import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
+import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
@@ -108,7 +111,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                     PrivateKeyDB(
                         metaId,
                         privateKey.keyCurve.curve.value,
-                        privateKey.value.toString(),
+                        privateKey.value.base64UrlEncoded,
                         keyPathIndex,
                         did.toString()
                     )
@@ -121,7 +124,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 PrivateKeyDB(
                     UUID.randomUUID4().toString(),
                     privateKey.keyCurve.curve.value,
-                    privateKey.value.toString(),
+                    privateKey.value.base64UrlEncoded,
                     keyPathIndex,
                     did.toString()
                 )
@@ -211,7 +214,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                                     didInfo.curve,
                                     didInfo.keyPathIndex
                                 ),
-                                byteArrayOf()
+                                didInfo.privateKey.base64DecodedBytes
                             )
                         } catch (e: IllegalStateException) {
                             null
@@ -226,17 +229,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             .asFlow()
             .map { it ->
                 it.executeAsList().firstOrNull()?.let {
-                    try {
-                        PrivateKey(
-                            getKeyCurveByNameAndIndex(
-                                it.curve,
-                                it.keyPathIndex
-                            ),
-                            byteArrayOf(),
-                        )
-                    } catch (e: IllegalStateException) {
-                        null
-                    }
+                    PrivateKey(
+                        getKeyCurveByNameAndIndex(
+                            it.curve,
+                            it.keyPathIndex
+                        ),
+                        it.privateKey.base64UrlDecodedBytes,
+                    )
                 }
             }
     }
@@ -271,7 +270,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                         val privateKeyList = it.value.map { data ->
                             PrivateKey(
                                 getKeyCurveByNameAndIndex(data.curve, data.keyPathIndex),
-                                byteArrayOf()
+                                data.privateKey.base64DecodedBytes
                             )
                         }.toTypedArray()
                         PeerDID(DID(it.key), privateKeyList)

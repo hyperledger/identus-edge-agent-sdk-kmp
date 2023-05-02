@@ -39,7 +39,7 @@ class DIDCreateTest {
         )
         val keyPairs: Array<KeyPair> = arrayOf(verificationKeyPair, authenticationKeyPair)
         val castor = CastorImpl(ApolloMock())
-        val did = castor.createPeerDID(keyPairs, arrayOf(service))
+        val did = castor.createPeerDID(keyPairs, emptyArray())
         assertEquals(did.toString(), "did:peer:2.E$verKeyStr.V$authKeyStr.S$serviceStr")
     }
 

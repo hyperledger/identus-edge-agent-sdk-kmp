@@ -14,8 +14,8 @@ import kotlinx.serialization.json.Json
 import io.ktor.client.HttpClient as KtorClient
 
 class ApiMock(
-    statusCode: HttpStatusCode,
-    response: String,
+    val statusCode: HttpStatusCode,
+    val response: String,
     override var client: KtorClient = KtorClient(
         engine = MockEngine { _ ->
             respond(
@@ -44,6 +44,6 @@ class ApiMock(
         httpHeaders: Array<KeyValue>,
         body: Any?
     ): HttpResponse {
-        TODO("Add default send and retrieve of http request")
+        return HttpResponse(statusCode.value, response)
     }
 }

@@ -318,7 +318,6 @@ internal class CastorShared {
                             VerificationMaterialAgreement(
                                 format = VerificationMaterialFormatPeerDID.JWK,
                                 value = octetString,
-//                              value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAgreement.JSON_WEB_KEY_2020)),
                                 type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020,
                             ),
                         )
@@ -329,7 +328,6 @@ internal class CastorShared {
                             VerificationMaterialAuthentication(
                                 format = VerificationMaterialFormatPeerDID.JWK,
                                 value = octetString,
-//                              value = Json.encodeToString(toJwk(it.publicKey.value, VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020)),
                                 type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020,
                             ),
                         )
@@ -357,7 +355,7 @@ internal class CastorShared {
                             accept = it.serviceEndpoint.accept?.asList() ?: listOf(),
                         ).toDict().toJsonElement(),
                     )
-                }.first(),
+                }.firstOrNull(),
             )
 
             return DIDParser.parse(peerDID)

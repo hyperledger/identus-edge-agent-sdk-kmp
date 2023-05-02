@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
@@ -13,7 +14,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.DIDCommProtocol
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.didcommx.didcomm.DIDComm
@@ -24,9 +24,9 @@ import org.didcommx.didcomm.model.UnpackParams
 import java.time.Instant.now
 import kotlin.jvm.Throws
 
-class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
+class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProtocol {
     private val didDocResolver = DIDCommDIDResolver(castor)
-    private val secretsResolver = DIDCommSecretsResolver(pluto)
+    private val secretsResolver = DIDCommSecretsResolver(pluto, apollo)
     private val didComm = DIDComm(didDocResolver, secretsResolver)
 
     override fun packEncrypted(message: Message): String {
@@ -51,6 +51,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
         )
 
         val builder = PackEncryptedParams.builder(didCommMsg, toString).forward(false)
+        didCommMsg.from?.let { builder.from(it) }
         val params = builder.build()
         val result = didComm.packEncrypted(params)
 

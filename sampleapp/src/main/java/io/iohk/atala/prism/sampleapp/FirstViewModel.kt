@@ -13,10 +13,10 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
@@ -26,7 +26,6 @@ import io.iohk.atala.prism.walletsdk.prismagent.mediation.DefaultMediationHandle
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
@@ -57,14 +56,14 @@ class FirstViewModel : ViewModel() {
             initializeAgent()
 
             agent.start()
-            agent.startFetchingMessages()
-            agent.handleReceivedMessagesEvents().collect { messages ->
-                messages.map {
-                    if (it.piuri == ProtocolType.PrismOnboarding.value) {
-                    } else if (it.piuri == ProtocolType.Didcomminvitation.value) {
-                    }
-                }
-            }
+//            agent.startFetchingMessages()
+//            agent.handleReceivedMessagesEvents().collect { messages ->
+//                messages.map {
+//                    if (it.piuri == ProtocolType.PrismOnboarding.value) {
+//                    } else if (it.piuri == ProtocolType.Didcomminvitation.value) {
+//                    }
+//                }
+//            }
 //            val prismDID = agent.createNewPrismDID()
 //            println("Prism DID: $prismDID")
         }
@@ -148,7 +147,7 @@ class FirstViewModel : ViewModel() {
         // This is just to make the code compile, it should be changed accordingly
         mercury = MercuryImpl(
             castor,
-            DIDCommWrapper(CastorImpl(ApolloImpl()), PlutoImpl(DbConnection())),
+            DIDCommWrapper(castor, pluto, apollo),
             ApiImpl(httpClient())
         )
     }
