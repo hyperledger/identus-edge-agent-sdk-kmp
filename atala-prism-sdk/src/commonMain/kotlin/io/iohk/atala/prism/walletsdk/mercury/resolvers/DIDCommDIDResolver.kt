@@ -4,6 +4,7 @@ import io.iohk.atala.prism.apollo.multibase.MultiBase
 import io.iohk.atala.prism.didcomm.didpeer.core.fromMulticodec
 import io.iohk.atala.prism.didcomm.didpeer.core.toJwk
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
+import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
@@ -60,11 +61,19 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                         }
                         publicKeyJWK = when (curve) {
                             Curve.ED25519 -> {
-                                toJwk(keyBytes, io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020)
+                                toJwk(
+                                    keyBytes,
+                                    io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020
+                                )
                             }
+
                             Curve.X25519 -> {
-                                toJwk(keyBytes, io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAgreement.JSON_WEB_KEY_2020)
+                                toJwk(
+                                    keyBytes,
+                                    io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAgreement.JSON_WEB_KEY_2020
+                                )
                             }
+
                             else -> throw RuntimeException("")
                         }
                     } else if (method.publicKeyJwk != null) {
@@ -72,18 +81,26 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                     } else {
                         throw RuntimeException("")
                     }
-
-                    verificationMethods.add(
-                        VerificationMethod(
-                            id = method.id.string(),
-                            controller = method.controller.toString(),
-                            type = VerificationMethodType.JSON_WEB_KEY_2020,
-                            verificationMaterial = VerificationMaterial(
-                                VerificationMaterialFormat.JWK,
-                                Json.encodeToString(OctetPublicKey(crv = publicKeyJWK["crv"]!!, x = publicKeyJWK["x"]!!))
+                    publicKeyJWK["crv"]?.let { crv ->
+                        publicKeyJWK["x"]?.let { x ->
+                            verificationMethods.add(
+                                VerificationMethod(
+                                    id = method.id.string(),
+                                    controller = method.controller.toString(),
+                                    type = VerificationMethodType.JSON_WEB_KEY_2020,
+                                    verificationMaterial = VerificationMaterial(
+                                        VerificationMaterialFormat.JWK,
+                                        Json.encodeToString(
+                                            OctetPublicKey(
+                                                crv = crv,
+                                                x = x
+                                            )
+                                        )
+                                    )
+                                )
                             )
-                        )
-                    )
+                        } ?: throw CastorError.InvalidJWKKeysError()
+                    } ?: throw CastorError.InvalidJWKKeysError()
                 }
 
                 if (coreProperty is DIDDocument.Service && coreProperty.type.contains("DIDCommMessaging")) {
