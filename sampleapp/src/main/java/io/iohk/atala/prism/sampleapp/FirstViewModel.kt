@@ -41,6 +41,7 @@ class FirstViewModel : ViewModel() {
     private lateinit var seed: Seed
     private lateinit var agent: PrismAgent
     private val messageList: MutableLiveData<List<Message>> = MutableLiveData(listOf())
+    private val notification: MutableLiveData<String> = MutableLiveData("")
 
     init {
     }
@@ -55,7 +56,11 @@ class FirstViewModel : ViewModel() {
             initializeHandler()
             initializeAgent()
 
-            agent.start()
+            try {
+                agent.start()
+            } catch (e: NotImplementedError) {
+                notification.postValue(e.message)
+            }
 //            agent.startFetchingMessages()
 //            agent.handleReceivedMessagesEvents().collect { messages ->
 //                messages.map {
@@ -71,6 +76,10 @@ class FirstViewModel : ViewModel() {
 
     fun messageListStream(): LiveData<List<Message>> {
         return messageList
+    }
+
+    fun notificationListStream(): LiveData<String> {
+        return notification
     }
 
     fun parseAndAcceptOOB(oobUrl: String) {

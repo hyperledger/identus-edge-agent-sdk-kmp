@@ -100,23 +100,9 @@ class MercuryImpl(
             arrayOf(KeyValue("Content-type", "application/didcomm-encrypted+json")),
             message
         )
-        println("${result.status} ${result.jsonString}")
-        when (result.status) {
-            200 -> {
-                if (result.jsonString.isNotEmpty()) {
-                    // Continue execution
-                }
-            }
-
-            else -> {
-                // Handle errors
-            }
-        }
-        if (result.jsonString == "") {
-            // SUCCESS
-            throw NotImplementedError()
-        }
-        throw NotImplementedError()
+        val msg = "${result.status} ${result.jsonString}"
+        println(msg)
+        throw NotImplementedError(msg)
     }
 
     @Throws(MercuryError.NoValidServiceFoundError::class)

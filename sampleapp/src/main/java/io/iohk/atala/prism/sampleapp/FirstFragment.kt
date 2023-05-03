@@ -35,6 +35,7 @@ class FirstFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setupStreamObservers()
         binding.createPeerDid.setOnClickListener {
             viewModel.createPeerDid()
         }
@@ -53,9 +54,12 @@ class FirstFragment : Fragment() {
     }
 
     private fun setupStreamObservers() {
-        viewModel.messageListStream().observe(this) { messages ->
+        viewModel.messageListStream().observe(this.viewLifecycleOwner) { messages ->
 //            messages.first {
 //            }
+        }
+        viewModel.notificationListStream().observe(this.viewLifecycleOwner) {
+            binding.log.append(it)
         }
     }
 }
