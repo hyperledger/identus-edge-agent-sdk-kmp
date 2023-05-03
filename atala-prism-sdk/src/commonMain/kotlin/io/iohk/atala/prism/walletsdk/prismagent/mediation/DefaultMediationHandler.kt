@@ -59,7 +59,7 @@ final class DefaultMediationHandler(
     override fun achieveMediation(host: DID): Flow<Mediator> {
         val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
         return flow {
-            emit(mercury.sendMessageParseMessage(message = requestMessage))
+            emit(mercury.sendMessageParseResponse(message = requestMessage))
         }.map {
             val grantedMessage = it?.let { MediationGrant(it) } ?: throw PrismAgentError.MediationRequestFailedError()
             val routingDID = DID(grantedMessage.body.routingDid)
@@ -95,7 +95,7 @@ final class DefaultMediationHandler(
         } ?: throw PrismAgentError.NoMediatorAvailableError()
 
         return flow {
-            emit(mercury.sendMessageParseMessage(requestMessage))
+            emit(mercury.sendMessageParseResponse(requestMessage))
         }.map {
             val receivedMessage = it?.let { PickupDelivery(it) }
             receivedMessage?.let {

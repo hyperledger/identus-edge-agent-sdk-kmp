@@ -49,4 +49,8 @@ data class DIDUrl @JvmOverloads constructor(
         result = 31 * result + (fragment?.hashCode() ?: 0)
         return result
     }
+
+    override fun toString(): String {
+        return string()
+    }
 }
