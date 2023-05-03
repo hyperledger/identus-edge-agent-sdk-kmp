@@ -24,7 +24,7 @@ class MercuryMock : Mercury {
         return sendMessageResponse
     }
 
-    override suspend fun sendMessageParseMessage(message: Message): Message? {
+    override suspend fun sendMessageParseResponse(message: Message): Message? {
         return sendMessageParseMessageResponse
     }
 }

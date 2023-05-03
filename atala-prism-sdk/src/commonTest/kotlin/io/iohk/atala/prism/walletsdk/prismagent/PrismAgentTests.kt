@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -95,7 +96,7 @@ class PrismAgentTests {
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
         )
-        var invitationString = """
+        val invitationString = """
             {
                 "type":"${ProtocolType.PrismOnboarding.value}",
                 "onboardEndpoint":"http://localhost/onboarding",
@@ -109,6 +110,7 @@ class PrismAgentTests {
 
     @Test
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenStatusIsNot200() = runTest {
+        val api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
         val agent = PrismAgent(
             apollo = apolloMock,
             castor = castorMock,
@@ -116,9 +118,9 @@ class PrismAgentTests {
             mercury = mercuryMock,
             connectionManager = connectionManager,
             seed = null,
-            api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}"),
+            api = api,
         )
-        var invitationString = """
+        val invitationString = """
             {
                 "type":"${ProtocolType.PrismOnboarding.value}",
                 "onboardEndpoint":"http://localhost/onboarding",
@@ -142,7 +144,7 @@ class PrismAgentTests {
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
         )
-        var invitationString = """
+        val invitationString = """
             {
                 "type":"${ProtocolType.PrismOnboarding.value}",
                 "errorField":"http://localhost/onboarding",

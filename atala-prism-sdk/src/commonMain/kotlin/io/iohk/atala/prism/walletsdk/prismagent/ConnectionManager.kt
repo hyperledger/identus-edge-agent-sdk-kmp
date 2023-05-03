@@ -37,7 +37,7 @@ class ConnectionManager(
             throw PrismAgentError.NoMediatorAvailableError()
         }
         pluto.storeMessage(message)
-        return mercury.sendMessageParseMessage(message)
+        return mercury.sendMessageParseResponse(message)
     }
 
     fun awaitMessages(): Flow<Array<Message>> {

@@ -35,6 +35,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -66,17 +67,17 @@ internal class CastorShared {
 
             coreProperties.add(
                 DIDDocument.Authentication(
-                    urls = arrayOf(didString),
+                    urls = arrayOf(),
                     verificationMethods = peerDIDDocument.authentication.map {
-                        fromVerificationMethodPeerDID(didString, it)
+                        fromVerificationMethodPeerDID(it.id, it)
                     }.toTypedArray(),
                 ),
             )
             coreProperties.add(
                 DIDDocument.KeyAgreement(
-                    urls = arrayOf(didString),
+                    urls = arrayOf(),
                     verificationMethods = peerDIDDocument.keyAgreement.map {
-                        fromVerificationMethodPeerDID(didString, it)
+                        fromVerificationMethodPeerDID(it.id, it)
                     }.toTypedArray(),
                 ),
             )
@@ -296,6 +297,10 @@ internal class CastorShared {
                 }
         }
 
+        private fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
+            return OctetPublicKey(crv = keyPair.keyCurve.curve.value, x = keyPair.publicKey.value.base64UrlEncoded)
+        }
+
         @JvmStatic
         @Throws(CastorError.InvalidKeyError::class)
         fun createPeerDID(
@@ -306,33 +311,29 @@ internal class CastorShared {
             val signingKeys: MutableList<VerificationMaterialAuthentication> = mutableListOf()
 
             keyPairs.forEach {
-                if (it.keyCurve == null) {
-                    throw CastorError.InvalidKeyError()
-                } else {
-                    when (it.keyCurve.curve) {
-                        Curve.X25519 -> {
-                            encryptionKeys.add(
-                                VerificationMaterialAgreement(
-                                    format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                                    value = it.publicKey.value.decodeToString(),
-                                    type = VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020,
-                                ),
-                            )
-                        }
-
-                        Curve.ED25519 -> {
-                            signingKeys.add(
-                                VerificationMaterialAuthentication(
-                                    format = VerificationMaterialFormatPeerDID.MULTIBASE,
-                                    value = it.publicKey.value.decodeToString(),
-                                    type = VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020,
-                                ),
-                            )
-                        }
-
-                        else -> {
-                            throw CastorError.InvalidKeyError()
-                        }
+                when (it.keyCurve.curve) {
+                    Curve.X25519 -> {
+                        val octetString = Json.encodeToString(octetPublicKey(it))
+                        encryptionKeys.add(
+                            VerificationMaterialAgreement(
+                                format = VerificationMaterialFormatPeerDID.JWK,
+                                value = octetString,
+                                type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020,
+                            ),
+                        )
+                    }
+                    Curve.ED25519 -> {
+                        val octetString = Json.encodeToString(octetPublicKey(it))
+                        signingKeys.add(
+                            VerificationMaterialAuthentication(
+                                format = VerificationMaterialFormatPeerDID.JWK,
+                                value = octetString,
+                                type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020,
+                            ),
+                        )
+                    }
+                    else -> {
+                        throw CastorError.InvalidKeyError()
                     }
                 }
             }
@@ -354,7 +355,7 @@ internal class CastorShared {
                             accept = it.serviceEndpoint.accept?.asList() ?: listOf(),
                         ).toDict().toJsonElement(),
                     )
-                }.first(),
+                }.firstOrNull(),
             )
 
             return DIDParser.parse(peerDID)
