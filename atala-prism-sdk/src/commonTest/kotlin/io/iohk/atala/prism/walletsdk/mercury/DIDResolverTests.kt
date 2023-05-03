@@ -107,6 +107,12 @@ class DIDResolverTests {
         val didDoc = result.get()
 
         assertContains(didDoc.authentications, vmAuthentication.id.string())
+        var publicJwk = vmAuthentication.publicKeyJwk
+        assertNotNull(publicJwk)
+        var publicJwkCrv = publicJwk["crv"]
+        var publicJwkX = publicJwk["x"]
+        assertNotNull(publicJwkCrv)
+        assertNotNull(publicJwkX)
         assertContains(
             didDoc.verificationMethods,
             VerificationMethod(
@@ -115,12 +121,18 @@ class DIDResolverTests {
                 type = VerificationMethodType.JSON_WEB_KEY_2020,
                 verificationMaterial = VerificationMaterial(
                     VerificationMaterialFormat.JWK,
-                    Json.encodeToString(OctetPublicKey(crv = vmAuthentication.publicKeyJwk!!["crv"]!!, x = vmAuthentication.publicKeyJwk!!["x"]!!))
+                    Json.encodeToString(OctetPublicKey(crv = publicJwkCrv, x = publicJwkX))
                 )
             )
         )
 
         assertContains(didDoc.keyAgreements, vmKeyAgreement.id.string())
+        publicJwk = vmKeyAgreement.publicKeyJwk
+        assertNotNull(publicJwk)
+        publicJwkCrv = publicJwk["crv"]
+        publicJwkX = publicJwk["x"]
+        assertNotNull(publicJwkCrv)
+        assertNotNull(publicJwkX)
         assertContains(
             didDoc.verificationMethods,
             VerificationMethod(
@@ -129,7 +141,12 @@ class DIDResolverTests {
                 type = VerificationMethodType.JSON_WEB_KEY_2020,
                 verificationMaterial = VerificationMaterial(
                     VerificationMaterialFormat.JWK,
-                    Json.encodeToString(OctetPublicKey(crv = vmKeyAgreement.publicKeyJwk!!["crv"]!!, x = vmKeyAgreement.publicKeyJwk!!["x"]!!))
+                    Json.encodeToString(
+                        OctetPublicKey(
+                            crv = publicJwkCrv,
+                            x = publicJwkX
+                        )
+                    )
                 )
             )
         )
