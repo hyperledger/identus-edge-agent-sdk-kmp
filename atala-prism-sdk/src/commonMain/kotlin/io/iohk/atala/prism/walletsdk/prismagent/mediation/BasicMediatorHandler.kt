@@ -19,10 +19,8 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupRequest
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.map
-import kotlin.jvm.Throws
 
-final class DefaultMediationHandler(
+final class BasicMediatorHandler(
     override val mediatorDID: DID,
     private val mercury: Mercury,
     private val store: MediatorRepository
@@ -44,31 +42,38 @@ final class DefaultMediationHandler(
         this.mediator = null
     }
 
-    @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override suspend fun bootRegisteredMediator(): Mediator? {
         if (mediator == null) {
             mediator = store.getAllMediators().firstOrNull()
         }
-        if (mediator == null) {
-            throw PrismAgentError.NoMediatorAvailableError()
-        }
+
         return mediator
     }
 
     @Throws(PrismAgentError.MediationRequestFailedError::class)
     override fun achieveMediation(host: DID): Flow<Mediator> {
-        val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
         return flow {
-            emit(mercury.sendMessageParseResponse(message = requestMessage))
-        }.map {
-            val grantedMessage = it?.let { MediationGrant(it) } ?: throw PrismAgentError.MediationRequestFailedError()
-            val routingDID = DID(grantedMessage.body.routingDid)
-            Mediator(
-                id = UUID.randomUUID4().toString(),
-                mediatorDID = mediatorDID,
-                hostDID = host,
-                routingDID = routingDID
-            )
+            val registeredMediator = bootRegisteredMediator()
+
+            if (registeredMediator == null) {
+                val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
+                val message = mercury.sendMessageParseResponse(message = requestMessage)
+                    ?: throw PrismAgentError.InvalidMessageError()
+
+                val grantedMessage = MediationGrant(message)
+                val routingDID = DID(grantedMessage.body.routingDid)
+                val tmpMediator = Mediator(
+                    id = UUID.randomUUID4().toString(),
+                    mediatorDID = mediatorDID,
+                    hostDID = host,
+                    routingDID = routingDID
+                )
+                store.storeMediator(tmpMediator)
+                mediator = tmpMediator
+                emit(tmpMediator)
+            } else {
+                emit(registeredMediator)
+            }
         }
     }
 
@@ -90,15 +95,14 @@ final class DefaultMediationHandler(
             PickupRequest(
                 from = it.hostDID,
                 to = it.mediatorDID,
-                body = PickupRequest.Body(null, limit.toString())
+                body = PickupRequest.Body(limit = limit)
             ).makeMessage()
         } ?: throw PrismAgentError.NoMediatorAvailableError()
 
         return flow {
-            emit(mercury.sendMessageParseResponse(requestMessage))
-        }.map {
-            val receivedMessage = it?.let { PickupDelivery(it) }
-            receivedMessage?.let {
+            val message = mercury.sendMessageParseResponse(requestMessage)
+            val receivedMessage = message?.let { PickupDelivery(it) }
+            val response = receivedMessage?.let {
                 it.attachments.mapNotNull { attachment: AttachmentDescriptor ->
                     val data = attachment.data
                     when (data) {
@@ -110,6 +114,7 @@ final class DefaultMediationHandler(
                     Pair(it.first, mercury.unpackMessage(it.second))
                 }.toTypedArray()
             } ?: emptyArray()
+            emit(response)
         }
     }
 

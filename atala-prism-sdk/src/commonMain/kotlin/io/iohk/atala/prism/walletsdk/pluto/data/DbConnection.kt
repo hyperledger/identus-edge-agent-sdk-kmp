@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.pluto.data
 
 import com.squareup.sqldelight.db.SqlDriver
-import io.iohk.atala.prism.walletsdk.pluto.PrismPlutoDb
+import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 
 expect class DbConnection() {
     var driver: SqlDriver?

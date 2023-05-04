@@ -14,6 +14,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.DIDCommProtocol
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import org.didcommx.didcomm.DIDComm
@@ -31,9 +32,10 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
 
     override fun packEncrypted(message: Message): String {
         val toString = message.to.toString()
+
         val didCommMsg = org.didcommx.didcomm.message.Message(
             id = message.id,
-            body = mapOf(),
+            body = Json.decodeFromString(message.body),
             typ = Typ.Plaintext,
             type = message.piuri,
             to = listOf(toString),
