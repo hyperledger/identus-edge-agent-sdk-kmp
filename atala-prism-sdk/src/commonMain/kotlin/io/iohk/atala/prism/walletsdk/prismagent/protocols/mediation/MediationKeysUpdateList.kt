@@ -71,5 +71,9 @@ final class MediationKeysUpdateList {
         override fun hashCode(): Int {
             return updates.contentHashCode()
         }
+
+        fun toMapStringAny(): Map<String, Any?> {
+            return mapOf(Pair("updates", updates))
+        }
     }
 }

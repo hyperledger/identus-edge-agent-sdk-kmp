@@ -23,7 +23,7 @@ import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
-import io.iohk.atala.prism.walletsdk.prismagent.mediation.DefaultMediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
@@ -58,11 +58,8 @@ class FirstViewModel : ViewModel() {
             initializeHandler()
             initializeAgent()
 
-            try {
-                agent.start()
-            } catch (e: NotImplementedError) {
-                notification.postValue(e.message)
-            }
+            agent.start()
+            createPeerDid()
 //            agent.startFetchingMessages()
 //            agent.handleReceivedMessagesEvents().collect { messages ->
 //                messages.map {
@@ -71,8 +68,15 @@ class FirstViewModel : ViewModel() {
 //                    }
 //                }
 //            }
-//            val prismDID = agent.createNewPrismDID()
-//            println("Prism DID: $prismDID")
+        }
+    }
+
+    fun stopAgent() {
+        agent?.let {
+            GlobalScope.launch {
+                agent.stopFetchingMessages()
+                agent.stop()
+            }
         }
     }
 
@@ -100,19 +104,20 @@ class FirstViewModel : ViewModel() {
         }
     }
 
-    fun sendTestMessage() {
+    fun sendTestMessage(did: DID) {
         GlobalScope.launch {
-            val senderPeerDid = agent.createNewPeerDID(
-                arrayOf(),
-                true
-            )
+//            val senderPeerDid = agent.createNewPeerDID(
+//                emptyArray(),
+//                true
+//            )
             val message = Message(
                 piuri = "https://didcomm.org/basicmessage/2.0/message", // TODO: This should be on ProtocolTypes as an enum
-                from = senderPeerDid,
-                to = senderPeerDid,
-                body = "This is a test message"
+                from = did,
+                to = did,
+                body = "{\"msg\":\"This is a test message\"}"
             )
 
+            println("Send message")
             mercury.sendMessage(message)
         }
     }
@@ -127,17 +132,10 @@ class FirstViewModel : ViewModel() {
                         DIDDocument.ServiceEndpoint(handler.mediatorDID.toString()),
                     ),
                 ),
-                false
+                true
             )
-
             println(did.toString())
-        }
-    }
-
-    fun createPrismDid() {
-        GlobalScope.launch {
-            val did = agent.createNewPrismDID()
-            println(did.toString())
+            sendTestMessage(did)
         }
     }
 
@@ -199,10 +197,10 @@ class FirstViewModel : ViewModel() {
 
     private fun initializeHandler() {
         // old one: DID("did:peer:2.Ez6LScuuNiWo8rwnpYy5dXbq7JnVDv6yCgsAz6viRUWCUbCJk.Vz6MkfzL1tPPvpXioYDwuGQRdpATV1qb4x7mKmcXyhCmLcUGK.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
-        handler = DefaultMediationHandler(
+        handler = BasicMediatorHandler(
             mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
             mercury = mercury,
-            store = DefaultMediationHandler.PlutoMediatorRepositoryImpl(pluto),
+            store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto),
         )
     }
 

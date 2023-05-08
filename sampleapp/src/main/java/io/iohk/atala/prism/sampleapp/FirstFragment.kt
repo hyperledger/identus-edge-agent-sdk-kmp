@@ -25,8 +25,6 @@ class FirstFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        // TODO:
-        // Create Peer and Prism DID
         // Connect with mediator
         // Send and receive message
         _binding = FragmentFirstBinding.inflate(inflater, container, false)
@@ -36,27 +34,29 @@ class FirstFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupStreamObservers()
-        binding.createPeerDid.setOnClickListener {
-            viewModel.createPeerDid()
-        }
-        binding.createPrismDid.setOnClickListener {
-            viewModel.createPrismDid()
-        }
         binding.startAgent.setOnClickListener {
             context?.let { it1 -> viewModel.startAgent(it1) }
 //            findNavController().navigate(R.id.action_First2Fragment_to_SecondFragment)
+        }
+        binding.sendMessage.setOnClickListener {
+//            viewModel.sendTestMessage()
+        }
+        binding.createPeerDID.setOnClickListener {
+            viewModel.createPeerDid()
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        viewModel.stopAgent()
     }
 
     private fun setupStreamObservers() {
         viewModel.messageListStream().observe(this.viewLifecycleOwner) { messages ->
-//            messages.first {
-//            }
+            messages.forEach {
+                binding.log.append(it.body)
+            }
         }
         viewModel.notificationListStream().observe(this.viewLifecycleOwner) {
             binding.log.append(it)

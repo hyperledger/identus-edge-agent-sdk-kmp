@@ -179,7 +179,7 @@ android {
 
 sqldelight {
     database("PrismPlutoDb") {
-        packageName = "io.iohk.atala.prism.walletsdk.pluto"
+        packageName = "io.iohk.atala.prism.walletsdk"
         sourceFolders = listOf("sqldelight")
     }
 }

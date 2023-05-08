@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.pluto.data
 
 import com.squareup.sqldelight.db.SqlDriver
 import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
-import io.iohk.atala.prism.walletsdk.pluto.PrismPlutoDb
+import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 
 actual class DbConnection actual constructor() {
     actual var driver: SqlDriver? = null

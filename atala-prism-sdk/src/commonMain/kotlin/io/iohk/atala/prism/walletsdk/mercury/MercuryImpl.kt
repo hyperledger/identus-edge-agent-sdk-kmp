@@ -68,19 +68,18 @@ class MercuryImpl(
 
     override suspend fun sendMessageParseResponse(message: Message): Message? {
         val msg = sendMessage(message)
-        try {
-            val msgString = msg.toString()
+        msg?.let {
+            val msgString = String(msg)
             if (msgString != "null" && msgString != "") {
                 return unpackMessage(msgString)
             }
-        } catch (_: Exception) {
         }
         return null
     }
 
     private fun prepareForwardMessage(message: Message, encrypted: String, mediatorDid: DID): ForwardMessage {
         return ForwardMessage(
-            body = message.to.toString(),
+            body = ForwardMessage.ForwardBody(message.to.toString()),
             encryptedMessage = encrypted,
             from = message.from!!,
             to = mediatorDid,
@@ -100,9 +99,7 @@ class MercuryImpl(
             arrayOf(KeyValue("Content-type", "application/didcomm-encrypted+json")),
             message
         )
-        val msg = "${result.status} ${result.jsonString}"
-        println(msg)
-        throw NotImplementedError(msg)
+        return result.jsonString.toByteArray()
     }
 
     @Throws(MercuryError.NoValidServiceFoundError::class)
@@ -112,11 +109,7 @@ class MercuryImpl(
         }
 
         val result = api.request("POST", uri, emptyArray(), emptyArray(), message)
-        if (result.jsonString == "") {
-            // SUCCESS
-            throw NotImplementedError()
-        }
-        throw NotImplementedError()
+        return result.jsonString.toByteArray()
     }
 
     private fun getMediatorDID(service: DIDDocument.Service?): DID? {
