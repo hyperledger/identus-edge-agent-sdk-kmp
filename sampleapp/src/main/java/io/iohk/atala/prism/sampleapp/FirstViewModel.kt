@@ -58,14 +58,14 @@ class FirstViewModel : ViewModel() {
 
             agent.start()
             createPeerDid()
-            agent.startFetchingMessages()
-            agent.handleReceivedMessagesEvents().collect { messages ->
-                messages.map {
+//            agent.startFetchingMessages()
+//            agent.handleReceivedMessagesEvents().collect { messages ->
+//                messages.map {
 //                    if (it.piuri == ProtocolType.PrismOnboarding.value) {
 //                    } else if (it.piuri == ProtocolType.Didcomminvitation.value) {
 //                    }
-                }
-            }
+//                }
+//            }
         }
     }
 
@@ -112,9 +112,10 @@ class FirstViewModel : ViewModel() {
                 piuri = "https://didcomm.org/basicmessage/2.0/message", // TODO: This should be on ProtocolTypes as an enum
                 from = did,
                 to = did,
-                body = "{msg:\"This is a test message\"}"
+                body = "{\"msg\":\"This is a test message\"}"
             )
 
+            println("Send message")
             mercury.sendMessage(message)
         }
     }

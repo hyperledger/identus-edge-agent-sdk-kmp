@@ -79,7 +79,7 @@ class MercuryImpl(
 
     private fun prepareForwardMessage(message: Message, encrypted: String, mediatorDid: DID): ForwardMessage {
         return ForwardMessage(
-            body = message.to.toString(),
+            body = ForwardMessage.ForwardBody(message.to.toString()),
             encryptedMessage = encrypted,
             from = message.from!!,
             to = mediatorDid,
