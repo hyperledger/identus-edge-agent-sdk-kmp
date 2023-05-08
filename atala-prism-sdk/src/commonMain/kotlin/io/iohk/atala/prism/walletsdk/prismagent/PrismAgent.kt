@@ -46,7 +46,7 @@ class PrismAgent {
     val castor: Castor
     val pluto: Pluto
     val mercury: Mercury
-    lateinit var fetchingMessagesJob: Job
+    var fetchingMessagesJob: Job? = null
 
     private val api: Api
     private val connectionManager: ConnectionManager
@@ -140,7 +140,7 @@ class PrismAgent {
             return
         }
         state = State.STOPPING
-        fetchingMessagesJob.cancel()
+        fetchingMessagesJob?.cancel()
         state = State.STOPPED
     }
 
@@ -165,13 +165,28 @@ class PrismAgent {
         val keyAgreementKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.X25519))
         val authenticationKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.ED25519))
 
+        var tmpServices = arrayOf<DIDDocument.Service>()
+        if (updateMediator) {
+            tmpServices = services.plus(
+                DIDDocument.Service(
+                    id = "#didcomm-1",
+                    type = arrayOf(
+                        "DIDCommMessaging"
+                    ),
+                    serviceEndpoint = DIDDocument.ServiceEndpoint(
+                        uri = connectionManager.mediationHandler.mediator?.routingDID.toString()
+                    )
+                )
+            )
+        }
+
         val did = castor.createPeerDID(
             arrayOf(keyAgreementKeyPair, authenticationKeyPair),
-            services = services
+            services = tmpServices
         )
 
         if (updateMediator) {
-            // TODO: Register Peer DID. Take swift as an example
+            connectionManager.mediationHandler.updateKeyListWithDIDs(arrayOf(did))
         }
 
         pluto.storePeerDIDAndPrivateKeys(
@@ -256,19 +271,22 @@ class PrismAgent {
     @OptIn(DelicateCoroutinesApi::class)
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
-        if (fetchingMessagesJob.isActive) return
-
-        fetchingMessagesJob = GlobalScope.launch {
-            while (true) {
-                connectionManager.awaitMessages()
-                delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
+        if (fetchingMessagesJob == null) {
+            fetchingMessagesJob = GlobalScope.launch {
+                while (true) {
+                    connectionManager.awaitMessages()
+                    delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
+                }
             }
         }
-        fetchingMessagesJob.start()
+        fetchingMessagesJob?.let {
+            if (it.isActive) return
+            it.start()
+        }
     }
 
     fun stopFetchingMessages() {
-        fetchingMessagesJob.cancel()
+        fetchingMessagesJob?.cancel()
     }
 
     fun handleMessagesEvents(): Flow<List<Message>> {

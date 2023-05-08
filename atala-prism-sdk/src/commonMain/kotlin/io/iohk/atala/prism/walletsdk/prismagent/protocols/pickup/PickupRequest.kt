@@ -36,5 +36,5 @@ final class PickupRequest @JvmOverloads constructor(
     }
 
     @Serializable
-    data class Body(var recipientKey: String?, var limit: String)
+    data class Body(var recipientKey: String? = null, var limit: Int)
 }

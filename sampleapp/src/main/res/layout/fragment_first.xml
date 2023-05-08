@@ -12,7 +12,7 @@
                 android:id="@+id/scroll"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                app:layout_constraintBottom_toTopOf="@id/createPeerDid"
+                app:layout_constraintBottom_toTopOf="@id/startAgent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
@@ -27,34 +27,36 @@
         </ScrollView>
 
         <Button
-                android:id="@+id/createPeerDid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:text="Create Peer DID"
-                app:layout_constraintBottom_toTopOf="@id/createPrismDid"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
-
-        <Button
-                android:id="@+id/createPrismDid"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="4dp"
-                android:text="Create Prism DID"
-                app:layout_constraintBottom_toTopOf="@id/startAgent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"/>
-
-        <Button
                 android:id="@+id/startAgent"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:text="Start agent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/sendMessage"
                 app:layout_constraintStart_toStartOf="parent"/>
+
+        <Button
+                android:id="@+id/sendMessage"
+                android:layout_marginStart="4dp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:text="Send message"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/startAgent"
+                app:layout_constraintEnd_toStartOf="@id/createPeerDID"/>
+
+        <Button
+                android:id="@+id/createPeerDID"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginStart="4dp"
+                android:text="Create peer DID"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/sendMessage"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
