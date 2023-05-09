@@ -40,6 +40,7 @@ class FirstFragment : Fragment() {
         }
         binding.sendMessage.setOnClickListener {
 //            viewModel.sendTestMessage()
+            viewModel.createPeerDid()
         }
         binding.createPeerDID.setOnClickListener {
             viewModel.createPeerDid()
@@ -54,12 +55,20 @@ class FirstFragment : Fragment() {
 
     private fun setupStreamObservers() {
         viewModel.messageListStream().observe(this.viewLifecycleOwner) { messages ->
-            messages.forEach {
-                binding.log.append(it.body)
+            var text = binding.log.text
+            messages.forEach { message ->
+                var textToAppend = "${message.id}: ${message.body} \n"
+                message.attachments.forEach { attachment ->
+                    textToAppend += "Attachment ID: ${attachment.id}: \n"
+                }
+                binding.log.text = "$textToAppend $text"
             }
         }
         viewModel.notificationListStream().observe(this.viewLifecycleOwner) {
             binding.log.append(it)
+        }
+        viewModel.agentStateStream().observe(this.viewLifecycleOwner) {
+            binding.log.append("Agent state: $it \n")
         }
     }
 }
