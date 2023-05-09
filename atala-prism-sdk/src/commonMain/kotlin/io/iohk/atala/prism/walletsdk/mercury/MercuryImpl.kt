@@ -9,7 +9,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
-import io.ktor.http.*
+import io.ktor.http.HttpHeaders
 import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
