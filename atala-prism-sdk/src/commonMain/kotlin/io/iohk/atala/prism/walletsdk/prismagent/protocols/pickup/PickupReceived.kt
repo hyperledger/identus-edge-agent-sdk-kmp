@@ -4,6 +4,7 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -30,25 +31,15 @@ final class PickupReceived {
 
     fun makeMessage(): Message {
         return Message(
-            id = id,
             piuri = type,
             from = from,
             to = to,
-            fromPrior = null,
-            body = Json.encodeToString(body),
-            extraHeaders = emptyArray(),
-            createdTime = "",
-            expiresTimePlus = "",
-            attachments = emptyArray(),
-            thid = null,
-            pthid = null,
-            ack = emptyArray(),
-            direction = Message.Direction.SENT
+            body = Json.encodeToString(body)
         )
     }
 
     @Serializable
-    data class Body(var messageIdList: Array<String>) {
+    data class Body(@SerialName("message_id_list") var messageIdList: Array<String>) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false

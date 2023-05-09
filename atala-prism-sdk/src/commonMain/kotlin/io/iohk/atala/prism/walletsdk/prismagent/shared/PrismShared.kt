@@ -32,16 +32,11 @@ object PrismShared {
 
         val builder = HttpRequestBuilder()
         for (header in httpHeaders) {
-            if (
-                httpMethod == HttpMethod.Get &&
-                header.key == HttpHeaders.ContentType &&
-                header.value.contains(ContentType.Application.Json.contentSubtype)
-            ) {
-                continue
-            }
             builder.headers.append(header.key, header.value)
         }
-        builder.contentType(ContentType.Application.Json)
+        if (!builder.headers.contains(HttpHeaders.ContentType)) {
+            builder.contentType(ContentType.Application.Json)
+        }
 
         body?.let {
             builder.setBody(body)

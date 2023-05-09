@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
+import com.nimbusds.jose.shaded.json.JSONObject
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
@@ -32,8 +33,8 @@ import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.message.Attachment
 import org.didcommx.didcomm.model.PackEncryptedParams
 import org.didcommx.didcomm.model.UnpackParams
+import org.didcommx.didcomm.utils.fromJsonToMap
 import java.time.Instant.now
-import kotlin.jvm.Throws
 
 class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProtocol {
     private val didDocResolver = DIDCommDIDResolver(castor)
@@ -61,20 +62,20 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
 
                                 is JsonPrimitive -> {
                                     if (it.isString) {
-                                        bodyMap[key] = it.content
+                                        array.add(it.content)
                                     } else if (it.intOrNull != null) {
-                                        bodyMap[key] = it.int
+                                        array.add(it.int)
                                     } else if (it.doubleOrNull != null) {
-                                        bodyMap[key] = it.double
+                                        array.add(it.double)
                                     } else if (it.booleanOrNull != null) {
-                                        bodyMap[key] = it.boolean
+                                        array.add(it.boolean)
                                     } else {
-                                        bodyMap[key] = it
+                                        array.add(it)
                                     }
                                 }
 
                                 else -> {
-                                    bodyMap[key] = it
+                                    array.add(it)
                                 }
                             }
                         }
@@ -132,7 +133,6 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
             pleaseAck = null,
             customHeaders = mapOf()
         )
-
         val builder = PackEncryptedParams.builder(didCommMsg, toString).forward(false).protectSenderId(false)
         didCommMsg.from?.let { builder.from(it) }
         val params = builder.build()
@@ -166,8 +166,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         }
 
         if (data is AttachmentJsonData) {
-            val json = Json.parseToJsonElement(data.data)
-            return Attachment.Data.Json(json.jsonObject.toMap())
+            return Attachment.Data.Json(fromJsonToMap(data.data))
         }
 
         if (data is AttachmentLinkData) {
@@ -243,8 +242,8 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         }
 
         val json = jsonObj["json"]
-        if (json is String) {
-            return AttachmentJsonData(json)
+        if (json is JSONObject) {
+            return AttachmentJsonData(JSONObject.toJSONString(json as Map<String, *>))
         }
 
         val links = jsonObj["links"]

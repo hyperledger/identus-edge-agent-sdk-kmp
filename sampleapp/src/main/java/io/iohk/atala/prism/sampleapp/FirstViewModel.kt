@@ -28,6 +28,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -43,6 +44,7 @@ class FirstViewModel : ViewModel() {
     private lateinit var agent: PrismAgent
     private val messageList: MutableLiveData<List<Message>> = MutableLiveData(listOf())
     private val notification: MutableLiveData<String> = MutableLiveData("")
+    private val agentState: MutableLiveData<String> = MutableLiveData("")
 
     init {
     }
@@ -59,19 +61,15 @@ class FirstViewModel : ViewModel() {
             initializeAgent()
 
             agent.start()
-            createPeerDid()
-//            agent.startFetchingMessages()
-//            agent.handleReceivedMessagesEvents().collect { messages ->
-//                messages.map {
-//                    if (it.piuri == ProtocolType.PrismOnboarding.value) {
-//                    } else if (it.piuri == ProtocolType.Didcomminvitation.value) {
-//                    }
-//                }
-//            }
+            agent.startFetchingMessages()
+            agent.handleReceivedMessagesEvents().collect { messages ->
+                messageList.postValue(messages)
+            }
         }
     }
 
     fun stopAgent() {
+        // TODO: lateinit property not initialized error
         agent?.let {
             GlobalScope.launch {
                 agent.stopFetchingMessages()
@@ -86,6 +84,10 @@ class FirstViewModel : ViewModel() {
 
     fun notificationListStream(): LiveData<String> {
         return notification
+    }
+
+    fun agentStateStream(): LiveData<String> {
+        return agentState
     }
 
     fun parseAndAcceptOOB(oobUrl: String) {
@@ -196,7 +198,7 @@ class FirstViewModel : ViewModel() {
     }
 
     private fun initializeHandler() {
-        // old one: DID("did:peer:2.Ez6LScuuNiWo8rwnpYy5dXbq7JnVDv6yCgsAz6viRUWCUbCJk.Vz6MkfzL1tPPvpXioYDwuGQRdpATV1qb4x7mKmcXyhCmLcUGK.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
+        // Favio's mediatorDID = DID("did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cHM6Ly9hbGljZS5kaWQuZm1ncC5hcHAvIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfQ"),
         handler = BasicMediatorHandler(
             mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
             mercury = mercury,
@@ -214,5 +216,10 @@ class FirstViewModel : ViewModel() {
             seed = seed,
             mediatorHandler = handler
         )
+        GlobalScope.launch() {
+            agent.getFlowState().collect {
+                agentState.postValue(it.name)
+            }
+        }
     }
 }

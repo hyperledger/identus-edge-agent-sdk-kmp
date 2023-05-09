@@ -2,6 +2,7 @@ package io.iohk.atala.prism.walletsdk.domain.models
 
 import io.iohk.atala.prism.apollo.uuid.UUID
 import kotlinx.datetime.Clock
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -12,9 +13,9 @@ import kotlin.time.Duration.Companion.days
 data class Message @JvmOverloads constructor(
     val id: String = UUID.randomUUID4().toString(),
     val piuri: String,
-    val from: DID? = null,
-    val to: DID? = null,
-    val fromPrior: String? = null,
+    @EncodeDefault val from: DID? = null,
+    @EncodeDefault val to: DID? = null,
+    @EncodeDefault val fromPrior: String? = null,
     val body: String,
     val extraHeaders: Array<String> = arrayOf(),
     val createdTime: String = Clock.System.now().toString(),
@@ -72,6 +73,16 @@ data class Message @JvmOverloads constructor(
     enum class Direction(val value: Int) {
         SENT(0),
         RECEIVED(1),
+    }
+
+    companion object {
+        fun isBase64Attachment(data: AttachmentData): Boolean {
+            return data is AttachmentBase64
+        }
+
+        fun isJsonAttachment(data: AttachmentData): Boolean {
+            return data is AttachmentJsonData
+        }
     }
 }
 

@@ -50,8 +50,10 @@ class ConnectionManager(
                     messagesIds.add(pair.first)
                     messages.add(pair.second)
                 }
-                mediationHandler.registerMessagesAsRead(messagesIds.toTypedArray())
-                pluto.storeMessages(messages)
+                if (messagesIds.isNotEmpty()) {
+                    mediationHandler.registerMessagesAsRead(messagesIds.toTypedArray())
+                    pluto.storeMessages(messages)
+                }
             }
     }
 
