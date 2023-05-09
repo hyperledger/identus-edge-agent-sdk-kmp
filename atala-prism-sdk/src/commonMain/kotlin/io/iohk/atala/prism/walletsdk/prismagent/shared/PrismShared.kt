@@ -2,7 +2,12 @@ package io.iohk.atala.prism.walletsdk.prismagent.shared
 
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.setBody
-import io.ktor.http.*
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.Url
+import io.ktor.http.contentType
+import io.ktor.http.path
 
 object PrismShared {
     @JvmStatic
