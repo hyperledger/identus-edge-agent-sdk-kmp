@@ -4,6 +4,8 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -53,7 +55,7 @@ final class MediationKeysUpdateList {
     }
 
     @Serializable
-    data class Update @JvmOverloads constructor(var recipientDid: String, var action: String = "add")
+    data class Update @JvmOverloads constructor(@SerialName("recipient_did")var recipientDid: String, @EncodeDefault var action: String = "add")
 
     @Serializable
     data class Body @JvmOverloads constructor(var updates: Array<Update> = emptyArray()) {

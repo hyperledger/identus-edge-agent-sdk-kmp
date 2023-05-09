@@ -29,6 +29,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -50,6 +51,11 @@ class PrismAgent {
 
     private val api: Api
     private val connectionManager: ConnectionManager
+    private val flowState = MutableSharedFlow<State>()
+
+    fun getFlowState(): Flow<State> {
+        return flowState
+    }
 
     internal constructor(
         apollo: Apollo,
@@ -60,6 +66,9 @@ class PrismAgent {
         seed: Seed?,
         api: Api?
     ) {
+        GlobalScope.launch {
+            flowState.emit(State.STOPPED)
+        }
         this.apollo = apollo
         this.castor = castor
         this.pluto = pluto
@@ -91,6 +100,9 @@ class PrismAgent {
         api: Api? = null,
         mediatorHandler: MediationHandler
     ) {
+        GlobalScope.launch {
+            flowState.emit(State.STOPPED)
+        }
         this.apollo = apollo
         this.castor = castor
         this.pluto = pluto
@@ -119,6 +131,7 @@ class PrismAgent {
             return
         }
         state = State.STARTING
+        flowState.emit(State.STARTING)
         try {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
@@ -129,6 +142,7 @@ class PrismAgent {
             connectionManager.registerMediator(hostDID)
         }
         if (connectionManager.mediationHandler.mediator != null) {
+            flowState.emit(State.RUNNING)
             state = State.RUNNING
         } else {
             throw PrismAgentError.MediationRequestFailedError()
@@ -139,8 +153,10 @@ class PrismAgent {
         if (state != State.RUNNING) {
             return
         }
+        flowState.emit(State.STOPPING)
         state = State.STOPPING
         fetchingMessagesJob?.cancel()
+        flowState.emit(State.STOPPED)
         state = State.STOPPED
     }
 

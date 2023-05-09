@@ -9,6 +9,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
+import io.ktor.http.HttpHeaders
+import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
 
@@ -96,7 +98,7 @@ class MercuryImpl(
             "POST",
             service.serviceEndpoint.uri,
             emptyArray(),
-            arrayOf(KeyValue("Content-type", "application/didcomm-encrypted+json")),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
             message
         )
         return result.jsonString.toByteArray()
