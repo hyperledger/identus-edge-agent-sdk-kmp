@@ -2,12 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent.shared
 
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
-import io.ktor.http.Url
-import io.ktor.http.contentType
-import io.ktor.http.path
+import io.ktor.http.*
 
 object PrismShared {
     @JvmStatic
@@ -32,16 +27,11 @@ object PrismShared {
 
         val builder = HttpRequestBuilder()
         for (header in httpHeaders) {
-            if (
-                httpMethod == HttpMethod.Get &&
-                header.key == HttpHeaders.ContentType &&
-                header.value.contains(ContentType.Application.Json.contentSubtype)
-            ) {
-                continue
-            }
             builder.headers.append(header.key, header.value)
         }
-        builder.contentType(ContentType.Application.Json)
+        if (!builder.headers.contains(HttpHeaders.ContentType)) {
+            builder.contentType(ContentType.Application.Json)
+        }
 
         body?.let {
             builder.setBody(body)
