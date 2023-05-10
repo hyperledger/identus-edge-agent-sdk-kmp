@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.sampleapp
 
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
@@ -9,19 +11,28 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
+import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
-import io.iohk.atala.prism.walletsdk.mercury.Api
+import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
-import io.iohk.atala.prism.walletsdk.prismagent.mediation.DefaultMediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
 import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 class FirstViewModel : ViewModel() {
 
@@ -33,6 +44,9 @@ class FirstViewModel : ViewModel() {
     private lateinit var seed: Seed
     private lateinit var agent: PrismAgent
     private lateinit var pollux: Pollux
+    private val messageList: MutableLiveData<List<Message>> = MutableLiveData(listOf())
+    private val notification: MutableLiveData<String> = MutableLiveData("")
+    private val agentState: MutableLiveData<String> = MutableLiveData("")
 
     init {
     }
@@ -49,8 +63,83 @@ class FirstViewModel : ViewModel() {
             initializeAgent()
 
             agent.start()
-//            val prismDID = agent.createNewPrismDID()
-//            println("Prism DID: $prismDID")
+            agent.startFetchingMessages()
+            agent.handleReceivedMessagesEvents().collect { messages ->
+                messageList.postValue(messages)
+            }
+        }
+    }
+
+    fun stopAgent() {
+        // TODO: lateinit property not initialized error
+        agent?.let {
+            GlobalScope.launch {
+                agent.stopFetchingMessages()
+                agent.stop()
+            }
+        }
+    }
+
+    fun messageListStream(): LiveData<List<Message>> {
+        return messageList
+    }
+
+    fun notificationListStream(): LiveData<String> {
+        return notification
+    }
+
+    fun agentStateStream(): LiveData<String> {
+        return agentState
+    }
+
+    fun parseAndAcceptOOB(oobUrl: String) {
+        GlobalScope.launch {
+            val invitationType = agent.parseInvitation(oobUrl)
+            var invitation: Any
+            if (invitationType is OutOfBandInvitation) {
+                invitation = Json.decodeFromString<OutOfBandInvitation>(oobUrl)
+//                agent.acceptOutOfBandInvitation(invitation)
+            } else if (invitationType is PrismOnboardingInvitation) {
+                invitation = Json.decodeFromString<PrismOnboardingInvitation>(oobUrl)
+                agent.acceptInvitation(invitation)
+            } else {
+                throw PrismAgentError.UnknownInvitationTypeError()
+            }
+        }
+    }
+
+    fun sendTestMessage(did: DID) {
+        GlobalScope.launch {
+//            val senderPeerDid = agent.createNewPeerDID(
+//                emptyArray(),
+//                true
+//            )
+            val message = Message(
+                piuri = "https://didcomm.org/basicmessage/2.0/message", // TODO: This should be on ProtocolTypes as an enum
+                from = did,
+                to = did,
+                body = "{\"msg\":\"This is a test message\"}"
+            )
+
+            println("Send message")
+            mercury.sendMessage(message)
+        }
+    }
+
+    fun createPeerDid() {
+        GlobalScope.launch {
+            val did = agent.createNewPeerDID(
+                arrayOf(
+                    DIDDocument.Service(
+                        "#didcomm-1",
+                        arrayOf("DIDCommMessaging"),
+                        DIDDocument.ServiceEndpoint(handler.mediatorDID.toString()),
+                    ),
+                ),
+                true
+            )
+            println(did.toString())
+            sendTestMessage(did)
         }
     }
 
@@ -75,12 +164,8 @@ class FirstViewModel : ViewModel() {
         // This is just to make the code compile, it should be changed accordingly
         mercury = MercuryImpl(
             castor,
-            DIDCommWrapper(CastorImpl(ApolloImpl()), PlutoImpl(DbConnection())),
-            object : Api {
-                override fun request(httpMethod: String, url: String, body: Any): ByteArray? {
-                    TODO("Not yet implemented")
-                }
-            }
+            DIDCommWrapper(castor, pluto, apollo),
+            ApiImpl(httpClient())
         )
     }
 
@@ -115,10 +200,11 @@ class FirstViewModel : ViewModel() {
     }
 
     private fun initializeHandler() {
-        handler = DefaultMediationHandler(
-            mediatorDID = DID("did:peer:2.Ez6LScuuNiWo8rwnpYy5dXbq7JnVDv6yCgsAz6viRUWCUbCJk.Vz6MkfzL1tPPvpXioYDwuGQRdpATV1qb4x7mKmcXyhCmLcUGK.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
+        // Favio's mediatorDID = DID("did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cHM6Ly9hbGljZS5kaWQuZm1ncC5hcHAvIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfQ"),
+        handler = BasicMediatorHandler(
+            mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
             mercury = mercury,
-            store = DefaultMediationHandler.PlutoMediatorRepositoryImpl(pluto),
+            store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto),
         )
     }
 
@@ -132,5 +218,10 @@ class FirstViewModel : ViewModel() {
             seed = seed,
             mediatorHandler = handler
         )
+        GlobalScope.launch() {
+            agent.getFlowState().collect {
+                agentState.postValue(it.name)
+            }
+        }
     }
 }

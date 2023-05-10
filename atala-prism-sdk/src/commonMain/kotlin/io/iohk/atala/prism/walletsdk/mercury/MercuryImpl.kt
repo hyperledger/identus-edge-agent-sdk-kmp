@@ -2,16 +2,17 @@ package io.iohk.atala.prism.walletsdk.mercury
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
+import io.iohk.atala.prism.walletsdk.domain.models.Api
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
+import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
+import io.ktor.http.HttpHeaders
+import org.didcommx.didcomm.common.Typ
+import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
-
-interface Api {
-    fun request(httpMethod: String, url: String, body: Any): ByteArray?
-}
 
 interface DIDCommProtocol {
     fun packEncrypted(message: Message): String
@@ -67,13 +68,20 @@ class MercuryImpl(
         return makeRequest(service, packedMessage)
     }
 
-    override suspend fun sendMessageParseMessage(message: Message): Message? {
-        TODO("Not yet implemented")
+    override suspend fun sendMessageParseResponse(message: Message): Message? {
+        val msg = sendMessage(message)
+        msg?.let {
+            val msgString = String(msg)
+            if (msgString != "null" && msgString != "") {
+                return unpackMessage(msgString)
+            }
+        }
+        return null
     }
 
     private fun prepareForwardMessage(message: Message, encrypted: String, mediatorDid: DID): ForwardMessage {
         return ForwardMessage(
-            body = message.to.toString(),
+            body = ForwardMessage.ForwardBody(message.to.toString()),
             encryptedMessage = encrypted,
             from = message.from!!,
             to = mediatorDid,
@@ -81,24 +89,39 @@ class MercuryImpl(
     }
 
     @Throws(MercuryError.NoValidServiceFoundError::class)
-    private fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
+    private suspend fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
         if (service !is DIDDocument.Service) {
             throw MercuryError.NoValidServiceFoundError()
         }
 
-        return api.request("POST", service.serviceEndpoint.uri, message)
+        val result = api.request(
+            "POST",
+            service.serviceEndpoint.uri,
+            emptyArray(),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+            message
+        )
+        return result.jsonString.toByteArray()
     }
 
     @Throws(MercuryError.NoValidServiceFoundError::class)
-    private fun makeRequest(uri: String?, message: String): ByteArray? {
+    private suspend fun makeRequest(uri: String?, message: String): ByteArray? {
         if (uri !is String) {
             throw MercuryError.NoValidServiceFoundError()
         }
 
-        return api.request("POST", uri, message)
+        val result = api.request("POST", uri, emptyArray(), emptyArray(), message)
+        return result.jsonString.toByteArray()
     }
 
     private fun getMediatorDID(service: DIDDocument.Service?): DID? {
-        return service?.serviceEndpoint?.uri?.let { uri -> castor.parseDID(uri) }
+        // TODO: Handle when service endpoint uri is HTTP or HTTPS
+        return service?.serviceEndpoint?.uri?.let { uri ->
+            if (isDID(uri)) {
+                castor.parseDID(uri)
+            } else {
+                null
+            }
+        }
     }
 }

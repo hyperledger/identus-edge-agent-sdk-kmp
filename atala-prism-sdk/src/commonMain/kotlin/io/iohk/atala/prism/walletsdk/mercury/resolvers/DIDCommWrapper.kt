@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
+import com.nimbusds.jose.shaded.json.JSONObject
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
@@ -11,47 +13,130 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.DIDCommProtocol
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.boolean
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.double
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import org.didcommx.didcomm.DIDComm
 import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.message.Attachment
 import org.didcommx.didcomm.model.PackEncryptedParams
 import org.didcommx.didcomm.model.UnpackParams
+import org.didcommx.didcomm.utils.fromJsonToMap
 import java.time.Instant.now
-import kotlin.jvm.Throws
 
-class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
+class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProtocol {
     private val didDocResolver = DIDCommDIDResolver(castor)
-    private val secretsResolver = DIDCommSecretsResolver(pluto)
+    private val secretsResolver = DIDCommSecretsResolver(pluto, apollo)
     private val didComm = DIDComm(didDocResolver, secretsResolver)
+
+    private fun jsonObjectToMap(element: JsonElement): Map<String, Any?> {
+        var bodyMap = mutableMapOf<String, Any?>()
+        if (element is JsonPrimitive) {
+        } else {
+            val keys = element.jsonObject.keys
+            keys.forEach { key ->
+                when (val value = element.jsonObject[key]) {
+                    is JsonObject -> {
+                        bodyMap[key] = jsonObjectToMap(value)
+                    }
+
+                    is JsonArray -> {
+                        var array = mutableListOf<Any>()
+                        value.forEach {
+                            when (it) {
+                                is JsonObject -> {
+                                    array.add(jsonObjectToMap(it))
+                                }
+
+                                is JsonPrimitive -> {
+                                    if (it.isString) {
+                                        array.add(it.content)
+                                    } else if (it.intOrNull != null) {
+                                        array.add(it.int)
+                                    } else if (it.doubleOrNull != null) {
+                                        array.add(it.double)
+                                    } else if (it.booleanOrNull != null) {
+                                        array.add(it.boolean)
+                                    } else {
+                                        array.add(it)
+                                    }
+                                }
+
+                                else -> {
+                                    array.add(it)
+                                }
+                            }
+                        }
+                        bodyMap[key] = array
+                    }
+
+                    is JsonPrimitive -> {
+                        if (value.isString) {
+                            bodyMap[key] = value.content
+                        } else if (value.intOrNull != null) {
+                            bodyMap[key] = value.int
+                        } else if (value.doubleOrNull != null) {
+                            bodyMap[key] = value.double
+                        } else if (value.booleanOrNull != null) {
+                            bodyMap[key] = value.boolean
+                        } else {
+                            bodyMap[key] = value
+                        }
+                    }
+
+                    is JsonNull -> {
+                        bodyMap[key] = null
+                    }
+
+                    else -> {
+                        bodyMap[key] = value
+                    }
+                }
+            }
+        }
+        return bodyMap
+    }
 
     override fun packEncrypted(message: Message): String {
         val toString = message.to.toString()
+
+        val element = Json.parseToJsonElement(message.body)
+        val map = jsonObjectToMap(element)
+
         val didCommMsg = org.didcommx.didcomm.message.Message(
             id = message.id,
-            body = mapOf(),
+            body = map,
             typ = Typ.Plaintext,
             type = message.piuri,
             to = listOf(toString),
             from = message.from.toString(),
             fromPrior = null,
-            // fromPrior = message.fromPrior,
-            fromPriorJwt = null,
+            fromPriorJwt = message.fromPrior,
             attachments = parseAttachments(message.attachments),
-            createdTime = message.createdTime.toLong(),
+            createdTime = if (message.createdTime == "") Clock.System.now().epochSeconds else Instant.parse(message.createdTime).epochSeconds,
             expiresTime = null,
             thid = message.thid,
             pthid = message.pthid,
-            ack = "",
+            ack = null,
             pleaseAck = null,
             customHeaders = mapOf()
         )
-
-        val builder = PackEncryptedParams.builder(didCommMsg, toString)
+        val builder = PackEncryptedParams.builder(didCommMsg, toString).forward(false).protectSenderId(false)
+        didCommMsg.from?.let { builder.from(it) }
         val params = builder.build()
         val result = didComm.packEncrypted(params)
-
         return result.packedMessage
     }
 
@@ -81,8 +166,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
         }
 
         if (data is AttachmentJsonData) {
-            val json = Json.parseToJsonElement(data.data)
-            return Attachment.Data.Json(json.jsonObject.toMap())
+            return Attachment.Data.Json(fromJsonToMap(data.data))
         }
 
         if (data is AttachmentLinkData) {
@@ -158,8 +242,8 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto) : DIDCommProtocol {
         }
 
         val json = jsonObj["json"]
-        if (json is String) {
-            return AttachmentJsonData(json)
+        if (json is JSONObject) {
+            return AttachmentJsonData(JSONObject.toJSONString(json as Map<String, *>))
         }
 
         val links = jsonObj["links"]

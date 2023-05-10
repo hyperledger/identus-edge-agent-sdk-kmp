@@ -4,6 +4,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommSecretsResolver
+import io.iohk.atala.prism.walletsdk.prismagent.ApolloMock
 import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
 import kotlin.test.BeforeTest
@@ -16,12 +17,14 @@ import kotlin.test.assertTrue
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class SecretsResolverTests {
     lateinit var plutoMock: PlutoMock
+    lateinit var apolloMock: ApolloMock
     lateinit var sut: DIDCommSecretsResolver
 
     @BeforeTest
     fun setup() {
         plutoMock = PlutoMock()
-        sut = DIDCommSecretsResolver(plutoMock)
+        apolloMock = ApolloMock()
+        sut = DIDCommSecretsResolver(plutoMock, apolloMock)
     }
 
     @Ignore("Ignore this test for now until we can review with the team.")

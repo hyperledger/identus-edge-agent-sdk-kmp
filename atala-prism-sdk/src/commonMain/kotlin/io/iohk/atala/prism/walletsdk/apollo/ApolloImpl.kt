@@ -18,6 +18,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
+import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
 
 class ApolloImpl : Apollo {
     override fun createRandomMnemonics(): Array<String> {
@@ -85,33 +87,53 @@ class ApolloImpl : Apollo {
     override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
-                val derivationPath = DerivationPath.fromPath("m/${privateKey.keyCurve.index}'/0'/0'")
-                if (seed == null) {
-                    throw ApolloError.InvalidMnemonicWord()
-                }
-                val extendedKey = KeyDerivation.deriveKey(seed.value, derivationPath)
-                val kmmKeyPair = extendedKey.keyPair()
-                val mPrivateKey = kmmKeyPair.privateKey as KMMECSecp256k1PrivateKey
-                val mPublicKey = kmmKeyPair.publicKey as KMMECSecp256k1PublicKey
+                val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromBytes(privateKey.value)
+
                 KeyPair(
                     keyCurve = privateKey.keyCurve,
                     privateKey = PrivateKey(
                         keyCurve = privateKey.keyCurve,
-                        value = mPrivateKey.getEncoded(),
+                        value = kmmPrivateKey.getEncoded(),
                     ),
                     publicKey = PublicKey(
                         curve = privateKey.keyCurve,
-                        value = mPublicKey.getEncoded(),
+                        value = kmmPrivateKey.getPublicKey().getEncoded(),
                     ),
                 )
             }
 
             Curve.ED25519 -> {
-                Ed25519.createKeyPair()
+                val edPrivateKey = Ed25519PrivateKeyParameters(privateKey.value, 0)
+                val edPublicKey = edPrivateKey.generatePublicKey()
+
+                KeyPair(
+                    keyCurve = privateKey.keyCurve,
+                    privateKey = PrivateKey(
+                        keyCurve = privateKey.keyCurve,
+                        value = edPrivateKey.encoded,
+                    ),
+                    publicKey = PublicKey(
+                        curve = privateKey.keyCurve,
+                        value = edPublicKey.encoded,
+                    ),
+                )
             }
 
             Curve.X25519 -> {
-                X25519.createKeyPair()
+                val xPrivateKey = X25519PrivateKeyParameters(privateKey.value, 0)
+                val xPublicKey = xPrivateKey.generatePublicKey()
+
+                KeyPair(
+                    keyCurve = privateKey.keyCurve,
+                    privateKey = PrivateKey(
+                        keyCurve = privateKey.keyCurve,
+                        value = xPrivateKey.encoded,
+                    ),
+                    publicKey = PublicKey(
+                        curve = privateKey.keyCurve,
+                        value = xPublicKey.encoded,
+                    ),
+                )
             }
         }
     }
@@ -186,6 +208,16 @@ class ApolloImpl : Apollo {
                 )
             }
 
+            Curve.ED25519 -> {
+                val signature = Ed25519.sign(
+                    privateKey = privateKey,
+                    message = message
+                )
+                Signature(
+                    value = signature
+                )
+            }
+
             else -> {
                 TODO()
             }
@@ -196,6 +228,16 @@ class ApolloImpl : Apollo {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
                 signMessage(privateKey, message.encodeToByteArray())
+            }
+
+            Curve.ED25519 -> {
+                val signature = Ed25519.sign(
+                    privateKey = privateKey,
+                    message = message.toByteArray()
+                )
+                Signature(
+                    value = signature
+                )
             }
 
             else -> {
@@ -215,7 +257,9 @@ class ApolloImpl : Apollo {
                     signature = signature.value,
                 )
             }
-
+            Curve.ED25519 -> {
+                Ed25519.verify(publicKey, signature, challenge)
+            }
             else -> {
                 TODO()
             }

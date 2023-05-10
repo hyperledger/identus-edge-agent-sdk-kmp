@@ -9,7 +9,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlin.jvm.Throws
@@ -23,12 +23,13 @@ class ConnectionManager(
 ) : ConnectionsManager {
 
     suspend fun startMediator() {
-        mediationHandler.bootRegisteredMediator()
+        mediationHandler.bootRegisteredMediator() ?: throw PrismAgentError.NoMediatorAvailableError()
     }
 
     suspend fun registerMediator(host: DID) {
-        mediationHandler.achieveMediation(host)
-            .first()
+        mediationHandler.achieveMediation(host).collect {
+            println("Achieve mediation")
+        }
     }
 
     @Throws(PrismAgentError.NoMediatorAvailableError::class)
@@ -37,19 +38,22 @@ class ConnectionManager(
             throw PrismAgentError.NoMediatorAvailableError()
         }
         pluto.storeMessage(message)
-        return mercury.sendMessageParseMessage(message)
+        return mercury.sendMessageParseResponse(message)
     }
 
-    fun awaitMessages(): Flow<Array<Message>> {
-        return mediationHandler.pickupUnreadMessages(NUMBER_OF_MESSAGES)
-            .map {
-                val messagesIds = it.map { it.first }.toTypedArray()
-                mediationHandler.registerMessagesAsRead(messagesIds)
-                it.map { it.second }.toTypedArray()
-            }
-            .map { messages ->
-                pluto.storeMessages(messages.toList())
-                messages
+    suspend fun awaitMessages() {
+        mediationHandler.pickupUnreadMessages(NUMBER_OF_MESSAGES)
+            .collect { array ->
+                val messagesIds = mutableListOf<String>()
+                val messages = mutableListOf<Message>()
+                array.map { pair ->
+                    messagesIds.add(pair.first)
+                    messages.add(pair.second)
+                }
+                if (messagesIds.isNotEmpty()) {
+                    mediationHandler.registerMessagesAsRead(messagesIds.toTypedArray())
+                    pluto.storeMessages(messages)
+                }
             }
     }
 
