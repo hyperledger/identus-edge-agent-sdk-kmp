@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+/* ktlint-disable import-ordering */
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
@@ -8,8 +9,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
-import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
-import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.core.toByteArray
@@ -21,6 +22,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+/* ktlint-disable import-ordering */
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class PrismAgentTests {
@@ -229,15 +231,15 @@ class PrismAgentTests {
         """
 
         val invitation = agent.parseInvitation(invitationString.trim())
-        assertEquals(OutOfBandInvitation::class, invitation::class)
+        assert(invitation is OutOfBandInvitation)
         val oobInvitation: OutOfBandInvitation = invitation as OutOfBandInvitation
-        assertEquals("https://didcomm.org/out-of-band/2.0/invitation", oobInvitation.type)
-        assertEquals(DID("did:peer:asdf42sf"), oobInvitation.from)
+        assertEquals("https://didcomm.org/out-of-band/2.0/invitation", oobInvitation.type.value)
+        assertEquals(DID("did:peer:asdf42sf").toString(), oobInvitation.from)
         assertEquals(
             OutOfBandInvitation.Body(
                 "issue-vc",
                 "To issue a Faber College Graduate credential",
-                arrayOf("didcomm/v2", "didcomm/aip2;env=rfc587"),
+                listOf("didcomm/v2", "didcomm/aip2;env=rfc587"),
             ),
             oobInvitation.body,
         )

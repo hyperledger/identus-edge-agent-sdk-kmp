@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
-import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
@@ -26,9 +25,9 @@ class OutOfBandInvitationTest {
             }
         """
         val oob = Json.decodeFromString<OutOfBandInvitation>(invitationString)
-        assertEquals("https://didcomm.org/out-of-band/2.0/invitation", oob.type)
+        assertEquals("https://didcomm.org/out-of-band/2.0/invitation", oob.type.value)
         assertEquals("1234-1234-1234-1234", oob.id)
-        assertEquals("did:peer:asdf42sf", oob.from.toString())
+        assertEquals("did:peer:asdf42sf", oob.from)
         assertEquals("issue-vc", oob.body.goalCode)
         assertEquals("To issue a Faber College Graduate credential", oob.body.goal)
         assertEquals("didcomm/v2", oob.body.accept?.get(0))
