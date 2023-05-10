@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.prismagent.models
+package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import kotlinx.serialization.SerialName
@@ -23,7 +23,7 @@ data class PrismOnboardingInvitation @JvmOverloads constructor(
     }
 
     companion object {
-        fun prismOnboardingInvitationFromJsonString(string: String): PrismOnboardingInvitation {
+        fun fromJsonString(string: String): PrismOnboardingInvitation {
             return Json.decodeFromString(string)
         }
     }

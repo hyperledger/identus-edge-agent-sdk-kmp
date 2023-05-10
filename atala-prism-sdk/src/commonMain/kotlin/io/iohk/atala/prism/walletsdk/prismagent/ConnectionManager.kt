@@ -8,10 +8,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
+import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.map
 import kotlin.jvm.Throws
 
 class ConnectionManager(
@@ -20,7 +20,7 @@ class ConnectionManager(
     private val pluto: Pluto,
     internal val mediationHandler: MediationHandler,
     private var pairings: MutableList<DIDPair>
-) : ConnectionsManager {
+) : ConnectionsManager, DIDCommConnection {
 
     suspend fun startMediator() {
         mediationHandler.bootRegisteredMediator() ?: throw PrismAgentError.NoMediatorAvailableError()
@@ -33,7 +33,7 @@ class ConnectionManager(
     }
 
     @Throws(PrismAgentError.NoMediatorAvailableError::class)
-    suspend fun sendMessage(message: Message): Message? {
+    override suspend fun sendMessage(message: Message): Message? {
         if (mediationHandler.mediator == null) {
             throw PrismAgentError.NoMediatorAvailableError()
         }
@@ -41,20 +41,8 @@ class ConnectionManager(
         return mercury.sendMessageParseResponse(message)
     }
 
-    suspend fun awaitMessages() {
-        mediationHandler.pickupUnreadMessages(NUMBER_OF_MESSAGES)
-            .collect { array ->
-                val messagesIds = mutableListOf<String>()
-                val messages = mutableListOf<Message>()
-                array.map { pair ->
-                    messagesIds.add(pair.first)
-                    messages.add(pair.second)
-                }
-                if (messagesIds.isNotEmpty()) {
-                    mediationHandler.registerMessagesAsRead(messagesIds.toTypedArray())
-                    pluto.storeMessages(messages)
-                }
-            }
+    override suspend fun awaitMessages(): Flow<Array<Pair<String, Message>>> {
+        return mediationHandler.pickupUnreadMessages(NUMBER_OF_MESSAGES)
     }
 
     override suspend fun addConnection(paired: DIDPair) {
@@ -69,6 +57,18 @@ class ConnectionManager(
             pairings.removeAt(index)
         }
         return null
+    }
+
+    override suspend fun awaitMessageResponse(id: String): Message? {
+        return try {
+            awaitMessages().first().map {
+                it.second
+            }.first {
+                it.thid == id
+            }
+        } catch (e: NoSuchElementException) {
+            null
+        }
     }
 
     companion object {
