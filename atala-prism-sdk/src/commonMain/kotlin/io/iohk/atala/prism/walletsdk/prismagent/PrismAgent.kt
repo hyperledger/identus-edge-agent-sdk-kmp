@@ -45,6 +45,19 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 /* ktlint-disable import-ordering */
 
+/**
+ * Check if the passed URL is valid or not.
+ * @param str string to check its URL validity
+ * @return [Url] if valid, null if not valid
+ */
+private fun Url.Companion.parse(str: String): Url? {
+    try {
+        return Url(str)
+    } catch (e: Throwable) {
+        return null
+    }
+}
+
 class PrismAgent {
     var state: State = State.STOPPED
         private set
@@ -304,21 +317,30 @@ class PrismAgent {
      */
     @Throws(PrismAgentError.UnknownInvitationTypeError::class)
     suspend fun parseInvitation(str: String): InvitationType {
-        val json = Json.decodeFromString<JsonObject>(str)
-        val typeString: String = if (json.containsKey("type")) {
-            json["type"].toString().trim('"')
-        } else {
-            ""
-        }
+        Url.parse(str)?.let {
+            return parseOOBInvitation(it)
+        } ?: run {
+            try {
+                val json = Json.decodeFromString<JsonObject>(str)
+                val typeString: String = if (json.containsKey("type")) {
+                    json["type"].toString().trim('"')
+                } else {
+                    ""
+                }
 
-        val invite: InvitationType = when (findProtocolTypeByValue(typeString)) {
-            ProtocolType.PrismOnboarding -> parsePrismInvitation(str)
-            ProtocolType.Didcomminvitation -> parseOOBInvitation(str)
-            else ->
+                val invite: InvitationType = when (findProtocolTypeByValue(typeString)) {
+                    ProtocolType.PrismOnboarding -> parsePrismInvitation(str)
+                    ProtocolType.Didcomminvitation -> parseOOBInvitation(str)
+                    else ->
+                        throw PrismAgentError.UnknownInvitationTypeError()
+                }
+
+                return invite
+
+            } catch (e: SerializationException) {
                 throw PrismAgentError.UnknownInvitationTypeError()
+            }
         }
-
-        return invite
     }
 
     /**
