@@ -42,19 +42,16 @@ class ConnectionRequest {
         } ?: throw PrismAgentError.InvitationIsInvalidError()
     }
 
-    constructor(inviteMessage: OutOfBandInvitation, from: DID) {
-        val toDID = inviteMessage.from
-        ConnectionRequest(
-            from = from,
-            to = DID(toDID),
-            thid = inviteMessage.id,
-            body = Body(
-                goalCode = inviteMessage.body.goalCode,
-                goal = inviteMessage.body.goal,
-                accept = inviteMessage.body.accept?.toTypedArray()
-            )
+    constructor(inviteMessage: OutOfBandInvitation, from: DID) : this(
+        from,
+        DID(inviteMessage.from),
+        inviteMessage.id,
+        Body(
+            goalCode = inviteMessage.body.goalCode,
+            goal = inviteMessage.body.goal,
+            accept = inviteMessage.body.accept?.toTypedArray()
         )
-    }
+    )
 
     @Throws(PrismAgentError.InvalidMessageError::class)
     constructor(fromMessage: Message) {
@@ -76,6 +73,7 @@ class ConnectionRequest {
 
     fun makeMessage(): Message {
         return Message(
+            id = this.id,
             piuri = this.type,
             from = this.from,
             to = this.to,

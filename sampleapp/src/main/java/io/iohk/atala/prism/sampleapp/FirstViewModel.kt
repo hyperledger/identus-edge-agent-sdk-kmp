@@ -29,8 +29,8 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboard
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+import java.lang.Exception
+import kotlin.jvm.Throws
 
 class FirstViewModel : ViewModel() {
 
@@ -88,15 +88,17 @@ class FirstViewModel : ViewModel() {
     }
 
     @OptIn(DelicateCoroutinesApi::class)
+    @Throws(Exception::class)
     fun parseAndAcceptOOB(oobUrl: String) {
+        if (this::agent.isInitialized.not()) {
+            throw Exception("Agent has not been started")
+        }
         GlobalScope.launch {
-            when (agent.parseInvitation(oobUrl)) {
+            when (val invitation = agent.parseInvitation(oobUrl)) {
                 is OutOfBandInvitation -> {
-                    val invitation = Json.decodeFromString<OutOfBandInvitation>(oobUrl)
                     agent.acceptOutOfBandInvitation(invitation)
                 }
                 is PrismOnboardingInvitation -> {
-                    val invitation = Json.decodeFromString<PrismOnboardingInvitation>(oobUrl)
                     agent.acceptInvitation(invitation)
                 }
                 else -> {

@@ -5,9 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
-import kotlinx.coroutines.flow.first
 import kotlin.jvm.Throws
 
 class DIDCommConnectionRunner(
@@ -21,13 +19,15 @@ class DIDCommConnectionRunner(
     suspend fun run(): DIDPair {
         val request = ConnectionRequest(invitationMessage, ownDID)
         connection.sendMessage(request.makeMessage())
-        val message = pluto.getAllMessagesReceived().first().first {
-            it.thid == request.id
-        }
-        if (message.piuri == ProtocolType.DidcommconnectionResponse.value) {
-            return DIDPair(ownDID, request.to, null)
-        } else {
-            throw PrismAgentError.InvitationIsInvalidError()
-        }
+        return DIDPair(ownDID, request.to, null)
+        // TODO: Check this with @Gonçalo
+//        val message = pluto.getAllMessagesReceived().first().first {
+//            it.id == request.id
+//        }
+//        if (message.piuri == ProtocolType.DidcommconnectionResponse.value) {
+//            return DIDPair(ownDID, request.to, null)
+//        } else {
+//            throw PrismAgentError.InvitationIsInvalidError()
+//        }
     }
 }
