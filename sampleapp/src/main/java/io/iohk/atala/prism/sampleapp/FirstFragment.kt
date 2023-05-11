@@ -13,7 +13,6 @@ import java.net.MalformedURLException
 import java.net.URISyntaxException
 import java.net.URL
 
-
 /**
  * A simple [Fragment] subclass as the default destination in the navigation.
  */
