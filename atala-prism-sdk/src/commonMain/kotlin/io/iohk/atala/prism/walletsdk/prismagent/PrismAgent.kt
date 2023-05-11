@@ -336,7 +336,6 @@ class PrismAgent {
                 }
 
                 return invite
-
             } catch (e: SerializationException) {
                 throw PrismAgentError.UnknownInvitationTypeError()
             }
