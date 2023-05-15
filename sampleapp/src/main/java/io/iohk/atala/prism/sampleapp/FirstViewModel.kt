@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
@@ -26,8 +27,6 @@ import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import kotlin.jvm.Throws
@@ -45,9 +44,8 @@ class FirstViewModel : ViewModel() {
     private val notification: MutableLiveData<String> = MutableLiveData("")
     private val agentState: MutableLiveData<String> = MutableLiveData("")
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun startAgent(context: Context) {
-        GlobalScope.launch {
+        viewModelScope.launch {
             initializeApollo()
             initializePluto(context)
             initializeCastor()
@@ -64,11 +62,9 @@ class FirstViewModel : ViewModel() {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun stopAgent() {
-        // TODO: late init property not initialized error
-        agent.let {
-            GlobalScope.launch {
+        if (this::agent.isInitialized) {
+            viewModelScope.launch {
                 agent.stopFetchingMessages()
                 agent.stop()
             }
@@ -87,13 +83,12 @@ class FirstViewModel : ViewModel() {
         return agentState
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    @Throws(Exception::class)
+    @Throws(Exception::class, PrismAgentError.UnknownInvitationTypeError::class)
     fun parseAndAcceptOOB(oobUrl: String) {
         if (this::agent.isInitialized.not()) {
             throw Exception("Agent has not been started")
         }
-        GlobalScope.launch {
+        viewModelScope.launch {
             when (val invitation = agent.parseInvitation(oobUrl)) {
                 is OutOfBandInvitation -> {
                     agent.acceptOutOfBandInvitation(invitation)
@@ -108,9 +103,8 @@ class FirstViewModel : ViewModel() {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun sendTestMessage(did: DID) {
-        GlobalScope.launch {
+        viewModelScope.launch {
 //            val senderPeerDid = agent.createNewPeerDID(
 //                emptyArray(),
 //                true
@@ -127,9 +121,8 @@ class FirstViewModel : ViewModel() {
         }
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     fun createPeerDid() {
-        GlobalScope.launch {
+        viewModelScope.launch {
             val did = agent.createNewPeerDID(
                 arrayOf(
                     DIDDocument.Service(
@@ -206,7 +199,6 @@ class FirstViewModel : ViewModel() {
         )
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     private fun initializeAgent() {
         agent = PrismAgent(
             apollo = apollo,
@@ -216,7 +208,7 @@ class FirstViewModel : ViewModel() {
             seed = seed,
             mediatorHandler = handler
         )
-        GlobalScope.launch() {
+        viewModelScope.launch {
             agent.getFlowState().collect {
                 agentState.postValue(it.name)
             }

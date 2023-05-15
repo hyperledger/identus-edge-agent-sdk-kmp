@@ -28,10 +28,11 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineScope
 import java.time.Duration
 import kotlin.jvm.Throws
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -68,15 +69,11 @@ class PrismAgent {
     val mercury: Mercury
     var fetchingMessagesJob: Job? = null
 
+    private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     private val connectionManager: ConnectionManager
     private val flowState = MutableSharedFlow<State>()
 
-    fun getFlowState(): Flow<State> {
-        return flowState
-    }
-
-    @OptIn(DelicateCoroutinesApi::class)
     constructor(
         apollo: Apollo,
         castor: Castor,
@@ -86,7 +83,7 @@ class PrismAgent {
         seed: Seed?,
         api: Api?
     ) {
-        GlobalScope.launch {
+        prismAgentScope.launch {
             flowState.emit(State.STOPPED)
         }
         this.apollo = apollo
@@ -110,7 +107,6 @@ class PrismAgent {
         )
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @JvmOverloads
     constructor(
         apollo: Apollo,
@@ -121,7 +117,7 @@ class PrismAgent {
         api: Api? = null,
         mediatorHandler: MediationHandler
     ) {
-        GlobalScope.launch {
+        prismAgentScope.launch {
             flowState.emit(State.STOPPED)
         }
         this.apollo = apollo
@@ -144,6 +140,10 @@ class PrismAgent {
         )
         // Pairing will be removed in the future
         this.connectionManager = ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
+    }
+
+    fun getFlowState(): Flow<State> {
+        return flowState
     }
 
     @Throws(PrismAgentError.MediationRequestFailedError::class)
@@ -272,7 +272,7 @@ class PrismAgent {
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
         if (fetchingMessagesJob == null) {
-            fetchingMessagesJob = GlobalScope.launch {
+            fetchingMessagesJob = prismAgentScope.launch {
                 while (true) {
                     connectionManager.awaitMessages().collect { array ->
                         val messagesIds = mutableListOf<String>()
