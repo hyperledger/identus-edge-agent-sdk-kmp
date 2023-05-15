@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+/* ktlint-disable import-ordering */
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
@@ -16,14 +17,19 @@ import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
-import io.iohk.atala.prism.walletsdk.prismagent.models.InvitationType
-import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
-import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.connection.DIDCommConnectionRunner
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.findProtocolTypeByValue
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.DIDCommInvitationRunner
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.InvitationType
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
+import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import java.time.Duration
+import kotlin.jvm.Throws
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -33,11 +39,24 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import java.time.Duration
-import kotlin.jvm.Throws
+/* ktlint-disable import-ordering */
+
+/**
+ * Check if the passed URL is valid or not.
+ * @param str string to check its URL validity
+ * @return [Url] if valid, null if not valid
+ */
+private fun Url.Companion.parse(str: String): Url? {
+    try {
+        return Url(str)
+    } catch (e: Throwable) {
+        return null
+    }
+}
 
 class PrismAgent {
     var state: State = State.STOPPED
@@ -57,7 +76,8 @@ class PrismAgent {
         return flowState
     }
 
-    internal constructor(
+    @OptIn(DelicateCoroutinesApi::class)
+    constructor(
         apollo: Apollo,
         castor: Castor,
         pluto: Pluto,
@@ -90,6 +110,7 @@ class PrismAgent {
         )
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @JvmOverloads
     constructor(
         apollo: Apollo,
@@ -240,43 +261,6 @@ class PrismAgent {
         return did
     }
 
-    @Throws(PrismAgentError.UnknownInvitationTypeError::class)
-    suspend fun parseInvitation(str: String): InvitationType {
-        val json = Json.decodeFromString<JsonObject>(str)
-        val typeString: String = if (json.containsKey("type")) {
-            json["type"].toString().trim('"')
-        } else {
-            ""
-        }
-
-        val invite: InvitationType = when (findProtocolTypeByValue(typeString)) {
-            ProtocolType.PrismOnboarding -> parsePrismInvitation(str)
-            ProtocolType.Didcomminvitation -> parseOOBInvitation(str)
-            else ->
-                throw PrismAgentError.UnknownInvitationTypeError()
-        }
-
-        return invite
-    }
-
-    @Throws(PrismAgentError.FailedToOnboardError::class)
-    suspend fun acceptInvitation(invitation: PrismOnboardingInvitation) {
-        @Serializable
-        data class SendDID(val did: String)
-
-        val response = api.request(
-            HttpMethod.Post.toString(),
-            invitation.onboardEndpoint,
-            arrayOf(),
-            arrayOf(),
-            SendDID(invitation.from.toString())
-        )
-
-        if (response.status != 200) {
-            throw PrismAgentError.FailedToOnboardError()
-        }
-    }
-
     @Throws(PrismAgentError.CannotFindDIDPrivateKey::class)
     suspend fun signWith(did: DID, message: ByteArray): Signature {
         val privateKey =
@@ -290,7 +274,18 @@ class PrismAgent {
         if (fetchingMessagesJob == null) {
             fetchingMessagesJob = GlobalScope.launch {
                 while (true) {
-                    connectionManager.awaitMessages()
+                    connectionManager.awaitMessages().collect { array ->
+                        val messagesIds = mutableListOf<String>()
+                        val messages = mutableListOf<Message>()
+                        array.map { pair ->
+                            messagesIds.add(pair.first)
+                            messages.add(pair.second)
+                        }
+                        if (messagesIds.isNotEmpty()) {
+                            connectionManager.mediationHandler.registerMessagesAsRead(messagesIds.toTypedArray())
+                            pluto.storeMessages(messages)
+                        }
+                    }
                     delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
                 }
             }
@@ -313,10 +308,50 @@ class PrismAgent {
         return pluto.getAllMessagesReceived()
     }
 
+    // Invitation functionalities
+    /**
+     * Parses the given string as an invitation
+     * @param str The string to parse
+     * @return The parsed invitation [InvitationType]
+     * @throws [PrismAgentError.UnknownInvitationTypeError] if the invitation is not a valid Prism or OOB type
+     */
+    @Throws(PrismAgentError.UnknownInvitationTypeError::class)
+    suspend fun parseInvitation(str: String): InvitationType {
+        Url.parse(str)?.let {
+            return parseOOBInvitation(it)
+        } ?: run {
+            try {
+                val json = Json.decodeFromString<JsonObject>(str)
+                val typeString: String = if (json.containsKey("type")) {
+                    json["type"].toString().trim('"')
+                } else {
+                    ""
+                }
+
+                val invite: InvitationType = when (findProtocolTypeByValue(typeString)) {
+                    ProtocolType.PrismOnboarding -> parsePrismInvitation(str)
+                    ProtocolType.Didcomminvitation -> parseOOBInvitation(str)
+                    else ->
+                        throw PrismAgentError.UnknownInvitationTypeError()
+                }
+
+                return invite
+            } catch (e: SerializationException) {
+                throw PrismAgentError.UnknownInvitationTypeError()
+            }
+        }
+    }
+
+    /**
+     * Parses the given string as a Prism Onboarding invitation
+     * @param str The string to parse
+     * @return The parsed Prism Onboarding invitation
+     * @throws [PrismAgentError.UnknownInvitationTypeError] if the string is not a valid Prism Onboarding invitation
+     */
     @Throws(PrismAgentError.UnknownInvitationTypeError::class)
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
         try {
-            val prismOnboarding = PrismOnboardingInvitation.prismOnboardingInvitationFromJsonString(str)
+            val prismOnboarding = PrismOnboardingInvitation.fromJsonString(str)
             val url = prismOnboarding.onboardEndpoint
             val did = createNewPeerDID(
                 arrayOf(
@@ -330,7 +365,7 @@ class PrismAgent {
                         )
                     )
                 ),
-                true,
+                false,
             )
             prismOnboarding.from = did
             return prismOnboarding
@@ -339,12 +374,62 @@ class PrismAgent {
         }
     }
 
+    /**
+     * Parses the given string as an Out-of-Band invitation
+     * @param str The string to parse
+     * @returns The parsed Out-of-Band invitation
+     * @throws [PrismAgentError.UnknownInvitationTypeError] if the string is not a valid URL
+     */
     @Throws(PrismAgentError.UnknownInvitationTypeError::class)
-    private fun parseOOBInvitation(str: String): OutOfBandInvitation {
-        try {
-            return Json.decodeFromString(str)
-        } catch (e: Exception) {
+    private suspend fun parseOOBInvitation(str: String): OutOfBandInvitation {
+        return try {
+            Json.decodeFromString(str)
+        } catch (ex: SerializationException) {
             throw PrismAgentError.UnknownInvitationTypeError()
+        }
+    }
+
+    /**
+     * Parses the given URL as an Out-of-Band invitation
+     * @param url The URL to parse
+     * @return The parsed Out-of-Band invitation
+     * @throws [PrismAgentError.UnknownInvitationTypeError] if the URL is not a valid Out-of-Band invitation
+     */
+    private suspend fun parseOOBInvitation(url: Url): OutOfBandInvitation {
+        return DIDCommInvitationRunner(url).run()
+    }
+
+    /**
+     * Accepts an Out-of-Band (DIDComm) invitation and establishes a new connection
+     * @param invitation The Out-of-Band invitation to accept
+     * @throws [PrismAgentError.NoMediatorAvailableError] if there is no mediator available or other errors occur during the acceptance process
+     */
+    suspend fun acceptOutOfBandInvitation(invitation: OutOfBandInvitation) {
+        val ownDID = createNewPeerDID(updateMediator = true)
+        val pair = DIDCommConnectionRunner(invitation, pluto, ownDID, connectionManager).run()
+        connectionManager.addConnection(pair)
+    }
+
+    /**
+     * Accepts a Prism Onboarding invitation and performs the onboarding process
+     * @param invitation The Prism Onboarding invitation to accept
+     * @throws [PrismAgentError.FailedToOnboardError] if failed to on board
+     */
+    @Throws(PrismAgentError.FailedToOnboardError::class)
+    suspend fun acceptInvitation(invitation: PrismOnboardingInvitation) {
+        @Serializable
+        data class SendDID(val did: String)
+
+        val response = api.request(
+            HttpMethod.Post.toString(),
+            invitation.onboardEndpoint,
+            arrayOf(),
+            arrayOf(),
+            SendDID(invitation.from.toString())
+        )
+
+        if (response.status != 200) {
+            throw PrismAgentError.FailedToOnboardError()
         }
     }
 

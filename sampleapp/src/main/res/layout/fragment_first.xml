@@ -8,6 +8,31 @@
             android:layout_height="match_parent"
             tools:context=".FirstFragment">
 
+        <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/oob_field"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/enter_oob"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/parse_invite_btn"
+                app:layout_constraintStart_toStartOf="parent">
+            <com.google.android.material.textfield.TextInputEditText
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColorHint="#616161"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+                android:id="@+id/parse_invite_btn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/parse_invite"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintBottom_toTopOf="@+id/scroll"
+                app:layout_constraintTop_toBottomOf="@+id/oob_field"/>
+
         <ScrollView
                 android:id="@+id/scroll"
                 android:layout_width="0dp"
@@ -15,7 +40,7 @@
                 app:layout_constraintBottom_toTopOf="@id/startAgent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent">
+                app:layout_constraintTop_toBottomOf="@+id/parse_invite_btn">
 
             <TextView
                     android:id="@+id/log"
@@ -31,7 +56,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Start agent"
+                android:text="@string/start_agent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@id/sendMessage"
                 app:layout_constraintStart_toStartOf="parent"/>
@@ -42,7 +67,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                android:text="Send message"
+                android:text="@string/send_message"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/startAgent"
                 app:layout_constraintEnd_toStartOf="@id/createPeerDID"/>
@@ -53,7 +78,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:layout_marginStart="4dp"
-                android:text="Create peer DID"
+                android:text="@string/create_peer_did"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@id/sendMessage"
                 app:layout_constraintEnd_toEndOf="parent"/>

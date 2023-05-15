@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+/* ktlint-disable import-ordering */
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
@@ -8,8 +9,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
-import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
-import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.core.toByteArray
@@ -21,6 +22,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+/* ktlint-disable import-ordering */
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class PrismAgentTests {
@@ -239,15 +241,15 @@ class PrismAgentTests {
         """
 
         val invitation = agent.parseInvitation(invitationString.trim())
-        assertEquals(OutOfBandInvitation::class, invitation::class)
+        assert(invitation is OutOfBandInvitation)
         val oobInvitation: OutOfBandInvitation = invitation as OutOfBandInvitation
-        assertEquals("https://didcomm.org/out-of-band/2.0/invitation", oobInvitation.type)
-        assertEquals(DID("did:peer:asdf42sf"), oobInvitation.from)
+        assertEquals("https://didcomm.org/out-of-band/2.0/invitation", oobInvitation.type.value)
+        assertEquals(DID("did:peer:asdf42sf").toString(), oobInvitation.from)
         assertEquals(
             OutOfBandInvitation.Body(
                 "issue-vc",
                 "To issue a Faber College Graduate credential",
-                arrayOf("didcomm/v2", "didcomm/aip2;env=rfc587"),
+                listOf("didcomm/v2", "didcomm/aip2;env=rfc587"),
             ),
             oobInvitation.body,
         )
@@ -311,5 +313,22 @@ class PrismAgentTests {
         )
         agent.stop()
         assertEquals(PrismAgent.State.STOPPED, agent.state)
+    }
+
+    @Test
+    fun test_OOPInvitationInURLFormat() = runTest {
+        val oob = "https://my.domain.com/path?_oob=eyJpZCI6ImQzNjM3NzlhLWYyMmItNGFiNC1hYjY0LTkxZjkxNjgzNzYwNyIsInR5cGUiOiJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzIuMC9pbnZpdGF0aW9uIiwiZnJvbSI6ImRpZDpwZWVyOjIuRXo2TFNjcGZReGJ2VEhLaGpvbzVvMzlmc254VEp1RTRobVp3ckROUE5BVzI0dmFORi5WejZNa3UzSkpVTDNkaHpYQXB0RWpuUDFpNkF0TDlTNGlwRTNYOHM3MWV4MW9WVGNHLlNleUowSWpvaVpHMGlMQ0p6SWpvaWFIUjBjSE02THk5ck9ITXRaR1YyTG1GMFlXeGhjSEpwYzIwdWFXOHZjSEpwYzIwdFlXZGxiblF2Wkdsa1kyOXRiU0lzSW5JaU9sdGRMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDAiLCJib2R5Ijp7ImdvYWxfY29kZSI6ImlvLmF0YWxhcHJpc20uY29ubmVjdCIsImdvYWwiOiJFc3RhYmxpc2ggYSB0cnVzdCBjb25uZWN0aW9uIGJldHdlZW4gdHdvIHBlZXJzIHVzaW5nIHRoZSBwcm90b2NvbCAnaHR0cHM6Ly9hdGFsYXByaXNtLmlvL21lcmN1cnkvY29ubmVjdGlvbnMvMS4wL3JlcXVlc3QnIiwiYWNjZXB0IjpbXX19"
+        val agent = PrismAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            connectionManager = connectionManager,
+            seed = null,
+            api = null,
+        )
+        val x = agent.parseInvitation(oob)
+        assert(x is OutOfBandInvitation)
+        assert((x as OutOfBandInvitation).type == ProtocolType.Didcomminvitation)
     }
 }

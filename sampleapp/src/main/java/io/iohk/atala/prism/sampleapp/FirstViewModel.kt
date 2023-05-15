@@ -25,13 +25,13 @@ import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
-import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
-import io.iohk.atala.prism.walletsdk.prismagent.models.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
+import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+import java.lang.Exception
+import kotlin.jvm.Throws
 
 class FirstViewModel : ViewModel() {
 
@@ -46,9 +46,7 @@ class FirstViewModel : ViewModel() {
     private val notification: MutableLiveData<String> = MutableLiveData("")
     private val agentState: MutableLiveData<String> = MutableLiveData("")
 
-    init {
-    }
-
+    @OptIn(DelicateCoroutinesApi::class)
     fun startAgent(context: Context) {
         GlobalScope.launch {
             initializeApollo()
@@ -68,9 +66,10 @@ class FirstViewModel : ViewModel() {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun stopAgent() {
-        // TODO: lateinit property not initialized error
-        agent?.let {
+        // TODO: late init property not initialized error
+        agent.let {
             GlobalScope.launch {
                 agent.stopFetchingMessages()
                 agent.stop()
@@ -90,22 +89,28 @@ class FirstViewModel : ViewModel() {
         return agentState
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
+    @Throws(Exception::class)
     fun parseAndAcceptOOB(oobUrl: String) {
+        if (this::agent.isInitialized.not()) {
+            throw Exception("Agent has not been started")
+        }
         GlobalScope.launch {
-            val invitationType = agent.parseInvitation(oobUrl)
-            var invitation: Any
-            if (invitationType is OutOfBandInvitation) {
-                invitation = Json.decodeFromString<OutOfBandInvitation>(oobUrl)
-//                agent.acceptOutOfBandInvitation(invitation)
-            } else if (invitationType is PrismOnboardingInvitation) {
-                invitation = Json.decodeFromString<PrismOnboardingInvitation>(oobUrl)
-                agent.acceptInvitation(invitation)
-            } else {
-                throw PrismAgentError.UnknownInvitationTypeError()
+            when (val invitation = agent.parseInvitation(oobUrl)) {
+                is OutOfBandInvitation -> {
+                    agent.acceptOutOfBandInvitation(invitation)
+                }
+                is PrismOnboardingInvitation -> {
+                    agent.acceptInvitation(invitation)
+                }
+                else -> {
+                    throw PrismAgentError.UnknownInvitationTypeError()
+                }
             }
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun sendTestMessage(did: DID) {
         GlobalScope.launch {
 //            val senderPeerDid = agent.createNewPeerDID(
@@ -124,6 +129,7 @@ class FirstViewModel : ViewModel() {
         }
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun createPeerDid() {
         GlobalScope.launch {
             val did = agent.createNewPeerDID(
@@ -198,7 +204,7 @@ class FirstViewModel : ViewModel() {
     }
 
     private fun initializeHandler() {
-        // Favio's mediatorDID = DID("did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cHM6Ly9hbGljZS5kaWQuZm1ncC5hcHAvIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfQ"),
+        // Fabio's mediatorDID = DID("did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cHM6Ly9hbGljZS5kaWQuZm1ncC5hcHAvIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfQ"),
         handler = BasicMediatorHandler(
             mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
             mercury = mercury,
@@ -206,6 +212,7 @@ class FirstViewModel : ViewModel() {
         )
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     private fun initializeAgent() {
         agent = PrismAgent(
             apollo = apollo,

@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.prismagent.models
+package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
 import kotlinx.serialization.Serializable
 
