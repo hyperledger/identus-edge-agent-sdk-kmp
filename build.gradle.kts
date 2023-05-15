@@ -34,7 +34,7 @@ java {
 
 allprojects {
     this.group = "io.iohk.atala.prism.walletsdk"
-    this.version = "1.0.0-local"
+    this.version = "1.0.0-alpha"
 
     repositories {
         mavenCentral()
@@ -75,13 +75,7 @@ allprojects {
         }
     }
 
-    apply(plugin = "org.gradle.maven-publish")
-    publishing {
-        repositories {
-            mavenLocal()
-        }
-    }
-
+//    apply(plugin = "org.gradle.maven-publish")
 //    publishing {
 //        repositories {
 //            maven {

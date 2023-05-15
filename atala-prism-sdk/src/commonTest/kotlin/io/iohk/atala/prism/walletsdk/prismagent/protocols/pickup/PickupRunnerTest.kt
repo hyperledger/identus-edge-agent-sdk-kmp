@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.MercuryMock
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -32,6 +33,7 @@ class PickupRunnerTest {
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testPickupRun_whenMessageIsStatus_thenEmptyArrayMessages() = runTest {
         val message = Message(piuri = ProtocolType.PickupStatus.value, body = "")
@@ -39,6 +41,7 @@ class PickupRunnerTest {
         assertTrue(messages.isEmpty())
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @Test
     fun testPickupRun_whenMessageIsDelivery_thenArrayOfMessages() = runTest {
         val attachmentData = AttachmentJsonData("{\"key\":\"value\"")

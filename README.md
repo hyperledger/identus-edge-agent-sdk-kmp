@@ -9,6 +9,6 @@
 The wallet SDK will have the following features:
 
 - Secure Local Storage
-- Key Managment
+- Key Management
 - DIDComm Operations
 - Transportation Layer by default for sharing the DID using HTTP
