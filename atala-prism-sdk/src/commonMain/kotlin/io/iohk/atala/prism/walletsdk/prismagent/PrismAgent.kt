@@ -28,21 +28,24 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import kotlinx.coroutines.CoroutineScope
 import java.time.Duration
 import kotlin.jvm.Throws
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import java.net.UnknownHostException
 /* ktlint-disable import-ordering */
 
 /**
@@ -60,23 +63,25 @@ private fun Url.Companion.parse(str: String): Url? {
 
 class PrismAgent {
     var state: State = State.STOPPED
-        private set
+        private set(value) {
+            field = value
+            prismAgentScope.launch {
+                println("State: $value")
+                flowState.emit(value)
+            }
+        }
     val seed: Seed
     val apollo: Apollo
     val castor: Castor
     val pluto: Pluto
     val mercury: Mercury
     var fetchingMessagesJob: Job? = null
+    val flowState = MutableSharedFlow<State>()
 
+    private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     private val connectionManager: ConnectionManager
-    private val flowState = MutableSharedFlow<State>()
 
-    fun getFlowState(): Flow<State> {
-        return flowState
-    }
-
-    @OptIn(DelicateCoroutinesApi::class)
     constructor(
         apollo: Apollo,
         castor: Castor,
@@ -86,9 +91,7 @@ class PrismAgent {
         seed: Seed?,
         api: Api?
     ) {
-        GlobalScope.launch {
-            flowState.emit(State.STOPPED)
-        }
+        state = State.STOPPED
         this.apollo = apollo
         this.castor = castor
         this.pluto = pluto
@@ -110,7 +113,6 @@ class PrismAgent {
         )
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
     @JvmOverloads
     constructor(
         apollo: Apollo,
@@ -121,9 +123,7 @@ class PrismAgent {
         api: Api? = null,
         mediatorHandler: MediationHandler
     ) {
-        GlobalScope.launch {
-            flowState.emit(State.STOPPED)
-        }
+        state = State.STOPPED
         this.apollo = apollo
         this.castor = castor
         this.pluto = pluto
@@ -143,41 +143,55 @@ class PrismAgent {
             }
         )
         // Pairing will be removed in the future
-        this.connectionManager = ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
+        this.connectionManager =
+            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
     }
 
-    @Throws(PrismAgentError.MediationRequestFailedError::class)
+    init {
+        flowState.onSubscription {
+            if (flowState.subscriptionCount.value <= 0) {
+                state = State.STOPPED
+            } else {
+                throw Exception("Agent state only accepts one subscription.")
+            }
+        }
+    }
+
+    @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun start() {
         if (state != State.STOPPED) {
             return
         }
         state = State.STARTING
-        flowState.emit(State.STARTING)
         try {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
-            val hostDID = createNewPeerDID(
-                emptyArray(),
-                false,
-            )
-            connectionManager.registerMediator(hostDID)
+            try {
+                val hostDID = createNewPeerDID(
+                    emptyArray(),
+                    false
+                )
+                connectionManager.registerMediator(hostDID)
+            } catch (error: UnknownHostException) {
+                state = State.STOPPED
+                println("Error: ${error.message}")
+                throw error
+            }
         }
         if (connectionManager.mediationHandler.mediator != null) {
-            flowState.emit(State.RUNNING)
             state = State.RUNNING
         } else {
+            state = State.STOPPED
             throw PrismAgentError.MediationRequestFailedError()
         }
     }
 
-    suspend fun stop() {
+    fun stop() {
         if (state != State.RUNNING) {
             return
         }
-        flowState.emit(State.STOPPING)
         state = State.STOPPING
         fetchingMessagesJob?.cancel()
-        flowState.emit(State.STOPPED)
         state = State.STOPPED
     }
 
@@ -188,9 +202,16 @@ class PrismAgent {
         services: Array<DIDDocument.Service> = emptyArray()
     ): DID {
         val index = keyPathIndex ?: pluto.getPrismLastKeyPathIndex().first()
-        val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
-        val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
-        pluto.storePrismDIDAndPrivateKeys(did = did, keyPathIndex = index, alias = alias, listOf(keyPair.privateKey))
+        val keyPair =
+            apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
+        val did =
+            castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
+        pluto.storePrismDIDAndPrivateKeys(
+            did = did,
+            keyPathIndex = index,
+            alias = alias,
+            listOf(keyPair.privateKey)
+        )
         return did
     }
 
@@ -199,8 +220,10 @@ class PrismAgent {
         services: Array<DIDDocument.Service> = emptyArray(),
         updateMediator: Boolean
     ): DID {
-        val keyAgreementKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.X25519))
-        val authenticationKeyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.ED25519))
+        val keyAgreementKeyPair =
+            apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.X25519))
+        val authenticationKeyPair =
+            apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.ED25519))
 
         var tmpServices = arrayOf<DIDDocument.Service>()
         if (updateMediator) {
@@ -228,7 +251,10 @@ class PrismAgent {
 
         pluto.storePeerDIDAndPrivateKeys(
             did = did,
-            privateKeys = listOf(keyAgreementKeyPair.privateKey, authenticationKeyPair.privateKey)
+            privateKeys = listOf(
+                keyAgreementKeyPair.privateKey,
+                authenticationKeyPair.privateKey
+            )
         )
 
         // The next logic is a bit tricky, so it's not forgotten this is a reminder.
@@ -240,7 +266,8 @@ class PrismAgent {
         // So when the secret resolver asks for the secret we can identify it.
         val document = castor.resolveDID(did.toString())
 
-        val listOfVerificationMethods: MutableList<DIDDocument.VerificationMethod> = mutableListOf()
+        val listOfVerificationMethods: MutableList<DIDDocument.VerificationMethod> =
+            mutableListOf()
         document.coreProperties.forEach {
             if (it is DIDDocument.Authentication) {
                 listOfVerificationMethods.addAll(it.verificationMethods)
@@ -249,13 +276,19 @@ class PrismAgent {
                 listOfVerificationMethods.addAll(it.verificationMethods)
             }
         }
-        val verificationMethods = DIDDocument.VerificationMethods(listOfVerificationMethods.toTypedArray())
+        val verificationMethods =
+            DIDDocument.VerificationMethods(listOfVerificationMethods.toTypedArray())
 
         verificationMethods.values.forEach {
             if (it.type.contains("X25519")) {
                 pluto.storePrivateKeys(keyAgreementKeyPair.privateKey, did, 0, it.id.toString())
             } else if (it.type.contains("Ed25519")) {
-                pluto.storePrivateKeys(authenticationKeyPair.privateKey, did, 0, it.id.toString())
+                pluto.storePrivateKeys(
+                    authenticationKeyPair.privateKey,
+                    did,
+                    0,
+                    it.id.toString()
+                )
             }
         }
         return did
@@ -264,7 +297,8 @@ class PrismAgent {
     @Throws(PrismAgentError.CannotFindDIDPrivateKey::class)
     suspend fun signWith(did: DID, message: ByteArray): Signature {
         val privateKey =
-            pluto.getDIDPrivateKeysByDID(did).first().first() ?: throw PrismAgentError.CannotFindDIDPrivateKey()
+            pluto.getDIDPrivateKeysByDID(did).first().first()
+                ?: throw PrismAgentError.CannotFindDIDPrivateKey()
         return apollo.signMessage(privateKey, message)
     }
 
@@ -272,7 +306,7 @@ class PrismAgent {
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
         if (fetchingMessagesJob == null) {
-            fetchingMessagesJob = GlobalScope.launch {
+            fetchingMessagesJob = prismAgentScope.launch {
                 while (true) {
                     connectionManager.awaitMessages().collect { array ->
                         val messagesIds = mutableListOf<String>()
@@ -282,7 +316,9 @@ class PrismAgent {
                             messages.add(pair.second)
                         }
                         if (messagesIds.isNotEmpty()) {
-                            connectionManager.mediationHandler.registerMessagesAsRead(messagesIds.toTypedArray())
+                            connectionManager.mediationHandler.registerMessagesAsRead(
+                                messagesIds.toTypedArray()
+                            )
                             pluto.storeMessages(messages)
                         }
                     }
@@ -365,7 +401,7 @@ class PrismAgent {
                         )
                     )
                 ),
-                false,
+                false
             )
             prismOnboarding.from = did
             return prismOnboarding

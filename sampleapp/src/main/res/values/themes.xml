@@ -19,7 +19,7 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <style name="Theme.Walletsdk.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.Walletsdk.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
-    <style name="Theme.Walletsdk.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.Walletsdk.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 </resources>

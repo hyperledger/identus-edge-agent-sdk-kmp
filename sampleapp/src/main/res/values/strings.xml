@@ -19,4 +19,8 @@
     <string name="need_oob">Need to enter an OOB</string>
     <string name="not_valid_oob">Not valid OOB URL</string>
     <string name="close">Close</string>
+    <string name="tab_agent">Agent</string>
+    <string name="tab_connections">Connect</string>
+    <string name="tab_messages">Messages</string>
+    <string name="tab_credentials">Creds</string>
 </resources>
