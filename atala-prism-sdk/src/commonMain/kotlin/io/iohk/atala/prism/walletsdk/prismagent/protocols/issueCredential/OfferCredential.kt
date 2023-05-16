@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -110,10 +111,14 @@ data class OfferCredential @JvmOverloads constructor(
 
     @Serializable
     data class Body @JvmOverloads constructor(
+        @SerialName("goal_code")
         val goalCode: String? = null,
         val comment: String? = null,
+        @SerialName("replacement_id")
         val replacementId: String? = null,
+        @SerialName("multiple_available")
         val multipleAvailable: String? = null,
+        @SerialName("credential_preview")
         val credentialPreview: CredentialPreview,
         val formats: Array<CredentialFormat>
     ) {

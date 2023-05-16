@@ -323,6 +323,7 @@ class PrismAgentTests {
             castor = castorMock,
             pluto = plutoMock,
             mercury = mercuryMock,
+            pollux = polluxMock,
             connectionManager = connectionManager,
             seed = null,
             api = null,

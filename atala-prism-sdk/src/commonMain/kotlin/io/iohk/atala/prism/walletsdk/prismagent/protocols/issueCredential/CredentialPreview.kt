@@ -7,7 +7,11 @@ import kotlinx.serialization.Serializable
 data class CredentialPreview(val attributes: Array<Attribute>) {
 
     @Serializable
-    data class Attribute(val name: String, val value: String, val mimeType: String?)
+    data class Attribute(
+        val name: String,
+        val value: String,
+        val mimeType: String?
+    )
 
     public val type: String = ProtocolType.DidcommCredentialPreview.value
 
