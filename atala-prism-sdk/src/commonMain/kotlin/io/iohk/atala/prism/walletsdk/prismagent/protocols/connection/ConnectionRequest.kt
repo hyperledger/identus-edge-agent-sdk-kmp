@@ -4,8 +4,8 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
-import io.iohk.atala.prism.walletsdk.prismagent.models.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -42,19 +42,16 @@ class ConnectionRequest {
         } ?: throw PrismAgentError.InvitationIsInvalidError()
     }
 
-    constructor(inviteMessage: OutOfBandInvitation, from: DID) {
-        val toDID = inviteMessage.from
-        ConnectionRequest(
-            from = from,
-            to = toDID,
-            thid = inviteMessage.id,
-            body = Body(
-                goalCode = inviteMessage.body.goalCode,
-                goal = inviteMessage.body.goal,
-                accept = inviteMessage.body.accept
-            )
+    constructor(inviteMessage: OutOfBandInvitation, from: DID) : this(
+        from,
+        DID(inviteMessage.from),
+        inviteMessage.id,
+        Body(
+            goalCode = inviteMessage.body.goalCode,
+            goal = inviteMessage.body.goal,
+            accept = inviteMessage.body.accept?.toTypedArray()
         )
-    }
+    )
 
     @Throws(PrismAgentError.InvalidMessageError::class)
     constructor(fromMessage: Message) {
@@ -76,6 +73,7 @@ class ConnectionRequest {
 
     fun makeMessage(): Message {
         return Message(
+            id = this.id,
             piuri = this.type,
             from = this.from,
             to = this.to,

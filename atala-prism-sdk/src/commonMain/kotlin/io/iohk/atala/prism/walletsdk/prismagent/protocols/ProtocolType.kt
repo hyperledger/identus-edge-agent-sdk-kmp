@@ -1,8 +1,18 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Serializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlin.jvm.Throws
 
+@Serializable(with = ProtocolTypeSerializer::class)
 enum class ProtocolType(val value: String) {
     DidcommMediationRequest("https://didcomm.org/coordinate-mediation/2.0/mediate-request"),
     DidcommMediationGrant("https://didcomm.org/coordinate-mediation/2.0/mediate-grant"),
@@ -24,6 +34,29 @@ enum class ProtocolType(val value: String) {
     PickupDelivery("https://didcomm.org/messagepickup/3.0/delivery"),
     PickupStatus("https://didcomm.org/messagepickup/3.0/status"),
     PickupReceived("https://didcomm.org/messagepickup/3.0/messages-received"),
+    None("");
+
+    companion object {
+        fun findProtocolType(type: String, default: ProtocolType): ProtocolType {
+            return ProtocolType.values().find { it.value == type } ?: default
+        }
+    }
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+@Serializer(forClass = ProtocolType::class)
+object ProtocolTypeSerializer : KSerializer<ProtocolType> {
+    override val descriptor: SerialDescriptor
+        get() = PrimitiveSerialDescriptor("ProtocolType", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: ProtocolType) {
+        encoder.encodeString(value.value)
+    }
+
+    override fun deserialize(decoder: Decoder): ProtocolType {
+        val protocolType = decoder.decodeString()
+        return ProtocolType.findProtocolType(protocolType, ProtocolType.None)
+    }
 }
 
 @Throws(PrismAgentError.UnknownInvitationTypeError::class)
