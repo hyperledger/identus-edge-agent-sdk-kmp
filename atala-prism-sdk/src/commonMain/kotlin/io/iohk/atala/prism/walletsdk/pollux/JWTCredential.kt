@@ -17,11 +17,11 @@ data class JWTCredential(val id: String, val json: JsonString) {
     fun makeVerifiableCredential(): VerifiableCredential {
         return JWTCredentialPayload(
             iss = jwtVerifiableCredential.iss,
-            sub = jwtVerifiableCredential.sub,
             verifiableCredential = jwtVerifiableCredential.verifiableCredential,
             nbf = jwtVerifiableCredential.nbf,
             exp = jwtVerifiableCredential.exp,
-            jti = id
+            jti = id,
+            sub = null
         )
     }
 }

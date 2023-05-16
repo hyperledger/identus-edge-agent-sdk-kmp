@@ -6,7 +6,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -16,9 +15,7 @@ import kotlin.jvm.Throws
 @Serializable
 data class ProofTypes(
     val schema: String,
-    @SerialName("required_fields")
     val requiredFields: Array<String>?,
-    @SerialName("trust_issuers")
     val trustIssuers: Array<String>?
 ) {
     override fun equals(other: Any?): Boolean {
@@ -95,8 +92,8 @@ class Presentation {
         }
     }
 
-    fun makeMessage() {
-        Message(
+    fun makeMessage(): Message {
+        return Message(
             id = id,
             piuri = type,
             from = from,
@@ -110,7 +107,7 @@ class Presentation {
     @Throws(PrismAgentError.InvalidRequestPresentationMessageError::class)
     fun makePresentationFromRequest(msg: Message): Presentation {
         try {
-            val requestPresentation = RequestPresentation(msg)
+            val requestPresentation = RequestPresentation.fromMessage(msg)
             return Presentation(
                 body = Body(
                     goalCode = requestPresentation.body.goalCode,

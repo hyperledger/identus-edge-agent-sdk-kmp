@@ -378,6 +378,12 @@ internal class CastorShared {
                                     usage = PrismDIDPublicKey.Usage.MASTER_KEY,
                                     keyData = masterPublicKey,
                                 ).toProto(),
+                                PrismDIDPublicKey(
+                                    apollo = apollo,
+                                    id = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY.defaultId(),
+                                    usage = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY,
+                                    keyData = masterPublicKey,
+                                ).toProto()
                             ),
                             services = services?.map {
                                 Service(

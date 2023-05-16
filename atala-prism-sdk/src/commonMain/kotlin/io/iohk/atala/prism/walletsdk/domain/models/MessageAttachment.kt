@@ -3,8 +3,8 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import io.iohk.atala.prism.apollo.uuid.UUID
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmOverloads
-
-interface AttachmentData
+@Serializable
+sealed interface AttachmentData
 
 @Serializable
 data class AttachmentHeader(

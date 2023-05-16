@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.pollux
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
+import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
@@ -10,21 +11,24 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.JWTCredentialPayload
 import io.iohk.atala.prism.walletsdk.domain.models.JsonString
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.W3CVerifiableCredential
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.jce.spec.ECPrivateKeySpec
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
-import kotlin.jvm.Throws
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPrivateKeySpec
 
 class PolluxImpl(val castor: Castor) : Pollux {
 
@@ -35,25 +39,29 @@ class PolluxImpl(val castor: Castor) : Pollux {
             throw PolluxError.InvalidJWTString()
         }
         val decodedBase64CredentialJson: JsonString = try {
-            jwtParts.first().base64UrlDecoded
+            jwtParts[1].base64UrlDecoded
         } catch (e: Throwable) {
             throw PolluxError.InvalidCredentialError(e.message)
         }
 
-        val verifiableCredential = Json.decodeFromString<VerifiableCredential>(decodedBase64CredentialJson)
+        val verifiableCredentialJson = Json.decodeFromString<JWTJsonPayload>(decodedBase64CredentialJson)
 
-        return when (verifiableCredential.type.first()) {
-            CredentialType.JWT.type -> {
-                JWTCredential(
-                    id = jwtString,
-                    json = decodedBase64CredentialJson,
-                ).makeVerifiableCredential()
-            }
-            CredentialType.W3C.type -> {
-                Json.decodeFromString<W3CVerifiableCredential>(decodedBase64CredentialJson)
-            }
-            else -> throw PolluxError.InvalidCredentialError()
-        }
+        return JWTCredentialPayload(
+            iss = DID(verifiableCredentialJson.iss),
+            exp = verifiableCredentialJson.exp.toString(),
+            nbf = verifiableCredentialJson.nbf.toString(),
+            jti = jwtString,
+            verifiableCredential = JWTCredentialPayload.JWTVerifiableCredential(
+                credentialType = CredentialType.JWT,
+                issuer = DID(verifiableCredentialJson.iss),
+                credentialSubject = verifiableCredentialJson.sub,
+                id = jwtString,
+                issuanceDate = verifiableCredentialJson.nbf.toString(),
+                expirationDate = verifiableCredentialJson.exp.toString(),
+                proof = null
+            ),
+            sub = verifiableCredentialJson.sub
+        )
     }
 
     @Throws(PolluxError.NoDomainOrChallengeFound::class)
@@ -83,18 +91,19 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
     private fun parsePrivateKey(privateKey: PrivateKey): ECPrivateKey {
         val curveName = "secp256k1"
-        val ecSpec = ECNamedCurveTable.getParameterSpec(curveName)
-        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.value), ecSpec)
-        val keyFactory = KeyFactory.getInstance("EC")
+        val sp = ECNamedCurveTable.getParameterSpec(curveName)
+        val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
+        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.value), params)
+        val keyFactory = KeyFactory.getInstance("EC", BouncyCastleProvider())
         return keyFactory.generatePrivate(privateKeySpec) as ECPrivateKey
     }
 
     private fun getDomain(jsonObject: JsonObject): String? {
-        return jsonObject["domain"]?.jsonPrimitive?.content
+        return jsonObject["options"]?.jsonObject?.get("domain")?.jsonPrimitive?.content
     }
 
     private fun getChallenge(jsonObject: JsonObject): String? {
-        return jsonObject["challenge"]?.jsonPrimitive?.content
+        return jsonObject["options"]?.jsonObject?.get("challenge")?.jsonPrimitive?.content
     }
 
     private fun signClaimsRequestCredentialJWT(
@@ -121,7 +130,9 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
         // Sign the JWT with the private key
         val jwsObject = SignedJWT(header, claims)
-        val signer = ECDSASigner(privateKey)
+        val signer = ECDSASigner(privateKey as java.security.PrivateKey, com.nimbusds.jose.jwk.Curve.SECP256K1)
+        val provider = BouncyCastleProviderSingleton.getInstance()
+        signer.jcaContext.provider = provider
         jwsObject.sign(signer)
 
         // Serialize the JWS object to a string
@@ -143,7 +154,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
         )
         val claims = JWTClaimsSet.Builder()
             .audience(domain)
-            .subject(subjectDID.toString())
+            .issuer(subjectDID.toString())
             .claim("nonce", challenge)
             .claim("vp", vp)
             .build()
@@ -154,7 +165,9 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
         // Sign the JWT with the private key
         val jwsObject = SignedJWT(header, claims)
-        val signer = ECDSASigner(privateKey)
+        val signer = ECDSASigner(privateKey as java.security.PrivateKey, com.nimbusds.jose.jwk.Curve.SECP256K1)
+        val provider = BouncyCastleProviderSingleton.getInstance()
+        signer.jcaContext.provider = provider
         jwsObject.sign(signer)
 
         // Serialize the JWS object to a string

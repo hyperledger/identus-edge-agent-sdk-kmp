@@ -254,7 +254,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     }
 
     override fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?> {
-        return getInstance().privateKeyQueries.fetchKeyPathIndexByDID(did.methodId)
+        return getInstance().privateKeyQueries.fetchKeyPathIndexByDID(did.toString())
             .asFlow()
             .map {
                 try {
