@@ -11,6 +11,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
@@ -22,11 +23,17 @@ import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
+import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.lang.Exception
 import kotlin.jvm.Throws
@@ -40,15 +47,19 @@ class FirstViewModel : ViewModel() {
     private lateinit var handler: MediationHandler
     private lateinit var seed: Seed
     private lateinit var agent: PrismAgent
+    private lateinit var pollux: Pollux
     private val messageList: MutableLiveData<List<Message>> = MutableLiveData(listOf())
     private val notification: MutableLiveData<String> = MutableLiveData("")
     private val agentState: MutableLiveData<String> = MutableLiveData("")
+    private var didOfferDone = false
+    private var presentationDone = false
 
     fun startAgent(context: Context) {
         viewModelScope.launch {
             initializeApollo()
             initializePluto(context)
             initializeCastor()
+            initializePollux()
             initializeMercury()
             initializeSeed()
             initializeHandler()
@@ -58,6 +69,33 @@ class FirstViewModel : ViewModel() {
             agent.startFetchingMessages()
             agent.handleReceivedMessagesEvents().collect { messages ->
                 messageList.postValue(messages)
+                messages.forEach { message ->
+                    if (message.piuri == ProtocolType.DidcommOfferCredential.value && !didOfferDone) {
+                        didOfferDone = true
+                        if (pluto.getAllCredentials().first().isEmpty()) {
+                            val offer = OfferCredential.fromMessage(message)
+                            val subjectDID = agent.createNewPrismDID()
+                            val request = agent.prepareRequestCredentialWithIssuer(subjectDID, offer)
+                            viewModelScope.launch {
+                                mercury.sendMessage(request.makeMessage())
+                            }
+                        }
+                    }
+                    if (message.piuri == ProtocolType.DidcommIssueCredential.value) {
+                        agent.processIssuedCredentialMessage(IssueCredential.fromMessage(message))
+                    }
+
+                    if (message.piuri == ProtocolType.DidcommRequestPresentation.value && !presentationDone) {
+                        presentationDone = true
+                        val credential = pluto.getAllCredentials().first().first()
+                        credential?.let {
+                            val presentation = agent.preparePresentationForRequestProof(RequestPresentation.fromMessage(message), it)
+                            viewModelScope.launch {
+                                mercury.sendMessage(presentation.makeMessage())
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -151,6 +189,10 @@ class FirstViewModel : ViewModel() {
         castor = CastorImpl(apollo)
     }
 
+    private fun initializePollux() {
+        pollux = PolluxImpl(castor)
+    }
+
     private fun initializeMercury() {
         // This is just to make the code compile, it should be changed accordingly
         mercury = MercuryImpl(
@@ -193,7 +235,7 @@ class FirstViewModel : ViewModel() {
     private fun initializeHandler() {
         // Fabio's mediatorDID = DID("did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cHM6Ly9hbGljZS5kaWQuZm1ncC5hcHAvIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfQ"),
         handler = BasicMediatorHandler(
-            mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
+            mediatorDID = DID("did:peer:2.Ez6LSms555YhFthn1WV8ciDBpZm86hK9tp83WojJUmxPGk1hZ.Vz6MkmdBjMyB4TS5UbbQw54szm8yvMMf1ftGV2sQVYAxaeWhE.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLnJvb3RzaWQuY2xvdWQiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
             mercury = mercury,
             store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto),
         )
@@ -205,6 +247,7 @@ class FirstViewModel : ViewModel() {
             castor = castor,
             pluto = pluto,
             mercury = mercury,
+            pollux = pollux,
             seed = seed,
             mediatorHandler = handler
         )

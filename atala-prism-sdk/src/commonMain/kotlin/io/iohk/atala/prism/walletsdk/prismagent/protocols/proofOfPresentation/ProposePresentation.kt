@@ -74,7 +74,7 @@ class ProposePresentation {
     @Throws(PrismAgentError.InvalidMessageError::class)
     fun makeProposalFromRequest(msg: Message): ProposePresentation {
         try {
-            val request = RequestPresentation(msg)
+            val request = RequestPresentation.fromMessage(msg)
 
             return ProposePresentation(
                 body = Body(
