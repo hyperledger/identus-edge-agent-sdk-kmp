@@ -22,6 +22,7 @@ class CredentialsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCredentialsBinding.inflate(inflater, container, false)
+        binding.credentials.adapter = adapter
         return binding.root
     }
 

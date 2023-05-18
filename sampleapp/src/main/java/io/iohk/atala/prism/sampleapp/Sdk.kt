@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.sampleapp
 
-import android.app.Application
 import android.content.Context
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
@@ -8,42 +7,43 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
+import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.net.UnknownHostException
 
-class SampleApplication : Application() {
+class Sdk() {
 
-    var apollo: Apollo? = null
-        private set
+    private var apollo: Apollo? = null
         get() {
             return field ?: throw IllegalStateException("You haven't started the agent")
         }
 
-    var castor: Castor? = null
-        private set
+    private var castor: Castor? = null
         get() {
             return field ?: throw IllegalStateException("You haven't started the agent")
         }
 
     var pluto: Pluto? = null
-        private set
         get() {
             return field ?: throw IllegalStateException("You haven't started the agent")
         }
 
     var mercury: Mercury? = null
-        private set
         get() {
             return field ?: throw IllegalStateException("You haven't started the agent")
         }
@@ -54,7 +54,13 @@ class SampleApplication : Application() {
             return field ?: throw IllegalStateException("You haven't started the agent")
         }
 
-    var seed: Seed? = null
+    private var seed: Seed? = null
+        private set
+        get() {
+            return field ?: throw IllegalStateException("You haven't started the agent")
+        }
+
+    private var pollux: Pollux? = null
         private set
         get() {
             return field ?: throw IllegalStateException("You haven't started the agent")
@@ -66,37 +72,30 @@ class SampleApplication : Application() {
             return field
         }
 
-    suspend fun getAgent(context: Context): PrismAgent {
-        initializeApollo()
-        initializePluto(context)
-        initializeCastor()
-        initializeMercury()
-        initializeSeed()
-        initializeHandler()
-        initializeAgent()
-        return agent!!
-    }
-
+    @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun startAgent() {
-        try {
-            agent?.let {
-                it.start()
-                it.startFetchingMessages()
-            }
-        } catch (e: Exception) {
-            println("Start agent")
+        agent?.let {
+            it.start()
+            it.startFetchingMessages()
         }
     }
 
     fun stopAgent() {
         agent?.let {
-            try {
-                it.stopFetchingMessages()
-                it.stop()
-            } catch (e: Exception) {
-                println("stop agent")
-            }
+            it.stopFetchingMessages()
+            it.stop()
         }
+    }
+
+    private suspend fun initializeComponents(context: Context) {
+        initializeApollo()
+        initializePluto(context)
+        initializeCastor()
+        initializePollux()
+        initializeMercury()
+        initializeSeed()
+        initializeHandler()
+        initializeAgent()
     }
 
     private suspend fun initializePluto(context: Context) {
@@ -119,6 +118,10 @@ class SampleApplication : Application() {
             DIDCommWrapper(castor!!, pluto!!, apollo!!),
             ApiImpl(httpClient())
         )
+    }
+
+    private fun initializePollux() {
+        pollux = PolluxImpl(castor!!)
     }
 
     private fun initializeSeed() {
@@ -153,8 +156,11 @@ class SampleApplication : Application() {
 
     private fun initializeHandler() {
         // Fabio's mediatorDID = DID("did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cHM6Ly9hbGljZS5kaWQuZm1ncC5hcHAvIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfQ"),
+        // Javi's mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
+        // RootsID mediatorDID = DID("did:peer:2.Ez6LSms555YhFthn1WV8ciDBpZm86hK9tp83WojJUmxPGk1hZ.Vz6MkmdBjMyB4TS5UbbQw54szm8yvMMf1ftGV2sQVYAxaeWhE.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLnJvb3RzaWQuY2xvdWQiLCJhIjpbImRpZGNvbW0vdjIiXX0")
         handler = BasicMediatorHandler(
-            mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
+         mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
+//            mediatorDID = DID("did:peer:2.Ez6LSms555YhFthn1WV8ciDBpZm86hK9tp83WojJUmxPGk1hZ.Vz6MkmdBjMyB4TS5UbbQw54szm8yvMMf1ftGV2sQVYAxaeWhE.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLnJvb3RzaWQuY2xvdWQiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
             mercury = mercury!!,
             store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto!!)
         )
@@ -166,8 +172,23 @@ class SampleApplication : Application() {
             castor = castor!!,
             pluto = pluto!!,
             mercury = mercury!!,
+            pollux = pollux!!,
             seed = seed,
             mediatorHandler = handler!!
         )
+    }
+
+    companion object {
+        private var instance: Sdk? = null
+
+        fun getInstance(context: Context): Sdk {
+            if (instance == null) {
+                instance = Sdk()
+                CoroutineScope(Dispatchers.Default).launch {
+                    instance!!.initializeComponents(context)
+                }
+            }
+            return instance!!
+        }
     }
 }

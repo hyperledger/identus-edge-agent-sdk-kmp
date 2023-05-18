@@ -8,6 +8,10 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class CredentialsAdapter(private var data: MutableList<VerifiableCredential> = mutableListOf()) :
     RecyclerView.Adapter<CredentialsAdapter.CredentialHolder>() {
@@ -52,20 +56,40 @@ class CredentialsAdapter(private var data: MutableList<VerifiableCredential> = m
     }
 
     inner class CredentialHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val id: TextView
-        private val title: TextView
-        private val date: TextView
+        private val type: TextView
+        private val issuanceDate: TextView
+        private val expDate: TextView
+        private val typeString: String
+        private val issuanceString: String
+        private val expirationString: String
 
         init {
-            id = itemView.findViewById(R.id.credential_id)
-            title = itemView.findViewById(R.id.credential_title)
-            date = itemView.findViewById(R.id.credential_date)
+            type = itemView.findViewById(R.id.credential_id)
+            issuanceDate = itemView.findViewById(R.id.credential_issuance_date)
+            expDate = itemView.findViewById(R.id.credential_expiration_date)
+            typeString = itemView.context.getString(R.string.credential_type)
+            issuanceString = itemView.context.getString(R.string.credential_issuance)
+            expirationString = itemView.context.getString(R.string.credential_expiration)
         }
 
         fun bind(credential: VerifiableCredential) {
-            id.text = credential.id
-            title.text = credential.credentialSubject
-            date.text = credential.issuanceDate
+            type.text = String.format(typeString, credential.credentialType.type)
+            issuanceDate.text = String.format(
+                issuanceString,
+                formatTimeStamp(Instant.ofEpochMilli(credential.issuanceDate.toLong()))
+            )
+            credential.expirationDate?.let {
+                expDate.text = String.format(
+                    expirationString,
+                    formatTimeStamp(Instant.ofEpochMilli(it.toLong()))
+                )
+            }
+        }
+
+        private fun formatTimeStamp(instant: Instant): String {
+            val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            return localDateTime.format(formatter)
         }
     }
 }

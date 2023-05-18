@@ -31,25 +31,14 @@ class AgentFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupStreamObservers()
         binding.startAgent.setOnClickListener {
             viewModel.startAgent()
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-    }
-
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    private fun setupStreamObservers() {
-        viewModel.agentStatusStream().observe(this.viewLifecycleOwner) { state ->
-            binding.agentStatus.text = state
-        }
     }
 
     companion object {

@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "io.iohk.atala.prism.sampleapp"
-        minSdk = 21
+        minSdk = 28
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"

@@ -28,6 +28,9 @@ class MessagesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.list.adapter = adapter
+        binding.sendMessage.setOnClickListener {
+            viewModel.sendMessage()
+        }
         setupStreamObservers()
     }
 

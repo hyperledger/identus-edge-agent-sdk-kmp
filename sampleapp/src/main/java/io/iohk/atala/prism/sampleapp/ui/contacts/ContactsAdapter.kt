@@ -1,0 +1,77 @@
+package io.iohk.atala.prism.sampleapp.ui.contacts
+
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
+import io.iohk.atala.prism.sampleapp.R
+import io.iohk.atala.prism.sampleapp.Sdk
+import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
+import io.iohk.atala.prism.walletsdk.domain.models.Message
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import java.time.LocalDateTime
+
+class ContactsAdapter(private var data: MutableList<DIDPair> = mutableListOf()) :
+    RecyclerView.Adapter<ContactsAdapter.ContactsHolder>() {
+
+    fun updateContacts(updatedContacts: List<DIDPair>) {
+        val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+            override fun getOldListSize(): Int {
+                return data.size
+            }
+
+            override fun getNewListSize(): Int {
+                return updatedContacts.size
+            }
+
+            override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return data[oldItemPosition].host == updatedContacts[newItemPosition].host &&
+                    data[oldItemPosition].receiver == updatedContacts[newItemPosition].receiver
+            }
+
+            override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                return data[oldItemPosition] == updatedContacts[newItemPosition]
+            }
+        })
+        data.clear()
+        data.addAll(updatedContacts)
+        diffResult.dispatchUpdatesTo(this)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ContactsHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        val view = inflater.inflate(R.layout.placeholder_contact, parent, false)
+        return ContactsHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ContactsHolder, position: Int) {
+        // Bind data to the views
+        holder.bind(data[position])
+    }
+
+    override fun getItemCount(): Int {
+        // Return the size of your data list
+        return data.size
+    }
+
+    inner class ContactsHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val host: TextView
+        private val receiver: TextView
+
+        init {
+            host = itemView.findViewById(R.id.contact_host)
+            receiver = itemView.findViewById(R.id.contact_receiver)
+        }
+
+        fun bind(contact: DIDPair) {
+            host.text = contact.host.toString()
+            receiver.text = contact.receiver.toString()
+        }
+    }
+}

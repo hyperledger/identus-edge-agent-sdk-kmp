@@ -52,19 +52,17 @@ class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) 
     }
 
     inner class MessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val id: TextView
-        private val message: TextView
-        private val x: TextView
+        private val type: TextView
+        private val body: TextView
 
         init {
-            id = itemView.findViewById(R.id.message_id)
-            message = itemView.findViewById(R.id.message)
-            x = itemView.findViewById(R.id.x)
+            type = itemView.findViewById(R.id.message_type)
+            body = itemView.findViewById(R.id.message)
         }
 
         fun bind(message: Message) {
-            id.text = message.id
-            this.message.text = message.body
+            type.text = message.piuri
+            this.body.text = message.body
         }
     }
 }
