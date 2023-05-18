@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "io.iohk.atala.prism.sampleapp"
-        minSdk = 21
+        minSdk = 28
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -67,6 +67,8 @@ dependencies {
 
     // WalletSDK
     implementation(project(":atala-prism-sdk"))
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
     // Unit Tests
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

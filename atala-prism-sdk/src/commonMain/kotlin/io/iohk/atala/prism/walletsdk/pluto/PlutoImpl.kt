@@ -72,21 +72,44 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         alias: String?,
         privateKeys: List<PrivateKey>
     ) {
-        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, alias))
+        getInstance().dIDQueries.insert(
+            DIDDB(
+                did.toString(),
+                did.method,
+                did.methodId,
+                did.schema,
+                alias
+            )
+        )
         privateKeys.map { privateKey ->
             storePrivateKeys(privateKey, did, keyPathIndex)
         }
     }
 
     override fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>) {
-        getInstance().dIDQueries.insert(DIDDB(did.toString(), did.method, did.methodId, did.schema, null))
+        getInstance().dIDQueries.insert(
+            DIDDB(
+                did.toString(),
+                did.method,
+                did.methodId,
+                did.schema,
+                null
+            )
+        )
         privateKeys.map { privateKey ->
             storePrivateKeys(privateKey, did, privateKey.keyCurve.index ?: 0)
         }
     }
 
     override fun storeDIDPair(host: DID, receiver: DID, name: String) {
-        getInstance().dIDPairQueries.insert(DIDPairDB("$host$receiver", name, host.toString(), receiver.toString()))
+        getInstance().dIDPairQueries.insert(
+            DIDPairDB(
+                "$host$receiver",
+                name,
+                host.toString(),
+                receiver.toString()
+            )
+        )
     }
 
     override fun storeMessage(message: Message) {
@@ -104,7 +127,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
-    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(
+        privateKey: PrivateKey,
+        did: DID,
+        keyPathIndex: Int,
+        metaId: String?
+    ) {
         metaId?.let { id ->
             val list = getInstance().privateKeyQueries.fetchPrivateKeyByID(id).executeAsList()
             if (list.isEmpty()) {
@@ -151,7 +179,15 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 null
             )
         )
-        instance.dIDQueries.insert(DIDDB(routing.toString(), routing.method, routing.methodId, routing.schema, null))
+        instance.dIDQueries.insert(
+            DIDDB(
+                routing.toString(),
+                routing.method,
+                routing.methodId,
+                routing.schema,
+                null
+            )
+        )
         instance.mediatorQueries.insert(
             MediatorDB(
                 UUID.randomUUID4().toString(),
@@ -247,7 +283,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             it.curve,
                             it.keyPathIndex
                         ),
-                        it.privateKey.base64UrlDecodedBytes,
+                        it.privateKey.base64UrlDecodedBytes
                     )
                 }
             }
@@ -280,10 +316,10 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 allDIDs.executeAsList()
                     .groupBy { allPeerDid -> allPeerDid.did }
                     .map {
-                        val privateKeyList = it.value.map { data ->
+                        val privateKeyList = it.value.mapNotNull { data ->
                             PrivateKey(
                                 getKeyCurveByNameAndIndex(data.curve, data.keyPathIndex),
-                                data.privateKey.base64DecodedBytes
+                                data.privateKey.base64UrlDecodedBytes
                             )
                         }.toTypedArray()
                         PeerDID(DID(it.key), privateKeyList)
@@ -489,7 +525,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesOfType(
             type,
-            relatedWithDID.toString(),
+            relatedWithDID.toString()
         )
             .asFlow()
             .map {
