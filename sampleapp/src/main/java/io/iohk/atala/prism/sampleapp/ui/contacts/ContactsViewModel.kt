@@ -32,6 +32,7 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
         return contactsStream
     }
 
+    @Throws(PrismAgentError.UnknownInvitationTypeError::class, Exception::class)
     fun parseAndAcceptOOB(oobUrl: String) {
         val agent = Sdk.getInstance(getApplication<Application>()).agent
         agent?.let {
@@ -40,9 +41,11 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
                     is OutOfBandInvitation -> {
                         agent.acceptOutOfBandInvitation(invitation)
                     }
+
                     is PrismOnboardingInvitation -> {
                         agent.acceptInvitation(invitation)
                     }
+
                     else -> {
                         throw PrismAgentError.UnknownInvitationTypeError()
                     }
@@ -51,7 +54,6 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
         } ?: throw Exception("Agent is null")
     }
 
-    @Throws(MalformedURLException::class, URISyntaxException::class)
     fun isValidURL(url: String): Boolean {
         return try {
             URL(url).toURI()
