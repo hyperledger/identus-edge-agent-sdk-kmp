@@ -35,8 +35,10 @@ data class DID @JvmOverloads constructor(
 
         @JvmStatic
         fun getMethodIdFromString(string: String): String {
-            val split = string.split(":")
-            return split[2]
+            var split = string.split(":").toMutableList()
+            split.removeFirst()
+            split.removeFirst()
+            return split.joinToString(":")
         }
     }
 }

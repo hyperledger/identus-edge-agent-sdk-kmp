@@ -71,6 +71,9 @@ allprojects {
                             useTarget("org.bouncycastle:bcprov-jdk15on:1.68")
                         }
                     }
+                } else if (requested.group == "com.nimbusds") {
+                    // Making sure we are using the latest version of `nimbus-jose-jwt` instead if 9.25.6
+                    useTarget("com.nimbusds:nimbus-jose-jwt:9.31")
                 }
             }
         }

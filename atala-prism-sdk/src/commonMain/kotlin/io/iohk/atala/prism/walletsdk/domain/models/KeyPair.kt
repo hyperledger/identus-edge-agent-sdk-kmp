@@ -11,7 +11,10 @@ data class KeyPair(
 )
 
 @Serializable
-data class KeyCurve @JvmOverloads constructor(val curve: Curve, val index: Int? = 0)
+data class KeyCurve @JvmOverloads constructor(
+    val curve: Curve,
+    val index: Int? = 0
+)
 
 @Serializable
 enum class Curve(val value: String) {

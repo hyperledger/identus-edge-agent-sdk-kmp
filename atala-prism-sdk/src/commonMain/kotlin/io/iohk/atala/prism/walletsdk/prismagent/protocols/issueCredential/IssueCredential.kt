@@ -9,6 +9,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -94,9 +95,12 @@ data class IssueCredential(
 
     @Serializable
     data class Body(
+        @SerialName("goal_code")
         val goalCode: String? = null,
         val comment: String? = null,
+        @SerialName("replacement_id")
         val replacementId: String? = null,
+        @SerialName("more_available")
         val moreAvailable: String? = null,
         val formats: Array<CredentialFormat>
     ) {

@@ -270,11 +270,11 @@ data class JWTCredentialPayload(
 
             return JWTCredentialPayload(
                 iss = iss,
-                sub = sub,
                 verifiableCredential = verifiableCredential,
                 nbf = nbf,
                 exp = exp,
                 jti = jti,
+                sub = sub
             )
         }
     }
