@@ -159,7 +159,7 @@ class Sdk() {
         // Javi's mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
         // RootsID mediatorDID = DID("did:peer:2.Ez6LSms555YhFthn1WV8ciDBpZm86hK9tp83WojJUmxPGk1hZ.Vz6MkmdBjMyB4TS5UbbQw54szm8yvMMf1ftGV2sQVYAxaeWhE.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLnJvb3RzaWQuY2xvdWQiLCJhIjpbImRpZGNvbW0vdjIiXX0")
         handler = BasicMediatorHandler(
-         mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
+            mediatorDID = DID("did:peer:2.Ez6LSiekedip45fb5uYRZ9DV1qVvf3rr6GpvTGLhw3nKJ9E7X.Vz6MksZCnX3hQVPP4wWDGe1Dzq5LCk5BnGUnPmq3YCfrPpfuk.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLmpyaWJvLmtpd2kiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
 //            mediatorDID = DID("did:peer:2.Ez6LSms555YhFthn1WV8ciDBpZm86hK9tp83WojJUmxPGk1hZ.Vz6MkmdBjMyB4TS5UbbQw54szm8yvMMf1ftGV2sQVYAxaeWhE.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLnJvb3RzaWQuY2xvdWQiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
             mercury = mercury!!,
             store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto!!)

@@ -7,15 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
-import io.iohk.atala.prism.sampleapp.Sdk
-import io.iohk.atala.prism.walletsdk.domain.models.DID
-import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.Message
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 class ContactsAdapter(private var data: MutableList<DIDPair> = mutableListOf()) :
     RecyclerView.Adapter<ContactsAdapter.ContactsHolder>() {
