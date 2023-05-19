@@ -16,14 +16,19 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
+import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
+import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.connection.DIDCommConnectionRunner
@@ -31,19 +36,17 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.findProtocolTypeByValu
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.RequestCredential
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.DIDCommInvitationRunner
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.InvitationType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
-import java.time.Duration
-import kotlin.jvm.Throws
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -58,8 +61,10 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import java.net.UnknownHostException
 import kotlinx.serialization.json.jsonObject
+import java.net.UnknownHostException
+import java.time.Duration
+
 /* ktlint-disable import-ordering */
 
 /**
@@ -95,7 +100,7 @@ class PrismAgent {
 
     private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
-    private val connectionManager: ConnectionManager
+    private var connectionManager: ConnectionManager
 
     constructor(
         apollo: Apollo,
@@ -180,6 +185,7 @@ class PrismAgent {
         }
     }
 
+    // Prism agent actions
     @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun start() {
         if (state != State.STOPPED) {
@@ -190,14 +196,10 @@ class PrismAgent {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
             try {
-                val hostDID = createNewPeerDID(
-                    emptyArray(),
-                    false
-                )
+                val hostDID = createNewPeerDID(updateMediator = false)
                 connectionManager.registerMediator(hostDID)
             } catch (error: UnknownHostException) {
                 state = State.STOPPED
-                println("Error: ${error.message}")
                 throw error
             }
         }
@@ -218,6 +220,8 @@ class PrismAgent {
         state = State.STOPPED
     }
 
+    // DID related actions
+
     @JvmOverloads
     suspend fun createNewPrismDID(
         keyPathIndex: Int? = null,
@@ -227,8 +231,22 @@ class PrismAgent {
         val index = keyPathIndex ?: (pluto.getPrismLastKeyPathIndex().first() + 1)
         val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
         val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
-        pluto.storePrismDIDAndPrivateKeys(did = did, keyPathIndex = index, alias = alias, listOf(keyPair.privateKey))
+        registerPrismDID(did, index, alias, keyPair.privateKey)
         return did
+    }
+
+    fun registerPrismDID(
+        did: DID,
+        keyPathIndex: Int,
+        alias: String? = null,
+        privateKey: PrivateKey
+    ) {
+        pluto.storePrismDIDAndPrivateKeys(
+            did = did,
+            keyPathIndex = keyPathIndex,
+            alias = alias,
+            listOf(privateKey)
+        )
     }
 
     @JvmOverloads
@@ -261,16 +279,13 @@ class PrismAgent {
             services = tmpServices
         )
 
-        if (updateMediator) {
-            connectionManager.mediationHandler.updateKeyListWithDIDs(arrayOf(did))
-        }
-
-        pluto.storePeerDIDAndPrivateKeys(
-            did = did,
-            privateKeys = listOf(
+        registerPeerDID(
+            did,
+            listOf(
                 keyAgreementKeyPair.privateKey,
                 authenticationKeyPair.privateKey
-            )
+            ),
+            updateMediator
         )
 
         // The next logic is a bit tricky, so it's not forgotten this is a reminder.
@@ -310,13 +325,53 @@ class PrismAgent {
         return did
     }
 
-    @Throws(PrismAgentError.CannotFindDIDPrivateKey::class)
-    suspend fun signWith(did: DID, message: ByteArray): Signature {
-        val privateKey =
-            pluto.getDIDPrivateKeysByDID(did).first().first()
-                ?: throw PrismAgentError.CannotFindDIDPrivateKey()
-        return apollo.signMessage(privateKey, message)
+    suspend fun registerPeerDID(did: DID, privateKeys: List<PrivateKey>, updateMediator: Boolean) {
+        if (updateMediator) {
+            updateMediatorWithDID(did)
+        }
+        pluto.storePeerDIDAndPrivateKeys(
+            did = did,
+            privateKeys = privateKeys
+        )
     }
+
+    suspend fun updateMediatorWithDID(did: DID) {
+        connectionManager.mediationHandler.updateKeyListWithDIDs(arrayOf(did))
+    }
+
+    fun setupMediatorHandler(mediatorHandler: MediationHandler) {
+        stop()
+        this.connectionManager =
+            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
+    }
+
+    suspend fun setupMediatorDID(did: DID) {
+        val tmpMediatorHandler = BasicMediatorHandler(
+            mediatorDID = did,
+            mercury = mercury,
+            store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto)
+        )
+        setupMediatorHandler(tmpMediatorHandler)
+    }
+
+    suspend fun getDIDInfo(did: DID): PrismDIDInfo? {
+        return pluto.getDIDInfoByDID(did)
+            .first()
+    }
+
+    fun registerDIDPair(pair: DIDPair) {
+        pluto.storeDIDPair(pair.host, pair.receiver, pair.name ?: "")
+    }
+
+    suspend fun getAllDIDPairs(): List<DIDPair> {
+        return pluto.getAllDidPairs().first()
+    }
+
+    suspend fun getAllRegisteredPeerDIDs(): List<PeerDID> {
+        return pluto.getAllPeerDIDs().first()
+    }
+
+    // Messages related actions
 
     @OptIn(DelicateCoroutinesApi::class)
     @JvmOverloads
@@ -360,6 +415,20 @@ class PrismAgent {
         return pluto.getAllMessagesReceived()
     }
 
+    suspend fun sendMessage(message: Message): Message? {
+        return connectionManager?.sendMessage(message)
+    }
+
+    @Throws(PrismAgentError.CannotFindDIDPrivateKey::class)
+    suspend fun signWith(did: DID, message: ByteArray): Signature {
+        val privateKey =
+            pluto.getDIDPrivateKeysByDID(did).first().first()
+                ?: throw PrismAgentError.CannotFindDIDPrivateKey()
+        return apollo.signMessage(privateKey, message)
+    }
+
+    // Credentials related actions
+
     /**
      * This function prepares a request credential from an offer given the subject DID.
      * @param did Subject DID.
@@ -368,10 +437,16 @@ class PrismAgent {
      * @throws PolluxError.InvalidPrismDID if there is a problem creating the request credential.
      **/
     @Throws(PolluxError.InvalidPrismDID::class)
-    suspend fun prepareRequestCredentialWithIssuer(did: DID, offer: OfferCredential): RequestCredential {
-        if (did.method != "prism") { throw PolluxError.InvalidPrismDID() }
+    suspend fun prepareRequestCredentialWithIssuer(
+        did: DID,
+        offer: OfferCredential
+    ): RequestCredential {
+        if (did.method != "prism") {
+            throw PolluxError.InvalidPrismDID()
+        }
         val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
-        val privateKey = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
+        val privateKey =
+            apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
         val offerDataString = offer.attachments.mapNotNull {
             when (it.data) {
                 is AttachmentJsonData -> it.data.data
@@ -381,50 +456,19 @@ class PrismAgent {
         val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
         val jwtString = pollux.createRequestCredentialJWT(did, privateKey, offerJsonObject)
         val attachmentDescriptor =
-            AttachmentDescriptor(mediaType = "prism/jwt", data = AttachmentBase64(jwtString.base64UrlEncoded))
+            AttachmentDescriptor(
+                mediaType = "prism/jwt",
+                data = AttachmentBase64(jwtString.base64UrlEncoded)
+            )
         return RequestCredential(
             from = offer.to,
             to = offer.from,
             thid = offer.thid,
-            body = RequestCredential.Body(offer.body.goalCode, offer.body.comment, offer.body.formats),
-            attachments = arrayOf(attachmentDescriptor)
-        )
-    }
-
-    /**
-     * This function creates a Presentation from a request verification.
-     * @param request Request message received.
-     * @param credential Verifiable Credential to present.
-     * @return Presentation message prepared to send.
-     * @throws PrismAgentError if there is a problem creating the presentation.
-     **/
-    @Throws(PolluxError.InvalidPrismDID::class)
-    suspend fun preparePresentationForRequestProof(
-        request: RequestPresentation,
-        credential: VerifiableCredential
-    ): Presentation {
-        val subjectDID = DID(credential.credentialSubject)
-        if (subjectDID.method != "prism") {
-            throw PolluxError.InvalidPrismDID()
-        }
-
-        val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
-        val privateKey = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
-        val requestData = request.attachments.mapNotNull {
-            when (it.data) {
-                is AttachmentJsonData -> it.data.data
-                else -> null
-            }
-        }.first()
-        val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
-        val jwtString = pollux.createVerifiablePresentationJWT(subjectDID, privateKey, credential, requestJsonObject)
-        val attachmentDescriptor =
-            AttachmentDescriptor(mediaType = "prism/jwt", data = AttachmentBase64(jwtString.base64UrlEncoded))
-        return Presentation(
-            from = request.to,
-            to = request.from,
-            thid = request.thid,
-            body = Presentation.Body(request.body.goalCode, request.body.comment),
+            body = RequestCredential.Body(
+                offer.body.goalCode,
+                offer.body.comment,
+                offer.body.formats
+            ),
             attachments = arrayOf(attachmentDescriptor)
         )
     }
@@ -446,7 +490,8 @@ class PrismAgent {
         } ?: throw UnknownError("Cannot find attachment base64 in message")
     }
 
-    // Invitation functionalities
+    // Invitation related actions
+
     /**
      * Parses the given string as an invitation
      * @param str The string to parse
@@ -569,6 +614,59 @@ class PrismAgent {
         if (response.status != 200) {
             throw PrismAgentError.FailedToOnboardError()
         }
+    }
+
+    suspend fun getAllVerifiableCredentials(): List<VerifiableCredential> {
+        return pluto.getAllCredentials().first()
+    }
+
+    // Proof related actions
+
+    /**
+     * This function creates a Presentation from a request verification.
+     * @param request Request message received.
+     * @param credential Verifiable Credential to present.
+     * @return Presentation message prepared to send.
+     * @throws PrismAgentError if there is a problem creating the presentation.
+     **/
+    @Throws(PolluxError.InvalidPrismDID::class)
+    suspend fun preparePresentationForRequestProof(
+        request: RequestPresentation,
+        credential: VerifiableCredential
+    ): Presentation {
+        val subjectDID = DID(credential.credentialSubject)
+        if (subjectDID.method != "prism") {
+            throw PolluxError.InvalidPrismDID()
+        }
+
+        val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
+        val privateKey =
+            apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
+        val requestData = request.attachments.mapNotNull {
+            when (it.data) {
+                is AttachmentJsonData -> it.data.data
+                else -> null
+            }
+        }.first()
+        val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
+        val jwtString = pollux.createVerifiablePresentationJWT(
+            subjectDID,
+            privateKey,
+            credential,
+            requestJsonObject
+        )
+        val attachmentDescriptor =
+            AttachmentDescriptor(
+                mediaType = "prism/jwt",
+                data = AttachmentBase64(jwtString.base64UrlEncoded)
+            )
+        return Presentation(
+            from = request.to,
+            to = request.from,
+            thid = request.thid,
+            body = Presentation.Body(request.body.goalCode, request.body.comment),
+            attachments = arrayOf(attachmentDescriptor)
+        )
     }
 
     enum class State {
