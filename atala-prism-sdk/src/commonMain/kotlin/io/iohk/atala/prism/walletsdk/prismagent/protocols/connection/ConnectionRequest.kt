@@ -13,8 +13,11 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.jvm.Throws
 
+/**
+ * A class representing a connection request message in the DIDComm protocol. The [ConnectionRequest] class defines
+ * properties and methods for encoding, decoding, and sending connection request messages in the DIDComm protocol.
+ */
 class ConnectionRequest {
-
     val type: String = ProtocolType.DidcommconnectionRequest.value
     var id: String = UUID.randomUUID4().toString()
     lateinit var from: DID
@@ -34,6 +37,12 @@ class ConnectionRequest {
         this.body = body
     }
 
+    /**
+     * Initializes a new instance of the ConnectionRequest struct from the specified invitation message.
+     *
+     * @param inviteMessage The invitation message to use for initialization.
+     * @param from The DID of the sender of the connection request message.
+     */
     @Throws(PrismAgentError.InvitationIsInvalidError::class)
     constructor(inviteMessage: Message, from: DID) {
         inviteMessage.from?.let { toDID ->
@@ -42,6 +51,12 @@ class ConnectionRequest {
         } ?: throw PrismAgentError.InvitationIsInvalidError()
     }
 
+    /**
+     * Initializes a new instance of the ConnectionRequest struct from the specified out-of-band invitation.
+     *
+     * @param inviteMessage The out-of-band invitation to use for initialization.
+     * @param from The DID of the sender of the connection request message.
+     */
     constructor(inviteMessage: OutOfBandInvitation, from: DID) : this(
         from,
         DID(inviteMessage.from),
@@ -53,6 +68,11 @@ class ConnectionRequest {
         )
     )
 
+    /**
+     * Initializes a new instance of the ConnectionRequest struct from the specified message.
+     *
+     * @param fromMessage The message to decode.
+     */
     @Throws(PrismAgentError.InvalidMessageError::class)
     constructor(fromMessage: Message) {
         if (
@@ -82,11 +102,23 @@ class ConnectionRequest {
         )
     }
 
+    /**
+     * The body of the connection acceptance message, which is the same as the body of the invitation message
+     */
     @Serializable
     data class Body(
+        /**
+         * The goal code of the connection acceptance message.
+         */
         @SerialName("goal_code")
         val goalCode: String? = null,
+        /**
+         * The goal of the connection acceptance message
+         */
         val goal: String? = null,
+        /**
+         * An array of strings representing the accepted message types
+         */
         val accept: Array<String>? = null
     ) {
         override fun equals(other: Any?): Boolean {

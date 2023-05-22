@@ -15,6 +15,12 @@ import java.security.SecureRandom
  * X25519
  */
 actual object X25519 {
+
+    /**
+     * Create keypair for [X25519].
+     *
+     * @return [KeyPair] for [X25519].
+     */
     actual fun createKeyPair(): KeyPair {
         val generator = X25519KeyPairGenerator()
         generator.init(X25519KeyGenerationParameters(SecureRandom()))
