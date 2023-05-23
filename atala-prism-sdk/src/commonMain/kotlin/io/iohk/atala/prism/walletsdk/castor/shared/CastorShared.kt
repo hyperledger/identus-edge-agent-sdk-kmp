@@ -47,11 +47,90 @@ import io.iohk.atala.prism.didcomm.didpeer.resolvePeerDID as mercuryPeerDIDResol
 
 internal class CastorShared {
     companion object {
+
+        /**
+         * parseDID parses a string representation of a Decentralized Identifier (DID) into a DID object.
+         *
+         * @param did The string representation of the DID.
+         * @return The [DID] object.
+         * @throws [CastorError.InvalidDIDString] if the string is not a valid DID.
+         */
         @JvmStatic
+        @Throws(CastorError.InvalidDIDString::class)
         fun parseDID(did: String): DID {
             return DIDParser.parse(did)
         }
 
+        /**
+         * createPrismDID creates a DID for a prism (a device or server that acts as a DID owner and controller) using a
+         * given master public key and list of services.
+         *
+         * @param apollo the cryptography suit representation.
+         * @param masterPublicKey master public key used in creating the Prism DID.
+         * @param services list of services.
+         * @return [DID].
+         */
+        @JvmStatic
+        fun createPrismDID(
+            apollo: Apollo,
+            masterPublicKey: PublicKey,
+            services: Array<DIDDocument.Service>?,
+        ): DID {
+            val atalaOperation = AtalaOperation(
+                operation = AtalaOperation.Operation.CreateDid(
+                    CreateDIDOperation(
+                        didData = CreateDIDOperation.DIDCreationData(
+                            publicKeys = listOf(
+                                PrismDIDPublicKey(
+                                    apollo = apollo,
+                                    id = PrismDIDPublicKey.Usage.MASTER_KEY.defaultId(),
+                                    usage = PrismDIDPublicKey.Usage.MASTER_KEY,
+                                    keyData = masterPublicKey,
+                                ).toProto(),
+                                PrismDIDPublicKey(
+                                    apollo = apollo,
+                                    id = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY.defaultId(),
+                                    usage = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY,
+                                    keyData = masterPublicKey,
+                                ).toProto()
+                            ),
+                            services = services?.map {
+                                Service(
+                                    id = it.id,
+                                    type = it.type.first(),
+                                    serviceEndpoint = listOf(it.serviceEndpoint.uri),
+                                )
+                            } ?: emptyList(),
+                        ),
+                    ),
+                ),
+            )
+
+            val encodedState = atalaOperation.encodeToByteArray()
+            val stateHash = SHA256().digest(encodedState).toHexString()
+            val base64State = encodedState.base64UrlEncoded
+            val methodSpecificId = PrismDIDMethodId(
+                sections = listOf(
+                    stateHash,
+                    base64State,
+                ),
+            )
+
+            return DID(
+                schema = "did",
+                method = "prism",
+                methodId = methodSpecificId.toString(),
+            )
+        }
+
+        /**
+         * Resolve PeerDID String to [DIDDocument].
+         *
+         * @param didString that we need to resolve.
+         * @return [DIDDocument]
+         * @throws [CastorError.InvalidPeerDIDError] when the provided DID is invalid.
+         * @throws [CastorError.NotPossibleToResolveDID] when unable to resolve the provided DID.
+         */
         @JvmStatic
         @Throws(CastorError.InvalidPeerDIDError::class, CastorError.NotPossibleToResolveDID::class)
         suspend fun resolvePeerDID(didString: String): DIDDocument {
@@ -117,6 +196,14 @@ internal class CastorShared {
             )
         }
 
+        /**
+         * Extract the [DIDDocument.VerificationMethod] for the [did] based on the [verificationMethod].
+         *
+         * @param did string of the PeerDID
+         * @param verificationMethod of the PeerDID
+         * @return [DIDDocument.VerificationMethod]
+         * @throws [CastorError.InvalidKeyError] if provided [verificationMethod] is not supported.
+         */
         @JvmStatic
         @Throws(CastorError.InvalidKeyError::class)
         fun fromVerificationMethodPeerDID(
@@ -126,18 +213,12 @@ internal class CastorShared {
             val didUrl = DIDUrlParser.parse(did)
             val controller = DIDParser.parse(verificationMethod.controller)
             val type = when (verificationMethod.verMaterial.type.value) {
-                VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value -> {
-                    Curve.ED25519.value
-                }
-
+                VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value,
                 VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2018.value -> {
                     Curve.ED25519.value
                 }
 
-                VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020.value -> {
-                    Curve.X25519.value
-                }
-
+                VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020.value,
                 VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2019.value -> {
                     Curve.X25519.value
                 }
@@ -179,6 +260,14 @@ internal class CastorShared {
             }
         }
 
+        /**
+         * Resolve Long Form of Prism DID.
+         *
+         * @param apollo the cryptography suit representation.
+         * @param didString The DID string we want to resolve.
+         * @return [DIDDocument]
+         * @throws [CastorError.InitialStateOfDIDChanged] when decoding the state fails.
+         */
         @JvmStatic
         @Throws(CastorError.InitialStateOfDIDChanged::class)
         suspend fun resolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
@@ -221,6 +310,19 @@ internal class CastorShared {
             )
         }
 
+        /**
+         * Decode the provided [encodedData] to [Pair] of a [Map] and of List<[DIDDocument.Service]> where the [Map] is
+         * key as [String] and its value [DIDDocument.VerificationMethod].
+         *
+         * @param apollo the cryptography suit representation.
+         * @param did the DID that is used in to decode.
+         * @param stateHash the hashed version of the [encodedData] in Hex string format.
+         * @param encodedData the [ByteArray]
+         * @return [Pair] of a [Map] and of List<[DIDDocument.Service]> where the [Map] is key as [String] and its value
+         * [DIDDocument.VerificationMethod].
+         * @throws [CastorError.InitialStateOfDIDChanged]
+         * @throws [Exception]
+         */
         @JvmStatic
         @Throws(CastorError.InitialStateOfDIDChanged::class, Exception::class)
         fun decodeState(
@@ -275,6 +377,13 @@ internal class CastorShared {
             return Pair(verificationMethods, services)
         }
 
+        /**
+         * Get a DID resolver based on the provided DID string.
+         *
+         * @param did the DID string.
+         * @param resolvers list of available resolvers.
+         * @throws [CastorError.NotPossibleToResolveDID] if no resolver was found.
+         */
         @JvmStatic
         @Throws(CastorError.NotPossibleToResolveDID::class)
         fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): DIDResolver {
@@ -282,6 +391,12 @@ internal class CastorShared {
             return resolvers.find { it.method == parsedDID.method } ?: throw CastorError.NotPossibleToResolveDID()
         }
 
+        /**
+         * Extract list of [PublicKey] from a list of [DIDDocumentCoreProperty].
+         *
+         * @param coreProperties list of [DIDDocumentCoreProperty] that we are going to extract a list of [DIDDocumentCoreProperty].
+         * @return List<[PublicKey]>
+         */
         @JvmStatic
         fun getKeyPairFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
             return coreProperties
@@ -297,10 +412,25 @@ internal class CastorShared {
                 }
         }
 
+        /**
+         * Create [OctetPublicKey] from a [KeyPair].
+         *
+         * @param keyPair keyPair to be used in creating [OctetPublicKey].
+         * @return [OctetPublicKey].
+         */
         private fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
             return OctetPublicKey(crv = keyPair.keyCurve.curve.value, x = keyPair.publicKey.value.base64UrlEncoded)
         }
 
+        /**
+         * createPeerDID creates a DID for a peer (a device or server that acts as a DID subject) using given key agreement
+         * and authentication key pairs and a list of services.
+         *
+         * @param keyPairs The key pair used for key agreement (establishing secure communication between peers) and
+         * authentication (verifying the identity of a peer)
+         * @param services The list of services offered by the peer
+         * @return The [DID] of the peer
+         */
         @JvmStatic
         @Throws(CastorError.InvalidKeyError::class)
         fun createPeerDID(
@@ -359,59 +489,6 @@ internal class CastorShared {
             )
 
             return DIDParser.parse(peerDID)
-        }
-
-        @JvmStatic
-        fun createPrismDID(
-            apollo: Apollo,
-            masterPublicKey: PublicKey,
-            services: Array<DIDDocument.Service>?,
-        ): DID {
-            val atalaOperation = AtalaOperation(
-                operation = AtalaOperation.Operation.CreateDid(
-                    CreateDIDOperation(
-                        didData = CreateDIDOperation.DIDCreationData(
-                            publicKeys = listOf(
-                                PrismDIDPublicKey(
-                                    apollo = apollo,
-                                    id = PrismDIDPublicKey.Usage.MASTER_KEY.defaultId(),
-                                    usage = PrismDIDPublicKey.Usage.MASTER_KEY,
-                                    keyData = masterPublicKey,
-                                ).toProto(),
-                                PrismDIDPublicKey(
-                                    apollo = apollo,
-                                    id = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY.defaultId(),
-                                    usage = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY,
-                                    keyData = masterPublicKey,
-                                ).toProto()
-                            ),
-                            services = services?.map {
-                                Service(
-                                    id = it.id,
-                                    type = it.type.first(),
-                                    serviceEndpoint = listOf(it.serviceEndpoint.uri),
-                                )
-                            } ?: emptyList(),
-                        ),
-                    ),
-                ),
-            )
-
-            val encodedState = atalaOperation.encodeToByteArray()
-            val stateHash = SHA256().digest(encodedState).toHexString()
-            val base64State = encodedState.base64UrlEncoded
-            val methodSpecificId = PrismDIDMethodId(
-                sections = listOf(
-                    stateHash,
-                    base64State,
-                ),
-            )
-
-            return DID(
-                schema = "did",
-                method = "prism",
-                methodId = methodSpecificId.toString(),
-            )
         }
     }
 }

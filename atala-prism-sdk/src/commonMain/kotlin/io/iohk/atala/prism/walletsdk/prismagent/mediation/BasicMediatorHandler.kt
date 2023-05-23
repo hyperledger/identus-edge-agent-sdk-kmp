@@ -17,28 +17,52 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 
-final class BasicMediatorHandler(
+/**
+ * A class that provides an implementation of [MediationHandler] using a Pluto instance and a Mercury instance. It can
+ * be used to register, retrieve and update mediator information, achieve mediation, pick up unread messages, and
+ * register messages as read.
+ */
+class BasicMediatorHandler(
     override val mediatorDID: DID,
     private val mercury: Mercury,
     private val store: MediatorRepository
 ) : MediationHandler {
-    final class PlutoMediatorRepositoryImpl(private val pluto: Pluto) : MediatorRepository {
+
+    /**
+     * A class that provides an implementation of [MediatorRepository] using a [Pluto] instance.
+     */
+    class PlutoMediatorRepositoryImpl(private val pluto: Pluto) : MediatorRepository {
+
+        /**
+         * Fetches all the mediators from the [Pluto] store.
+         *
+         * @return An array of [Mediator] objects.
+         */
         override suspend fun getAllMediators(): List<Mediator> {
             return pluto.getAllMediators().first()
         }
 
+        /**
+         * Stores a mediator in the [Pluto] store.
+         *
+         * @param mediator The [Mediator] object to store.
+         */
         override fun storeMediator(mediator: Mediator) {
             pluto.storeMediator(mediator.mediatorDID, mediator.hostDID, mediator.routingDID)
         }
     }
 
+    /**
+     * The active mediator associated with the mediator handler
+     */
     override var mediator: Mediator? = null
         private set
 
-    init {
-        this.mediator = null
-    }
-
+    /**
+     * Boots the registered mediator associated with the mediator handler.
+     *
+     * @return The mediator that was booted.
+     */
     override suspend fun bootRegisteredMediator(): Mediator? {
         if (mediator == null) {
             mediator = store.getAllMediators().firstOrNull()
@@ -47,6 +71,12 @@ final class BasicMediatorHandler(
         return mediator
     }
 
+    /**
+     * Achieves mediation with the mediatorDID with the specified host DID as a user.
+     *
+     * @param host The DID of the entity to mediate with.
+     * @return The mediator associated with the achieved mediation.
+     */
     @Throws(PrismAgentError.MediationRequestFailedError::class)
     override fun achieveMediation(host: DID): Flow<Mediator> {
         return flow {
@@ -74,6 +104,11 @@ final class BasicMediatorHandler(
         }
     }
 
+    /**
+     * Updates the key list with the specified DIDs.
+     *
+     * @param dids An array of DIDs to add to the key list.
+     */
     @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override suspend fun updateKeyListWithDIDs(dids: Array<DID>) {
         val keyListUpdateMessage = mediator?.let {
@@ -86,6 +121,12 @@ final class BasicMediatorHandler(
         keyListUpdateMessage.let { message -> mercury.sendMessage(message) }
     }
 
+    /**
+     * Picks up the specified number of unread messages.
+     *
+     * @param limit The maximum number of messages to pick up.
+     * @return An array of pairs containing the message ID and the message itself.
+     */
     @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override fun pickupUnreadMessages(limit: Int): Flow<Array<Pair<String, Message>>> {
         val requestMessage = mediator?.let {
@@ -104,6 +145,11 @@ final class BasicMediatorHandler(
         }
     }
 
+    /**
+     * Registers the specified message IDs as read.
+     *
+     * @param ids An array of message IDs to register as read.
+     */
     @Throws(PrismAgentError.NoMediatorAvailableError::class)
     override suspend fun registerMessagesAsRead(ids: Array<String>) {
         val requestMessage = mediator?.let {

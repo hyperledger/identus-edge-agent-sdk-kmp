@@ -7,7 +7,7 @@ plugins {
     kotlin("plugin.serialization") version "1.7.20"
     id("maven-publish")
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
-    id("org.jetbrains.dokka") version "1.7.10"
+    id("org.jetbrains.dokka") version "1.8.10"
 }
 
 buildscript {

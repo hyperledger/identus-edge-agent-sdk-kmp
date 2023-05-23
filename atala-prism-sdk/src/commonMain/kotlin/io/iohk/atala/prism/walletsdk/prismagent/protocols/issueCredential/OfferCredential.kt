@@ -14,6 +14,10 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlin.jvm.Throws
 
+/**
+ * ALL parameters are DIDCOMMV2 format and naming conventions and follows the protocol
+ * https://github.com/hyperledger/aries-rfcs/tree/main/features/0453-issue-credential-v2
+ */
 @Serializable
 data class OfferCredential @JvmOverloads constructor(
     val id: String? = UUID.randomUUID4().toString(),

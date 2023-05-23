@@ -1,5 +1,6 @@
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
+import java.net.URL
 
 val currentModuleName: String = "AtalaPrismSDK"
 val os: OperatingSystem = OperatingSystem.current()
@@ -185,16 +186,45 @@ sqldelight {
 }
 
 // Dokka implementation
-tasks.withType<DokkaTask> {
-    moduleName.set(project.name)
+tasks.withType<DokkaTask>().configureEach {
+    moduleName.set(currentModuleName)
     moduleVersion.set(rootProject.version.toString())
-    description = """
-        This is a Kotlin Multiplatform AtalaPrismSDK
-    """.trimIndent()
+    description = "This is a Kotlin Multiplatform implementation of AtalaPrismSDK"
     dokkaSourceSets {
-        // TODO: Figure out how to include files to the documentations
-        named("commonMain") {
-            includes.from("Module.md", "docs/Module.md")
+        configureEach {
+            jdkVersion.set(11)
+            languageVersion.set("1.7.20")
+            apiVersion.set("2.0")
+            includes.from(
+                "docs/AtalaPrismSDK.md",
+                "docs/Apollo.md",
+                "docs/Castor.md",
+                "docs/Mercury.md",
+                "docs/Pluto.md",
+                "docs/Pollux.md",
+                "docs/PrismAgent.md"
+            )
+            sourceLink {
+                localDirectory.set(projectDir.resolve("src"))
+                remoteUrl.set(URL("https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/tree/main/src"))
+                remoteLineSuffix.set("#L")
+            }
+            externalDocumentationLink {
+                url.set(URL("https://kotlinlang.org/api/latest/jvm/stdlib/"))
+            }
+            externalDocumentationLink {
+                url.set(URL("https://kotlinlang.org/api/kotlinx.serialization/"))
+            }
+            externalDocumentationLink {
+                url.set(URL("https://api.ktor.io/"))
+            }
+            externalDocumentationLink {
+                url.set(URL("https://kotlinlang.org/api/kotlinx-datetime/"))
+                packageListUrl.set(URL("https://kotlinlang.org/api/kotlinx-datetime/"))
+            }
+            externalDocumentationLink {
+                url.set(URL("https://kotlinlang.org/api/kotlinx.coroutines/"))
+            }
         }
     }
 }
