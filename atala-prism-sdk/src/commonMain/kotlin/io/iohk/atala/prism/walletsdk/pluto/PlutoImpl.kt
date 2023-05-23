@@ -201,7 +201,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun storeCredential(credential: VerifiableCredential) {
         getInstance().verifiableCredentialQueries.insert(
             VerifiableCredentialDB(
-                UUID.randomUUID4().toString(),
+                credential.id,
                 credential.credentialType.type,
                 credential.expirationDate,
                 credential.issuanceDate,
