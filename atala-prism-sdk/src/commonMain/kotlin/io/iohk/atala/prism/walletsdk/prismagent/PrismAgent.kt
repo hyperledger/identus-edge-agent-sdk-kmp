@@ -719,6 +719,9 @@ class PrismAgent {
         }
     }
 
+    /**
+     * This method returns a list of all the VerifiableCredentials stored locally.
+     */
     suspend fun getAllVerifiableCredentials(): List<VerifiableCredential> {
         return pluto.getAllCredentials().first()
     }
