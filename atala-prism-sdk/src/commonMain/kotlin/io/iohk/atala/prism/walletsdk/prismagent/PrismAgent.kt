@@ -16,14 +16,19 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
+import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
+import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.connection.DIDCommConnectionRunner
@@ -31,19 +36,17 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.findProtocolTypeByValu
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.RequestCredential
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.DIDCommInvitationRunner
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.InvitationType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.HttpMethod
 import io.ktor.http.Url
+import io.ktor.http.HttpMethod
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
-import java.time.Duration
-import kotlin.jvm.Throws
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -57,8 +60,10 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
-import java.net.UnknownHostException
 import kotlinx.serialization.json.jsonObject
+import java.net.UnknownHostException
+import java.time.Duration
+
 /* ktlint-disable import-ordering */
 
 /**
@@ -98,7 +103,7 @@ class PrismAgent {
 
     private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
-    private val connectionManager: ConnectionManager
+    private var connectionManager: ConnectionManager
 
     constructor(
         apollo: Apollo,
@@ -183,6 +188,7 @@ class PrismAgent {
         }
     }
 
+    // Prism agent actions
     /**
      * Start the [PrismAgent] and Mediator services.
      *
@@ -199,14 +205,10 @@ class PrismAgent {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
             try {
-                val hostDID = createNewPeerDID(
-                    emptyArray(),
-                    false
-                )
+                val hostDID = createNewPeerDID(updateMediator = false)
                 connectionManager.registerMediator(hostDID)
             } catch (error: UnknownHostException) {
                 state = State.STOPPED
-                println("Error: ${error.message}")
                 throw error
             }
         }
@@ -251,8 +253,30 @@ class PrismAgent {
         val index = keyPathIndex ?: (pluto.getPrismLastKeyPathIndex().first() + 1)
         val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
         val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
-        pluto.storePrismDIDAndPrivateKeys(did = did, keyPathIndex = index, alias = alias, listOf(keyPair.privateKey))
+        registerPrismDID(did, index, alias, keyPair.privateKey)
         return did
+    }
+
+    /**
+     * This function receives a Prism DID and its information and stores it into the local database.
+     *
+     * @param did The DID to be stored
+     * @param keyPathIndex The index associated with the PrivateKey
+     * @param alias The alias associated with the DID if any
+     * @param privateKey The private key used to create the PrismDID
+     */
+    private fun registerPrismDID(
+        did: DID,
+        keyPathIndex: Int,
+        alias: String? = null,
+        privateKey: PrivateKey
+    ) {
+        pluto.storePrismDIDAndPrivateKeys(
+            did = did,
+            keyPathIndex = keyPathIndex,
+            alias = alias,
+            listOf(privateKey)
+        )
     }
 
     /**
@@ -293,16 +317,13 @@ class PrismAgent {
             services = tmpServices
         )
 
-        if (updateMediator) {
-            connectionManager.mediationHandler.updateKeyListWithDIDs(arrayOf(did))
-        }
-
-        pluto.storePeerDIDAndPrivateKeys(
-            did = did,
-            privateKeys = listOf(
+        registerPeerDID(
+            did,
+            listOf(
                 keyAgreementKeyPair.privateKey,
                 authenticationKeyPair.privateKey
-            )
+            ),
+            updateMediator
         )
 
         // The next logic is a bit tricky, so it's not forgotten this is a reminder.
@@ -343,6 +364,104 @@ class PrismAgent {
     }
 
     /**
+     * Registers a peer DID with the specified DID and private keys.
+     *
+     * @param did The DID to register.
+     * @param privateKeys The list of private keys associated with the peer DID.
+     * @param updateMediator Determines whether to update the mediator with the specified DID.
+     */
+    suspend fun registerPeerDID(did: DID, privateKeys: List<PrivateKey>, updateMediator: Boolean) {
+        if (updateMediator) {
+            updateMediatorWithDID(did)
+        }
+        pluto.storePeerDIDAndPrivateKeys(
+            did = did,
+            privateKeys = privateKeys
+        )
+    }
+
+    /**
+     * Updates the mediator with the specified DID by updating the key list with the given DID.
+     *
+     * @param did The DID to update the mediator with.
+     */
+    suspend fun updateMediatorWithDID(did: DID) {
+        connectionManager.mediationHandler.updateKeyListWithDIDs(arrayOf(did))
+    }
+
+    fun setupMediatorHandler(mediatorHandler: MediationHandler) {
+        stop()
+        this.connectionManager =
+            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
+    }
+
+    /**
+     * Sets up a mediator DID for communication with the specified DID.
+     *
+     * @param did The DID of the mediator to set up.
+     */
+    suspend fun setupMediatorDID(did: DID) {
+        val tmpMediatorHandler = BasicMediatorHandler(
+            mediatorDID = did,
+            mercury = mercury,
+            store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto)
+        )
+        setupMediatorHandler(tmpMediatorHandler)
+    }
+
+    /**
+     * This method fetches a DIDInfo from local storage.
+     *
+     * @param did The DID to fetch the info for
+     * @return A PrismDIDInfo if existent, null otherwise
+     */
+    suspend fun getDIDInfo(did: DID): PrismDIDInfo? {
+        return pluto.getDIDInfoByDID(did)
+            .first()
+    }
+
+    /**
+     * This method registers a DID pair into the local database.
+     *
+     * @param pair The DIDPair to be stored
+     */
+    fun registerDIDPair(pair: DIDPair) {
+        pluto.storeDIDPair(pair.host, pair.receiver, pair.name ?: "")
+    }
+
+    /**
+     * This method returns all DID pairs
+     *
+     * @return A list of the store DID pair
+     */
+    suspend fun getAllDIDPairs(): List<DIDPair> {
+        return pluto.getAllDidPairs().first()
+    }
+
+    /**
+     * This method returns all registered PeerDIDs.
+     *
+     * @return A list of the stored PeerDIDs
+     */
+    suspend fun getAllRegisteredPeerDIDs(): List<PeerDID> {
+        return pluto.getAllPeerDIDs().first()
+    }
+
+    // Messages related actions
+
+    /**
+     * Sends a DIDComm message through HTTP using mercury and returns a message if this is returned immediately by the REST endpoint.
+     *
+     * @param message The message to be sent
+     * @return The message sent if successful, null otherwise
+     */
+    suspend fun sendMessage(message: Message): Message? {
+        return connectionManager?.sendMessage(message)
+    }
+
+    // Credentials related actions
+
+    /**
      * This function will use the provided DID to sign a given message.
      *
      * @param did The DID which will be used to sign the message.
@@ -365,10 +484,16 @@ class PrismAgent {
      * @throws [PolluxError.InvalidPrismDID] if there is a problem creating the request credential.
      **/
     @Throws(PolluxError.InvalidPrismDID::class)
-    suspend fun prepareRequestCredentialWithIssuer(did: DID, offer: OfferCredential): RequestCredential {
-        if (did.method != "prism") { throw PolluxError.InvalidPrismDID() }
+    suspend fun prepareRequestCredentialWithIssuer(
+        did: DID,
+        offer: OfferCredential
+    ): RequestCredential {
+        if (did.method != "prism") {
+            throw PolluxError.InvalidPrismDID()
+        }
         val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
-        val privateKey = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
+        val privateKey =
+            apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
         val offerDataString = offer.attachments.mapNotNull {
             when (it.data) {
                 is AttachmentJsonData -> it.data.data
@@ -378,50 +503,19 @@ class PrismAgent {
         val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
         val jwtString = pollux.createRequestCredentialJWT(did, privateKey, offerJsonObject)
         val attachmentDescriptor =
-            AttachmentDescriptor(mediaType = "prism/jwt", data = AttachmentBase64(jwtString.base64UrlEncoded))
+            AttachmentDescriptor(
+                mediaType = "prism/jwt",
+                data = AttachmentBase64(jwtString.base64UrlEncoded)
+            )
         return RequestCredential(
             from = offer.to,
             to = offer.from,
             thid = offer.thid,
-            body = RequestCredential.Body(offer.body.goalCode, offer.body.comment, offer.body.formats),
-            attachments = arrayOf(attachmentDescriptor)
-        )
-    }
-
-    /**
-     * This function creates a Presentation from a request verification.
-     * @param request Request message received.
-     * @param credential Verifiable Credential to present.
-     * @return Presentation message prepared to send.
-     * @throws PrismAgentError if there is a problem creating the presentation.
-     **/
-    @Throws(PolluxError.InvalidPrismDID::class)
-    suspend fun preparePresentationForRequestProof(
-        request: RequestPresentation,
-        credential: VerifiableCredential
-    ): Presentation {
-        val subjectDID = DID(credential.credentialSubject)
-        if (subjectDID.method != "prism") {
-            throw PolluxError.InvalidPrismDID()
-        }
-
-        val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
-        val privateKey = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
-        val requestData = request.attachments.mapNotNull {
-            when (it.data) {
-                is AttachmentJsonData -> it.data.data
-                else -> null
-            }
-        }.first()
-        val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
-        val jwtString = pollux.createVerifiablePresentationJWT(subjectDID, privateKey, credential, requestJsonObject)
-        val attachmentDescriptor =
-            AttachmentDescriptor(mediaType = "prism/jwt", data = AttachmentBase64(jwtString.base64UrlEncoded))
-        return Presentation(
-            from = request.to,
-            to = request.from,
-            thid = request.thid,
-            body = Presentation.Body(request.body.goalCode, request.body.comment),
+            body = RequestCredential.Body(
+                offer.body.goalCode,
+                offer.body.comment,
+                offer.body.formats
+            ),
             attachments = arrayOf(attachmentDescriptor)
         )
     }
@@ -624,6 +718,62 @@ class PrismAgent {
         if (response.status != 200) {
             throw PrismAgentError.FailedToOnboardError()
         }
+    }
+
+    /**
+     * This method returns a list of all the VerifiableCredentials stored locally.
+     */
+    suspend fun getAllVerifiableCredentials(): List<VerifiableCredential> {
+        return pluto.getAllCredentials().first()
+    }
+
+    // Proof related actions
+
+    /**
+     * This function creates a Presentation from a request verification.
+     * @param request Request message received.
+     * @param credential Verifiable Credential to present.
+     * @return Presentation message prepared to send.
+     * @throws PrismAgentError if there is a problem creating the presentation.
+     **/
+    @Throws(PolluxError.InvalidPrismDID::class)
+    suspend fun preparePresentationForRequestProof(
+        request: RequestPresentation,
+        credential: VerifiableCredential
+    ): Presentation {
+        val subjectDID = DID(credential.credentialSubject)
+        if (subjectDID.method != "prism") {
+            throw PolluxError.InvalidPrismDID()
+        }
+
+        val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
+        val privateKey =
+            apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
+        val requestData = request.attachments.mapNotNull {
+            when (it.data) {
+                is AttachmentJsonData -> it.data.data
+                else -> null
+            }
+        }.first()
+        val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
+        val jwtString = pollux.createVerifiablePresentationJWT(
+            subjectDID,
+            privateKey,
+            credential,
+            requestJsonObject
+        )
+        val attachmentDescriptor =
+            AttachmentDescriptor(
+                mediaType = "prism/jwt",
+                data = AttachmentBase64(jwtString.base64UrlEncoded)
+            )
+        return Presentation(
+            from = request.to,
+            to = request.from,
+            thid = request.thid,
+            body = Presentation.Body(request.body.goalCode, request.body.comment),
+            attachments = arrayOf(attachmentDescriptor)
+        )
     }
 
     /**
