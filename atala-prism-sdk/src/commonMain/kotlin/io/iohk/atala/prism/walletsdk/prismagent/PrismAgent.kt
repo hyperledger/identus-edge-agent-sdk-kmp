@@ -44,7 +44,6 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import java.time.Duration
 import kotlin.jvm.Throws
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -75,6 +74,10 @@ private fun Url.Companion.parse(str: String): Url? {
     }
 }
 
+/**
+ * PrismAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
+ * Service Endpoint and seed data.
+ */
 class PrismAgent {
     var state: State = State.STOPPED
         private set(value) {
@@ -180,6 +183,12 @@ class PrismAgent {
         }
     }
 
+    /**
+     * Start the [PrismAgent] and Mediator services.
+     *
+     * @throws [PrismAgentError.MediationRequestFailedError] failed to connect to mediator.
+     * @throws [UnknownHostException] if unable to connect to the mediator.
+     */
     @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun start() {
         if (state != State.STOPPED) {
@@ -209,6 +218,12 @@ class PrismAgent {
         }
     }
 
+    /**
+     * Stops the [PrismAgent].
+     * The function sets the state of [PrismAgent] to [State.STOPPING].
+     * All ongoing events that was created by the [PrismAgent] are stopped.
+     * After all the events are stopped the state of the [PrismAgent] is set to [State.STOPPED].
+     */
     fun stop() {
         if (state != State.RUNNING) {
             return
@@ -218,6 +233,15 @@ class PrismAgent {
         state = State.STOPPED
     }
 
+    // DID Higher Functions
+    /**
+     * This method create a new Prism DID, that can be used to identify the agent and interact with other agents.
+     *
+     * @param keyPathIndex key path index used to identify the DID.
+     * @param alias An alias that can be used to identify the DID.
+     * @param services an array of services associated to the DID.
+     * @return The new created [DID]
+     */
     @JvmOverloads
     suspend fun createNewPrismDID(
         keyPathIndex: Int? = null,
@@ -231,6 +255,14 @@ class PrismAgent {
         return did
     }
 
+    /**
+     * This function creates a new Peer DID, stores it in pluto database and updates the mediator if requested.
+     *
+     * @param services The services associated to the new DID.
+     * @param updateMediator Indicates if the new DID should be added to the mediator's list. It will as well add the
+     * mediator service.
+     * @return A new [DID].
+     */
     @JvmOverloads
     suspend fun createNewPeerDID(
         services: Array<DIDDocument.Service> = emptyArray(),
@@ -310,6 +342,13 @@ class PrismAgent {
         return did
     }
 
+    /**
+     * This function will use the provided DID to sign a given message.
+     *
+     * @param did The DID which will be used to sign the message.
+     * @param message The message to be signed.
+     * @return The signature of the message.
+     */
     @Throws(PrismAgentError.CannotFindDIDPrivateKey::class)
     suspend fun signWith(did: DID, message: ByteArray): Signature {
         val privateKey =
@@ -318,54 +357,12 @@ class PrismAgent {
         return apollo.signMessage(privateKey, message)
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
-    @JvmOverloads
-    fun startFetchingMessages(requestInterval: Int = 5) {
-        if (fetchingMessagesJob == null) {
-            fetchingMessagesJob = prismAgentScope.launch {
-                while (true) {
-                    connectionManager.awaitMessages().collect { array ->
-                        val messagesIds = mutableListOf<String>()
-                        val messages = mutableListOf<Message>()
-                        array.map { pair ->
-                            messagesIds.add(pair.first)
-                            messages.add(pair.second)
-                        }
-                        if (messagesIds.isNotEmpty()) {
-                            connectionManager.mediationHandler.registerMessagesAsRead(
-                                messagesIds.toTypedArray()
-                            )
-                            pluto.storeMessages(messages)
-                        }
-                    }
-                    delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
-                }
-            }
-        }
-        fetchingMessagesJob?.let {
-            if (it.isActive) return
-            it.start()
-        }
-    }
-
-    fun stopFetchingMessages() {
-        fetchingMessagesJob?.cancel()
-    }
-
-    fun handleMessagesEvents(): Flow<List<Message>> {
-        return pluto.getAllMessages()
-    }
-
-    fun handleReceivedMessagesEvents(): Flow<List<Message>> {
-        return pluto.getAllMessagesReceived()
-    }
-
     /**
      * This function prepares a request credential from an offer given the subject DID.
      * @param did Subject DID.
-     * @param offerCredential Received offer credential.
+     * @param offer Received offer credential.
      * @return Created request credential.
-     * @throws PolluxError.InvalidPrismDID if there is a problem creating the request credential.
+     * @throws [PolluxError.InvalidPrismDID] if there is a problem creating the request credential.
      **/
     @Throws(PolluxError.InvalidPrismDID::class)
     suspend fun prepareRequestCredentialWithIssuer(did: DID, offer: OfferCredential): RequestCredential {
@@ -444,6 +441,64 @@ class PrismAgent {
             pluto.storeCredential(credential)
             return credential
         } ?: throw UnknownError("Cannot find attachment base64 in message")
+    }
+
+    // Message Events
+    /**
+     * Start fetching the messages from the mediator.
+     */
+    @JvmOverloads
+    fun startFetchingMessages(requestInterval: Int = 5) {
+        if (fetchingMessagesJob == null) {
+            fetchingMessagesJob = prismAgentScope.launch {
+                while (true) {
+                    connectionManager.awaitMessages().collect { array ->
+                        val messagesIds = mutableListOf<String>()
+                        val messages = mutableListOf<Message>()
+                        array.map { pair ->
+                            messagesIds.add(pair.first)
+                            messages.add(pair.second)
+                        }
+                        if (messagesIds.isNotEmpty()) {
+                            connectionManager.mediationHandler.registerMessagesAsRead(
+                                messagesIds.toTypedArray()
+                            )
+                            pluto.storeMessages(messages)
+                        }
+                    }
+                    delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
+                }
+            }
+        }
+        fetchingMessagesJob?.let {
+            if (it.isActive) return
+            it.start()
+        }
+    }
+
+    /**
+     * Stop fetching messages
+     */
+    fun stopFetchingMessages() {
+        fetchingMessagesJob?.cancel()
+    }
+
+    /**
+     * Handles the messages events and return a publisher of the messages.
+     *
+     * @return [Flow] of [Message].
+     */
+    fun handleMessagesEvents(): Flow<List<Message>> {
+        return pluto.getAllMessages()
+    }
+
+    /**
+     * Handles the received messages events and return a publisher of the messages.
+     *
+     * @return [Flow] of [Message].
+     */
+    fun handleReceivedMessagesEvents(): Flow<List<Message>> {
+        return pluto.getAllMessagesReceived()
     }
 
     // Invitation functionalities
@@ -571,6 +626,9 @@ class PrismAgent {
         }
     }
 
+    /**
+     * Enumeration representing the current state of the agent.
+     */
     enum class State {
         STOPPED, STARTING, RUNNING, STOPPING
     }

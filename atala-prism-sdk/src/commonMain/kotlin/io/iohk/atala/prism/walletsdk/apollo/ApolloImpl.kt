@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.apollo
 import io.iohk.atala.prism.apollo.derivation.DerivationPath
 import io.iohk.atala.prism.apollo.derivation.KeyDerivation
 import io.iohk.atala.prism.apollo.derivation.MnemonicCode
+import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
 import io.iohk.atala.prism.apollo.ecdsa.ECDSAType
 import io.iohk.atala.prism.apollo.ecdsa.KMMECDSA
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PrivateKey
@@ -20,12 +21,31 @@ import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
+import kotlin.jvm.Throws
 
+/**
+ * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
+ */
 class ApolloImpl : Apollo {
+
+    /**
+     * Creates a random set of mnemonic phrases that can be used as a seed for generating a private key.
+     *
+     * @return An array of mnemonic phrases.
+     */
     override fun createRandomMnemonics(): Array<String> {
         return KeyDerivation.randomMnemonicCode().words.toTypedArray()
     }
 
+    /**
+     * Takes in a set of mnemonics and a passphrase, and returns a seed object used to generate a private key.
+     *
+     * @param mnemonics An array of mnemonic phrases.
+     * @param passphrase A passphrase used to enhance the security of the seed.
+     * @return A seed object.
+     * @throws [MnemonicLengthException] if the mnemonics or passphrase are invalid.
+     */
+    @Throws(MnemonicLengthException::class)
     override fun createSeed(mnemonics: Array<String>, passphrase: String): Seed {
         val mnemonicCode = MnemonicCode(mnemonics.toList())
         return Seed(
@@ -36,6 +56,12 @@ class ApolloImpl : Apollo {
         )
     }
 
+    /**
+     * Creates a random seed and a corresponding set of mnemonic phrases.
+     *
+     * @param passphrase A passphrase used to enhance the security of the seed.
+     * @return [SeedWords].
+     */
     override fun createRandomSeed(passphrase: String?): SeedWords {
         val mnemonics = createRandomMnemonics()
         val mnemonicCode = MnemonicCode(mnemonics.toList())
@@ -50,6 +76,13 @@ class ApolloImpl : Apollo {
         )
     }
 
+    /**
+     * Creates a key pair (a private and public key) using a given seed and key curve.
+     *
+     * @param seed A seed object used to generate the key pair.
+     * @param curve The key curve to use for generating the key pair.
+     * @return A key pair object containing a private and public key.
+     */
     override fun createKeyPair(seed: Seed?, curve: KeyCurve): KeyPair {
         return when (curve.curve) {
             Curve.SECP256K1 -> {
@@ -84,6 +117,13 @@ class ApolloImpl : Apollo {
         }
     }
 
+    /**
+     * Creates a key pair using a given seed and a specified private key.
+     *
+     * @param seed A seed object used to generate the key pair.
+     * @param privateKey The private key to use for generating the key pair.
+     * @return A [KeyPair] object containing a private and public key.
+     */
     override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
@@ -138,6 +178,12 @@ class ApolloImpl : Apollo {
         }
     }
 
+    /**
+     * Compresses a given public key into a shorter, more efficient form.
+     *
+     * @param publicKey The public key to compress.
+     * @return [CompressedPublicKey]
+     */
     override fun compressedPublicKey(publicKey: PublicKey): CompressedPublicKey {
         val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromBytes(publicKey.value)
         val kmmCompressed = kmmPublicKey.getEncodedCompressed()
@@ -147,6 +193,12 @@ class ApolloImpl : Apollo {
         )
     }
 
+    /**
+     * Decompresses a given compressed public key into its original form.
+     *
+     * @param compressedData The compressed public key data.
+     * @return [CompressedPublicKey]
+     */
     override fun compressedPublicKey(compressedData: ByteArray): CompressedPublicKey {
         val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromCompressed(compressedData)
         val kmmCompressed = kmmPublicKey.getEncodedCompressed()
@@ -160,6 +212,14 @@ class ApolloImpl : Apollo {
         )
     }
 
+    /**
+     * Create a public key from byte coordinates.
+     *
+     * @param curve key curve.
+     * @param x x coordinate.
+     * @param y y coordinate.
+     * @return [PublicKey].
+     */
     override fun publicKey(curve: KeyCurve, x: ByteArray, y: ByteArray): PublicKey {
         return when (curve.curve) {
             Curve.SECP256K1 -> {
@@ -177,6 +237,13 @@ class ApolloImpl : Apollo {
         }
     }
 
+    /**
+     * Create a public key from bytes.
+     *
+     * @param curve key curve.
+     * @param x bytes.
+     * @return [PublicKey].
+     */
     override fun publicKey(curve: KeyCurve, x: ByteArray): PublicKey {
         return when (curve.curve) {
             Curve.SECP256K1 -> {
@@ -194,6 +261,13 @@ class ApolloImpl : Apollo {
         }
     }
 
+    /**
+     * Signs a message using a given private key, returning the signature.
+     *
+     * @param privateKey The private key to use for signing the message.
+     * @param message The message to sign, in binary data form.
+     * @return The signature of the message.
+     */
     override fun signMessage(privateKey: PrivateKey, message: ByteArray): Signature {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
@@ -224,6 +298,13 @@ class ApolloImpl : Apollo {
         }
     }
 
+    /**
+     * Signs a message using a given private key, returning the signature.
+     *
+     * @param privateKey The private key to use for signing the message.
+     * @param message The message to sign, in string form.
+     * @return The signature of the message.
+     */
     override fun signMessage(privateKey: PrivateKey, message: String): Signature {
         return when (privateKey.keyCurve.curve) {
             Curve.SECP256K1 -> {
@@ -246,6 +327,15 @@ class ApolloImpl : Apollo {
         }
     }
 
+    /**
+     * Verifies the authenticity of a signature using the corresponding public key, challenge, and
+     * signature. This function returns a boolean value indicating whether the signature is valid or not.
+     *
+     * @param publicKey The public key associated with the signature.
+     * @param challenge The challenge used to generate the signature.
+     * @param signature The signature to verify.
+     * @return A boolean value indicating whether the signature is valid or not.
+     */
     override fun verifySignature(publicKey: PublicKey, challenge: ByteArray, signature: Signature): Boolean {
         return when (publicKey.curve.curve) {
             Curve.SECP256K1 -> {
