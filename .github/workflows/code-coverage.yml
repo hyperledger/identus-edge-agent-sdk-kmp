@@ -24,14 +24,13 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
       - name: Generate kover coverage report
-        run: ./gradlew koverHtmlReport
+        run: ./gradlew koverXmlReport
 
       - name: Add coverage report to PR
         id: kover
         uses: mi-kas/kover-report@v1
         with:
-
-          path: ${{ github.workspace }}/atala-prism-wallet-sdk-kmm/atala-prism-wallet-sdk-kmm/atala-prism-sdk/build/kover/atala-prism-sdk/html/index.html
+          path: ${{ github.workspace }}/atala-prism-sdk/build/reports/kover/report.xml
           token: ${{ env.ATALA_GITHUB_TOKEN }}
           title: Code Coverage
           update-comment: true

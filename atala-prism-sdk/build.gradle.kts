@@ -22,17 +22,17 @@ koverReport {
         mergeWith("release")
         html {
             title = "$currentModuleName - Test Coverage"
-            setReportDir(layout.buildDirectory.dir("kover/atala-prism-sdk/html"))
-
-            filters {
-                excludes {
-                    packages(
-                        "io.iohk.atala.prism.protos",
-                        "io.iohk.atala.prism.walletsdk.domain",
-                        "io.iohk.atala.prism.walletsdk.castor.antlrgrammar",
-                        "ioiohkatalaprismwalletsdkpluto.data"
-                    )
-                }
+            setReportDir(layout.buildDirectory.dir("kover/atala-prism-sdk/xml"))
+        }
+        xml {}
+        filters {
+            excludes {
+                packages(
+                    "io.iohk.atala.prism.protos",
+                    "io.iohk.atala.prism.walletsdk.domain",
+                    "io.iohk.atala.prism.walletsdk.castor.antlrgrammar",
+                    "ioiohkatalaprismwalletsdkpluto.data"
+                )
             }
         }
     }
