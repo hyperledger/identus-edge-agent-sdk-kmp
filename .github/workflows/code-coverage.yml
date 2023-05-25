@@ -23,7 +23,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
       - name: Generate kover coverage report
-        run: ./gradlew koverXmlReport
+        run: ./gradlew koverHtmlReport
 
       - name: Add coverage report to PR
         id: kover
