@@ -31,7 +31,7 @@ jobs:
         uses: mi-kas/kover-report@v1
         with:
 
-          path: ${{ github.workspace }}/atala-prism-sdk/build/kover/atala-prism-sdk/html/
+          path: ${{ github.workspace }}/atala-prism-sdk/build/kover/atala-prism-sdk/html/index.hml
           token: ${{ env.ATALA_GITHUB_TOKEN }}
           title: Code Coverage
           update-comment: true
