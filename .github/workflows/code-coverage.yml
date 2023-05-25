@@ -11,13 +11,14 @@ jobs:
       - name: Set up JDK
         uses: actions/setup-java@v3
         with:
-          java-version: 11
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'zulu'
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
       - name: Generate kover coverage report
         run: ./gradlew koverXmlReport
 
-      - name: Add coverate report to PR
+      - name: Add coverage report to PR
         id: kover
         uses: mi-kas/kover-report@v1
         with:
