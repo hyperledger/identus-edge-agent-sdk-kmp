@@ -2,6 +2,7 @@ name: Measure coverage
 
 on:
   pull_request:
+    branches: [main]
 
 env:
   JAVA_VERSION: 11
