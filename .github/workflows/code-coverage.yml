@@ -30,7 +30,8 @@ jobs:
         id: kover
         uses: mi-kas/kover-report@v1
         with:
-          path: ${{ github.workspace }}.build/reports/kover/html/index.html
+
+          path: ${{ github.workspace }}/build/reports/kover/htmlRelease/index.html
           token: ${{ env.ATALA_GITHUB_TOKEN }}
           title: Code Coverage
           update-comment: true
