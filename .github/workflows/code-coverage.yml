@@ -3,6 +3,12 @@ name: Measure coverage
 on:
   pull_request:
 
+env:
+  JAVA_VERSION: 11
+  ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+  MIN_COVERAGE_OVERALL: 80
+  MIN_COVERAGE_CHANGED_FILES: 80
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,9 +29,9 @@ jobs:
         uses: mi-kas/kover-report@v1
         with:
           path: ${{ github.workspace }}.build/reports/kover/report.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ env.ATALA_GITHUB_TOKEN }}
           title: Code Coverage
           update-comment: true
-#          min-coverage-overall: 80
-#          min-coverage-changed-files: 80
+#          min-coverage-overall: ${{ env.MIN_COVERAGE_OVERALL }}
+#          min-coverage-changed-files: ${{ env.MIN_COVERAGE_CHANGED_FILES }}
           coverage-counter-type: LINE
