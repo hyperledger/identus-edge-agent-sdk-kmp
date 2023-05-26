@@ -533,6 +533,7 @@ class PrismAgent {
         return jwtString?.let {
             val credential = pollux.parseVerifiableCredential(it)
             pluto.storeCredential(credential)
+
             return credential
         } ?: throw UnknownError("Cannot find attachment base64 in message")
     }
