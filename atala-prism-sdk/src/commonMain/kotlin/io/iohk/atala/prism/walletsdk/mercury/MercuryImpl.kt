@@ -10,7 +10,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
-import io.ktor.http.*
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
