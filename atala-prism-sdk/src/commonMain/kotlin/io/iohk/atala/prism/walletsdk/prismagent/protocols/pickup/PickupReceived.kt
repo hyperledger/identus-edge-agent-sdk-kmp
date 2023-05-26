@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.prismagent.MESSAGE_ID_LIST
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -39,7 +40,7 @@ final class PickupReceived {
     }
 
     @Serializable
-    data class Body(@SerialName("message_id_list") var messageIdList: Array<String>) {
+    data class Body(@SerialName(MESSAGE_ID_LIST) var messageIdList: Array<String>) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (javaClass != other?.javaClass) return false

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
+import io.iohk.atala.prism.walletsdk.prismagent.ATTACH_ID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -12,7 +13,7 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class CredentialFormat(
-    @SerialName("attach_id")
+    @SerialName(ATTACH_ID)
     val attachId: String,
     val format: String
 )

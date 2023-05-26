@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.prismagent.EMPTY_BODY
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 
 final class MediationRequest @JvmOverloads constructor(
@@ -27,7 +28,7 @@ final class MediationRequest @JvmOverloads constructor(
             from = from,
             to = to,
             fromPrior = null,
-            body = "{}",
+            body = EMPTY_BODY,
             extraHeaders = emptyArray(),
             attachments = emptyArray(),
             thid = null,

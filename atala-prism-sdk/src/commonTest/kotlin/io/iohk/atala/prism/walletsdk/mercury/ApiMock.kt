@@ -21,7 +21,7 @@ class ApiMock(
             respond(
                 content = response,
                 status = statusCode,
-                headers = headersOf(HttpHeaders.ContentType, "application/json")
+                headers = headersOf(HttpHeaders.ContentType, APPLICATION_JSON)
             )
         }
     ) {

@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.sampleapp.Sdk
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM1
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import kotlinx.coroutines.launch
 
 class DIDsViewModel(application: Application) : AndroidViewModel(application) {
@@ -35,8 +37,8 @@ class DIDsViewModel(application: Application) : AndroidViewModel(application) {
                 it.createNewPeerDID(
                     arrayOf(
                         DIDDocument.Service(
-                            "#didcomm-1",
-                            arrayOf("DIDCommMessaging"),
+                            DIDCOMM1,
+                            arrayOf(DIDCOMM_MESSAGING),
                             DIDDocument.ServiceEndpoint(sdk.handler?.mediatorDID.toString())
                         )
                     ),

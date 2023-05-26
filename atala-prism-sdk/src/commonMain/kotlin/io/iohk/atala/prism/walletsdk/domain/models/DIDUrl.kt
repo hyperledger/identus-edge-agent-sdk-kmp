@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
+import io.iohk.atala.prism.walletsdk.domain.DID_URL_SEPARATOR
 import kotlin.jvm.JvmOverloads
 
 data class DIDUrl @JvmOverloads constructor(
@@ -14,7 +15,7 @@ data class DIDUrl @JvmOverloads constructor(
     }
 
     fun pathString(): String {
-        return "/${path?.joinToString("/")}"
+        return "/${path?.joinToString(DID_URL_SEPARATOR)}"
     }
 
     fun queryString(): String {

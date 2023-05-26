@@ -6,13 +6,15 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PICK_UP_DELIVERY
+import io.iohk.atala.prism.walletsdk.prismagent.PICK_UP_STATUS
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 
 class PickupRunner(message: Message, private val mercury: Mercury) {
 
     enum class PickupResponseType(val type: String) {
-        STATUS("status"),
-        DELIVERY("delivery")
+        STATUS(PICK_UP_STATUS),
+        DELIVERY(PICK_UP_DELIVERY)
     }
 
     data class PickupResponse(val type: PickupResponseType, val message: Message)

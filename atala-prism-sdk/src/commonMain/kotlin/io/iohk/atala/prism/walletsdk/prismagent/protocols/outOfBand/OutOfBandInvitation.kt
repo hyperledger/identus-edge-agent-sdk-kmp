@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
 import io.iohk.atala.prism.apollo.uuid.UUID
+import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -28,7 +29,7 @@ constructor(
      */
     @Serializable
     data class Body(
-        @SerialName("goal_code")
+        @SerialName(GOAL_CODE)
         val goalCode: String?,
         val goal: String?,
         val accept: List<String>?

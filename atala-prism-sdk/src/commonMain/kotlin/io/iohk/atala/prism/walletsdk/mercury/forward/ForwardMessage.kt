@@ -4,6 +4,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.mercury.APPLICATION_JSON
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -19,7 +20,7 @@ class ForwardMessage @JvmOverloads constructor(
     fun makeMessage(): Message {
         val forwardBody = Json.encodeToString(body)
         val attachmentData = AttachmentJsonData(encryptedMessage)
-        val attachment = AttachmentDescriptor(UUID.randomUUID().toString(), "application/json", attachmentData)
+        val attachment = AttachmentDescriptor(UUID.randomUUID().toString(), APPLICATION_JSON, attachmentData)
 
         val message = Message(
             id = id,

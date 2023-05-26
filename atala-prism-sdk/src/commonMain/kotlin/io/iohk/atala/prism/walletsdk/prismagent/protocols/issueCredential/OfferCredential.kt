@@ -5,6 +5,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.CREDENTIAL_PREVIEW
+import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
+import io.iohk.atala.prism.walletsdk.prismagent.MULTIPLE_AVAILABLE
+import io.iohk.atala.prism.walletsdk.prismagent.REPLACEMENT_ID
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
@@ -12,7 +16,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 /**
  * ALL parameters are DIDCOMMV2 format and naming conventions and follows the protocol
@@ -115,14 +118,14 @@ data class OfferCredential @JvmOverloads constructor(
 
     @Serializable
     data class Body @JvmOverloads constructor(
-        @SerialName("goal_code")
+        @SerialName(GOAL_CODE)
         val goalCode: String? = null,
         val comment: String? = null,
-        @SerialName("replacement_id")
+        @SerialName(REPLACEMENT_ID)
         val replacementId: String? = null,
-        @SerialName("multiple_available")
+        @SerialName(MULTIPLE_AVAILABLE)
         val multipleAvailable: String? = null,
-        @SerialName("credential_preview")
+        @SerialName(CREDENTIAL_PREVIEW)
         val credentialPreview: CredentialPreview,
         val formats: Array<CredentialFormat>
     ) {

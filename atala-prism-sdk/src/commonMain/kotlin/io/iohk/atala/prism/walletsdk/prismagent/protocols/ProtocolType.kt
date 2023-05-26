@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PROTOCOL_TYPE
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -47,7 +48,7 @@ enum class ProtocolType(val value: String) {
 @Serializer(forClass = ProtocolType::class)
 object ProtocolTypeSerializer : KSerializer<ProtocolType> {
     override val descriptor: SerialDescriptor
-        get() = PrimitiveSerialDescriptor("ProtocolType", PrimitiveKind.STRING)
+        get() = PrimitiveSerialDescriptor(PROTOCOL_TYPE, PrimitiveKind.STRING)
 
     override fun serialize(encoder: Encoder, value: ProtocolType) {
         encoder.encodeString(value.value)

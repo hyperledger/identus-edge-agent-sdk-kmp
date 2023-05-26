@@ -11,7 +11,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class JWTCredential(val id: String, val json: JsonString) {
 
-    @SerialName("vc")
+    @SerialName(VC)
     private val jwtVerifiableCredential: JWTCredentialPayload = Json.decodeFromString(json)
 
     fun makeVerifiableCredential(): VerifiableCredential {

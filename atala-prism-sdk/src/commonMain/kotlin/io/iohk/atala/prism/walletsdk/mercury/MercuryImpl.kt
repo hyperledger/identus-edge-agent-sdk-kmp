@@ -8,8 +8,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
-import io.ktor.http.HttpHeaders
+import io.ktor.http.*
 import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.utils.isDID
 import kotlin.jvm.Throws
@@ -84,12 +85,12 @@ class MercuryImpl(
 
         val document = castor.resolveDID(message.to.toString())
         val packedMessage = packMessage(message)
-        val service = document.services.find { it.type.contains("DIDCommMessaging") }
+        val service = document.services.find { it.type.contains(DIDCOMM_MESSAGING) }
 
         getMediatorDID(service)?.let { mediatorDid ->
             val mediatorDocument = castor.resolveDID(mediatorDid.toString())
             val mediatorUri =
-                mediatorDocument.services.find { it.type.contains("DIDCommMessaging") }?.serviceEndpoint?.uri
+                mediatorDocument.services.find { it.type.contains(DIDCOMM_MESSAGING) }?.serviceEndpoint?.uri
             val forwardMsg = prepareForwardMessage(message, packedMessage, mediatorDid)
             val packedForwardMsg = packMessage(forwardMsg.makeMessage())
 
@@ -132,7 +133,7 @@ class MercuryImpl(
         }
 
         val result = api.request(
-            "POST",
+            HttpMethod.Post.value,
             service.serviceEndpoint.uri,
             emptyArray(),
             arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
@@ -147,7 +148,7 @@ class MercuryImpl(
             throw MercuryError.NoValidServiceFoundError()
         }
 
-        val result = api.request("POST", uri, emptyArray(), emptyArray(), message)
+        val result = api.request(HttpMethod.Post.value, uri, emptyArray(), emptyArray(), message)
         return result.jsonString.toByteArray()
     }
 
