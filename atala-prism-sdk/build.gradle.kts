@@ -13,6 +13,29 @@ plugins {
     kotlin("plugin.serialization") version "1.7.20"
     id("com.android.library")
     id("org.jetbrains.dokka")
+    id("org.jetbrains.kotlinx.kover") version "0.7.0"
+}
+
+koverReport {
+    defaults {
+        // adds the contents of the reports of `release` Android build variant to default reports
+        mergeWith("release")
+        html {
+            title = "$currentModuleName - Test Coverage"
+            setReportDir(layout.buildDirectory.dir("kover/atala-prism-sdk/xml"))
+        }
+        xml {}
+        filters {
+            excludes {
+                packages(
+                    "io.iohk.atala.prism.protos",
+                    "io.iohk.atala.prism.walletsdk.domain",
+                    "io.iohk.atala.prism.walletsdk.castor.antlrgrammar",
+                    "ioiohkatalaprismwalletsdkpluto.data"
+                )
+            }
+        }
+    }
 }
 
 kotlin {
