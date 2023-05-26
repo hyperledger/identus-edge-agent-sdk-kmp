@@ -526,6 +526,9 @@ class PrismAgent {
      * @return The parsed verifiable credential.
      * @throws PrismAgentError if there is a problem parsing the credential.
      */
+    fun processIssuedCredentialMessage2(message: IssueCredential) {
+    }
+
     fun processIssuedCredentialMessage(message: IssueCredential): VerifiableCredential {
         val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
         val jwtString = attachment?.let { it.base64.base64UrlDecoded }
@@ -533,7 +536,6 @@ class PrismAgent {
         return jwtString?.let {
             val credential = pollux.parseVerifiableCredential(it)
             pluto.storeCredential(credential)
-
             return credential
         } ?: throw UnknownError("Cannot find attachment base64 in message")
     }
