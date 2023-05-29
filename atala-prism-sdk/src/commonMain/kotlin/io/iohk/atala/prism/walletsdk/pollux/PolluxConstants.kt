@@ -3,7 +3,6 @@ package io.iohk.atala.prism.walletsdk.pollux
 const val JWT_DELIMITER = "."
 const val JWT_PARTS_SIZE = 3
 const val JWT_SECOND_PART = 1
-const val SECP256K1 = "secp256k1"
 const val EC = "EC"
 const val OPTIONS = "options"
 const val DOMAIN = "domain"
