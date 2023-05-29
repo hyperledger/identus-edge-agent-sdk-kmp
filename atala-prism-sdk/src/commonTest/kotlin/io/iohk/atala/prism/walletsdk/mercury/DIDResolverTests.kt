@@ -6,6 +6,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
 import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommDIDResolver
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -52,7 +53,7 @@ class DIDResolverTests {
         val seRoutingKeys = arrayOf("someRoutingKey")
         val service = DIDDocument.Service(
             id = "DIDCommV2",
-            type = arrayOf("DIDCommMessaging"),
+            type = arrayOf(DIDCOMM_MESSAGING),
             serviceEndpoint = DIDDocument.ServiceEndpoint(
                 uri = "localhost:8082",
                 accept = seAccept,
@@ -109,8 +110,8 @@ class DIDResolverTests {
         assertContains(didDoc.authentications, vmAuthentication.id.string())
         var publicJwk = vmAuthentication.publicKeyJwk
         assertNotNull(publicJwk)
-        var publicJwkCrv = publicJwk["crv"]
-        var publicJwkX = publicJwk["x"]
+        var publicJwkCrv = publicJwk[CRV]
+        var publicJwkX = publicJwk[X]
         assertNotNull(publicJwkCrv)
         assertNotNull(publicJwkX)
         assertContains(
@@ -129,8 +130,8 @@ class DIDResolverTests {
         assertContains(didDoc.keyAgreements, vmKeyAgreement.id.string())
         publicJwk = vmKeyAgreement.publicKeyJwk
         assertNotNull(publicJwk)
-        publicJwkCrv = publicJwk["crv"]
-        publicJwkX = publicJwk["x"]
+        publicJwkCrv = publicJwk[CRV]
+        publicJwkX = publicJwk[X]
         assertNotNull(publicJwkCrv)
         assertNotNull(publicJwkX)
         assertContains(

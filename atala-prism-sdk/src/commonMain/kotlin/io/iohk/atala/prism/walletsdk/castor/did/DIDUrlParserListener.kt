@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor.did
 
+import io.iohk.atala.prism.walletsdk.castor.PATH_SEPARATOR
 import io.iohk.atala.prism.walletsdk.castor.antlrgrammar.DIDUrlAbnfBaseListener
 import io.iohk.atala.prism.walletsdk.castor.antlrgrammar.DIDUrlAbnfParser
 
@@ -28,7 +29,7 @@ class DIDUrlParserListener : DIDUrlAbnfBaseListener() {
         if (ctx.isEmpty) {
             return
         }
-        path = ctx.children?.map { it.text }?.filter { it != "/" }?.toTypedArray()
+        path = ctx.children?.map { it.text }?.filter { it != PATH_SEPARATOR }?.toTypedArray()
     }
 
     override fun exitFrag(ctx: DIDUrlAbnfParser.FragContext) {

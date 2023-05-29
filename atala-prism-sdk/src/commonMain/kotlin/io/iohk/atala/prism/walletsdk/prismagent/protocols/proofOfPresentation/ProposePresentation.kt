@@ -5,6 +5,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
+import io.iohk.atala.prism.walletsdk.prismagent.PROOF_TYPES
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -118,10 +120,10 @@ class ProposePresentation {
 
     @Serializable
     data class Body @JvmOverloads constructor(
-        @SerialName("goal_code")
+        @SerialName(GOAL_CODE)
         val goalCode: String? = null,
         val comment: String? = null,
-        @SerialName("proof_types")
+        @SerialName(PROOF_TYPES)
         val proofTypes: Array<ProofTypes>
     ) {
         override fun equals(other: Any?): Boolean {

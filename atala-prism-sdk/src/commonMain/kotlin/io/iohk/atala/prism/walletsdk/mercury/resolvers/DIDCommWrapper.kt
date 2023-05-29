@@ -12,7 +12,12 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentLinkData
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.mercury.ATTACHMENT_SEPARATOR
+import io.iohk.atala.prism.walletsdk.mercury.BASE64
 import io.iohk.atala.prism.walletsdk.mercury.DIDCommProtocol
+import io.iohk.atala.prism.walletsdk.mercury.HASH
+import io.iohk.atala.prism.walletsdk.mercury.JSON
+import io.iohk.atala.prism.walletsdk.mercury.LINKS
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.json.Json
@@ -148,7 +153,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
                     byteCount = attachment.byteCount?.toLong(),
                     data = parseAttachmentData(attachment.data),
                     description = attachment.description,
-                    filename = attachment.filename?.joinToString("/"),
+                    filename = attachment.filename?.joinToString(ATTACHMENT_SEPARATOR),
                     format = attachment.format,
                     lastModTime = attachment.lastModTime?.toLong(),
                     mediaType = attachment.mediaType
@@ -219,7 +224,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
                     data = parseAttachmentDataToDomain(attachment.data),
                     byteCount = attachment.byteCount?.toInt(),
                     description = attachment.description,
-                    filename = attachment.filename?.split("/")?.toTypedArray(),
+                    filename = attachment.filename?.split(ATTACHMENT_SEPARATOR)?.toTypedArray(),
                     format = attachment.format,
                     lastModTime = attachment.lastModTime?.toString(),
                     mediaType = attachment.mediaType,
@@ -236,18 +241,18 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
     private fun parseAttachmentDataToDomain(data: Attachment.Data): AttachmentData {
         val jsonObj = data.toJSONObject()
 
-        val base64 = jsonObj["base64"]
+        val base64 = jsonObj[BASE64]
         if (base64 is String) {
             return AttachmentBase64(base64)
         }
 
-        val json = jsonObj["json"]
+        val json = jsonObj[JSON]
         if (json is JSONObject) {
             return AttachmentJsonData(JSONObject.toJSONString(json as Map<String, *>))
         }
 
-        val links = jsonObj["links"]
-        val hash = jsonObj["hash"]
+        val links = jsonObj[LINKS]
+        val hash = jsonObj[HASH]
         if (links is Array<*> && links.isArrayOf<String>() && hash is String) {
             return AttachmentLinkData(
                 links as Array<String>,

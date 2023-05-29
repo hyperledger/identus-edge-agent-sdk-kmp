@@ -3,6 +3,9 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.prismagent.ADD
+import io.iohk.atala.prism.walletsdk.prismagent.RECEPIENT_DID
+import io.iohk.atala.prism.walletsdk.prismagent.UPDATES
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -60,10 +63,10 @@ final class MediationKeysUpdateList {
     @OptIn(ExperimentalSerializationApi::class)
     @JvmOverloads
     constructor(
-        @SerialName("recipient_did")
+        @SerialName(RECEPIENT_DID)
         var recipientDid: String,
         @EncodeDefault
-        var action: String = "add"
+        var action: String = ADD
     )
 
     @Serializable
@@ -84,7 +87,7 @@ final class MediationKeysUpdateList {
         }
 
         fun toMapStringAny(): Map<String, Any?> {
-            return mapOf(Pair("updates", updates))
+            return mapOf(Pair(UPDATES, updates))
         }
     }
 }

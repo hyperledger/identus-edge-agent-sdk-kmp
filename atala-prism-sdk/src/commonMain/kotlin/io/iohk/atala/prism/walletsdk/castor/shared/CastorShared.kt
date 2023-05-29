@@ -19,6 +19,8 @@ import io.iohk.atala.prism.didcomm.didpeer.createPeerDIDNumalgo2
 import io.iohk.atala.prism.protos.AtalaOperation
 import io.iohk.atala.prism.protos.CreateDIDOperation
 import io.iohk.atala.prism.protos.Service
+import io.iohk.atala.prism.walletsdk.castor.DID
+import io.iohk.atala.prism.walletsdk.castor.PRISM
 import io.iohk.atala.prism.walletsdk.castor.did.DIDParser
 import io.iohk.atala.prism.walletsdk.castor.did.DIDUrlParser
 import io.iohk.atala.prism.walletsdk.castor.did.prismdid.LongFormPrismDID
@@ -117,8 +119,8 @@ internal class CastorShared {
             )
 
             return DID(
-                schema = "did",
-                method = "prism",
+                schema = DID,
+                method = PRISM,
                 methodId = methodSpecificId.toString(),
             )
         }

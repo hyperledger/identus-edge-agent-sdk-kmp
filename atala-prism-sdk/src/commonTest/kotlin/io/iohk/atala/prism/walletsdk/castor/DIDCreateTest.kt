@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -57,10 +58,10 @@ class DIDCreateTest {
 
         val service = DIDDocument.Service(
             id = "DIDCommV2",
-            type = arrayOf("DIDCommMessaging"),
+            type = arrayOf(DIDCOMM_MESSAGING),
             serviceEndpoint = DIDDocument.ServiceEndpoint(
                 uri = "localhost:8082",
-                accept = arrayOf("DIDCommMessaging"),
+                accept = arrayOf(DIDCOMM_MESSAGING),
                 routingKeys = arrayOf()
             )
         )
