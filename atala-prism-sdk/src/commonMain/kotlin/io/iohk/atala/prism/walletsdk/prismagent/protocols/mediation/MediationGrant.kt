@@ -2,6 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation
 
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.prismagent.ROUTING_DID
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -36,5 +37,5 @@ class MediationGrant {
     }
 
     @Serializable
-    data class Body(@SerialName("routing_did")var routingDid: String)
+    data class Body(@SerialName(ROUTING_DID)var routingDid: String)
 }

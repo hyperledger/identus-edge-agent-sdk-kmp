@@ -7,6 +7,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
+import io.iohk.atala.prism.walletsdk.prismagent.MORE_AVAILABLE
+import io.iohk.atala.prism.walletsdk.prismagent.REPLACEMENT_ID
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
@@ -95,12 +98,12 @@ data class IssueCredential(
 
     @Serializable
     data class Body(
-        @SerialName("goal_code")
+        @SerialName(GOAL_CODE)
         val goalCode: String? = null,
         val comment: String? = null,
-        @SerialName("replacement_id")
+        @SerialName(REPLACEMENT_ID)
         val replacementId: String? = null,
-        @SerialName("more_available")
+        @SerialName(MORE_AVAILABLE)
         val moreAvailable: String? = null,
         val formats: Array<CredentialFormat>
     ) {

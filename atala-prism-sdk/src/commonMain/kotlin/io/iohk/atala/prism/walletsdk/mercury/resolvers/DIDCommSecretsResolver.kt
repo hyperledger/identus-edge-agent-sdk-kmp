@@ -4,6 +4,7 @@ import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.OctetPrivateKey
+import io.iohk.atala.prism.walletsdk.mercury.OKP
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -30,7 +31,7 @@ class DIDCommSecretsResolver(val pluto: Pluto, val apollo: Apollo) : SecretResol
                     val keyPair = apollo.createKeyPair(privateKey = privateKey)
                     val octetJwk = OctetPrivateKey(
                         crv = privateKey.keyCurve.curve.value,
-                        kty = "OKP",
+                        kty = OKP,
                         d = privateKey.value.base64UrlEncoded,
                         x = keyPair.publicKey.value.base64UrlEncoded
                     )

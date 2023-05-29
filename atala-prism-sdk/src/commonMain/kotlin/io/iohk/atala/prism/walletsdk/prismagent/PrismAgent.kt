@@ -88,7 +88,6 @@ class PrismAgent {
         private set(value) {
             field = value
             prismAgentScope.launch {
-                println("State: $value")
                 flowState.emit(value)
             }
         }
@@ -301,9 +300,9 @@ class PrismAgent {
         if (updateMediator) {
             tmpServices = services.plus(
                 DIDDocument.Service(
-                    id = "#didcomm-1",
+                    id = DIDCOMM1,
                     type = arrayOf(
-                        "DIDCommMessaging"
+                        DIDCOMM_MESSAGING
                     ),
                     serviceEndpoint = DIDDocument.ServiceEndpoint(
                         uri = connectionManager.mediationHandler.mediator?.routingDID.toString()
@@ -643,11 +642,11 @@ class PrismAgent {
             val did = createNewPeerDID(
                 arrayOf(
                     DIDDocument.Service(
-                        id = "#didcomm-1",
-                        type = arrayOf("DIDCommMessaging"),
+                        id = DIDCOMM1,
+                        type = arrayOf(DIDCOMM_MESSAGING),
                         serviceEndpoint = DIDDocument.ServiceEndpoint(
                             uri = url,
-                            accept = arrayOf("DIDCommMessaging"),
+                            accept = arrayOf(DIDCOMM_MESSAGING),
                             routingKeys = arrayOf()
                         )
                     )
@@ -742,7 +741,7 @@ class PrismAgent {
         credential: VerifiableCredential
     ): Presentation {
         val subjectDID = DID(credential.credentialSubject)
-        if (subjectDID.method != "prism") {
+        if (subjectDID.method != PRISM) {
             throw PolluxError.InvalidPrismDID()
         }
 
@@ -764,7 +763,7 @@ class PrismAgent {
         )
         val attachmentDescriptor =
             AttachmentDescriptor(
-                mediaType = "prism/jwt",
+                mediaType = JWT_MEDIA_TYPE,
                 data = AttachmentBase64(jwtString.base64UrlEncoded)
             )
         return Presentation(

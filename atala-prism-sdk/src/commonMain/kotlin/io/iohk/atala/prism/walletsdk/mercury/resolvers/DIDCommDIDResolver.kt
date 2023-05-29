@@ -8,6 +8,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
+import io.iohk.atala.prism.walletsdk.mercury.CRV
+import io.iohk.atala.prism.walletsdk.mercury.MULTIBASE_BYTES_SIZE
+import io.iohk.atala.prism.walletsdk.mercury.X
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -56,7 +60,7 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                     if (method.publicKeyMultibase != null) {
                         var keyBytes = MultiBase.decode(method.publicKeyMultibase)
                         // In the case of MultiBase make sure to remove the MultiCodec from the ByteArray
-                        if (keyBytes.size == 34) {
+                        if (keyBytes.size == MULTIBASE_BYTES_SIZE) {
                             keyBytes = fromMulticodec(keyBytes).second
                         }
                         publicKeyJWK = when (curve) {
@@ -81,8 +85,8 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                     } else {
                         throw RuntimeException("")
                     }
-                    publicKeyJWK["crv"]?.let { crv ->
-                        publicKeyJWK["x"]?.let { x ->
+                    publicKeyJWK[CRV]?.let { crv ->
+                        publicKeyJWK[X]?.let { x ->
                             verificationMethods.add(
                                 VerificationMethod(
                                     id = method.id.string(),
@@ -103,7 +107,7 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                     } ?: throw CastorError.InvalidJWKKeysError()
                 }
 
-                if (coreProperty is DIDDocument.Service && coreProperty.type.contains("DIDCommMessaging")) {
+                if (coreProperty is DIDDocument.Service && coreProperty.type.contains(DIDCOMM_MESSAGING)) {
                     services.add(
                         DIDCommService(
                             id = coreProperty.id,

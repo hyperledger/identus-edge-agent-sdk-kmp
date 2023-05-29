@@ -1,5 +1,28 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
+import io.iohk.atala.prism.walletsdk.domain.AUD
+import io.iohk.atala.prism.walletsdk.domain.CONTEXT
+import io.iohk.atala.prism.walletsdk.domain.CREDENTIAL_SCHEMA
+import io.iohk.atala.prism.walletsdk.domain.CREDENTIAL_STATUS
+import io.iohk.atala.prism.walletsdk.domain.CREDENTIAL_SUBJECT
+import io.iohk.atala.prism.walletsdk.domain.CREDENTIAL_TYPE
+import io.iohk.atala.prism.walletsdk.domain.EVIDENCE
+import io.iohk.atala.prism.walletsdk.domain.EXP
+import io.iohk.atala.prism.walletsdk.domain.EXPIRATION_DATE
+import io.iohk.atala.prism.walletsdk.domain.ID
+import io.iohk.atala.prism.walletsdk.domain.ISS
+import io.iohk.atala.prism.walletsdk.domain.ISSUANCE_DATE
+import io.iohk.atala.prism.walletsdk.domain.ISSUER
+import io.iohk.atala.prism.walletsdk.domain.JTI
+import io.iohk.atala.prism.walletsdk.domain.NBF
+import io.iohk.atala.prism.walletsdk.domain.PROOF
+import io.iohk.atala.prism.walletsdk.domain.REFRESH_SERVICE
+import io.iohk.atala.prism.walletsdk.domain.SUB
+import io.iohk.atala.prism.walletsdk.domain.TERMS_OF_USE
+import io.iohk.atala.prism.walletsdk.domain.TYPE
+import io.iohk.atala.prism.walletsdk.domain.VALID_FROM
+import io.iohk.atala.prism.walletsdk.domain.VALID_UNTIL
+import io.iohk.atala.prism.walletsdk.domain.VC
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -16,7 +39,7 @@ import kotlin.jvm.JvmOverloads
 data class JWTCredentialPayload(
     val iss: DID,
     val sub: String?,
-    @SerialName("vc")
+    @SerialName(VC)
     val verifiableCredential: JWTVerifiableCredential,
     val nbf: String,
     val exp: String?,
@@ -130,96 +153,96 @@ data class JWTCredentialPayload(
     fun toJson(): JsonString {
         val vcJson: MutableMap<String, JsonElement> = mutableMapOf()
 
-        vcJson["credentialType"] = JsonPrimitive(this.credentialType.type)
-        vcJson["id"] = JsonPrimitive(this.id)
-        vcJson["context"] = JsonArray(this.context.map { JsonPrimitive(it) })
-        vcJson["type"] = JsonArray(this.type.map { JsonPrimitive(it) })
-        vcJson["issuer"] = JsonPrimitive(this.issuer.toString())
+        vcJson[CREDENTIAL_TYPE] = JsonPrimitive(this.credentialType.type)
+        vcJson[ID] = JsonPrimitive(this.id)
+        vcJson[CONTEXT] = JsonArray(this.context.map { JsonPrimitive(it) })
+        vcJson[TYPE] = JsonArray(this.type.map { JsonPrimitive(it) })
+        vcJson[ISSUER] = JsonPrimitive(this.issuer.toString())
 
         this.credentialSchema?.let {
-            vcJson["credentialSchema"] = JsonObject(
+            vcJson[CREDENTIAL_SCHEMA] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(it.id),
-                    "type" to JsonPrimitive(it.type),
+                    ID to JsonPrimitive(it.id),
+                    TYPE to JsonPrimitive(it.type),
                 ),
             )
         }
 
-        vcJson["credentialSubject"] = Json.decodeFromString(this.credentialSubject)
+        vcJson[CREDENTIAL_SUBJECT] = Json.decodeFromString(this.credentialSubject)
 
         this.credentialStatus?.let {
-            vcJson["credentialStatus"] = JsonObject(
+            vcJson[CREDENTIAL_STATUS] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(it.id),
-                    "type" to JsonPrimitive(it.type),
+                    ID to JsonPrimitive(it.id),
+                    TYPE to JsonPrimitive(it.type),
                 ),
             )
         }
 
         this.refreshService?.let {
-            vcJson["refreshService"] = JsonObject(
+            vcJson[REFRESH_SERVICE] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(it.id),
-                    "type" to JsonPrimitive(it.type),
+                    ID to JsonPrimitive(it.id),
+                    TYPE to JsonPrimitive(it.type),
                 ),
             )
         }
 
         this.evidence?.let {
-            vcJson["evidence"] = JsonObject(
+            vcJson[EVIDENCE] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(it.id),
-                    "type" to JsonPrimitive(it.type),
+                    ID to JsonPrimitive(it.id),
+                    TYPE to JsonPrimitive(it.type),
                 ),
             )
         }
 
         this.termsOfUse?.let {
-            vcJson["termsOfUse"] = JsonObject(
+            vcJson[TERMS_OF_USE] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(it.id),
-                    "type" to JsonPrimitive(it.type),
+                    ID to JsonPrimitive(it.id),
+                    TYPE to JsonPrimitive(it.type),
                 ),
             )
         }
 
-        vcJson["issuanceDate"] = JsonPrimitive(this.issuanceDate)
+        vcJson[ISSUANCE_DATE] = JsonPrimitive(this.issuanceDate)
 
         if (!this.expirationDate.isNullOrEmpty()) {
-            vcJson["expirationDate"] = JsonPrimitive(this.expirationDate)
+            vcJson[EXPIRATION_DATE] = JsonPrimitive(this.expirationDate)
         }
 
         this.validFrom?.let {
-            vcJson["validFrom"] = JsonObject(
+            vcJson[VALID_FROM] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(it.id),
-                    "type" to JsonPrimitive(it.type),
+                    ID to JsonPrimitive(it.id),
+                    TYPE to JsonPrimitive(it.type),
                 ),
             )
         }
 
         this.validUntil?.let {
-            vcJson["validUntil"] = JsonObject(
+            vcJson[VALID_UNTIL] = JsonObject(
                 mapOf(
-                    "id" to JsonPrimitive(it.id),
-                    "type" to JsonPrimitive(it.type),
+                    ID to JsonPrimitive(it.id),
+                    TYPE to JsonPrimitive(it.type),
                 ),
             )
         }
 
         this.proof?.let {
-            vcJson["proof"] = Json.decodeFromString(it)
+            vcJson[PROOF] = Json.decodeFromString(it)
         }
 
-        vcJson["aud"] = JsonArray(this.aud.map { JsonPrimitive(it) })
+        vcJson[AUD] = JsonArray(this.aud.map { JsonPrimitive(it) })
 
         val jwtJson = mapOf(
-            "iss" to JsonPrimitive(this.iss.toString()),
-            "sub" to this.sub?.let { JsonPrimitive(it) },
-            "nbf" to JsonPrimitive(this.nbf),
-            "exp" to this.exp?.let { JsonPrimitive(it) },
-            "jti" to JsonPrimitive(this.jti),
-            "vc" to JsonObject(vcJson),
+            ISS to JsonPrimitive(this.iss.toString()),
+            SUB to this.sub?.let { JsonPrimitive(it) },
+            NBF to JsonPrimitive(this.nbf),
+            EXP to this.exp?.let { JsonPrimitive(it) },
+            JTI to JsonPrimitive(this.jti),
+            VC to JsonObject(vcJson),
         )
 
         return Json.encodeToString(jwtJson)
@@ -231,41 +254,41 @@ data class JWTCredentialPayload(
         fun fromJson(json: JsonString): JWTCredentialPayload {
             val jsonObject = Json.decodeFromString<JsonObject>(json)
 
-            val jsonVc = jsonObject.getCredentialField<JsonObject>("vc")
+            val jsonVc = jsonObject.getCredentialField<JsonObject>(VC)
 
-            val iss = DID(jsonObject.getCredentialField(name = "iss"))
-            val sub: String? = jsonObject.getCredentialField(name = "sub", isOptional = true)
-            val nbf: String = jsonObject.getCredentialField(name = "nbf")
-            val exp: String? = jsonObject.getCredentialField(name = "exp", isOptional = true)
-            val jti: String = jsonObject.getCredentialField(name = "jti")
+            val iss = DID(jsonObject.getCredentialField(name = ISS))
+            val sub: String? = jsonObject.getCredentialField(name = SUB, isOptional = true)
+            val nbf: String = jsonObject.getCredentialField(name = NBF)
+            val exp: String? = jsonObject.getCredentialField(name = EXP, isOptional = true)
+            val jti: String = jsonObject.getCredentialField(name = JTI)
 
-            if (jsonObject.getCredentialField<String>("credentialType") != CredentialType.JWT.type) {
+            if (jsonObject.getCredentialField<String>(CREDENTIAL_TYPE) != CredentialType.JWT.type) {
                 throw PolluxError.InvalidCredentialError()
             }
 
-            val vcCredentialSubject: JsonObject = jsonVc.getCredentialField(name = "credentialSubject")
-            val vcProof: JsonObject? = jsonVc.getCredentialField(name = "proof", isOptional = true)
+            val vcCredentialSubject: JsonObject = jsonVc.getCredentialField(name = CREDENTIAL_SUBJECT)
+            val vcProof: JsonObject? = jsonVc.getCredentialField(name = PROOF, isOptional = true)
             val credentialSubject = Json.encodeToString(vcCredentialSubject)
             val proof = vcProof?.let { Json.encodeToString(it) }
 
             val verifiableCredential = JWTVerifiableCredential(
-                id = jsonVc.getCredentialField(name = "id"),
+                id = jsonVc.getCredentialField(name = ID),
                 credentialType = CredentialType.JWT,
-                context = jsonVc.getCredentialField(name = "context"),
-                type = jsonVc.getCredentialField(name = "type"),
-                credentialSchema = jsonVc.getCredentialField(name = "credentialSchema", isOptional = true),
+                context = jsonVc.getCredentialField(name = CONTEXT),
+                type = jsonVc.getCredentialField(name = TYPE),
+                credentialSchema = jsonVc.getCredentialField(name = CREDENTIAL_SCHEMA, isOptional = true),
                 credentialSubject = credentialSubject,
-                credentialStatus = jsonVc.getCredentialField(name = "credentialStatus", isOptional = true),
-                refreshService = jsonVc.getCredentialField(name = "refreshService", isOptional = true),
-                evidence = jsonVc.getCredentialField(name = "evidence", isOptional = true),
-                termsOfUse = jsonVc.getCredentialField(name = "termsOfUse", isOptional = true),
-                issuer = jsonVc.getCredentialField(name = "issuer"),
-                issuanceDate = jsonVc.getCredentialField(name = "issuanceDate"),
-                expirationDate = jsonVc.getCredentialField(name = "expirationDate", isOptional = true),
-                validFrom = jsonVc.getCredentialField(name = "validFrom", isOptional = true),
-                validUntil = jsonVc.getCredentialField(name = "validUntil", isOptional = true),
+                credentialStatus = jsonVc.getCredentialField(name = CREDENTIAL_STATUS, isOptional = true),
+                refreshService = jsonVc.getCredentialField(name = REFRESH_SERVICE, isOptional = true),
+                evidence = jsonVc.getCredentialField(name = EVIDENCE, isOptional = true),
+                termsOfUse = jsonVc.getCredentialField(name = TERMS_OF_USE, isOptional = true),
+                issuer = jsonVc.getCredentialField(name = ISSUER),
+                issuanceDate = jsonVc.getCredentialField(name = ISSUANCE_DATE),
+                expirationDate = jsonVc.getCredentialField(name = EXPIRATION_DATE, isOptional = true),
+                validFrom = jsonVc.getCredentialField(name = VALID_FROM, isOptional = true),
+                validUntil = jsonVc.getCredentialField(name = VALID_UNTIL, isOptional = true),
                 proof = proof,
-                aud = jsonVc.getCredentialField(name = "aud"),
+                aud = jsonVc.getCredentialField(name = AUD),
             )
 
             return JWTCredentialPayload(

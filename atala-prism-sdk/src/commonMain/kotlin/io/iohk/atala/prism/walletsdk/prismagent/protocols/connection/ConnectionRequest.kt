@@ -4,6 +4,7 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import kotlinx.serialization.SerialName
@@ -110,7 +111,7 @@ class ConnectionRequest {
         /**
          * The goal code of the connection acceptance message.
          */
-        @SerialName("goal_code")
+        @SerialName(GOAL_CODE)
         val goalCode: String? = null,
         /**
          * The goal of the connection acceptance message

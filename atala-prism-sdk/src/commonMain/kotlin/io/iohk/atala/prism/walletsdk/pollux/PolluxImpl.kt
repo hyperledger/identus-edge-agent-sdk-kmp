@@ -7,6 +7,7 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
@@ -34,12 +35,12 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
     @Throws(PolluxError.InvalidJWTString::class, PolluxError.InvalidCredentialError::class)
     override fun parseVerifiableCredential(jwtString: String): VerifiableCredential {
-        val jwtParts = jwtString.split(".")
-        if (jwtParts.size != 3) {
+        val jwtParts = jwtString.split(JWT_DELIMITER)
+        if (jwtParts.size != JWT_PARTS_SIZE) {
             throw PolluxError.InvalidJWTString()
         }
         val decodedBase64CredentialJson: JsonString = try {
-            jwtParts[1].base64UrlDecoded
+            jwtParts[JWT_SECOND_PART].base64UrlDecoded
         } catch (e: Throwable) {
             throw PolluxError.InvalidCredentialError(e.message)
         }
@@ -90,20 +91,20 @@ class PolluxImpl(val castor: Castor) : Pollux {
     }
 
     private fun parsePrivateKey(privateKey: PrivateKey): ECPrivateKey {
-        val curveName = "secp256k1"
+        val curveName = KMMEllipticCurve.SECP256k1.value
         val sp = ECNamedCurveTable.getParameterSpec(curveName)
         val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
         val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.value), params)
-        val keyFactory = KeyFactory.getInstance("EC", BouncyCastleProvider())
+        val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
         return keyFactory.generatePrivate(privateKeySpec) as ECPrivateKey
     }
 
     private fun getDomain(jsonObject: JsonObject): String? {
-        return jsonObject["options"]?.jsonObject?.get("domain")?.jsonPrimitive?.content
+        return jsonObject[OPTIONS]?.jsonObject?.get(DOMAIN)?.jsonPrimitive?.content
     }
 
     private fun getChallenge(jsonObject: JsonObject): String? {
-        return jsonObject["options"]?.jsonObject?.get("challenge")?.jsonPrimitive?.content
+        return jsonObject[OPTIONS]?.jsonObject?.get(CHALLENGE)?.jsonPrimitive?.content
     }
 
     private fun signClaimsRequestCredentialJWT(
@@ -114,14 +115,14 @@ class PolluxImpl(val castor: Castor) : Pollux {
     ): String {
         // Define the JWT claims
         val vp = mapOf(
-            "@context" to setOf("https://www.w3.org/2018/credentials/v1"),
-            "type" to setOf("VerifiablePresentation")
+            CONTEXT to setOf(CONTEXT_URL),
+            TYPE to setOf(VERIFIABLE_PRESENTATION)
         )
         val claims = JWTClaimsSet.Builder()
             .issuer(subjectDID.toString())
             .audience(domain)
-            .claim("nonce", challenge)
-            .claim("vp", vp)
+            .claim(NONCE, challenge)
+            .claim(VP, vp)
             .build()
 
         // Generate a JWS header with the ES256K algorithm
@@ -148,15 +149,15 @@ class PolluxImpl(val castor: Castor) : Pollux {
     ): String {
         // Define the JWT claims
         val vp = mapOf(
-            "@context" to setOf("https://www.w3.org/2018/credentials/v1"),
-            "type" to setOf("VerifiablePresentation"),
-            "verifiableCredential" to listOf(credential.id)
+            CONTEXT to setOf(CONTEXT_URL),
+            TYPE to setOf(VERIFIABLE_PRESENTATION),
+            VERIFIABLE_CREDENTIAL to listOf(credential.id)
         )
         val claims = JWTClaimsSet.Builder()
             .audience(domain)
             .issuer(subjectDID.toString())
-            .claim("nonce", challenge)
-            .claim("vp", vp)
+            .claim(NONCE, challenge)
+            .claim(VP, vp)
             .build()
 
         // Generate a JWS header with the ES256K algorithm

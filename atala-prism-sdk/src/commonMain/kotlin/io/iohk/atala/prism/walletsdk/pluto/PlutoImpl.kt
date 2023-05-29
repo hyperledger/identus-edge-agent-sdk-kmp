@@ -163,7 +163,6 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
 
     override fun storeMessages(messages: List<Message>) {
         messages.map { message ->
-            println("Message: ${message.toJsonString()}")
             storeMessage(message)
         }
     }

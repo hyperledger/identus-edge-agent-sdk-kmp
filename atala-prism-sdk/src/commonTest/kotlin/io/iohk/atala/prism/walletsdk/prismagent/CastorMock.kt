@@ -38,10 +38,10 @@ class CastorMock : Castor {
     override suspend fun resolveDID(did: String): DIDDocument {
         val coreProperty = DIDDocument.Service(
             id = "DIDCommV2",
-            type = arrayOf("DIDCommMessaging"),
+            type = arrayOf(DIDCOMM_MESSAGING),
             serviceEndpoint = DIDDocument.ServiceEndpoint(
                 uri = "localhost:8082",
-                accept = arrayOf("DIDCommMessaging"),
+                accept = arrayOf(DIDCOMM_MESSAGING),
                 routingKeys = arrayOf(),
             ),
         )

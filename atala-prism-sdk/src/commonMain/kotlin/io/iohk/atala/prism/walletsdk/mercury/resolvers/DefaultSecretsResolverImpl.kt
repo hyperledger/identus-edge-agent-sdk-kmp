@@ -5,6 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.Secret
 import io.iohk.atala.prism.walletsdk.domain.models.SecretMaterialJWK
 import io.iohk.atala.prism.walletsdk.domain.models.SecretType
+import io.iohk.atala.prism.walletsdk.mercury.OKP
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.Serializable
 
@@ -12,7 +13,7 @@ class DefaultSecretsResolverImpl(val pluto: Pluto) : SecretsResolver {
 
     @Serializable
     data class PrivateJWK @JvmOverloads constructor(
-        val kty: String = "OKP",
+        val kty: String = OKP,
         val kid: String,
         val crv: String,
         val d: String? = null

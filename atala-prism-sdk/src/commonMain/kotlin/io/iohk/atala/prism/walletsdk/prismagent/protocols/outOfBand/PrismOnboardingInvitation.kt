@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.prismagent.FROM
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -10,7 +11,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class PrismOnboardingInvitation @JvmOverloads constructor(
     val onboardEndpoint: String,
-    @SerialName("from")
+    @SerialName(FROM)
     private val fromString: String,
     @Transient
     var from: DID? = null,

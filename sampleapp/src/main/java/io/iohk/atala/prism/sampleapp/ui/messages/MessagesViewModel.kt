@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.sampleapp.Sdk
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM1
+import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
@@ -45,8 +47,8 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             val did = sdk.agent?.createNewPeerDID(
                 arrayOf(
                     DIDDocument.Service(
-                        "#didcomm-1",
-                        arrayOf("DIDCommMessaging"),
+                        DIDCOMM1,
+                        arrayOf(DIDCOMM_MESSAGING),
                         DIDDocument.ServiceEndpoint(sdk.handler?.mediatorDID.toString())
                     )
                 ),
