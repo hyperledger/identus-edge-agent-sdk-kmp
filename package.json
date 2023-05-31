@@ -1,0 +1,26 @@
+{
+  "name": "atala-prism-wallet-sdk-kmm",
+  "version": "0.0.1",
+  "description": "atala-prism-wallet-sdk-kmm",
+  "directories": {
+    "example": "examples"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm.git"
+  },
+  "author": "IOG",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues"
+  },
+  "homepage": "https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm#readme",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.2",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "gradle-semantic-release-plugin": "^1.7.4",
+    "semantic-release": "^19.0.5",
+    "semantic-release-slack-bot": "^3.5.3"
+  }
+}

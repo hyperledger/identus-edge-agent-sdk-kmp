@@ -14,3 +14,4 @@ Pods/
 *.jks
 *yarn.lock
 dependinces.log
+node_modules
