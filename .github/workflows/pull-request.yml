@@ -52,6 +52,7 @@ jobs:
       - name: Build for JS, Android, JVM
         run: |
           ./gradlew build allTests koverXmlReport
+          ls -la ./atala-prism-sdk/build/test-results/jvmTest/
 
       - name: Coverage Report
         uses: mi-kas/kover-report@v1
@@ -66,9 +67,9 @@ jobs:
         if: always()
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          junit_files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/jvmTest/TEST-*.xml"
-          comment_title: "Test Results"
-          check_name: "Test Results"
+          files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/jvmTest/TEST-*.xml"
+          comment_title: "Unit Test Results"
+          check_name: "Unit Test Results"
 
       - name: Dokka Documentation Generation
         if: github.ref == 'refs/heads/main'
