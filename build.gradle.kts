@@ -6,6 +6,7 @@ plugins {
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.serialization") version "1.7.20"
     id("maven-publish")
+    id("dev.petuska.npm.publish") version "3.2.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
     id("org.jetbrains.dokka") version "1.8.10"
 }
@@ -35,7 +36,6 @@ java {
 
 allprojects {
     this.group = "io.iohk.atala.prism.walletsdk"
-    this.version = "1.0.0-alpha"
 
     repositories {
         mavenCentral()
@@ -79,19 +79,20 @@ allprojects {
         }
     }
 
-//    apply(plugin = "org.gradle.maven-publish")
-//    publishing {
-//        repositories {
-//            maven {
-//                this.name = "GitHubPackages"
-//                this.url = uri("https://maven.pkg.github.com/input-output-hk/atala-prism-wallet-sdk-kmm/")
-//                credentials {
-//                    this.username = System.getenv("ATALA_GITHUB_ACTOR")
-//                    this.password = System.getenv("ATALA_GITHUB_TOKEN")
-//                }
-//            }
-//        }
-//    }
+    apply(plugin = "org.gradle.maven-publish")
+
+    publishing {
+        repositories {
+            maven {
+                this.name = "GitHubPackages"
+                this.url = uri("https://maven.pkg.github.com/input-output-hk/atala-prism-wallet-sdk-kmm/")
+                credentials {
+                    this.username = System.getenv("ATALA_GITHUB_ACTOR")
+                    this.password = System.getenv("ATALA_GITHUB_TOKEN")
+                }
+            }
+        }
+    }
 }
 
 subprojects {

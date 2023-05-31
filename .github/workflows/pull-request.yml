@@ -1,4 +1,5 @@
-name: Pull Request CI
+---
+name: Build and Test
 
 defaults:
   run:
@@ -15,52 +16,15 @@ env:
   ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
 
 on:
+  push:
+    branches:
+      - "main"
   pull_request:
-    branches: [main]
 
 jobs:
 
-  lint:
-    name: Lint changes
-    runs-on: ubuntu-latest
-    env:
-      APPLY_FIXES: all
-      APPLY_FIXES_EVENT: pull_request
-      APPLY_FIXES_MODE: commit
-      VALIDATE_ALL_CODEBASE: ${{ github.ref_name == 'main' }}
-      DISABLE: COPYPASTE,SPELL
-      GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-      DISABLE_LINTERS: REPOSITORY_GITLEAKS
-      DISABLE_ERRORS_LINTERS: PROTOBUF_PROTOLINT
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.ATALA_GITHUB_TOKEN }}
-          fetch-depth: 0
-      - name: Mega-Linter
-        id: ml
-        uses: megalinter/megalinter@v6
-      - name: Archive production artifacts
-        if: success() || failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: Mega-Linter reports
-          path: |
-            report
-            mega-linter.log
-
   build:
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            os-type: linux
-#          - os: windows-latest
-#            os-type: windows
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
@@ -83,33 +47,37 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: 'zulu'
-
-      - name: Install NodeJS ${{ env.NODEJS_VERSION }}
-        if: matrix.os-type == 'linux'
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODEJS_VERSION }}
-
-      - name: Test Kotlin code is properly formatted
-        run: ./gradlew ktlintCheck
-
-#      - name: Build for iOS, macOS, tvOS, watchOS
-#        if: matrix.os-type == 'macos'
-#        run: |
-#          ./gradlew clean build iosX64Test --stacktrace
-#        # removed watchosX64Test as GitHub action gets Invalid device: Apple Watch Series 5 - 44mm
-#        # no longer supporting them => macosX64Test tvosX64Test
-#        # TODO: This is not needed now
+          distribution: "zulu"
 
       - name: Build for JS, Android, JVM
-        if: matrix.os-type == 'linux'
         run: |
-          ./gradlew build allTests --stacktrace
+          ./gradlew build test koverXmlReport
 
-      - name: Upload the build report
+      - name: Coverage Report
+        uses: mi-kas/kover-report@v1
+        with:
+          path: ${{ github.workspace }}/atala-prism-sdk/build/reports/kover/report.xml
+          token: ${{ env.ATALA_GITHUB_TOKEN }}
+          title: Code Coverage
+          update-comment: true
+          coverage-counter-type: LINE
+
+      - name: Publish test results
         if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
+          comment_title: "Unit Test Results"
+          check_name: "Unit Test Results"
+
+      - name: Dokka Documentation Generation
+        if: github.ref == 'refs/heads/main'
+        run: |
+          ./gradlew :atala-prism-sdk:dokkaHtml
+
+      - name: Upload Documentation
+        if: github.ref == 'refs/heads/main'
         uses: actions/upload-artifact@v3
         with:
-          path: "**/build/reports/"
-          name: report-${{ matrix.os-type }}
+          path: "**/build/dokka/"
+          name: Documentation
