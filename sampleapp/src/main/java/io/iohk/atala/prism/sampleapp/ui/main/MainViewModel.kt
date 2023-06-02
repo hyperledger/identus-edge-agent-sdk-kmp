@@ -18,9 +18,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     init {
         initAgentScope.launch {
             val sdk = Sdk.getInstance(getApplication())
-            val counter = 0
+            var counter = 0
             while (counter < 10 && sdk.agent == null) {
                 delay(250)
+                counter++
             }
             sdk.agent?.let {
                 sdk.agent?.flowState?.collect {

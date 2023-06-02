@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols
 
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.PROTOCOL_TYPE
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
@@ -11,7 +11,6 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import kotlin.jvm.Throws
 
 @Serializable(with = ProtocolTypeSerializer::class)
 enum class ProtocolType(val value: String) {

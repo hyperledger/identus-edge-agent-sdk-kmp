@@ -4,10 +4,10 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.CREDENTIAL_PREVIEW
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.MULTIPLE_AVAILABLE
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.REPLACEMENT_ID
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -63,14 +63,17 @@ data class OfferCredential @JvmOverloads constructor(
         }
 
         @JvmStatic
-        @Throws(PrismAgentError.InvalidOfferCredentialMessageError::class)
+        @Throws(PrismAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): OfferCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommOfferCredential.value &&
                     fromMessage.from != null &&
                     fromMessage.to != null
             ) {
-                throw PrismAgentError.InvalidOfferCredentialMessageError()
+                throw PrismAgentError.InvalidMessageType(
+                    type = fromMessage.piuri,
+                    shouldBe = ProtocolType.DidcommOfferCredential.value
+                )
             }
 
             val fromDID = fromMessage.from

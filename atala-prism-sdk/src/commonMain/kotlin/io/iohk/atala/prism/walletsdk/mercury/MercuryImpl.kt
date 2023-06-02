@@ -92,10 +92,13 @@ class MercuryImpl(
             val mediatorDocument = castor.resolveDID(mediatorDid.toString())
             val mediatorUri =
                 mediatorDocument.services.find { it.type.contains(DIDCOMM_MESSAGING) }?.serviceEndpoint?.uri
-            val forwardMsg = prepareForwardMessage(message, packedMessage, mediatorDid)
-            val packedForwardMsg = packMessage(forwardMsg.makeMessage())
-
-            return makeRequest(mediatorUri, packedForwardMsg)
+            try {
+                val forwardMsg = prepareForwardMessage(message, packedMessage, mediatorDid)
+                val packedForwardMsg = packMessage(forwardMsg.makeMessage())
+                return makeRequest(mediatorUri, packedForwardMsg)
+            } catch (e: Throwable) {
+                throw MercuryError.NoValidServiceFoundError(did = mediatorDid.toString())
+            }
         }
 
         return makeRequest(service, packedMessage)
@@ -127,7 +130,6 @@ class MercuryImpl(
         )
     }
 
-    @Throws(MercuryError.NoValidServiceFoundError::class)
     private suspend fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
         if (service !is DIDDocument.Service) {
             throw MercuryError.NoValidServiceFoundError()
@@ -143,12 +145,7 @@ class MercuryImpl(
         return result.jsonString.toByteArray()
     }
 
-    @Throws(MercuryError.NoValidServiceFoundError::class)
     private suspend fun makeRequest(uri: String?, message: String): ByteArray? {
-        if (uri !is String) {
-            throw MercuryError.NoValidServiceFoundError()
-        }
-
         val result = api.request(HttpMethod.Post.value, uri, emptyArray(), emptyArray(), message)
         return result.jsonString.toByteArray()
     }

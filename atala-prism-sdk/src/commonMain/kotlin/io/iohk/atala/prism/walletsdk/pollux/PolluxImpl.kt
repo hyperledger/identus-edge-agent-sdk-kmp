@@ -42,7 +42,8 @@ class PolluxImpl(val castor: Castor) : Pollux {
         val decodedBase64CredentialJson: JsonString = try {
             jwtParts[JWT_SECOND_PART].base64UrlDecoded
         } catch (e: Throwable) {
-            throw PolluxError.InvalidCredentialError(e.message)
+            e.printStackTrace()
+            throw PolluxError.InvalidCredentialError()
         }
 
         val verifiableCredentialJson = Json.decodeFromString<JWTJsonPayload>(decodedBase64CredentialJson)

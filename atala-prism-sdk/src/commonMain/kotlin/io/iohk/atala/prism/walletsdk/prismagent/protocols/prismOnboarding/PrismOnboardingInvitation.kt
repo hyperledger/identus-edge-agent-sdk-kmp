@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding
 
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 class PrismOnboardingInvitation
 @Throws(PrismAgentError.InvitationIsInvalidError::class)

@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
-import io.ktor.http.Url
+import io.ktor.http.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 

@@ -1,10 +1,9 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.UnknownError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import kotlinx.serialization.Serializable
-import kotlin.jvm.Throws
 
 @Serializable
 class IssueCredentialProtocol {
@@ -48,7 +47,7 @@ class IssueCredentialProtocol {
         }
     }
 
-    @Throws(PrismAgentError.InvalidStepError::class)
+    @Throws(UnknownError.SomethingWentWrongError::class)
     constructor(message: Message, connector: DIDCommConnection) {
         this.connector = connector
         val proposed = try {
@@ -72,15 +71,20 @@ class IssueCredentialProtocol {
                 this.stage = Stage.PROPOSE
                 this.propose = proposed
             }
+
             offered != null -> {
                 this.stage = Stage.OFFER
                 this.offer = offered
             }
+
             requested != null -> {
                 this.stage = Stage.REQUEST
                 this.request = requested
             }
-            else -> throw PrismAgentError.InvalidStepError()
+
+            else -> throw UnknownError.SomethingWentWrongError(
+                customMessage = "Invalid step"
+            )
         }
     }
 
@@ -103,11 +107,13 @@ class IssueCredentialProtocol {
                 connector.sendMessage(message.makeMessage())
                 message.id
             }
+
             Stage.OFFER -> {
                 val message = RequestCredential.makeRequestFromOfferCredential(offer = offer!!).makeMessage()
                 connector.sendMessage(message)
                 message.id
             }
+
             Stage.REQUEST -> null
             Stage.COMPLETED -> null
             Stage.REFUSED -> null
@@ -136,9 +142,11 @@ class IssueCredentialProtocol {
                 this.stage = Stage.OFFER
                 this.offer = offered
             }
+
             issued != null -> {
                 this.stage = Stage.COMPLETED
             }
+
             requested != null -> {
                 this.stage = Stage.REQUEST
                 this.request = requested
