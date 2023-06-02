@@ -1,3 +1,10 @@
+## [0.1.1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v0.1.0...v0.1.1) (2023-06-02)
+
+
+### Bug Fixes
+
+* create peer DID with updateMediator false does not ignore provided services ([#73](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/73)) ([662c845](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/662c8456ef8fd3e9e1730d3ddde1c2b9869cc14a))
+
 # [0.1.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v0.0.1...v0.1.0) (2023-05-31)
 
 
