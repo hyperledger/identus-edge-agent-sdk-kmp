@@ -1,50 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
-sealed interface Error {
-    val code: Int?
-    val message: String?
-    val underlyingErrors: Array<Error>?
-    val errorDescription: String?
-}
-
-sealed class UnknownPrismError : Error, Throwable() {
-
-    override val code: Int?
-        get() = null
-    override val message: String?
-        get() = null
-
-    override val underlyingErrors: Array<Error>?
-        get() = emptyArray()
-    override val errorDescription: String?
-        get() = null
-}
-
-sealed class KnownPrismError : Error, Throwable() {
-    override val code: Int?
-        get() = null
-    override val message: String?
-        get() = null
-    override val underlyingErrors: Array<Error>?
-        get() = emptyArray()
-    override val errorDescription: String?
-        get() = null
-}
-
-sealed class UnknownError : UnknownPrismError() {
-
-    class SomethingWentWrongError(
-        private val customMessage: String? = null,
-        private val customUnderlyingErrors: Array<io.iohk.atala.prism.walletsdk.domain.models.Error> = emptyArray()
-    ) : UnknownError() {
-        override val code: Int? = -1
-        override val message: String?
-            get() {
-                val errorsMessages = customUnderlyingErrors.joinToString(separator = "\n") { it.errorDescription ?: "" }
-                return "$customMessage $errorsMessages"
-            }
-    }
-}
+import io.iohk.atala.prism.walletsdk.domain.models.Error
+import io.iohk.atala.prism.walletsdk.domain.models.KnownPrismError
 
 sealed class PrismAgentError : KnownPrismError() {
 
@@ -94,7 +51,7 @@ sealed class PrismAgentError : KnownPrismError() {
 
         override val message: String
             get() {
-                val errorsMessages = underlyingError?.joinToString(separator = "\n") { it.errorDescription ?: "" }
+                val errorsMessages = underlyingError?.joinToString(separator = "\n") { errorDescription ?: "" }
                 val message = errorsMessages?.map { "Errors: $it" }
                 return "Something failed while trying to achieve mediation. $message"
             }

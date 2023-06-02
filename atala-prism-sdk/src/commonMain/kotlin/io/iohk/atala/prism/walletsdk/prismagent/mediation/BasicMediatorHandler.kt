@@ -6,8 +6,8 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.UnknownError
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
-import io.iohk.atala.prism.walletsdk.prismagent.UnknownError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationGrant
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationKeysUpdateList
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationRequest

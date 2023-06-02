@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.prismagent.UnknownError
+import io.iohk.atala.prism.walletsdk.domain.models.UnknownError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import kotlinx.serialization.Serializable
 

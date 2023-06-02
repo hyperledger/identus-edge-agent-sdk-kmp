@@ -1,13 +1,12 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-sealed interface Error {
+abstract interface Error {
     val code: Int?
-    val message: String?
     val underlyingErrors: Array<Error>?
     val errorDescription: String?
 }
 
-sealed class UnknownPrismError : Error, Throwable() {
+abstract class UnknownPrismError : Error, Throwable() {
 
     override val code: Int?
         get() = null
@@ -20,7 +19,7 @@ sealed class UnknownPrismError : Error, Throwable() {
         get() = null
 }
 
-sealed class KnownPrismError : Error, Throwable() {
+abstract class KnownPrismError : Error, Throwable() {
     override val code: Int?
         get() = null
     override val message: String?
@@ -31,7 +30,7 @@ sealed class KnownPrismError : Error, Throwable() {
         get() = null
 }
 
-sealed class UnknownError : UnknownPrismError() {
+abstract class UnknownError : UnknownPrismError() {
 
     class SomethingWentWrongError(
         private val customMessage: String? = null,
