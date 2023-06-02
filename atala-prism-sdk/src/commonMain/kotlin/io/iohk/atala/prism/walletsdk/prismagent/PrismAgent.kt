@@ -296,9 +296,9 @@ class PrismAgent {
         val authenticationKeyPair =
             apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.ED25519))
 
-        var tmpServices = arrayOf<DIDDocument.Service>()
+        var tmpServices = services
         if (updateMediator) {
-            tmpServices = services.plus(
+            tmpServices.plus(
                 DIDDocument.Service(
                     id = DIDCOMM1,
                     type = arrayOf(
