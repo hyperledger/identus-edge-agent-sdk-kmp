@@ -130,6 +130,7 @@ class MercuryImpl(
         )
     }
 
+    @Throws(MercuryError.NoValidServiceFoundError::class)
     private suspend fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
         if (service !is DIDDocument.Service) {
             throw MercuryError.NoValidServiceFoundError()
@@ -145,7 +146,12 @@ class MercuryImpl(
         return result.jsonString.toByteArray()
     }
 
+    @Throws(MercuryError.NoValidServiceFoundError::class)
     private suspend fun makeRequest(uri: String?, message: String): ByteArray? {
+        if (uri !is String) {
+            throw MercuryError.NoValidServiceFoundError()
+        }
+
         val result = api.request(HttpMethod.Post.value, uri, emptyArray(), emptyArray(), message)
         return result.jsonString.toByteArray()
     }

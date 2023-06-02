@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.fromIndex
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -42,7 +42,7 @@ class IssueCredentialTest {
             to = null,
             body = ""
         )
-        assertFailsWith<PrismAgentError.InvalidIssueCredentialMessageError> {
+        assertFailsWith<PrismAgentError.InvalidMessageType> {
             IssueCredential.fromMessage(invalidIssueCredential)
         }
     }

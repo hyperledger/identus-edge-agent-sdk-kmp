@@ -193,12 +193,12 @@ sealed class MercuryError : KnownPrismError() {
             get() = "Message has no recipient set, to send a message please set the \"to\""
     }
 
-    class NoValidServiceFoundError(val did: String) : MercuryError() {
+    class NoValidServiceFoundError(val did: String? = null) : MercuryError() {
         override val code: Int
             get() = 32
 
         override val message: String
-            get() = "The did ($did) has no valid services"
+            get() = did?.let { "The did ($did) has no valid services" } ?: "No valid services"
     }
 
     class NoDIDSenderSetError : MercuryError() {

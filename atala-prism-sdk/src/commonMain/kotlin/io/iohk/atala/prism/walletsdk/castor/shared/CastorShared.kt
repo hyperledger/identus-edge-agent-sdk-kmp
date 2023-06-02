@@ -141,7 +141,10 @@ internal class CastorShared {
             } catch (e: MalformedPeerDIDException) {
                 throw CastorError.InvalidPeerDIDError()
             } catch (e: Throwable) {
-                throw CastorError.NotPossibleToResolveDID()
+                throw CastorError.NotPossibleToResolveDID(
+                    did = didString,
+                    reason = "Method or method id are invalid"
+                )
             }
 
             val coreProperties: MutableList<DIDDocumentCoreProperty> = mutableListOf()
@@ -285,7 +288,7 @@ internal class CastorShared {
                 )
             } catch (e: Throwable) {
                 // TODO: Add logger here
-                throw CastorError.InitialStateOfDIDChanged(e.message)
+                throw CastorError.InitialStateOfDIDChanged()
             }
 
             val servicesProperty = DIDDocument.Services(services.toTypedArray())
@@ -390,7 +393,10 @@ internal class CastorShared {
         @Throws(CastorError.NotPossibleToResolveDID::class)
         fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): DIDResolver {
             val parsedDID = parseDID(did)
-            return resolvers.find { it.method == parsedDID.method } ?: throw CastorError.NotPossibleToResolveDID()
+            return resolvers.find { it.method == parsedDID.method } ?: throw CastorError.NotPossibleToResolveDID(
+                did,
+                "Method or method id are invalid"
+            )
         }
 
         /**
@@ -454,6 +460,7 @@ internal class CastorShared {
                             ),
                         )
                     }
+
                     Curve.ED25519 -> {
                         val octetString = Json.encodeToString(octetPublicKey(it))
                         signingKeys.add(
@@ -464,6 +471,7 @@ internal class CastorShared {
                             ),
                         )
                     }
+
                     else -> {
                         throw CastorError.InvalidKeyError()
                     }

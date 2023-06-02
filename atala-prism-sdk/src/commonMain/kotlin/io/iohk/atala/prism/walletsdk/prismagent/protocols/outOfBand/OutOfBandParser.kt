@@ -3,7 +3,8 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.walletsdk.domain.models.CommonError
 import io.iohk.atala.prism.walletsdk.prismagent.OOB
-import io.ktor.http.*
+import io.ktor.http.URLBuilder
+import io.ktor.http.Url
 
 class OutOfBandParser {
 
