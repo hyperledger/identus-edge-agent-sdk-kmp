@@ -16,6 +16,7 @@ enum class CredentialType(val type: String) {
     W3C("w3c"),
     Unknown("Unknown")
 }
+
 @Serializable
 sealed interface VerifiableCredential {
     val id: String

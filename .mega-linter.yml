@@ -1,5 +1,5 @@
 APPLY_FIXES: none
-FILTER_REGEX_EXCLUDE: (karma.config.js|polyfill.js|timeout.js)
+FILTER_REGEX_EXCLUDE: (karma.config.js|polyfill.js|timeout.js|CHANGELOG.md)
 VALIDATE_ALL_CODEBASE: true
 REPOSITORY_DEVSKIM_DISABLE_ERRORS: true
 REPOSITORY_CHECKOV_DISABLE_ERRORS: true

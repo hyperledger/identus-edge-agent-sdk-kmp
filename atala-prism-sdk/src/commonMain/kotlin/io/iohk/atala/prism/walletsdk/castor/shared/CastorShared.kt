@@ -483,7 +483,7 @@ internal class CastorShared {
                             id = it.id,
                             type = it.type[0],
                             serviceEndpoint = it.serviceEndpoint.uri,
-                            routingKeys = listOf(),
+                            routingKeys = it.serviceEndpoint.routingKeys?.toList() ?: listOf(),
                             accept = it.serviceEndpoint.accept?.asList() ?: listOf(),
                         ).toDict().toJsonElement(),
                     )
