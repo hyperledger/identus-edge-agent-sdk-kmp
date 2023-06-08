@@ -71,7 +71,7 @@ class PlutoMock : Pluto {
         wasStorePrismDIDAndPrivateKeysCalled = true
     }
 
-    override fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>) {
+    override fun storePeerDID(did: DID) {
         storedPeerDID += did
         wasStorePeerDIDAndPrivateKeysCalled = true
     }
