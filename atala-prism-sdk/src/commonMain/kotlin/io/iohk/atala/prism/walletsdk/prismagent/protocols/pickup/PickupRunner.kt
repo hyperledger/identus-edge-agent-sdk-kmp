@@ -5,7 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 
 class PickupRunner(message: Message, private val mercury: Mercury) {
@@ -35,7 +35,10 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
             }
 
             else -> {
-                throw PrismAgentError.InvalidPickupDeliveryMessageError()
+                throw PrismAgentError.InvalidMessageType(
+                    type = message.piuri,
+                    shouldBe = "${ProtocolType.PickupStatus.value} or ${ProtocolType.PickupDelivery.value}"
+                )
             }
         }
     }

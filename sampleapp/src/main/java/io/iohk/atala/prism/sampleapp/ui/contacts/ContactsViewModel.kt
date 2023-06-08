@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.sampleapp.Sdk
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
 import kotlinx.coroutines.launch

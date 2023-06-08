@@ -33,7 +33,7 @@ class PrismDIDPublicKey {
             }
 
             else -> {
-                throw CastorError.InvalidPublicKeyEncoding()
+                throw CastorError.InvalidPublicKeyEncoding("prism", "secp256k1")
             }
         }
     }

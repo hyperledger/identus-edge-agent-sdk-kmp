@@ -4,16 +4,15 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.PROOF_TYPES
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 class ProposePresentation {
 
@@ -42,7 +41,7 @@ class ProposePresentation {
         this.to = to
     }
 
-    @Throws(PrismAgentError.InvalidMessageError::class)
+    @Throws(PrismAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (fromMessage.piuri == ProtocolType.DidcommProposePresentation.value &&
             fromMessage.from != null &&
@@ -57,7 +56,10 @@ class ProposePresentation {
                 to = fromMessage.to
             )
         } else {
-            throw PrismAgentError.InvalidMessageError()
+            throw PrismAgentError.InvalidMessageType(
+                type = fromMessage.piuri,
+                shouldBe = ProtocolType.DidcommProposePresentation.value
+            )
         }
     }
 
@@ -73,25 +75,21 @@ class ProposePresentation {
         )
     }
 
-    @Throws(PrismAgentError.InvalidMessageError::class)
+    @Throws(PrismAgentError.InvalidMessageType::class)
     fun makeProposalFromRequest(msg: Message): ProposePresentation {
-        try {
-            val request = RequestPresentation.fromMessage(msg)
+        val request = RequestPresentation.fromMessage(msg)
 
-            return ProposePresentation(
-                body = Body(
-                    goalCode = request.body.goalCode,
-                    comment = request.body.comment,
-                    proofTypes = request.body.proofTypes
-                ),
-                attachments = request.attachments,
-                thid = msg.id,
-                from = request.to,
-                to = request.from
-            )
-        } catch (e: Exception) {
-            throw PrismAgentError.InvalidMessageError()
-        }
+        return ProposePresentation(
+            body = Body(
+                goalCode = request.body.goalCode,
+                comment = request.body.comment,
+                proofTypes = request.body.proofTypes
+            ),
+            attachments = request.attachments,
+            thid = msg.id,
+            from = request.to,
+            to = request.from
+        )
     }
 
     override fun equals(other: Any?): Boolean {

@@ -3,14 +3,13 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.connection
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 /**
  * A class representing a connection acceptance message in the DIDComm protocol. The [ConnectionAccept] class defines
@@ -50,12 +49,15 @@ class ConnectionAccept {
      *
      * @param fromMessage The message to decode.
      */
-    @Throws(PrismAgentError.InvalidMessageError::class)
+    @Throws(PrismAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (fromMessage.piuri == ProtocolType.DidcommconnectionResponse.value && fromMessage.from != null && fromMessage.to != null) {
             ConnectionAccept(from = fromMessage.from, to = fromMessage.to, body = Body(fromMessage.body))
         } else {
-            throw PrismAgentError.InvalidMessageError()
+            throw PrismAgentError.InvalidMessageType(
+                type = fromMessage.piuri,
+                shouldBe = ProtocolType.DidcommconnectionResponse.value
+            )
         }
     }
 

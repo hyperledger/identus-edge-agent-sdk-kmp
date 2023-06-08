@@ -40,6 +40,7 @@ import org.didcommx.didcomm.model.PackEncryptedParams
 import org.didcommx.didcomm.model.UnpackParams
 import org.didcommx.didcomm.utils.fromJsonToMap
 import java.time.Instant.now
+import kotlin.jvm.Throws
 
 class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProtocol {
     private val didDocResolver = DIDCommDIDResolver(castor)
@@ -211,7 +212,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         return domainMsg
     }
 
-    @kotlin.jvm.Throws(MercuryError.MessageAttachmentWithoutIDError::class)
+    @Throws(MercuryError.MessageAttachmentWithoutIDError::class)
     private fun parseAttachmentsToDomain(attachments: List<Attachment>?): Array<AttachmentDescriptor> {
         return (attachments ?: emptyList()).fold(arrayOf()) { acc, attachment ->
             try {

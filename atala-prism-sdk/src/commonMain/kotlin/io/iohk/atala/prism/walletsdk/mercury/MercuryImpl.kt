@@ -92,10 +92,13 @@ class MercuryImpl(
             val mediatorDocument = castor.resolveDID(mediatorDid.toString())
             val mediatorUri =
                 mediatorDocument.services.find { it.type.contains(DIDCOMM_MESSAGING) }?.serviceEndpoint?.uri
-            val forwardMsg = prepareForwardMessage(message, packedMessage, mediatorDid)
-            val packedForwardMsg = packMessage(forwardMsg.makeMessage())
-
-            return makeRequest(mediatorUri, packedForwardMsg)
+            try {
+                val forwardMsg = prepareForwardMessage(message, packedMessage, mediatorDid)
+                val packedForwardMsg = packMessage(forwardMsg.makeMessage())
+                return makeRequest(mediatorUri, packedForwardMsg)
+            } catch (e: Throwable) {
+                throw MercuryError.NoValidServiceFoundError(did = mediatorDid.toString())
+            }
         }
 
         return makeRequest(service, packedMessage)

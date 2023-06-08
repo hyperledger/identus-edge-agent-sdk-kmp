@@ -4,14 +4,13 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 /**
  * ALL parameters are DIDCOMMV2 format and naming conventions and follows the protocol
@@ -42,14 +41,17 @@ data class RequestCredential @JvmOverloads constructor(
 
     companion object {
         @JvmStatic
-        @Throws(PrismAgentError.InvalidRequestCredentialMessageError::class)
+        @Throws(PrismAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): RequestCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommRequestCredential.value &&
                     fromMessage.from != null &&
                     fromMessage.to != null
             ) {
-                throw PrismAgentError.InvalidRequestCredentialMessageError()
+                throw PrismAgentError.InvalidMessageType(
+                    type = fromMessage.piuri,
+                    shouldBe = ProtocolType.DidcommRequestCredential.value
+                )
             }
 
             val fromDID = fromMessage.from

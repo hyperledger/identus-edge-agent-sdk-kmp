@@ -4,9 +4,9 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.PROOF_TYPES
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.WILL_CONFIRM
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
@@ -14,7 +14,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 data class RequestPresentation(
     val id: String = UUID.randomUUID4().toString(),
@@ -67,7 +66,7 @@ data class RequestPresentation(
 
     companion object {
         @JvmStatic
-        @Throws(PrismAgentError.InvalidRequestPresentationMessageError::class)
+        @Throws(PrismAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): RequestPresentation {
             if (fromMessage.piuri == ProtocolType.DidcommRequestPresentation.value &&
                 fromMessage.from != null &&
@@ -82,31 +81,30 @@ data class RequestPresentation(
                     to = fromMessage.to
                 )
             } else {
-                throw PrismAgentError.InvalidMessageError()
+                throw PrismAgentError.InvalidMessageType(
+                    type = fromMessage.piuri,
+                    shouldBe = ProtocolType.DidcommRequestPresentation.value
+                )
             }
         }
 
         @JvmStatic
-        @Throws(PrismAgentError.InvalidMessageError::class)
+        @Throws(PrismAgentError.InvalidMessageType::class)
         fun makeRequestFromProposal(msg: Message): RequestPresentation {
-            try {
-                val request = ProposePresentation(msg)
+            val request = ProposePresentation(msg)
 
-                return RequestPresentation(
-                    body = Body(
-                        goalCode = request.body.goalCode,
-                        comment = request.body.comment,
-                        willConfirm = false,
-                        proofTypes = request.body.proofTypes
-                    ),
-                    attachments = request.attachments,
-                    thid = msg.id,
-                    from = request.to,
-                    to = request.from
-                )
-            } catch (e: Exception) {
-                throw PrismAgentError.InvalidMessageError()
-            }
+            return RequestPresentation(
+                body = Body(
+                    goalCode = request.body.goalCode,
+                    comment = request.body.comment,
+                    willConfirm = false,
+                    proofTypes = request.body.proofTypes
+                ),
+                attachments = request.attachments,
+                thid = msg.id,
+                from = request.to,
+                to = request.from
+            )
         }
     }
 

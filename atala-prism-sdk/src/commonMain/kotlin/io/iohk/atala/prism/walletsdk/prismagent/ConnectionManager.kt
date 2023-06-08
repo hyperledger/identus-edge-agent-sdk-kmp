@@ -6,7 +6,6 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler

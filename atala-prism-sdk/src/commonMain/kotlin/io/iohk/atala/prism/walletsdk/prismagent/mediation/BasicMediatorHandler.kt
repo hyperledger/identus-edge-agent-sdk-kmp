@@ -6,7 +6,8 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.UnknownError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationGrant
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationKeysUpdateList
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationRequest
@@ -81,23 +82,26 @@ class BasicMediatorHandler(
     override fun achieveMediation(host: DID): Flow<Mediator> {
         return flow {
             val registeredMediator = bootRegisteredMediator()
-
             if (registeredMediator == null) {
-                val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
-                val message = mercury.sendMessageParseResponse(message = requestMessage)
-                    ?: throw PrismAgentError.InvalidMessageError()
+                try {
+                    val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
+                    val message = mercury.sendMessageParseResponse(message = requestMessage)
+                        ?: throw UnknownError.SomethingWentWrongError()
 
-                val grantedMessage = MediationGrant(message)
-                val routingDID = DID(grantedMessage.body.routingDid)
-                val tmpMediator = Mediator(
-                    id = UUID.randomUUID4().toString(),
-                    mediatorDID = mediatorDID,
-                    hostDID = host,
-                    routingDID = routingDID
-                )
-                store.storeMediator(tmpMediator)
-                mediator = tmpMediator
-                emit(tmpMediator)
+                    val grantedMessage = MediationGrant(message)
+                    val routingDID = DID(grantedMessage.body.routingDid)
+                    val tmpMediator = Mediator(
+                        id = UUID.randomUUID4().toString(),
+                        mediatorDID = mediatorDID,
+                        hostDID = host,
+                        routingDID = routingDID
+                    )
+                    store.storeMediator(tmpMediator)
+                    mediator = tmpMediator
+                    emit(tmpMediator)
+                } catch (e: UnknownError) {
+                    throw PrismAgentError.MediationRequestFailedError(arrayOf(e))
+                }
             } else {
                 emit(registeredMediator)
             }

@@ -4,8 +4,8 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.MercuryMock
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -28,7 +28,7 @@ class PickupRunnerTest {
     @Test
     fun testPickupRun_whenPiuriNotValid_thenInvalidPickupDeliveryMessageError() {
         val message = Message(piuri = ProtocolType.DidcommRequestPresentation.value, body = "")
-        assertFailsWith(PrismAgentError.InvalidPickupDeliveryMessageError::class) {
+        assertFailsWith(PrismAgentError.InvalidMessageType::class) {
             PickupRunner(message, mercury)
         }
     }

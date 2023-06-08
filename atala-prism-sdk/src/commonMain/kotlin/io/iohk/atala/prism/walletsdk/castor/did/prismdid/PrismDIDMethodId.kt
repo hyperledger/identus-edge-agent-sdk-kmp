@@ -12,11 +12,11 @@ data class PrismDIDMethodId(private val value: String) {
     constructor(sections: List<String>) : this(sections.joinToString(DID_SEPARATOR)) {
         val sectionRegex = Regex("^[A-Za-z0-9_-]+$")
         if (!sections.all { sectionRegex.matches(it) }) {
-            throw CastorError.MethodIdIsDoesNotSatisfyRegex()
+            throw CastorError.MethodIdIsDoesNotSatisfyRegex("^[A-Za-z0-9_-]+$")
         }
         val methodSpecificIdRegex = Regex("^([A-Za-z0-9_-]*:)*[A-Za-z0-9_-]+$")
         if (!methodSpecificIdRegex.matches(value)) {
-            throw CastorError.MethodIdIsDoesNotSatisfyRegex()
+            throw CastorError.MethodIdIsDoesNotSatisfyRegex("^([A-Za-z0-9_-]*:)*[A-Za-z0-9_-]+\$")
         }
     }
 
