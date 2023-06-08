@@ -19,7 +19,7 @@ interface Pluto {
         privateKeys: List<PrivateKey>,
     )
 
-    fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>)
+    fun storePeerDID(did: DID)
 
     fun storeDIDPair(host: DID, receiver: DID, name: String)
 
