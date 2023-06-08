@@ -3,10 +3,9 @@ package io.iohk.atala.prism.walletsdk.prismagent.protocols.connection
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
-import kotlin.jvm.Throws
 
 class DIDCommConnectionRunner(
     private val invitationMessage: OutOfBandInvitation,

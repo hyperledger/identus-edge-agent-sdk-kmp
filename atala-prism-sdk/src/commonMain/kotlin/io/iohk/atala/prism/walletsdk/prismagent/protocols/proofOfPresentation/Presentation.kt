@@ -4,13 +4,12 @@ import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 @Serializable
 data class ProofTypes(
@@ -71,7 +70,7 @@ class Presentation {
         this.to = to
     }
 
-    @Throws(PrismAgentError.InvalidMessageError::class)
+    @Throws(PrismAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (
             fromMessage.piuri == ProtocolType.DidcommPresentation.value &&
@@ -88,7 +87,10 @@ class Presentation {
                 fromMessage.to
             )
         } else {
-            throw PrismAgentError.InvalidMessageError()
+            throw PrismAgentError.InvalidMessageType(
+                type = fromMessage.piuri,
+                shouldBe = ProtocolType.DidcommPresentation.value
+            )
         }
     }
 
@@ -104,23 +106,19 @@ class Presentation {
         )
     }
 
-    @Throws(PrismAgentError.InvalidRequestPresentationMessageError::class)
+    @Throws(PrismAgentError.InvalidMessageType::class)
     fun makePresentationFromRequest(msg: Message): Presentation {
-        try {
-            val requestPresentation = RequestPresentation.fromMessage(msg)
-            return Presentation(
-                body = Body(
-                    goalCode = requestPresentation.body.goalCode,
-                    comment = requestPresentation.body.comment
-                ),
-                attachments = requestPresentation.attachments,
-                thid = requestPresentation.id,
-                from = requestPresentation.to,
-                to = requestPresentation.from
-            )
-        } catch (e: Exception) {
-            throw PrismAgentError.InvalidRequestPresentationMessageError("Can't form RequestPresentation from Message")
-        }
+        val requestPresentation = RequestPresentation.fromMessage(msg)
+        return Presentation(
+            body = Body(
+                goalCode = requestPresentation.body.goalCode,
+                comment = requestPresentation.body.comment
+            ),
+            attachments = requestPresentation.attachments,
+            thid = requestPresentation.id,
+            from = requestPresentation.to,
+            to = requestPresentation.from
+        )
     }
 
     override fun equals(other: Any?): Boolean {

@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
+import io.iohk.atala.prism.walletsdk.domain.models.CommonError
 import io.ktor.http.Url
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -19,7 +19,7 @@ class OutOfBandParserTest {
 
     @Test
     fun testParseMessage_whenWrongUrlPassed_thenThrowsInvalidURLError() {
-        assertFailsWith(PrismAgentError.InvalidURLError::class) {
+        assertFailsWith(CommonError.InvalidURLError::class) {
             OutOfBandParser().parseMessage(Url("localhost:8080?_oobb=eyJib2R5Ijoie3"))
         }
     }

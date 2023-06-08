@@ -21,7 +21,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
@@ -471,7 +470,7 @@ class PrismAgent {
     suspend fun signWith(did: DID, message: ByteArray): Signature {
         val privateKey =
             pluto.getDIDPrivateKeysByDID(did).first().first()
-                ?: throw PrismAgentError.CannotFindDIDPrivateKey()
+                ?: throw PrismAgentError.CannotFindDIDPrivateKey(did.toString())
         return apollo.signMessage(privateKey, message)
     }
 
@@ -715,7 +714,7 @@ class PrismAgent {
         )
 
         if (response.status != 200) {
-            throw PrismAgentError.FailedToOnboardError()
+            throw PrismAgentError.FailedToOnboardError(response.status, response.jsonString)
         }
     }
 

@@ -6,9 +6,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.MORE_AVAILABLE
+import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.REPLACEMENT_ID
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -17,7 +17,6 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 
 @Serializable
 data class IssueCredential(
@@ -48,6 +47,7 @@ data class IssueCredential(
                 is AttachmentBase64 -> {
                     it.data.base64.base64UrlEncoded
                 }
+
                 else -> null
             }
         }.toTypedArray()
@@ -55,14 +55,17 @@ data class IssueCredential(
 
     companion object {
         @JvmStatic
-        @Throws(PrismAgentError.InvalidIssueCredentialMessageError::class)
+        @Throws(PrismAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): IssueCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommIssueCredential.value &&
                     fromMessage.from != null &&
                     fromMessage.to != null
             ) {
-                throw PrismAgentError.InvalidIssueCredentialMessageError()
+                throw PrismAgentError.InvalidMessageType(
+                    type = fromMessage.piuri,
+                    shouldBe = ProtocolType.DidcommIssueCredential.value
+                )
             }
 
             val fromDID = fromMessage.from
