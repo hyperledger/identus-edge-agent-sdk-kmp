@@ -30,7 +30,7 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>) {
+    override fun storePeerDID(did: DID) {
         TODO("Not yet implemented")
     }
 
