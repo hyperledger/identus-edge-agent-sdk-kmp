@@ -86,7 +86,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         }
     }
 
-    override fun storePeerDIDAndPrivateKeys(did: DID, privateKeys: List<PrivateKey>) {
+    override fun storePeerDID(did: DID) {
         getInstance().dIDQueries.insert(
             DIDDB(
                 did.toString(),
@@ -96,9 +96,6 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 null
             )
         )
-        privateKeys.map { privateKey ->
-            storePrivateKeys(privateKey, did, privateKey.keyCurve.index ?: 0)
-        }
     }
 
     override fun storeDIDPair(host: DID, receiver: DID, name: String) {

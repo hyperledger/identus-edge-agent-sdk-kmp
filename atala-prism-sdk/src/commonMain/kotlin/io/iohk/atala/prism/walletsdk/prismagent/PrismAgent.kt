@@ -18,6 +18,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
+import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
@@ -317,13 +318,29 @@ class PrismAgent {
 
         registerPeerDID(
             did,
-            listOf(
-                keyAgreementKeyPair.privateKey,
-                authenticationKeyPair.privateKey
-            ),
+            keyAgreementKeyPair,
+            authenticationKeyPair,
             updateMediator
         )
+        return did
+    }
 
+    /**
+     * Registers a peer DID with the specified DID and private keys.
+     *
+     * @param did The DID to register.
+     * @param privateKeys The list of private keys associated with the peer DID.
+     * @param updateMediator Determines whether to update the mediator with the specified DID.
+     */
+    suspend fun registerPeerDID(
+        did: DID,
+        keyAgreementKeyPair: KeyPair,
+        authenticationKeyPair: KeyPair,
+        updateMediator: Boolean
+    ) {
+        if (updateMediator) {
+            updateMediatorWithDID(did)
+        }
         // The next logic is a bit tricky, so it's not forgotten this is a reminder.
         // The next few lines are needed because of DIDComm library, the library will need
         // to get the secret(private key) that is pair of the public key within the DIDPeer Document
@@ -358,23 +375,9 @@ class PrismAgent {
                 )
             }
         }
-        return did
-    }
 
-    /**
-     * Registers a peer DID with the specified DID and private keys.
-     *
-     * @param did The DID to register.
-     * @param privateKeys The list of private keys associated with the peer DID.
-     * @param updateMediator Determines whether to update the mediator with the specified DID.
-     */
-    suspend fun registerPeerDID(did: DID, privateKeys: List<PrivateKey>, updateMediator: Boolean) {
-        if (updateMediator) {
-            updateMediatorWithDID(did)
-        }
-        pluto.storePeerDIDAndPrivateKeys(
-            did = did,
-            privateKeys = privateKeys
+        pluto.storePeerDID(
+            did = did
         )
     }
 
