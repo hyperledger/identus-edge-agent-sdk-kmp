@@ -28,6 +28,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
+import io.iohk.atala.prism.walletsdk.logger.LogComponent
+import io.iohk.atala.prism.walletsdk.logger.Metadata
+import io.iohk.atala.prism.walletsdk.logger.PrismLogger
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -83,6 +86,7 @@ private fun Url.Companion.parse(str: String): Url? {
  * PrismAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
  * Service Endpoint and seed data.
  */
+
 class PrismAgent {
     var state: State = State.STOPPED
         private set(value) {
@@ -103,6 +107,7 @@ class PrismAgent {
     private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     private var connectionManager: ConnectionManager
+    private var logger: PrismLogger
 
     constructor(
         apollo: Apollo,
@@ -185,6 +190,7 @@ class PrismAgent {
                 throw Exception("Agent state only accepts one subscription.")
             }
         }
+        logger = PrismLogger(LogComponent.PRISM_AGENT)
     }
 
     // Prism agent actions
@@ -199,12 +205,16 @@ class PrismAgent {
         if (state != State.STOPPED) {
             return
         }
+        logger.info(message = "Starting agent")
         state = State.STARTING
         try {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
+            logger.info(message = "Start accept DIDComm invitation")
             try {
                 val hostDID = createNewPeerDID(updateMediator = false)
+
+                logger.info(message = "Sending DIDComm connection message")
                 connectionManager.registerMediator(hostDID)
             } catch (error: UnknownHostException) {
                 state = State.STOPPED
@@ -213,6 +223,16 @@ class PrismAgent {
         }
         if (connectionManager.mediationHandler.mediator != null) {
             state = State.RUNNING
+            logger.info(
+                message = "Mediation Achieved",
+                metadata = arrayOf(
+                    Metadata.PublicMetadata(
+                        key = "Routing DID",
+                        value = connectionManager.mediationHandler.mediatorDID.toString()
+                    )
+                )
+            )
+            logger.info(message = "Agent running")
         } else {
             state = State.STOPPED
             throw PrismAgentError.MediationRequestFailedError()
@@ -229,9 +249,11 @@ class PrismAgent {
         if (state != State.RUNNING) {
             return
         }
+        logger.info(message = "Stoping agent")
         state = State.STOPPING
         fetchingMessagesJob?.cancel()
         state = State.STOPPED
+        logger.info(message = "Agent not running")
     }
 
     // DID Higher Functions
@@ -315,7 +337,6 @@ class PrismAgent {
             arrayOf(keyAgreementKeyPair, authenticationKeyPair),
             services = tmpServices
         )
-
         registerPeerDID(
             did,
             keyAgreementKeyPair,
@@ -545,6 +566,7 @@ class PrismAgent {
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
         if (fetchingMessagesJob == null) {
+            logger.info(message = "Start streaming new unread messages")
             fetchingMessagesJob = prismAgentScope.launch {
                 while (true) {
                     connectionManager.awaitMessages().collect { array ->
@@ -575,6 +597,7 @@ class PrismAgent {
      * Stop fetching messages
      */
     fun stopFetchingMessages() {
+        logger.info(message = "Stop streaming new unread messages")
         fetchingMessagesJob?.cancel()
     }
 
