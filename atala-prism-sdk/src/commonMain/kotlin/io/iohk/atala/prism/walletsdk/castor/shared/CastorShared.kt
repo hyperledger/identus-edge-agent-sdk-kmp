@@ -42,7 +42,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.LogLevel
 import io.iohk.atala.prism.walletsdk.logger.Metadata
-import io.iohk.atala.prism.walletsdk.logger.PrismLogger
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -54,7 +54,7 @@ import io.iohk.atala.prism.didcomm.didpeer.resolvePeerDID as mercuryPeerDIDResol
 internal class CastorShared {
     companion object {
 
-        private val logger = PrismLogger(LogComponent.CASTOR)
+        private val logger = PrismLoggerImpl(LogComponent.CASTOR)
 
         /**
          * parseDID parses a string representation of a Decentralized Identifier (DID) into a DID object.

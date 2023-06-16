@@ -7,13 +7,21 @@ import java.security.MessageDigest
 private const val METADATA_PRIVACY_STR = "------"
 private val hashingLog = UUID.randomUUID4().toString()
 
-class PrismLogger(category: LogComponent) {
+interface PrismLogger {
+    fun debug(message: String, metadata: Array<Metadata> = arrayOf())
+    fun info(message: String, metadata: Array<Metadata> = arrayOf())
+    fun warning(message: String, metadata: Array<Metadata> = arrayOf())
+    fun error(message: String, metadata: Array<Metadata> = arrayOf())
+    fun error(error: Error, metadata: Array<Metadata> = arrayOf())
+}
 
-    private val log = logging("[ io.prism.kmm.sdk.$category ]")
+class PrismLoggerImpl(category: LogComponent) : PrismLogger {
+
+    private val log = logging("[io.prism.kmm.sdk.$category]")
 
     private var logLevel: LogLevel = LogLevel.INFO
 
-    fun debug(message: String, metadata: Array<Metadata> = arrayOf()) {
+    override fun debug(message: String, metadata: Array<Metadata>) {
         if (logLevel != LogLevel.NONE) {
             log.debug { message }
             if (metadata.isNotEmpty()) {
@@ -22,7 +30,7 @@ class PrismLogger(category: LogComponent) {
         }
     }
 
-    fun info(message: String, metadata: Array<Metadata> = arrayOf()) {
+    override fun info(message: String, metadata: Array<Metadata>) {
         if (logLevel != LogLevel.NONE) {
             log.info { message }
             if (metadata.isNotEmpty()) {
@@ -31,7 +39,7 @@ class PrismLogger(category: LogComponent) {
         }
     }
 
-    fun warning(message: String, metadata: Array<Metadata> = arrayOf()) {
+    override fun warning(message: String, metadata: Array<Metadata>) {
         if (logLevel != LogLevel.NONE) {
             log.warn { message }
             if (metadata.isNotEmpty()) {
@@ -40,7 +48,7 @@ class PrismLogger(category: LogComponent) {
         }
     }
 
-    fun error(message: String, metadata: Array<Metadata> = arrayOf()) {
+    override fun error(message: String, metadata: Array<Metadata>) {
         if (logLevel != LogLevel.NONE) {
             log.error { message }
             if (metadata.isNotEmpty()) {
@@ -49,7 +57,7 @@ class PrismLogger(category: LogComponent) {
         }
     }
 
-    fun error(error: Error, metadata: Array<Metadata> = arrayOf()) {
+    override fun error(error: Error, metadata: Array<Metadata>) {
         if (logLevel != LogLevel.NONE) {
             log.error { error.message }
             if (metadata.isNotEmpty()) {

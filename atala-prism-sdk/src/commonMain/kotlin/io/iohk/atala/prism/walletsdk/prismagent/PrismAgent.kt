@@ -31,6 +31,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -107,7 +108,7 @@ class PrismAgent {
     private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     private var connectionManager: ConnectionManager
-    private var logger: PrismLogger
+    private lateinit var logger: PrismLogger
 
     constructor(
         apollo: Apollo,
@@ -117,7 +118,8 @@ class PrismAgent {
         pollux: Pollux,
         connectionManager: ConnectionManager,
         seed: Seed?,
-        api: Api?
+        api: Api?,
+        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT)
     ) {
         prismAgentScope.launch {
             flowState.emit(State.STOPPED)
@@ -142,6 +144,7 @@ class PrismAgent {
                 }
             }
         )
+        this.logger = logger
     }
 
     @JvmOverloads
@@ -153,7 +156,8 @@ class PrismAgent {
         pollux: Pollux,
         seed: Seed? = null,
         api: Api? = null,
-        mediatorHandler: MediationHandler
+        mediatorHandler: MediationHandler,
+        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT)
     ) {
         prismAgentScope.launch {
             flowState.emit(State.STOPPED)
@@ -190,7 +194,6 @@ class PrismAgent {
                 throw Exception("Agent state only accepts one subscription.")
             }
         }
-        logger = PrismLogger(LogComponent.PRISM_AGENT)
     }
 
     // Prism agent actions

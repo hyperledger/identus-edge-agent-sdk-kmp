@@ -11,6 +11,7 @@ import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.LogLevel
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
@@ -34,10 +35,9 @@ interface DIDCommProtocol {
 class MercuryImpl(
     private val castor: Castor,
     private val protocol: DIDCommProtocol,
-    private val api: Api
+    private val api: Api,
+    private val logger: PrismLogger = PrismLoggerImpl(LogComponent.MERCURY)
 ) : Mercury {
-
-    private val logger: PrismLogger = PrismLogger(LogComponent.MERCURY)
 
     /**
      * Asynchronously packs a given message object into a string representation. This function may throw an error if the

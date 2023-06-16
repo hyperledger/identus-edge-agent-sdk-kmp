@@ -15,7 +15,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.LogLevel
 import io.iohk.atala.prism.walletsdk.logger.Metadata
-import io.iohk.atala.prism.walletsdk.logger.PrismLogger
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import io.iohk.atala.prism.walletsdk.mercury.ATTACHMENT_SEPARATOR
 import io.iohk.atala.prism.walletsdk.mercury.BASE64
 import io.iohk.atala.prism.walletsdk.mercury.DIDCommProtocol
@@ -50,7 +50,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
     private val didDocResolver = DIDCommDIDResolver(castor)
     private val secretsResolver = DIDCommSecretsResolver(pluto, apollo)
     private val didComm = DIDComm(didDocResolver, secretsResolver)
-    private val logger = PrismLogger(LogComponent.MERCURY)
+    private val logger = PrismLoggerImpl(LogComponent.MERCURY)
 
     private fun jsonObjectToMap(element: JsonElement): Map<String, Any?> {
         var bodyMap = mutableMapOf<String, Any?>()

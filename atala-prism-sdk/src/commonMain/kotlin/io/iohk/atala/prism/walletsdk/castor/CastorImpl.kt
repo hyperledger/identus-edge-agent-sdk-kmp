@@ -16,6 +16,7 @@ import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.LogLevel
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import kotlin.jvm.Throws
 
 /**
@@ -23,10 +24,9 @@ import kotlin.jvm.Throws
  * or a more traditional system requiring secure and private identity management, Castor provides the tools and features
  * you need to easily create, manage, and resolve DIDs.
  */
-class CastorImpl(apollo: Apollo) : Castor {
+class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)) : Castor {
     val apollo: Apollo
     var resolvers: Array<DIDResolver>
-    private val logger: PrismLogger
 
     init {
         this.apollo = apollo
@@ -34,7 +34,6 @@ class CastorImpl(apollo: Apollo) : Castor {
             PeerDIDResolver(),
             LongFormPrismDIDResolver(this.apollo),
         )
-        logger = PrismLogger(LogComponent.CASTOR)
     }
 
     /**

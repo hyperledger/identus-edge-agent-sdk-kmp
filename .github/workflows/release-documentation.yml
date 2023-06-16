@@ -1,13 +1,9 @@
 ---
-name: Build and Test
+name: Release documentation
 
 defaults:
   run:
     shell: bash
-
-concurrency:
-  group: ${{ github.head_ref }}${{ github.ref }}
-  cancel-in-progress: true
 
 env:
   JAVA_VERSION: 11
@@ -17,12 +13,10 @@ env:
 
 on:
   push:
-    branches:
-      - "main"
-  pull_request:
+    tags:
+      - "*"
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
@@ -49,23 +43,15 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "zulu"
 
-      - name: Build for JS, Android, JVM
+      - name: Dokka Documentation Generation
         run: |
-          ./gradlew build test koverXmlReport
+          ./gradlew :atala-prism-sdk:dokkaHtml
 
-      - name: Coverage Report
-        uses: mi-kas/kover-report@v1
-        with:
-          path: ${{ github.workspace }}/atala-prism-sdk/build/reports/kover/report.xml
-          token: ${{ env.ATALA_GITHUB_TOKEN }}
-          title: Code Coverage
-          update-comment: true
-          coverage-counter-type: LINE
-
-      - name: Publish test results
-        if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
-          comment_title: "Unit Test Results"
-          check_name: "Unit Test Results"
+      - name: Push
+        uses: s0/git-publish-subdir-action@develop
+        env:
+          REPO: self
+          BRANCH: gh-pages # The branch name where you want to push the assets
+          FOLDER: "atala-prism-sdk/build/dokka/" # The directory where your assets are generated
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub will automatically add this - you don't need to bother getting a token
+          MESSAGE: "feat(docs): ({sha}) {msg}" # The commit message
