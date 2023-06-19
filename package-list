@@ -1,0 +1,257 @@
+$dokka.format:javadoc-v1
+$dokka.linkExtension:html
+$dokka.location:io.iohk.atala.prism.protos/AddKeyAction.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/AddKeyAction.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/AddServiceAction.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/AddServiceAction.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Operation.CreateDid///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Operation.CreateDid.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Operation.DeactivateDid///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Operation.DeactivateDid.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Operation.IssueCredentialBatch///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Operation.IssueCredentialBatch.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Operation.ProtocolVersionUpdate///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Operation.ProtocolVersionUpdate.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Operation.RevokeCredentials///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Operation.RevokeCredentials.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Operation.UpdateDid///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Operation.UpdateDid.html
+$dokka.location:io.iohk.atala.prism.protos/AtalaOperation.Operation///PointingToDeclaration/io/iohk/atala/prism/protos/AtalaOperation.Operation.html
+$dokka.location:io.iohk.atala.prism.protos/BlockInfo.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/BlockInfo.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/CompressedECKeyData.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/CompressedECKeyData.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/CreateDIDOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/CreateDIDOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/CreateDIDOperation.DIDCreationData.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/CreateDIDOperation.DIDCreationData.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/CreateDIDOperation.DIDCreationData///PointingToDeclaration/io/iohk/atala/prism/protos/CreateDIDOperation.DIDCreationData.html
+$dokka.location:io.iohk.atala.prism.protos/CreateDIDOutput.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/CreateDIDOutput.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/CredentialBatchData.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/CredentialBatchData.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/DIDData.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/DIDData.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/Date.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/Date.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/DeactivateDIDOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/DeactivateDIDOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/DeactivateDIDOutput.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/DeactivateDIDOutput.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/ECKeyData.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/ECKeyData.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/HealthCheckRequest.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/HealthCheckRequest.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/HealthCheckResponse.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/HealthCheckResponse.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/IssueCredentialBatchOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/IssueCredentialBatchOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/IssueCredentialBatchOutput.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/IssueCredentialBatchOutput.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.AUTHENTICATION_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.AUTHENTICATION_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.CAPABILITY_DELEGATION_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.CAPABILITY_DELEGATION_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.CAPABILITY_INVOCATION_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.CAPABILITY_INVOCATION_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.ISSUING_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.ISSUING_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.KEY_AGREEMENT_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.KEY_AGREEMENT_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.MASTER_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.MASTER_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.REVOCATION_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.REVOCATION_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.UNKNOWN_KEY///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.UNKNOWN_KEY.html
+$dokka.location:io.iohk.atala.prism.protos/KeyUsage.UNRECOGNIZED///PointingToDeclaration/io/iohk/atala/prism/protos/KeyUsage.UNRECOGNIZED.html
+$dokka.location:io.iohk.atala.prism.protos/Ledger.CARDANO_MAINNET///PointingToDeclaration/io/iohk/atala/prism/protos/Ledger.CARDANO_MAINNET.html
+$dokka.location:io.iohk.atala.prism.protos/Ledger.CARDANO_TESTNET///PointingToDeclaration/io/iohk/atala/prism/protos/Ledger.CARDANO_TESTNET.html
+$dokka.location:io.iohk.atala.prism.protos/Ledger.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/Ledger.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/Ledger.IN_MEMORY///PointingToDeclaration/io/iohk/atala/prism/protos/Ledger.IN_MEMORY.html
+$dokka.location:io.iohk.atala.prism.protos/Ledger.UNKNOWN_LEDGER///PointingToDeclaration/io/iohk/atala/prism/protos/Ledger.UNKNOWN_LEDGER.html
+$dokka.location:io.iohk.atala.prism.protos/Ledger.UNRECOGNIZED///PointingToDeclaration/io/iohk/atala/prism/protos/Ledger.UNRECOGNIZED.html
+$dokka.location:io.iohk.atala.prism.protos/LedgerData.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/LedgerData.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.OperationMaybe.Error///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.OperationMaybe.Error.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.OperationMaybe.OperationId///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.OperationMaybe.OperationId.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.OperationMaybe///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.OperationMaybe.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Result.BatchOutput///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Result.BatchOutput.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Result.CreateDidOutput///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Result.CreateDidOutput.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Result.DeactivateDidOutput///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Result.DeactivateDidOutput.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Result.ProtocolVersionUpdateOutput///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Result.ProtocolVersionUpdateOutput.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Result.RevokeCredentialsOutput///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Result.RevokeCredentialsOutput.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Result.UpdateDidOutput///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Result.UpdateDidOutput.html
+$dokka.location:io.iohk.atala.prism.protos/OperationOutput.Result///PointingToDeclaration/io/iohk/atala/prism/protos/OperationOutput.Result.html
+$dokka.location:io.iohk.atala.prism.protos/OperationStatus.AWAIT_CONFIRMATION///PointingToDeclaration/io/iohk/atala/prism/protos/OperationStatus.AWAIT_CONFIRMATION.html
+$dokka.location:io.iohk.atala.prism.protos/OperationStatus.CONFIRMED_AND_APPLIED///PointingToDeclaration/io/iohk/atala/prism/protos/OperationStatus.CONFIRMED_AND_APPLIED.html
+$dokka.location:io.iohk.atala.prism.protos/OperationStatus.CONFIRMED_AND_REJECTED///PointingToDeclaration/io/iohk/atala/prism/protos/OperationStatus.CONFIRMED_AND_REJECTED.html
+$dokka.location:io.iohk.atala.prism.protos/OperationStatus.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/OperationStatus.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/OperationStatus.PENDING_SUBMISSION///PointingToDeclaration/io/iohk/atala/prism/protos/OperationStatus.PENDING_SUBMISSION.html
+$dokka.location:io.iohk.atala.prism.protos/OperationStatus.UNKNOWN_OPERATION///PointingToDeclaration/io/iohk/atala/prism/protos/OperationStatus.UNKNOWN_OPERATION.html
+$dokka.location:io.iohk.atala.prism.protos/OperationStatus.UNRECOGNIZED///PointingToDeclaration/io/iohk/atala/prism/protos/OperationStatus.UNRECOGNIZED.html
+$dokka.location:io.iohk.atala.prism.protos/ProtocolVersion.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/ProtocolVersion.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/ProtocolVersionInfo.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/ProtocolVersionInfo.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/ProtocolVersionUpdateOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/ProtocolVersionUpdateOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/ProtocolVersionUpdateOutput.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/ProtocolVersionUpdateOutput.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/PublicKey.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/PublicKey.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/PublicKey.KeyData.CompressedEcKeyData///PointingToDeclaration/io/iohk/atala/prism/protos/PublicKey.KeyData.CompressedEcKeyData.html
+$dokka.location:io.iohk.atala.prism.protos/PublicKey.KeyData.EcKeyData///PointingToDeclaration/io/iohk/atala/prism/protos/PublicKey.KeyData.EcKeyData.html
+$dokka.location:io.iohk.atala.prism.protos/PublicKey.KeyData///PointingToDeclaration/io/iohk/atala/prism/protos/PublicKey.KeyData.html
+$dokka.location:io.iohk.atala.prism.protos/RemoveKeyAction.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/RemoveKeyAction.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/RemoveServiceAction.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/RemoveServiceAction.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/RevokeCredentialsOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/RevokeCredentialsOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/RevokeCredentialsOutput.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/RevokeCredentialsOutput.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/Service.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/Service.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/SignedAtalaOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/SignedAtalaOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/SortByDirection.ASCENDING///PointingToDeclaration/io/iohk/atala/prism/protos/SortByDirection.ASCENDING.html
+$dokka.location:io.iohk.atala.prism.protos/SortByDirection.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/SortByDirection.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/SortByDirection.DESCENDING///PointingToDeclaration/io/iohk/atala/prism/protos/SortByDirection.DESCENDING.html
+$dokka.location:io.iohk.atala.prism.protos/SortByDirection.UNKNOWN///PointingToDeclaration/io/iohk/atala/prism/protos/SortByDirection.UNKNOWN.html
+$dokka.location:io.iohk.atala.prism.protos/SortByDirection.UNRECOGNIZED///PointingToDeclaration/io/iohk/atala/prism/protos/SortByDirection.UNRECOGNIZED.html
+$dokka.location:io.iohk.atala.prism.protos/TimeInterval.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/TimeInterval.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/TimestampInfo.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/TimestampInfo.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/TransactionInfo.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/TransactionInfo.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDAction.Action.AddKey///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDAction.Action.AddKey.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDAction.Action.AddService///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDAction.Action.AddService.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDAction.Action.RemoveKey///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDAction.Action.RemoveKey.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDAction.Action.RemoveService///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDAction.Action.RemoveService.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDAction.Action.UpdateService///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDAction.Action.UpdateService.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDAction.Action///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDAction.Action.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDAction.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDAction.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDOperation.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDOperation.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateDIDOutput.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateDIDOutput.Companion.html
+$dokka.location:io.iohk.atala.prism.protos/UpdateServiceAction.Companion///PointingToDeclaration/io/iohk/atala/prism/protos/UpdateServiceAction.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfLexer.Channels///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfLexer.Channels.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfLexer.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfLexer.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfLexer.Modes///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfLexer.Modes.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfLexer.Rules///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfLexer.Rules.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfLexer.Tokens///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfLexer.Tokens.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.DidContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.DidContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.IdcharContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.IdcharContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.Method_nameContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.Method_nameContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.Method_specific_idContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.Method_specific_idContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.Rules///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.Rules.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.Tokens///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.Tokens.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDAbnfParser.solver///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDAbnfParser.solver.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfLexer.Channels///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfLexer.Channels.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfLexer.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfLexer.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfLexer.Modes///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfLexer.Modes.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfLexer.Rules///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfLexer.Rules.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfLexer.Tokens///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfLexer.Tokens.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.DidContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.DidContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.Did_urlContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.Did_urlContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.FragContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.FragContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.Method_nameContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.Method_nameContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.Method_specific_idContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.Method_specific_idContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.PathContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.PathContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.QueryContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.QueryContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.Rules///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.Rules.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.SearchContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.SearchContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.SearchparameterContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.SearchparameterContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.StringContext///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.StringContext.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.Tokens///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.Tokens.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser.solver///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/antlrgrammar/DIDUrlAbnfParser.solver.html
+$dokka.location:io.iohk.atala.prism.walletsdk.castor.did.prismdid/PrismDIDPublicKey.Usage///PointingToDeclaration/io/iohk/atala/prism/walletsdk/castor/did/prismdid/PrismDIDPublicKey.Usage.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/ApolloError.CouldNotParseMessageString///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/ApolloError.CouldNotParseMessageString.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/ApolloError.InvalidJWKError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/ApolloError.InvalidJWKError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/ApolloError.InvalidKeyCurve///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/ApolloError.InvalidKeyCurve.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/ApolloError.InvalidMnemonicWord///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/ApolloError.InvalidMnemonicWord.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.InitialStateOfDIDChanged///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.InitialStateOfDIDChanged.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.InvalidDIDString///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.InvalidDIDString.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.InvalidJWKKeysError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.InvalidJWKKeysError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.InvalidKeyError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.InvalidKeyError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.InvalidLongFormDID///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.InvalidLongFormDID.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.InvalidPeerDIDError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.InvalidPeerDIDError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.InvalidPublicKeyEncoding///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.InvalidPublicKeyEncoding.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.KeyCurveNotSupported///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.KeyCurveNotSupported.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.MethodIdIsDoesNotSatisfyRegex///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.MethodIdIsDoesNotSatisfyRegex.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.NoResolversAvailableForDIDMethod///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.NoResolversAvailableForDIDMethod.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CastorError.NotPossibleToResolveDID///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CastorError.NotPossibleToResolveDID.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CommonError.HttpError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CommonError.HttpError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/CommonError.InvalidURLError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/CommonError.InvalidURLError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.AlsoKnownAs///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.AlsoKnownAs.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.AssertionMethod///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.AssertionMethod.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.Authentication///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.Authentication.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.CapabilityDelegation///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.CapabilityDelegation.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.CapabilityInvocation///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.CapabilityInvocation.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.Controller///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.Controller.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.KeyAgreement///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.KeyAgreement.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.Service///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.Service.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.ServiceEndpoint///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.ServiceEndpoint.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.Services///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.Services.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.VerificationMethod.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.VerificationMethod.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.VerificationMethod///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.VerificationMethod.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/DIDDocument.VerificationMethods///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/DIDDocument.VerificationMethods.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/JWTCredentialPayload.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/JWTCredentialPayload.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/JWTCredentialPayload.JWTVerifiableCredential///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/JWTCredentialPayload.JWTVerifiableCredential.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/MercuryError.DidCommError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/MercuryError.DidCommError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/MercuryError.MessageAttachmentWithoutIDError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/MercuryError.MessageAttachmentWithoutIDError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/MercuryError.MessageInvalidBodyDataError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/MercuryError.MessageInvalidBodyDataError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/MercuryError.NoDIDReceiverSetError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/MercuryError.NoDIDReceiverSetError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/MercuryError.NoDIDSenderSetError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/MercuryError.NoDIDSenderSetError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/MercuryError.NoValidServiceFoundError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/MercuryError.NoValidServiceFoundError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/MercuryError.UnknownAttachmentDataError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/MercuryError.UnknownAttachmentDataError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/Message.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/Message.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/Message.Direction///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/Message.Direction.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.DatabaseConnectionError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.DatabaseConnectionError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.DatabaseContextError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.DatabaseContextError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.DatabaseServiceAlreadyRunning///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.DatabaseServiceAlreadyRunning.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.Duplication///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.Duplication.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.InvalidCredentialJsonError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.InvalidCredentialJsonError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.MissingDataPersistence///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.MissingDataPersistence.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.MissingRequiredFields///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.MissingRequiredFields.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PlutoError.UnknownCredentialTypeError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PlutoError.UnknownCredentialTypeError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PolluxError.InvalidCredentialError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PolluxError.InvalidCredentialError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PolluxError.InvalidJWTCredential///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PolluxError.InvalidJWTCredential.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PolluxError.InvalidJWTString///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PolluxError.InvalidJWTString.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PolluxError.InvalidPrismDID///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PolluxError.InvalidPrismDID.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/PolluxError.NoDomainOrChallengeFound///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/PolluxError.NoDomainOrChallengeFound.html
+$dokka.location:io.iohk.atala.prism.walletsdk.domain.models/UnknownError.SomethingWentWrongError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/domain/models/UnknownError.SomethingWentWrongError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.mercury.forward/ForwardMessage.ForwardBody///PointingToDeclaration/io/iohk/atala/prism/walletsdk/mercury/forward/ForwardMessage.ForwardBody.html
+$dokka.location:io.iohk.atala.prism.walletsdk.mercury.resolvers/DefaultSecretsResolverImpl.PrivateJWK///PointingToDeclaration/io/iohk/atala/prism/walletsdk/mercury/resolvers/DefaultSecretsResolverImpl.PrivateJWK.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.mediation/BasicMediatorHandler.PlutoMediatorRepositoryImpl///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/mediation/BasicMediatorHandler.PlutoMediatorRepositoryImpl.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.connection/ConnectionAccept.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/connection/ConnectionAccept.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.connection/ConnectionRequest.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/connection/ConnectionRequest.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/CredentialPreview.Attribute///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/CredentialPreview.Attribute.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/IssueCredential.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/IssueCredential.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/IssueCredential.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/IssueCredential.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/IssueCredentialProtocol.Stage///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/IssueCredentialProtocol.Stage.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/OfferCredential.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/OfferCredential.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/OfferCredential.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/OfferCredential.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/ProposeCredential.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/ProposeCredential.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/ProposeCredential.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/ProposeCredential.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/RequestCredential.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/RequestCredential.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/RequestCredential.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/issueCredential/RequestCredential.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/MediationGrant.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/mediation/MediationGrant.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/MediationKeysUpdateList.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/mediation/MediationKeysUpdateList.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/MediationKeysUpdateList.Update///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/mediation/MediationKeysUpdateList.Update.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/MediationProtocolError.InvalidMediationGrantError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/mediation/MediationProtocolError.InvalidMediationGrantError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand/OutOfBandInvitation.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/outOfBand/OutOfBandInvitation.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand/PrismOnboardingInvitation.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/outOfBand/PrismOnboardingInvitation.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup/PickupReceived.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/pickup/PickupReceived.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup/PickupRequest.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/pickup/PickupRequest.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup/PickupRunner.PickupAttachment///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/pickup/PickupRunner.PickupAttachment.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup/PickupRunner.PickupResponse///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/pickup/PickupRunner.PickupResponse.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup/PickupRunner.PickupResponseType///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/pickup/PickupRunner.PickupResponseType.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding/PrismOnboardingInvitation.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/prismOnboarding/PrismOnboardingInvitation.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation/Presentation.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/proofOfPresentation/Presentation.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation/ProposePresentation.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/proofOfPresentation/ProposePresentation.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation/RequestPresentation.Body///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/proofOfPresentation/RequestPresentation.Body.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation/RequestPresentation.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/proofOfPresentation/RequestPresentation.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent.protocols/ProtocolType.Companion///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/protocols/ProtocolType.Companion.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgent.State///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgent.State.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.CannotFindDIDKeyPairIndex///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.CannotFindDIDKeyPairIndex.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.CannotFindDIDPrivateKey///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.CannotFindDIDPrivateKey.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.FailedToOnboardError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.FailedToOnboardError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.InvalidMessageType///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.InvalidMessageType.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.InvitationIsInvalidError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.InvitationIsInvalidError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.MediationRequestFailedError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.MediationRequestFailedError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.NoMediatorAvailableError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.NoMediatorAvailableError.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.OfferDoesNotProvideEnoughInformation///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.OfferDoesNotProvideEnoughInformation.html
+$dokka.location:io.iohk.atala.prism.walletsdk.prismagent/PrismAgentError.UnknownInvitationTypeError///PointingToDeclaration/io/iohk/atala/prism/walletsdk/prismagent/PrismAgentError.UnknownInvitationTypeError.html
+io.iohk.atala.prism.protos
+io.iohk.atala.prism.walletsdk
+io.iohk.atala.prism.walletsdk.apollo
+io.iohk.atala.prism.walletsdk.apollo.helpers
+io.iohk.atala.prism.walletsdk.castor
+io.iohk.atala.prism.walletsdk.castor.antlrgrammar
+io.iohk.atala.prism.walletsdk.castor.did
+io.iohk.atala.prism.walletsdk.castor.did.prismdid
+io.iohk.atala.prism.walletsdk.castor.resolvers
+io.iohk.atala.prism.walletsdk.domain
+io.iohk.atala.prism.walletsdk.domain.buildingblocks
+io.iohk.atala.prism.walletsdk.domain.models
+io.iohk.atala.prism.walletsdk.mercury
+io.iohk.atala.prism.walletsdk.mercury.forward
+io.iohk.atala.prism.walletsdk.mercury.resolvers
+io.iohk.atala.prism.walletsdk.pluto
+io.iohk.atala.prism.walletsdk.pluto.data
+io.iohk.atala.prism.walletsdk.pollux
+io.iohk.atala.prism.walletsdk.prismagent
+io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager
+io.iohk.atala.prism.walletsdk.prismagent.helpers
+io.iohk.atala.prism.walletsdk.prismagent.mediation
+io.iohk.atala.prism.walletsdk.prismagent.protocols
+io.iohk.atala.prism.walletsdk.prismagent.protocols.connection
+io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
+io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation
+io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
+io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup
+io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding
+io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
+io.iohk.atala.prism.walletsdk.prismagent.shared
+
