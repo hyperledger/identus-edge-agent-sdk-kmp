@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Apollo</title>
+    <script>
+        window.addEventListener('load', function() {
+            Object.entries(document.links)
+                .map(link => link[1])
+                .filter(link => link.attributes.href.value.startsWith("-atala-prism-s-d-k"))
+                .forEach(a => a.attributes.href.value = '/wallet-sdk-kmm/' + a.attributes.href.value)
+        });
+    </script>
+        <link href="/wallet-sdk-kmm/styles/style.css" rel="Stylesheet">
+        <link href="/wallet-sdk-kmm/styles/jetbrains-mono.css" rel="Stylesheet">
+        <link href="/wallet-sdk-kmm/styles/main.css" rel="Stylesheet">
+        <link href="/wallet-sdk-kmm/styles/prism.css" rel="Stylesheet">
+        <link href="/wallet-sdk-kmm/styles/logo-styles.css" rel="Stylesheet">
+        <script type="text/javascript" src="/wallet-sdk-kmm/scripts/sourceset_dependencies.js" async="async"></script>
+        <script type="text/javascript" src="/wallet-sdk-kmm/scripts/clipboard.js" async="async"></script>
+        <script type="text/javascript" src="/wallet-sdk-kmm/scripts/navigation-loader.js" async="async"></script>
+        <script type="text/javascript" src="/wallet-sdk-kmm/scripts/platform-content-handler.js" async="async"></script>
+        <script type="text/javascript" src="/wallet-sdk-kmm/scripts/main.js" defer="defer"></script>
+        <script type="text/javascript" src="/wallet-sdk-kmm/scripts/prism.js" async="async"></script>
+        <script type="text/javascript" src="/wallet-sdk-kmm/scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+        <link href="/wallet-sdk-kmm/images/logo-icon.svg" rel="icon" type="image/svg">
+        <script>var pathToRoot = "/wallet-sdk-kmm/../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+        if (storage == null) {
+            const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+            if (osDarkSchemePreferred === true) {
+                document.getElementsByTagName("html")[0].classList.add("theme-dark")
+            }
+        } else {
+            const savedDarkMode = JSON.parse(storage)
+            if(savedDarkMode === true) {
+                document.getElementsByTagName("html")[0].classList.add("theme-dark")
+            }
+        }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="navigation-wrapper" id="navigation-wrapper">
+        <div id="leftToggler"><span class="icon-toggler"></span></div>
+        <div class="library-name">
+                <a href="/wallet-sdk-kmm/index.html">
+                        <span>AtalaPrismSDK</span>
+                </a>
+        </div>
+        <div>
+0.1.1        </div>
+        <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":atala-prism-sdk:dokkaHtml/commonMain">common</button>
+        </div>
+            <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+            <div id="searchBar"></div>
+        </div>
+    </div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="AtalaPrismSDK::io.iohk.atala.prism.walletsdk.domain.buildingblocks/Apollo///PointingToDeclaration//-1716531196">
+  <div class="breadcrumbs"><a href="../../../index.html">AtalaPrismSDK</a><span class="delimiter">/</span><a href="../index.html">io.iohk.atala.prism.walletsdk.domain.buildingblocks</a><span class="delimiter">/</span><span class="current">Apollo</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Apollo</span></span></h1>
+    <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">Apollo</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/tree/main/src/commonMain/kotlin/io/iohk/atala/prism/walletsdk/domain/buildingblocks/Apollo.kt#L17">source</a>)</span></span></div><p class="paragraph">Apollo defines the set of cryptographic operations that are used in the Atala PRISM.</p><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../io.iohk.atala.prism.walletsdk.apollo/-apollo-impl/index.html">ApolloImpl</a></div></span></div><div></div></div></div></div></div>    </div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1390987062%2FFunctions%2F-1716531196" anchor-label="compressedPublicKey" id="1390987062%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="compressed-public-key.html"><span>compressed</span><wbr></wbr><span>Public</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1390987062%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="compressed-public-key.html"><span class="token function">compressedPublicKey</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">publicKey<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-public-key/index.html">PublicKey</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-compressed-public-key/index.html">CompressedPublicKey</a></div><div class="brief "><p class="paragraph">Compresses a given public key into a shorter, more efficient form.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="compressed-public-key.html"><span class="token function">compressedPublicKey</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">compressedData<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-compressed-public-key/index.html">CompressedPublicKey</a></div><div class="brief "><p class="paragraph">Decompresses a given compressed public key into its original form.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-123573120%2FFunctions%2F-1716531196" anchor-label="createKeyPair" id="-123573120%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-key-pair.html"><span>create</span><wbr></wbr><span>Key</span><wbr></wbr><span><span>Pair</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-123573120%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-key-pair.html"><span class="token function">createKeyPair</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">seed<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-seed/index.html">Seed</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">curve<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-key-curve/index.html">KeyCurve</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-key-pair/index.html">KeyPair</a></div><div class="brief "><p class="paragraph">Creates a key pair (a private and public key) using a given seed and key curve.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-key-pair.html"><span class="token function">createKeyPair</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">seed<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-seed/index.html">Seed</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">privateKey<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-private-key/index.html">PrivateKey</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-key-pair/index.html">KeyPair</a></div><div class="brief "><p class="paragraph">Creates a key pair using a given seed and a specified private key.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-132955586%2FFunctions%2F-1716531196" anchor-label="createRandomMnemonics" id="-132955586%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-random-mnemonics.html"><span>create</span><wbr></wbr><span>Random</span><wbr></wbr><span><span>Mnemonics</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-132955586%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-random-mnemonics.html"><span class="token function">createRandomMnemonics</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Creates a random set of mnemonic phrases that can be used as a seed for generating a private key.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-125948231%2FFunctions%2F-1716531196" anchor-label="createRandomSeed" id="-125948231%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-random-seed.html"><span>create</span><wbr></wbr><span>Random</span><wbr></wbr><span><span>Seed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-125948231%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-random-seed.html"><span class="token function">createRandomSeed</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">passphrase<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span><span class="token string">&quot;&quot;</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-seed-words/index.html">SeedWords</a></div><div class="brief "><p class="paragraph">Creates a random seed and a corresponding set of mnemonic phrases.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="838598140%2FFunctions%2F-1716531196" anchor-label="createSeed" id="838598140%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="create-seed.html"><span>create</span><wbr></wbr><span><span>Seed</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="838598140%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="create-seed.html"><span class="token function">createSeed</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mnemonics<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token punctuation">, </span></span><span class="parameter ">passphrase<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-seed/index.html">Seed</a></div><div class="brief "><p class="paragraph">Takes in a set of mnemonics and a passphrase, and returns a seed object used to generate a private key.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1363166639%2FFunctions%2F-1716531196" anchor-label="publicKey" id="1363166639%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="public-key.html"><span>public</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1363166639%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="public-key.html"><span class="token function">publicKey</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">curve<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-key-curve/index.html">KeyCurve</a><span class="token punctuation">, </span></span><span class="parameter ">x<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-public-key/index.html">PublicKey</a></div><div class="brief "><p class="paragraph">Create a public key from bytes.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="public-key.html"><span class="token function">publicKey</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">curve<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-key-curve/index.html">KeyCurve</a><span class="token punctuation">, </span></span><span class="parameter ">x<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">y<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-public-key/index.html">PublicKey</a></div><div class="brief "><p class="paragraph">Create a public key from byte coordinates.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1160786094%2FFunctions%2F-1716531196" anchor-label="signMessage" id="-1160786094%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="sign-message.html"><span>sign</span><wbr></wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1160786094%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="sign-message.html"><span class="token function">signMessage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">privateKey<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-private-key/index.html">PrivateKey</a><span class="token punctuation">, </span></span><span class="parameter ">message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-signature/index.html">Signature</a></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="sign-message.html"><span class="token function">signMessage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">privateKey<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-private-key/index.html">PrivateKey</a><span class="token punctuation">, </span></span><span class="parameter ">message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-signature/index.html">Signature</a></div><div class="brief "><p class="paragraph">Signs a message using a given private key, returning the signature.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-423713877%2FFunctions%2F-1716531196" anchor-label="verifySignature" id="-423713877%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="verify-signature.html"><span>verify</span><wbr></wbr><span><span>Signature</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-423713877%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword"></span><span class="token keyword">fun </span><a href="verify-signature.html"><span class="token function">verifySignature</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">publicKey<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-public-key/index.html">PublicKey</a><span class="token punctuation">, </span></span><span class="parameter ">challenge<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a><span class="token punctuation">, </span></span><span class="parameter ">signature<span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.domain.models/-signature/index.html">Signature</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div><div class="brief "><p class="paragraph">Verifies the authenticity of a signature using the corresponding public key, challenge, and signature. This function returns a boolean value indicating whether the signature is valid or not.</p></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                    href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+    </div>
+    </div>
+</div>
+</body>
+</html>
