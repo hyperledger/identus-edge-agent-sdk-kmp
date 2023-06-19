@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>KeyUsage</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+<div class="navigation-wrapper" id="navigation-wrapper">
+    <div id="leftToggler"><span class="icon-toggler"></span></div>
+    <div class="library-name">
+            <a href="../../../index.html">
+                    <span>AtalaPrismSDK</span>
+            </a>
+    </div>
+    <div>
+0.1.1    </div>
+    <div class="pull-right d-flex">
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":atala-prism-sdk:dokkaHtml/commonMain">common</button>
+        </div>
+        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+    </div>
+</div>
+<div id="container">
+    <div id="leftColumn">
+        <div id="sideMenu"></div>
+    </div>
+    <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="AtalaPrismSDK::io.iohk.atala.prism.protos/KeyUsage///PointingToDeclaration//-1716531196">
+  <div class="breadcrumbs"><a href="../../../index.html">AtalaPrismSDK</a><span class="delimiter">/</span><a href="../index.html">io.iohk.atala.prism.protos</a><span class="delimiter">/</span><span class="current">KeyUsage</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Key</span><wbr></wbr><span><span>Usage</span></span></h1>
+    <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="index.html">KeyUsage</a> : <span data-unresolved-link="pbandk/Message.Enum///PointingToDeclaration/">Message.Enum</span></div><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-u-n-k-n-o-w-n_-k-e-y/index.html">UNKNOWN_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-m-a-s-t-e-r_-k-e-y/index.html">MASTER_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-i-s-s-u-i-n-g_-k-e-y/index.html">ISSUING_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-k-e-y_-a-g-r-e-e-m-e-n-t_-k-e-y/index.html">KEY_AGREEMENT_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-a-u-t-h-e-n-t-i-c-a-t-i-o-n_-k-e-y/index.html">AUTHENTICATION_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-r-e-v-o-c-a-t-i-o-n_-k-e-y/index.html">REVOCATION_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-c-a-p-a-b-i-l-i-t-y_-i-n-v-o-c-a-t-i-o-n_-k-e-y/index.html">CAPABILITY_INVOCATION_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-c-a-p-a-b-i-l-i-t-y_-d-e-l-e-g-a-t-i-o-n_-k-e-y/index.html">CAPABILITY_DELEGATION_KEY</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-u-n-r-e-c-o-g-n-i-z-e-d/index.html">UNRECOGNIZED</a></div></span></div><div></div></div></div></div></div>    </div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button><button class="section-tab" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY,EXTENSION_PROPERTY,EXTENSION_FUNCTION">Members &amp; Extensions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1884874852%2FClasslikes%2F-1716531196" anchor-label="AUTHENTICATION_KEY" id="-1884874852%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-a-u-t-h-e-n-t-i-c-a-t-i-o-n_-k-e-y/index.html"><span><span>AUTHENTICATION_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1884874852%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-a-u-t-h-e-n-t-i-c-a-t-i-o-n_-k-e-y/index.html">AUTHENTICATION_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="171289759%2FClasslikes%2F-1716531196" anchor-label="CAPABILITY_DELEGATION_KEY" id="171289759%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-a-p-a-b-i-l-i-t-y_-d-e-l-e-g-a-t-i-o-n_-k-e-y/index.html"><span><span>CAPABILITY_DELEGATION_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="171289759%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-c-a-p-a-b-i-l-i-t-y_-d-e-l-e-g-a-t-i-o-n_-k-e-y/index.html">CAPABILITY_DELEGATION_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="382040631%2FClasslikes%2F-1716531196" anchor-label="CAPABILITY_INVOCATION_KEY" id="382040631%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-c-a-p-a-b-i-l-i-t-y_-i-n-v-o-c-a-t-i-o-n_-k-e-y/index.html"><span><span>CAPABILITY_INVOCATION_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="382040631%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-c-a-p-a-b-i-l-i-t-y_-i-n-v-o-c-a-t-i-o-n_-k-e-y/index.html">CAPABILITY_INVOCATION_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-30280958%2FClasslikes%2F-1716531196" anchor-label="Companion" id="-30280958%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-companion/index.html"><span><span>Companion</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-30280958%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-companion/index.html">Companion</a> : <span data-unresolved-link="pbandk/Message.Enum.Companion///PointingToDeclaration/">Message.Enum.Companion</span><span class="token operator">&lt;</span><span class="token keyword"></span><a href="index.html">KeyUsage</a><span class="token operator">&gt; </span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="651226168%2FClasslikes%2F-1716531196" anchor-label="ISSUING_KEY" id="651226168%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-i-s-s-u-i-n-g_-k-e-y/index.html"><span><span>ISSUING_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="651226168%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-i-s-s-u-i-n-g_-k-e-y/index.html">ISSUING_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1673243204%2FClasslikes%2F-1716531196" anchor-label="KEY_AGREEMENT_KEY" id="1673243204%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-k-e-y_-a-g-r-e-e-m-e-n-t_-k-e-y/index.html"><span><span>KEY_AGREEMENT_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1673243204%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-k-e-y_-a-g-r-e-e-m-e-n-t_-k-e-y/index.html">KEY_AGREEMENT_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-371322126%2FClasslikes%2F-1716531196" anchor-label="MASTER_KEY" id="-371322126%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-m-a-s-t-e-r_-k-e-y/index.html"><span><span>MASTER_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-371322126%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-m-a-s-t-e-r_-k-e-y/index.html">MASTER_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-238147146%2FClasslikes%2F-1716531196" anchor-label="REVOCATION_KEY" id="-238147146%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-r-e-v-o-c-a-t-i-o-n_-k-e-y/index.html"><span><span>REVOCATION_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-238147146%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-r-e-v-o-c-a-t-i-o-n_-k-e-y/index.html">REVOCATION_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="800114628%2FClasslikes%2F-1716531196" anchor-label="UNKNOWN_KEY" id="800114628%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-n-k-n-o-w-n_-k-e-y/index.html"><span><span>UNKNOWN_KEY</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="800114628%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">object </span><a href="-u-n-k-n-o-w-n_-k-e-y/index.html">UNKNOWN_KEY</a> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1127766213%2FClasslikes%2F-1716531196" anchor-label="UNRECOGNIZED" id="1127766213%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-u-n-r-e-c-o-g-n-i-z-e-d/index.html"><span><span>UNRECOGNIZED</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1127766213%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-u-n-r-e-c-o-g-n-i-z-e-d/index.html">UNRECOGNIZED</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">val </span>value<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></span></span><span class="token punctuation">)</span> : <a href="index.html">KeyUsage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="564743266%2FFunctions%2F-1716531196" anchor-label="equals" id="564743266%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="equals.html"><span><span>equals</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="564743266%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">operator override </span><span class="token keyword">fun </span><a href="equals.html"><span class="token function">equals</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">other<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html">Any</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-775231978%2FFunctions%2F-1716531196" anchor-label="fromProto" id="-775231978%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-togglable="EXTENSION_FUNCTION" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../io.iohk.atala.prism.walletsdk.castor.did.prismdid/from-proto.html"><span>from</span><wbr></wbr><span><span>Proto</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-775231978%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">fun </span><a href="index.html">KeyUsage</a><span class="token punctuation">.</span><a href="../../io.iohk.atala.prism.walletsdk.castor.did.prismdid/from-proto.html"><span class="token function">fromProto</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="../../io.iohk.atala.prism.walletsdk.castor.did.prismdid/-prism-d-i-d-public-key/-usage/index.html">PrismDIDPublicKey.Usage</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-16054716%2FFunctions%2F-1716531196" anchor-label="hashCode" id="-16054716%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="hash-code.html"><span>hash</span><wbr></wbr><span><span>Code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-16054716%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="hash-code.html"><span class="token function">hashCode</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-194220781%2FFunctions%2F-1716531196" anchor-label="toString" id="-194220781%2FFunctions%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-string.html"><span>to</span><wbr></wbr><span><span>String</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-194220781%2FFunctions%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">fun </span><a href="to-string.html"><span class="token function">toString</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-1078933804%2FProperties%2F-1716531196" anchor-label="name" id="-1078933804%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="name.html"><span><span>name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1078933804%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="name.html">name</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="595988586%2FProperties%2F-1716531196" anchor-label="value" id="595988586%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="value.html"><span><span>value</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="595988586%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="value.html">value</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2023 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+    </div>
+</div>
+</body>
+</html>
