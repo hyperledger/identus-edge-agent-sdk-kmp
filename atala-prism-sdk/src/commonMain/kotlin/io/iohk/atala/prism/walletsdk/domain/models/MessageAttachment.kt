@@ -5,14 +5,14 @@ import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmOverloads
 
 /**
- * The `AttachmentData` interface represents a generic attachment for a DIDComm `Message`. Any type that conforms to
- * `AttachmentData` can be used as an attachment.
+ * The [AttachmentData] interface represents a generic attachment for a DIDComm [Message]. Any type that conforms to
+ * [AttachmentData] can be used as an attachment.
  */
 @Serializable
 sealed interface AttachmentData
 
 /**
- * The `AttachmentHeader` data class represents the header for a DIDComm attachment.
+ * The [AttachmentHeader] data class represents the header for a DIDComm attachment.
  */
 @Serializable
 data class AttachmentHeader(
@@ -20,7 +20,7 @@ data class AttachmentHeader(
 ) : AttachmentData
 
 /**
- * The `AttachmentJws` data class represents a DIDComm attachment containing a JWS (JSON Web Signature).
+ * The [AttachmentJws] data class represents a DIDComm attachment containing a JWS (JSON Web Signature).
  */
 @Serializable
 data class AttachmentJws(
@@ -30,7 +30,7 @@ data class AttachmentJws(
 ) : AttachmentData
 
 /**
- * The `AttachmentJwsData` data class represents a DIDComm attachment containing JWS data.
+ * The [AttachmentJwsData] data class represents a DIDComm attachment containing JWS data.
  */
 @Serializable
 data class AttachmentJwsData(
@@ -39,7 +39,7 @@ data class AttachmentJwsData(
 ) : AttachmentData
 
 /**
- * The `AttachmentBase64` data class represents a DIDComm attachment containing base64-encoded data.
+ * The [AttachmentBase64] data class represents a DIDComm attachment containing base64-encoded data.
  */
 @Serializable
 data class AttachmentBase64(
@@ -47,7 +47,7 @@ data class AttachmentBase64(
 ) : AttachmentData
 
 /**
- * The `AttachmentLinkData` data class represents a DIDComm attachment containing a link to external data.
+ * The [AttachmentLinkData] data class represents a DIDComm attachment containing a link to external data.
  */
 @Serializable
 data class AttachmentLinkData(
@@ -74,7 +74,7 @@ data class AttachmentLinkData(
 }
 
 /**
- * The `AttachmentJsonData` data class represents a DIDComm attachment containing JSON data.
+ * The [AttachmentJsonData] data class represents a DIDComm attachment containing JSON data.
  */
 @Serializable
 data class AttachmentJsonData(
@@ -82,7 +82,7 @@ data class AttachmentJsonData(
 ) : AttachmentData
 
 /**
- * The `AttachmentDescriptor` data class represents metadata for a DIDComm attachment.
+ * The [AttachmentDescriptor] data class represents metadata for a DIDComm attachment.
  */
 @Serializable
 data class AttachmentDescriptor @JvmOverloads constructor(

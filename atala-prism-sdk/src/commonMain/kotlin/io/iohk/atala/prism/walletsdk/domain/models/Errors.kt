@@ -14,7 +14,7 @@ abstract interface Error {
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
  * This object may include an error code, an error message, and possibly an array of underlying errors. If the error
- * received does not conform to the `Error` interface, it will be classified as an `UnknownPrismError`.
+ * received does not conform to the [Error] interface, it will be classified as an [UnknownPrismError].
  */
 abstract class UnknownPrismError : Error, Throwable() {
 
@@ -33,7 +33,7 @@ abstract class UnknownPrismError : Error, Throwable() {
  * A class representing a known error in a Prism API response.
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
- * This object may include an error code and an error message. If the error received conforms to the `KnownPrismError`,
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
 abstract class KnownPrismError : Error, Throwable() {
@@ -52,7 +52,7 @@ abstract class KnownPrismError : Error, Throwable() {
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
  * This object may include an error code, an error message, and possibly an array of underlying errors.
- * If the error received does not conform to the `KnownPrismError`, it will be classified as an `UnknownPrismError`.
+ * If the error received does not conform to the [KnownPrismError], it will be classified as an [UnknownPrismError].
  */
 abstract class UnknownError : UnknownPrismError() {
 
@@ -73,7 +73,7 @@ abstract class UnknownError : UnknownPrismError() {
  * A class representing a known error in a Prism API response.
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
- * This object may include an error code and an error message. If the error received conforms to the `KnownPrismError`,
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
 sealed class CommonError : KnownPrismError() {
@@ -98,7 +98,7 @@ sealed class CommonError : KnownPrismError() {
  * A class representing a known error in an Apollo API response.
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
- * This object may include an error code and an error message. If the error received conforms to the `KnownPrismError`,
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
 sealed class ApolloError : KnownPrismError() {
@@ -144,7 +144,7 @@ sealed class ApolloError : KnownPrismError() {
  * A class representing a known error in a Castor API response.
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
- * This object may include an error code and an error message. If the error received conforms to the `KnownPrismError`,
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
 sealed class CastorError : KnownPrismError() {
@@ -231,7 +231,7 @@ sealed class CastorError : KnownPrismError() {
  * A class representing a known error in a Mercury API response.
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
- * This object may include an error code and an error message. If the error received conforms to the `KnownPrismError`,
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
 sealed class MercuryError : KnownPrismError() {
@@ -304,7 +304,7 @@ sealed class MercuryError : KnownPrismError() {
  * A class representing a known error in a Pluto API response.
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
- * This object may include an error code and an error message. If the error received conforms to the `KnownPrismError`,
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
 sealed class PlutoError : KnownPrismError() {
@@ -380,7 +380,7 @@ sealed class PlutoError : KnownPrismError() {
  * A class representing a known error in a Pollux API response.
  *
  * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
- * This object may include an error code and an error message. If the error received conforms to the `KnownPrismError`,
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
 sealed class PolluxError : KnownPrismError() {

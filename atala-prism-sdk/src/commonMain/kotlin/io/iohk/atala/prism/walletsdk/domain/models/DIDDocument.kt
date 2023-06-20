@@ -2,16 +2,19 @@ package io.iohk.atala.prism.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
 
-/** Represents a Core Property in a DID Document.
+/**
+ * Represents a Core Property in a DID Document.
  * This allows for extensibility of the properties.
  * As specified in [w3 standards](https://www.w3.org/TR/did-core/#data-model)
  **/
 interface DIDDocumentCoreProperty
 
 /**
- * Represents a DIDDocument with ``DID`` and ``[DIDDocumentCoreProperty]``
+ * Represents a DIDDocument with [DID] and [DIDDocumentCoreProperty]
  * As specified in [w3 standards](https://www.w3.org/TR/did-core/#data-model)
- * A DID Document consists of a DID, public keys, authentication protocols, service endpoints, and other metadata. It is used to verify the authenticity and identity of the DID, and to discover and interact with the associated subjects or objects.
+ * A DID Document consists of a DID, public keys, authentication protocols, service endpoints, and other metadata.
+ * It is used to verify the authenticity and identity of the DID, and to discover and interact with the associated
+ * subjects or objects.
  */
 @Serializable
 data class DIDDocument(
@@ -42,7 +45,8 @@ data class DIDDocument(
         return result
     }
 
-    /** Represents a Verification Method, which is a public key or other evidence used to authenticate the identity of a
+    /**
+     * Represents a Verification Method, which is a public key or other evidence used to authenticate the identity of a
      * Decentralized Identifier (DID) or other subject or object.
      * A Verification Method consists of a type (indicating the type of key or evidence), a public key or other data, and
      * optional metadata such as a controller (the DID that controls the verification method) and purpose (the intended

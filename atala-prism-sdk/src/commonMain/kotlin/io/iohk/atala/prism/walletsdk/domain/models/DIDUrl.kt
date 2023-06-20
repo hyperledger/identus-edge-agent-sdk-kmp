@@ -5,7 +5,7 @@ import kotlin.jvm.JvmOverloads
 
 /**
  * Represents a DIDUrl with "did", "path", "parameters", "fragment"
- * As specified in [w3 standards](`https://www.w3.org/TR/did-core/#dfn-did-urls`)
+ * As specified in [w3 standards](https://www.w3.org/TR/did-core/#dfn-did-urls)
  */
 data class DIDUrl @JvmOverloads constructor(
     val did: DID,
