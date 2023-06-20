@@ -3,6 +3,9 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmOverloads
 
+/**
+ * Data class representing a pair of private and public keys for a specific key curve.
+ */
 @Serializable
 data class KeyPair(
     val keyCurve: KeyCurve = KeyCurve(Curve.SECP256K1),
@@ -10,6 +13,9 @@ data class KeyPair(
     val publicKey: PublicKey
 )
 
+/**
+ * Data class representing supported key curves for key generation.
+ */
 @Serializable
 data class KeyCurve @JvmOverloads constructor(
     val curve: Curve,

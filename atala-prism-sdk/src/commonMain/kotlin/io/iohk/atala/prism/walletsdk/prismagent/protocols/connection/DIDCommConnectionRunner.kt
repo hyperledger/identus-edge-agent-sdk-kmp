@@ -7,7 +7,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 
-class DIDCommConnectionRunner(
+internal class DIDCommConnectionRunner(
     private val invitationMessage: OutOfBandInvitation,
     private val pluto: Pluto,
     private val ownDID: DID,
@@ -15,7 +15,7 @@ class DIDCommConnectionRunner(
 ) {
 
     @Throws(PrismAgentError.InvitationIsInvalidError::class)
-    suspend fun run(): DIDPair {
+    internal suspend fun run(): DIDPair {
         val request = ConnectionRequest(invitationMessage, ownDID)
         connection.sendMessage(request.makeMessage())
         return DIDPair(ownDID, request.to, null)

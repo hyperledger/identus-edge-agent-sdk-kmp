@@ -3,6 +3,16 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmOverloads
 
+/**
+ * A data class representing a W3C Verifiable Credential.
+ * This data class conforms to the VerifiableCredential interface, which defines the properties and methods required for
+ * a verifiable credential.
+ * The W3CVerifiableCredential contains properties for the credential's context, type, ID, issuer, issuance date,
+ * expiration date, credential schema, credential subject, credential status, refresh service, evidence, terms of use,
+ * valid from date, valid until date, proof, and audience.
+ *
+ * Note: The W3CVerifiableCredential is designed to work with W3C-compliant verifiable credentials.
+ */
 @Serializable
 data class W3CVerifiableCredential @JvmOverloads constructor(
     override val id: String,

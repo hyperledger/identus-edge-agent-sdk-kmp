@@ -3,14 +3,25 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import io.iohk.atala.prism.apollo.uuid.UUID
 import kotlinx.serialization.Serializable
 import kotlin.jvm.JvmOverloads
+
+/**
+ * The `AttachmentData` interface represents a generic attachment for a DIDComm `Message`. Any type that conforms to
+ * `AttachmentData` can be used as an attachment.
+ */
 @Serializable
 sealed interface AttachmentData
 
+/**
+ * The `AttachmentHeader` data class represents the header for a DIDComm attachment.
+ */
 @Serializable
 data class AttachmentHeader(
     val children: String
 ) : AttachmentData
 
+/**
+ * The `AttachmentJws` data class represents a DIDComm attachment containing a JWS (JSON Web Signature).
+ */
 @Serializable
 data class AttachmentJws(
     val header: AttachmentHeader,
@@ -18,17 +29,26 @@ data class AttachmentJws(
     val signature: String
 ) : AttachmentData
 
+/**
+ * The `AttachmentJwsData` data class represents a DIDComm attachment containing JWS data.
+ */
 @Serializable
 data class AttachmentJwsData(
     val base64: String,
     val jws: AttachmentJws
 ) : AttachmentData
 
+/**
+ * The `AttachmentBase64` data class represents a DIDComm attachment containing base64-encoded data.
+ */
 @Serializable
 data class AttachmentBase64(
     val base64: String
 ) : AttachmentData
 
+/**
+ * The `AttachmentLinkData` data class represents a DIDComm attachment containing a link to external data.
+ */
 @Serializable
 data class AttachmentLinkData(
     val links: Array<String>,
@@ -53,11 +73,17 @@ data class AttachmentLinkData(
     }
 }
 
+/**
+ * The `AttachmentJsonData` data class represents a DIDComm attachment containing JSON data.
+ */
 @Serializable
 data class AttachmentJsonData(
     val data: String
 ) : AttachmentData
 
+/**
+ * The `AttachmentDescriptor` data class represents metadata for a DIDComm attachment.
+ */
 @Serializable
 data class AttachmentDescriptor @JvmOverloads constructor(
     val id: String = UUID.randomUUID4().toString(),

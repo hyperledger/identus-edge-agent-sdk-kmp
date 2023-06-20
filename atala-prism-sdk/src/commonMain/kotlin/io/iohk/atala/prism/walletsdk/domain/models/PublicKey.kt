@@ -2,6 +2,9 @@ package io.iohk.atala.prism.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a public key with a specific key curve and value.
+ */
 @Serializable
 data class PublicKey(
     val curve: KeyCurve,
@@ -26,6 +29,9 @@ data class PublicKey(
     }
 }
 
+/**
+ * Represents a compressed public key and its uncompressed version.
+ */
 @Serializable
 data class CompressedPublicKey(
     val uncompressed: PublicKey,

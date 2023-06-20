@@ -9,6 +9,11 @@ import kotlinx.serialization.json.Json
 import kotlin.jvm.JvmOverloads
 import kotlin.time.Duration.Companion.days
 
+/**
+ * The `Message` data class represents a DIDComm message, which is used for secure, decentralized communication in the
+ * Atala PRISM architecture. A `Message` object includes information about the sender, recipient, message body, and other metadata.
+ * `Message` objects are typically exchanged between DID controllers using the `Mercury` building block.
+ */
 @Serializable
 data class Message @JvmOverloads constructor(
     val id: String = UUID.randomUUID4().toString(),

@@ -4,12 +4,24 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+/**
+ * A data class representing a container for verifiable credential types.
+ * This data class is used to encode and decode verifiable credential types for use with JSON.
+ * The VerifiableCredentialTypeContainer contains properties for the ID and type of the verifiable credential.
+ * Note: The VerifiableCredentialTypeContainer is used to encode and decode verifiable credential types for use with JSON.
+ */
 @Serializable
 data class VerifiableCredentialTypeContainer(
     val id: String,
     val type: String
 )
 
+/**
+ * Enum class representing different types of verifiable credentials.
+ * The CredentialType is used to indicate the type of a verifiable credential.
+ * The possible values of the enum are jwt, w3c, and unknown.
+ * Note: The CredentialType enum is used to indicate the type of a verifiable credential.
+ */
 @Serializable
 enum class CredentialType(val type: String) {
     JWT("jwt"),
@@ -17,6 +29,9 @@ enum class CredentialType(val type: String) {
     Unknown("Unknown")
 }
 
+/**
+ * Interface for objects representing verifiable credentials.
+ */
 @Serializable
 sealed interface VerifiableCredential {
     val id: String

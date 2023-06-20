@@ -3,6 +3,10 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import io.iohk.atala.prism.walletsdk.domain.DID_URL_SEPARATOR
 import kotlin.jvm.JvmOverloads
 
+/**
+ * Represents a DIDUrl with "did", "path", "parameters", "fragment"
+ * As specified in [w3 standards](`https://www.w3.org/TR/did-core/#dfn-did-urls`)
+ */
 data class DIDUrl @JvmOverloads constructor(
     val did: DID,
     val path: Array<String>? = arrayOf(),
