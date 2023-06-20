@@ -7,6 +7,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.logger.LogComponent
+import io.iohk.atala.prism.walletsdk.logger.LogLevel
+import io.iohk.atala.prism.walletsdk.logger.Metadata
+import io.iohk.atala.prism.walletsdk.logger.PrismLogger
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import io.iohk.atala.prism.walletsdk.mercury.forward.ForwardMessage
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
@@ -14,7 +19,6 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.utils.isDID
-import kotlin.jvm.Throws
 
 interface DIDCommProtocol {
     fun packEncrypted(message: Message): String
@@ -31,8 +35,10 @@ interface DIDCommProtocol {
 class MercuryImpl(
     private val castor: Castor,
     private val protocol: DIDCommProtocol,
-    private val api: Api
+    private val api: Api,
+    private val logger: PrismLogger = PrismLoggerImpl(LogComponent.MERCURY)
 ) : Mercury {
+
     /**
      * Asynchronously packs a given message object into a string representation. This function may throw an error if the
      * message object is invalid.
@@ -94,13 +100,57 @@ class MercuryImpl(
                 mediatorDocument.services.find { it.type.contains(DIDCOMM_MESSAGING) }?.serviceEndpoint?.uri
             try {
                 val forwardMsg = prepareForwardMessage(message, packedMessage, mediatorDid)
+                logger.debug(
+                    message = "Sending forward message with internal message type ${message.piuri}",
+                    metadata = arrayOf(
+                        Metadata.MaskedMetadataByLevel(
+                            key = "Sender",
+                            value = forwardMsg.from.toString(),
+                            level = LogLevel.DEBUG
+                        ),
+                        Metadata.MaskedMetadataByLevel(
+                            key = "Receiver",
+                            value = forwardMsg.to.toString(),
+                            level = LogLevel.DEBUG
+                        )
+                    )
+                )
                 val packedForwardMsg = packMessage(forwardMsg.makeMessage())
+                logger.debug(
+                    message = "Sending message with type ${message.piuri}",
+                    metadata = arrayOf(
+                        Metadata.MaskedMetadataByLevel(
+                            key = "Sender",
+                            value = message.from.toString(),
+                            level = LogLevel.DEBUG
+                        ),
+                        Metadata.MaskedMetadataByLevel(
+                            key = "Receiver",
+                            value = message.to.toString(),
+                            level = LogLevel.DEBUG
+                        )
+                    )
+                )
                 return makeRequest(mediatorUri, packedForwardMsg)
             } catch (e: Throwable) {
                 throw MercuryError.NoValidServiceFoundError(did = mediatorDid.toString())
             }
         }
-
+        logger.debug(
+            message = "Sending message with type ${message.piuri}",
+            metadata = arrayOf(
+                Metadata.MaskedMetadataByLevel(
+                    key = "Sender",
+                    value = message.from.toString(),
+                    level = LogLevel.DEBUG
+                ),
+                Metadata.MaskedMetadataByLevel(
+                    key = "Receiver",
+                    value = message.to.toString(),
+                    level = LogLevel.DEBUG
+                )
+            )
+        )
         return makeRequest(service, packedMessage)
     }
 

@@ -12,6 +12,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.logger.LogComponent
+import io.iohk.atala.prism.walletsdk.logger.LogLevel
+import io.iohk.atala.prism.walletsdk.logger.Metadata
+import io.iohk.atala.prism.walletsdk.logger.PrismLogger
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import kotlin.jvm.Throws
 
 /**
@@ -19,7 +24,7 @@ import kotlin.jvm.Throws
  * or a more traditional system requiring secure and private identity management, Castor provides the tools and features
  * you need to easily create, manage, and resolve DIDs.
  */
-class CastorImpl(apollo: Apollo) : Castor {
+class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)) : Castor {
     val apollo: Apollo
     var resolvers: Array<DIDResolver>
 
@@ -92,6 +97,10 @@ class CastorImpl(apollo: Apollo) : Castor {
      */
     @Throws(CastorError.NotPossibleToResolveDID::class)
     override suspend fun resolveDID(did: String): DIDDocument {
+        logger.debug(
+            message = "Trying to resolve DID",
+            metadata = arrayOf(Metadata.MaskedMetadataByLevel(key = "DID", value = did, level = LogLevel.DEBUG))
+        )
         val resolver = CastorShared.getDIDResolver(did, resolvers)
         return resolver.resolve(did)
     }

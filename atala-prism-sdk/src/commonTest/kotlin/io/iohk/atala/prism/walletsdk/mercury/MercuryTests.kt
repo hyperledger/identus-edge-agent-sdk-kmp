@@ -4,6 +4,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.MercuryError
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
@@ -23,7 +24,7 @@ class MercuryTests {
         apiMock = ApiMock(HttpStatusCode.OK, "")
         castorMock = CastorMock()
         protocolMock = ProtocolMock()
-        sut = MercuryImpl(castorMock, protocolMock, apiMock)
+        sut = MercuryImpl(castorMock, protocolMock, apiMock, PrismLoggerMock())
     }
 
     @Test

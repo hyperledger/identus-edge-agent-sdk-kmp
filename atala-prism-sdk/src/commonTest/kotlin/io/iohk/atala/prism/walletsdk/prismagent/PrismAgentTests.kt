@@ -10,6 +10,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
@@ -63,6 +64,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = seed,
             api = null,
+            logger = PrismLoggerMock()
         )
         plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
         val newDID = agent.createNewPrismDID()
@@ -85,6 +87,7 @@ class PrismAgentTests {
             connectionManager,
             null,
             null,
+            logger = PrismLoggerMock()
         )
 
         val newDID = agent.createNewPeerDID(services = emptyArray(), updateMediator = false)
@@ -97,7 +100,7 @@ class PrismAgentTests {
     @Test
     fun testCreateNewPeerDID_whenUpdateMediatorFalse_thenShouldUseProvidedServices() = runTest {
         val apollo = ApolloImpl()
-        val castor = CastorImpl(apollo)
+        val castor = CastorImpl(apollo = apollo, logger = PrismLoggerMock())
         val agent = PrismAgent(
             apollo,
             castor,
@@ -107,6 +110,7 @@ class PrismAgentTests {
             connectionManager,
             null,
             null,
+            logger = PrismLoggerMock()
         )
 
         val seAccept = arrayOf("someAccepts")
@@ -140,6 +144,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock()
         )
         val invitationString = """
             {
@@ -165,6 +170,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = api,
+            logger = PrismLoggerMock()
         )
         val invitationString = """
             {
@@ -190,6 +196,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock()
         )
         val invitationString = """
             {
@@ -214,6 +221,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
+            logger = PrismLoggerMock()
         )
 
         plutoMock.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
@@ -237,6 +245,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
+            logger = PrismLoggerMock()
         )
 
         val privateKeys = listOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
@@ -260,6 +269,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
+            logger = PrismLoggerMock()
         )
 
         val invitationString = """
@@ -304,6 +314,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
+            logger = PrismLoggerMock()
         )
 
         val invitationString = """
@@ -331,6 +342,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
+            logger = PrismLoggerMock()
         )
         assertEquals(PrismAgent.State.STOPPED, agent.state)
         agent.start()
@@ -348,6 +360,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
+            logger = PrismLoggerMock()
         )
         agent.stop()
         assertEquals(PrismAgent.State.STOPPED, agent.state)
@@ -366,6 +379,7 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
+            logger = PrismLoggerMock()
         )
         val x = agent.parseInvitation(oob)
         assert(x is OutOfBandInvitation)
