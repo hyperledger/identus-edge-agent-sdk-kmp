@@ -9,7 +9,7 @@ import io.ktor.http.Url
 import io.ktor.http.contentType
 import io.ktor.http.path
 
-object PrismShared {
+internal object PrismShared {
     @JvmStatic
     fun mapFromKeyValueArray(array: Array<KeyValue>): Map<String, String> {
         val response = mutableMapOf<String, String>()

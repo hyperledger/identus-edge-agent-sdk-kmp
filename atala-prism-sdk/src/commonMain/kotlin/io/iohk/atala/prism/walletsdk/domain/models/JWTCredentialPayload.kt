@@ -35,6 +35,12 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 import kotlin.jvm.JvmOverloads
 
+/**
+ * A data class representing a JWT credential payload.
+ * This payload includes the issuer (`iss`), subject (`sub`), and the verifiable credential (`verifiableCredential`).
+ *
+ *Note: This data class conforms to the JSON Web Token (JWT) format. For more information, see https://jwt.io/introduction/.
+ */
 @Serializable
 data class JWTCredentialPayload(
     val iss: DID,
@@ -46,6 +52,9 @@ data class JWTCredentialPayload(
     val jti: String
 ) : VerifiableCredential {
 
+    /**
+     * A struct representing the verifiable credential in a JWT credential payload.
+     */
     @Serializable
     data class JWTVerifiableCredential @JvmOverloads constructor(
         override val credentialType: CredentialType,

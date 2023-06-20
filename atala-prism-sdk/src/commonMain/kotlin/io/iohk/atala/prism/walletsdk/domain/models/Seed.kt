@@ -2,6 +2,9 @@ package io.iohk.atala.prism.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a seed used for key generation.
+ */
 @Serializable
 data class Seed(
     val value: ByteArray

@@ -3,6 +3,9 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.ktor.client.HttpClient as KtorClient
 
+/**
+ * Interface that defines an API request
+ */
 interface Api {
     var client: KtorClient
     suspend fun request(

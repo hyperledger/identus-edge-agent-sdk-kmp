@@ -8,6 +8,9 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 
+/**
+ * Implementation of API interface for http requests.
+ */
 open class ApiImpl(override var client: HttpClient) : Api {
     override suspend fun request(
         httpMethod: String,
