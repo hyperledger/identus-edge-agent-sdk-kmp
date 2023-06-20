@@ -1,11 +1,21 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
+/**
+ * An interface that represents a base error in the Prism SDK.
+ */
 abstract interface Error {
     val code: Int?
     val underlyingErrors: Array<Error>?
     val errorDescription: String?
 }
 
+/**
+ * A class representing an unknown error in a Prism API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code, an error message, and possibly an array of underlying errors. If the error
+ * received does not conform to the [Error] interface, it will be classified as an [UnknownPrismError].
+ */
 abstract class UnknownPrismError : Error, Throwable() {
 
     override val code: Int?
@@ -19,6 +29,13 @@ abstract class UnknownPrismError : Error, Throwable() {
         get() = null
 }
 
+/**
+ * A class representing a known error in a Prism API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
+ * it will be classified as a known error.
+ */
 abstract class KnownPrismError : Error, Throwable() {
     override val code: Int?
         get() = null
@@ -30,6 +47,13 @@ abstract class KnownPrismError : Error, Throwable() {
         get() = null
 }
 
+/**
+ * A class representing an unknown error in a Prism API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code, an error message, and possibly an array of underlying errors.
+ * If the error received does not conform to the [KnownPrismError], it will be classified as an [UnknownPrismError].
+ */
 abstract class UnknownError : UnknownPrismError() {
 
     class SomethingWentWrongError(
@@ -45,6 +69,13 @@ abstract class UnknownError : UnknownPrismError() {
     }
 }
 
+/**
+ * A class representing a known error in a Prism API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
+ * it will be classified as a known error.
+ */
 sealed class CommonError : KnownPrismError() {
     class InvalidURLError(val url: String) : CommonError() {
         override val code: Int
@@ -63,6 +94,13 @@ sealed class CommonError : KnownPrismError() {
     }
 }
 
+/**
+ * A class representing a known error in an Apollo API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
+ * it will be classified as a known error.
+ */
 sealed class ApolloError : KnownPrismError() {
     class InvalidMnemonicWord(private val invalidWords: Array<String>? = null) : ApolloError() {
         override val code: Int
@@ -102,6 +140,13 @@ sealed class ApolloError : KnownPrismError() {
     }
 }
 
+/**
+ * A class representing a known error in a Castor API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
+ * it will be classified as a known error.
+ */
 sealed class CastorError : KnownPrismError() {
     class KeyCurveNotSupported(val curve: String) : CastorError() {
         override val code: Int
@@ -182,6 +227,13 @@ sealed class CastorError : KnownPrismError() {
     }
 }
 
+/**
+ * A class representing a known error in a Mercury API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
+ * it will be classified as a known error.
+ */
 sealed class MercuryError : KnownPrismError() {
 
     class NoDIDReceiverSetError : MercuryError() {
@@ -248,6 +300,13 @@ sealed class MercuryError : KnownPrismError() {
     }
 }
 
+/**
+ * A class representing a known error in a Pluto API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
+ * it will be classified as a known error.
+ */
 sealed class PlutoError : KnownPrismError() {
     class MissingDataPersistence(val type: String, private val affecting: String) :
         PlutoError() {
@@ -317,6 +376,13 @@ sealed class PlutoError : KnownPrismError() {
     }
 }
 
+/**
+ * A class representing a known error in a Pollux API response.
+ *
+ * Note: When an error occurs during an API request/response cycle, the server may return an error object in the response.
+ * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
+ * it will be classified as a known error.
+ */
 sealed class PolluxError : KnownPrismError() {
     class InvalidPrismDID : PolluxError() {
         override val code: Int

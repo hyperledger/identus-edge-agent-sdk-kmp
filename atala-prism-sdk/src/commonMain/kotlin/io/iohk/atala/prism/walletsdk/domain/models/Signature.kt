@@ -2,6 +2,9 @@ package io.iohk.atala.prism.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
 
+/**
+ * Represents a digital signature.
+ */
 @Serializable
 data class Signature(
     val value: ByteArray

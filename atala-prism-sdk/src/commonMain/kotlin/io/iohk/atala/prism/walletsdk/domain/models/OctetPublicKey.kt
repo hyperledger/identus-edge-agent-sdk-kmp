@@ -5,9 +5,9 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class OctetPublicKey
+internal data class OctetPublicKey
 @JvmOverloads
-constructor(@EncodeDefault val kty: String = OKP, val crv: String, val x: String)
+internal constructor(@EncodeDefault val kty: String = OKP, val crv: String, val x: String)
 
 @Serializable
-data class OctetPrivateKey(val kty: String, val crv: String, val x: String, val d: String)
+internal data class OctetPrivateKey(val kty: String, val crv: String, val x: String, val d: String)

@@ -6,10 +6,10 @@ import io.ktor.http.Url
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
-class DIDCommInvitationRunner(private val url: Url) {
+internal class DIDCommInvitationRunner(private val url: Url) {
 
     @Throws(PrismAgentError.UnknownInvitationTypeError::class)
-    suspend fun run(): OutOfBandInvitation {
+    internal suspend fun run(): OutOfBandInvitation {
         val messageString = OutOfBandParser().parseMessage(url)
         val message: OutOfBandInvitation = Json.decodeFromString(messageString)
         if (message.type != ProtocolType.Didcomminvitation) {
