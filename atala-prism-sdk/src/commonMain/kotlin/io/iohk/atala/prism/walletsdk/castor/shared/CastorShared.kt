@@ -39,6 +39,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
+import io.iohk.atala.prism.walletsdk.logger.LogComponent
+import io.iohk.atala.prism.walletsdk.logger.LogLevel
+import io.iohk.atala.prism.walletsdk.logger.Metadata
+import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -49,6 +53,8 @@ import io.iohk.atala.prism.didcomm.didpeer.resolvePeerDID as mercuryPeerDIDResol
 
 internal class CastorShared {
     companion object {
+
+        private val logger = PrismLoggerImpl(LogComponent.CASTOR)
 
         /**
          * parseDID parses a string representation of a Decentralized Identifier (DID) into a DID object.
@@ -287,7 +293,16 @@ internal class CastorShared {
                     encodedData = prismDID.encodedState.base64UrlDecodedBytes,
                 )
             } catch (e: Throwable) {
-                // TODO: Add logger here
+                logger.error(
+                    message = "The DID state hash does not match the state",
+                    metadata = arrayOf(
+                        Metadata.MaskedMetadataByLevel(
+                            key = "DID",
+                            value = didString,
+                            level = LogLevel.DEBUG
+                        )
+                    )
+                )
                 throw CastorError.InitialStateOfDIDChanged()
             }
 
@@ -350,6 +365,16 @@ internal class CastorShared {
                 try {
                     PrismDIDPublicKey(apollo, it)
                 } catch (e: Exception) {
+                    logger.error(
+                        message = "Failed to decode public key from document",
+                        metadata = arrayOf(
+                            Metadata.MaskedMetadataByLevel(
+                                key = "DID",
+                                value = did.toString(),
+                                level = LogLevel.DEBUG
+                            )
+                        )
+                    )
                     throw e
                 }
             } ?: listOf()
