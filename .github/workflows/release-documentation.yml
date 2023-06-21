@@ -12,6 +12,7 @@ env:
   ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "*"
