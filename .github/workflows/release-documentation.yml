@@ -52,6 +52,6 @@ jobs:
         env:
           REPO: self
           BRANCH: gh-pages # The branch name where you want to push the assets
-          FOLDER: "atala-prism-sdk/build/dokka/" # The directory where your assets are generated
+          FOLDER: "atala-prism-sdk/build/dokka/html/" # The directory where your assets are generated
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub will automatically add this - you don't need to bother getting a token
           MESSAGE: "feat(docs): ({sha}) {msg}" # The commit message
