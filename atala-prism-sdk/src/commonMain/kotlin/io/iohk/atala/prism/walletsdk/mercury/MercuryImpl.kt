@@ -193,6 +193,18 @@ class MercuryImpl(
             arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
             message
         )
+
+        if (result.status >= 400) {
+            logger.error(
+                "Calling api result in ${result.status} error",
+                arrayOf(
+                    Metadata.PublicMetadata("statusCode", "${result.status}"),
+                    Metadata.PublicMetadata("uri", service.serviceEndpoint.uri),
+                    Metadata.PrivateMetadata("body", message)
+                )
+            )
+        }
+
         return result.jsonString.toByteArray()
     }
 
@@ -202,12 +214,27 @@ class MercuryImpl(
             throw MercuryError.NoValidServiceFoundError()
         }
 
-        val result = api.request(HttpMethod.Post.value, uri, emptyArray(), emptyArray(), message)
+        val result = api.request(
+            HttpMethod.Post.value,
+            uri,
+            emptyArray(),
+            emptyArray(),
+            message
+        )
+        if (result.status >= 400) {
+            logger.error(
+                "Calling api result in ${result.status} error",
+                arrayOf(
+                    Metadata.PublicMetadata("statusCode", "${result.status}"),
+                    Metadata.PublicMetadata("uri", uri),
+                    Metadata.PrivateMetadata("body", message)
+                )
+            )
+        }
         return result.jsonString.toByteArray()
     }
 
     private fun getMediatorDID(service: DIDDocument.Service?): DID? {
-        // TODO: Handle when service endpoint uri is HTTP or HTTPS
         return service?.serviceEndpoint?.uri?.let { uri ->
             if (isDID(uri)) {
                 castor.parseDID(uri)
