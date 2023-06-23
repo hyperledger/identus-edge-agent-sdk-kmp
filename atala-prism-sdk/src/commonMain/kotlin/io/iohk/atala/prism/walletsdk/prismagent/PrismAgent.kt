@@ -108,8 +108,9 @@ class PrismAgent {
     private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     private var connectionManager: ConnectionManager
-    private lateinit var logger: PrismLogger
+    private var logger: PrismLogger
 
+    @JvmOverloads
     constructor(
         apollo: Apollo,
         castor: Castor,
@@ -181,6 +182,7 @@ class PrismAgent {
                 }
             }
         )
+        this.logger = logger
         // Pairing will be removed in the future
         this.connectionManager =
             ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
@@ -323,7 +325,7 @@ class PrismAgent {
 
         var tmpServices = services
         if (updateMediator) {
-            tmpServices.plus(
+            tmpServices = tmpServices.plus(
                 DIDDocument.Service(
                     id = DIDCOMM1,
                     type = arrayOf(
