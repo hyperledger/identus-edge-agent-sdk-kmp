@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.logger
 
+import io.iohk.atala.prism.apollo.hashing.SHA256
 import io.iohk.atala.prism.apollo.uuid.UUID
 import org.lighthousegames.logging.logging
-import java.security.MessageDigest
 
 private const val METADATA_PRIVACY_STR = "------"
 private val hashingLog = UUID.randomUUID4().toString()
@@ -122,7 +122,7 @@ sealed class Metadata {
     }
 
     private fun sha256Masked(input: String): String {
-        val sha256 = MessageDigest.getInstance("SHA-256").digest((hashingLog + input).toByteArray())
+        val sha256 = SHA256().digest((hashingLog + input).toByteArray())
         return sha256.joinToString("") { "%02x".format(it) }
     }
 }

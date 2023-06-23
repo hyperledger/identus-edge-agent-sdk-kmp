@@ -1,13 +1,24 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
  * https://github.com/hyperledger/aries-rfcs/tree/main/features/0453-issue-credential-v2#preview-credential
  */
 @Serializable
-data class CredentialPreview(val attributes: Array<Attribute>) {
+data class CredentialPreview
+@OptIn(ExperimentalSerializationApi::class)
+@JvmOverloads
+constructor(
+    @SerialName("schema_id")
+    @EncodeDefault
+    val schemaId: String? = null,
+    val attributes: Array<Attribute>
+) {
 
     @Serializable
     data class Attribute(
