@@ -1,3 +1,10 @@
+## [2.0.1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.0.0...v2.0.1) (2023-06-25)
+
+
+### Bug Fixes
+
+* **ATL-4978:** fix OOB connection ([#79](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/79)) ([cd18709](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/cd187096e57b1a45d8eae01fea789a255a31e4ed))
+
 # [2.0.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v1.0.0...v2.0.0) (2023-06-21)
 
 
