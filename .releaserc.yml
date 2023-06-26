@@ -6,12 +6,18 @@ branches:
 plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"
+  - [ '@semantic-release/exec', {
+    prepareCmd: 'sed -i.bak "s/atala-prism-sdk:${lastRelease.version}/atala-prism-sdk:${nextRelease.version}/g" ./tests/end-to-end/build.gradle.kts && rm -f ./tests/end-to-end/build.gradle.kts.bak' } ]
   - ["@semantic-release/changelog", {changelogFile: "CHANGELOG.md"}]
   - "gradle-semantic-release-plugin"
   - [
     "@semantic-release/git",
     {
-      assets: ["CHANGELOG.md", "gradle.properties"],
+      assets: [
+        "CHANGELOG.md",
+        "gradle.properties",
+        "tests/end-to-end/build.gradle.kts"
+      ],
       message: "chore(release): cut wallet sdk version ${nextRelease.version}
 
         ${nextRelease.notes}",
