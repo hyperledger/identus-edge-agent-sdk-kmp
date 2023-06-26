@@ -1,0 +1,6 @@
+CREATE TABLE AvailableClaims (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    credentialId TEXT NOT NULL,
+    claim TEXT NOT NULL,
+    FOREIGN KEY (credentialId) REFERENCES Credential(id)
+);
