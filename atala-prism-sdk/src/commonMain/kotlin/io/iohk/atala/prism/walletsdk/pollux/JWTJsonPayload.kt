@@ -5,9 +5,9 @@ import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class JWTJsonPayload(
-    val iss: String,
-    val sub: String,
-    val nbf: Long,
-    val exp: Long,
+    val iss: String? = null,
+    val sub: String? = null,
+    val nbf: Long? = null,
+    val exp: Long? = null,
     val vc: JsonElement
 )
