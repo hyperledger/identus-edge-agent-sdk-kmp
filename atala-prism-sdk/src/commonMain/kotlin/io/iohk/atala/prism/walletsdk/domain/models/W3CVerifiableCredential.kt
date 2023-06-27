@@ -19,7 +19,7 @@ data class W3CVerifiableCredential @JvmOverloads constructor(
     override val credentialType: CredentialType = CredentialType.W3C,
     override val context: Array<String>,
     override val type: Array<String>,
-    override val issuer: DID,
+    override val issuer: DID?,
     override val issuanceDate: String,
     override val expirationDate: String? = null,
     override val credentialSchema: VerifiableCredentialTypeContainer? = null,
