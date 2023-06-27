@@ -44,7 +44,7 @@ sealed interface VerifiableCredential {
     val refreshService: VerifiableCredentialTypeContainer?
     val evidence: VerifiableCredentialTypeContainer?
     val termsOfUse: VerifiableCredentialTypeContainer?
-    val issuer: DID
+    val issuer: DID?
     val issuanceDate: String // TODO(Date)
     val expirationDate: String? // TODO(Date)
     val validFrom: VerifiableCredentialTypeContainer?

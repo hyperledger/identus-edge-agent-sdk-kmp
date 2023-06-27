@@ -43,13 +43,13 @@ import kotlin.jvm.JvmOverloads
  */
 @Serializable
 data class JWTCredentialPayload(
-    val iss: DID,
+    val iss: DID?,
     val sub: String?,
     @SerialName(VC)
     val verifiableCredential: JWTVerifiableCredential,
-    val nbf: String,
+    val nbf: String?,
     val exp: String?,
-    val jti: String
+    val jti: String?
 ) : VerifiableCredential {
 
     /**
@@ -60,7 +60,7 @@ data class JWTCredentialPayload(
         override val credentialType: CredentialType,
         override val context: Array<String> = arrayOf(),
         override val type: Array<String> = arrayOf(),
-        override val issuer: DID,
+        override val issuer: DID?,
         override val credentialSchema: VerifiableCredentialTypeContainer? = null,
         override val credentialSubject: String,
         override val credentialStatus: VerifiableCredentialTypeContainer? = null,
@@ -125,7 +125,7 @@ data class JWTCredentialPayload(
     }
 
     override val id: String
-        get() = jti
+        get() = jti ?: ""
     override val credentialType: CredentialType
         get() = CredentialType.JWT
     override val context: Array<String>
@@ -144,7 +144,7 @@ data class JWTCredentialPayload(
         get() = verifiableCredential.evidence
     override val termsOfUse: VerifiableCredentialTypeContainer?
         get() = verifiableCredential.termsOfUse
-    override val issuer: DID
+    override val issuer: DID?
         get() = verifiableCredential.issuer
     override val issuanceDate: String
         get() = verifiableCredential.issuanceDate
