@@ -48,14 +48,14 @@ class PolluxImpl(val castor: Castor) : Pollux {
         val verifiableCredentialJson = Json.decodeFromString<JWTJsonPayload>(decodedBase64CredentialJson)
 
         return JWTCredentialPayload(
-            iss = DID(verifiableCredentialJson.iss),
-            exp = verifiableCredentialJson.exp.toString(),
-            nbf = verifiableCredentialJson.nbf.toString(),
+            iss = if (verifiableCredentialJson.iss != null) DID(verifiableCredentialJson.iss) else null,
+            exp = if (verifiableCredentialJson.exp != null) verifiableCredentialJson.exp.toString() else null,
+            nbf = if (verifiableCredentialJson.nbf != null) verifiableCredentialJson.nbf.toString() else null,
             jti = jwtString,
             verifiableCredential = JWTCredentialPayload.JWTVerifiableCredential(
                 credentialType = CredentialType.JWT,
-                issuer = DID(verifiableCredentialJson.iss),
-                credentialSubject = verifiableCredentialJson.sub,
+                issuer = if (verifiableCredentialJson.iss != null) DID(verifiableCredentialJson.iss) else null,
+                credentialSubject = verifiableCredentialJson.sub ?: "",
                 id = jwtString,
                 issuanceDate = verifiableCredentialJson.nbf.toString(),
                 expirationDate = verifiableCredentialJson.exp.toString(),
