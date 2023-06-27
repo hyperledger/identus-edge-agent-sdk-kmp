@@ -1,3 +1,11 @@
+## [2.0.2](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.0.1...v2.0.2) (2023-06-27)
+
+
+### Bug Fixes
+
+* **enhancements:** add @JvmOverloads for JWTJsonPayload ([#81](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/81)) ([2a7fe15](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/2a7fe15db68c080be18421082bb0a24fbe5045a1))
+* JWTJsonPayload fields are optional except ([#80](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/80)) ([e095c49](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/e095c4914a8754b8324e57069901ccf10ee9d8a3))
+
 ## [2.0.1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.0.0...v2.0.1) (2023-06-25)
 
 
