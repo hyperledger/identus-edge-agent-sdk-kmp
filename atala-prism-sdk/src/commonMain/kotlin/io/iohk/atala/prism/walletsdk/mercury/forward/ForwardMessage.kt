@@ -10,7 +10,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
 
-internal class ForwardMessage @JvmOverloads constructor(
+class ForwardMessage @JvmOverloads constructor(
     val body: ForwardBody,
     val from: DID,
     val to: DID,
@@ -35,7 +35,7 @@ internal class ForwardMessage @JvmOverloads constructor(
     }
 
     @Serializable
-    internal data class ForwardBody(val next: String)
+    data class ForwardBody(val next: String)
 
     companion object {
         const val type = "https://didcomm.org/routing/2.0/forward"
