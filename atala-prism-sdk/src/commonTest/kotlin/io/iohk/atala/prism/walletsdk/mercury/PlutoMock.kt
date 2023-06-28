@@ -8,6 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -139,6 +140,10 @@ class PlutoMock : Pluto {
     }
 
     override fun getAllCredentials(): Flow<List<VerifiableCredential>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getNewAllCredentials(): Flow<List<StorableCredential>> {
         TODO("Not yet implemented")
     }
 }

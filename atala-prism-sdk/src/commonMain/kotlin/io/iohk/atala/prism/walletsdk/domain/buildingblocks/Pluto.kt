@@ -7,7 +7,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 
 interface Pluto {
@@ -79,4 +81,16 @@ interface Pluto {
     fun getAllMediators(): Flow<List<Mediator>>
 
     fun getAllCredentials(): Flow<List<VerifiableCredential>>
+
+    fun insertNewCredential(storableCredential: StorableCredential)
+
+    fun getNewAllCredentials(): Flow<List<StorableCredential>>
+
+    fun insertAvailableClaim(credentialId: String, claim: String)
+
+    fun insertAvailableClaims(credentialId: String, claims: Array<String>)
+
+    fun getAvailableClaimsByCredentialId(credentialId: String): Flow<Array<AvailableClaims>>
+
+    fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>>
 }

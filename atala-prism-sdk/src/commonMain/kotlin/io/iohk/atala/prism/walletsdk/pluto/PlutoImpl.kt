@@ -18,11 +18,13 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.W3CVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
+import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -35,6 +37,7 @@ import ioiohkatalaprismwalletsdkpluto.data.DIDPair as DIDPairDB
 import ioiohkatalaprismwalletsdkpluto.data.Mediator as MediatorDB
 import ioiohkatalaprismwalletsdkpluto.data.Message as MessageDB
 import ioiohkatalaprismwalletsdkpluto.data.PrivateKey as PrivateKeyDB
+import ioiohkatalaprismwalletsdkpluto.data.StorableCredential as StorableCredentialDB
 import ioiohkatalaprismwalletsdkpluto.data.VerifiableCredential as VerifiableCredentialDB
 
 class PlutoImpl(private val connection: DbConnection) : Pluto {
@@ -664,6 +667,83 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             )
                     }
                 }
+            }
+    }
+
+    override fun insertNewCredential(storableCredential: StorableCredential) {
+        getInstance().storableCredentialQueries.insert(
+            StorableCredentialDB(
+                id = storableCredential.id,
+                recoveryId = storableCredential.recoveryId,
+                credentialSchema = storableCredential.credentialSchema ?: "",
+                credentialData = storableCredential.credentialData,
+                issuer = storableCredential.issuer,
+                subject = storableCredential.subject,
+                credentialCreated = storableCredential.credentialCreated,
+                credentialUpdated = storableCredential.credentialUpdated,
+                validUntil = storableCredential.validUntil,
+                revoked = if (storableCredential.revoked == true) 1 else 0
+            )
+        )
+        getInstance().availableClaimsQueries.transaction {
+            storableCredential.availableClaims.forEach { claim ->
+                getInstance().availableClaimsQueries.insert(storableCredential.id, claim)
+            }
+        }
+    }
+
+    override fun getNewAllCredentials(): Flow<List<StorableCredential>> {
+        return getInstance().storableCredentialQueries.fetchAllCredentials()
+            .asFlow()
+            .map { credentials ->
+                credentials.executeAsList().map {
+                    StorableCredential(
+                        id = it.id,
+                        recoveryId = it.recoveryId,
+                        credentialData = it.credentialData,
+                        issuer = it.issuer,
+                        subject = it.subject,
+                        credentialCreated = it.credentialCreated,
+                        credentialUpdated = it.credentialUpdated,
+                        credentialSchema = it.credentialSchema,
+                        validUntil = it.validUntil,
+                        revoked = it.revoked == 1,
+                        availableClaims = if (it.claims != null && (it.claims.contains(",") || it.claims.isNotEmpty())) {
+                            it.claims.split(",")
+                                .toTypedArray()
+                        } else {
+                            emptyArray()
+                        }
+                    )
+                }
+            }
+    }
+
+    override fun insertAvailableClaim(credentialId: String, claim: String) {
+        getInstance().availableClaimsQueries.insert(credentialId, claim)
+    }
+
+    override fun insertAvailableClaims(credentialId: String, claims: Array<String>) {
+        getInstance().availableClaimsQueries.transaction {
+            claims.forEach {
+                getInstance().availableClaimsQueries.insert(credentialId, it)
+            }
+        }
+    }
+
+    override fun getAvailableClaimsByCredentialId(credentialId: String): Flow<Array<AvailableClaims>> {
+        return getInstance().availableClaimsQueries.fetchAvailableClaimsByCredentialId(credentialId)
+            .asFlow()
+            .map { claims ->
+                claims.executeAsList().toTypedArray()
+            }
+    }
+
+    override fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>> {
+        return getInstance().availableClaimsQueries.fetchAvailableClaimsByClaim(claim)
+            .asFlow()
+            .map { claims ->
+                claims.executeAsList().toTypedArray()
             }
     }
 }
