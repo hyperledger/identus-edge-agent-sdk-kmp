@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
-data class JWTJsonPayload(
+data class JWTJsonPayload @JvmOverloads constructor(
     val iss: String? = null,
     val sub: String? = null,
     val nbf: Long? = null,
