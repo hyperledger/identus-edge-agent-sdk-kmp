@@ -49,4 +49,3 @@ To get started with the Atala PRISM kotlin multiplaform SDK, you can set up the 
 To integrate the SDK into an exiting project, you have to import the SDK into your project:
 
 `implementation("io.iohk.atala.prism:walletsdk:$sdk_version")`
-
