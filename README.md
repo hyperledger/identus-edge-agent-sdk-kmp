@@ -19,9 +19,9 @@ This SDK provides a library and documentation for developers to build Android an
 Atala PRISM is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers core infrastructure for issuing DIDs (Decentralized identifiers) and verifiable credentials, alongside tools and frameworks to help expand your ecosystem.
 The complete platform is separated in multiple repositories:
 
-* [atala-prism-wallet-sdk-swift](git@github.com:input-output-hk/atala-prism-wallet-sdk-swift.git) - Repo that implements Atala PRISM for Apple platforms in Swift.
-* [atala-prism-wallet-sdk-ts](git@github.com:input-output-hk/atala-prism-wallet-sdk-ts.git) - Repo that implements Atala PRISM for Browser and NodeJS platforms in Typescript.
-* [atala-prism-building-blocks](git@github.com:input-output-hk/atala-prism-building-blocks.git) - Repo that contains the platform Building Blocks.
+* [atala-prism-wallet-sdk-swift](https://github.com/input-output-hk/atala-prism-wallet-sdk-swift) - Repo that implements Atala PRISM for Apple platforms in Swift.
+* [atala-prism-wallet-sdk-ts](https://github.com/input-output-hk/atala-prism-wallet-sdk-ts) - Repo that implements Atala PRISM for Browser and NodeJS platforms in Typescript.
+* [atala-prism-building-blocks](https://github.com/input-output-hk/atala-prism-building-blocks) - Repo that contains the platform Building Blocks.
 
 ### Modules / APIs
 
