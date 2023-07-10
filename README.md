@@ -14,6 +14,7 @@ This SDK provides a library and documentation for developers to build Android an
 
 ## Basic considerations
 
+<! -- markdown-link-check-disable -->
 ### Atala PRISM
 
 Atala PRISM is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers core infrastructure for issuing DIDs (Decentralized identifiers) and verifiable credentials, alongside tools and frameworks to help expand your ecosystem.
