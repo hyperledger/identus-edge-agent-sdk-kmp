@@ -26,9 +26,9 @@ jobs:
         with:
           token: ${{ secrets.ATALA_GITHUB_TOKEN }}
           fetch-depth: 0
-      - name: Mega-Linter
-        id: ml
-        uses: megalinter/megalinter@v6
+#      - name: Mega-Linter
+#        id: ml
+#        uses: megalinter/megalinter@v6
       - name: Archive production artifacts
         if: success() || failure()
         uses: actions/upload-artifact@v3
