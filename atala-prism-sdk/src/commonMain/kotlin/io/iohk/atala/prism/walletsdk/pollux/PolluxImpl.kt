@@ -6,19 +6,16 @@ import com.nimbusds.jose.crypto.ECDSASigner
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
-import io.iohk.atala.prism.walletsdk.domain.models.JWTCredentialPayload
-import io.iohk.atala.prism.walletsdk.domain.models.JsonString
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import io.iohk.atala.prism.walletsdk.domain.models.W3CCredential
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -36,35 +33,32 @@ import java.security.spec.ECPrivateKeySpec
 class PolluxImpl(val castor: Castor) : Pollux {
 
     @Throws(PolluxError.InvalidJWTString::class, PolluxError.InvalidCredentialError::class)
-    override fun parseVerifiableCredential(jwtString: String): VerifiableCredential {
-        val jwtParts = jwtString.split(JWT_DELIMITER)
-        if (jwtParts.size != JWT_PARTS_SIZE) {
-            throw PolluxError.InvalidJWTString()
+    override fun parseVerifiableCredential(data: String): Credential {
+        return try {
+            JWTCredential(data)
+        } catch (e: Exception) {
+            try {
+                Json.decodeFromString<W3CCredential>(data)
+            } catch (e: Exception) {
+                throw PolluxError.InvalidCredentialError()
+            }
         }
-        val decodedBase64CredentialJson: JsonString = try {
-            jwtParts[JWT_SECOND_PART].base64UrlDecoded
-        } catch (e: Throwable) {
-            throw PolluxError.InvalidCredentialError()
+    }
+
+    override fun restoreCredential(recoveryId: String, credentialData: ByteArray): Credential {
+        return when (recoveryId) {
+            "jwt+credential" -> {
+                Json.decodeFromString<JWTCredential>(credentialData.decodeToString())
+            }
+
+            "w3c+credential" -> {
+                Json.decodeFromString<W3CCredential>(credentialData.decodeToString())
+            }
+
+            else -> {
+                throw PolluxError.InvalidCredentialError()
+            }
         }
-
-        val verifiableCredentialJson = Json.decodeFromString<JWTJsonPayload>(decodedBase64CredentialJson)
-
-        return JWTCredentialPayload(
-            iss = if (verifiableCredentialJson.iss != null) DID(verifiableCredentialJson.iss) else null,
-            exp = if (verifiableCredentialJson.exp != null) verifiableCredentialJson.exp.toString() else null,
-            nbf = if (verifiableCredentialJson.nbf != null) verifiableCredentialJson.nbf.toString() else null,
-            jti = jwtString,
-            verifiableCredential = JWTCredentialPayload.JWTVerifiableCredential(
-                credentialType = CredentialType.JWT,
-                issuer = if (verifiableCredentialJson.iss != null) DID(verifiableCredentialJson.iss) else null,
-                credentialSubject = verifiableCredentialJson.sub ?: "",
-                id = jwtString,
-                issuanceDate = verifiableCredentialJson.nbf.toString(),
-                expirationDate = verifiableCredentialJson.exp.toString(),
-                proof = null
-            ),
-            sub = verifiableCredentialJson.sub
-        )
     }
 
     @Throws(PolluxError.NoDomainOrChallengeFound::class)
@@ -177,11 +171,45 @@ class PolluxImpl(val castor: Castor) : Pollux {
         return jwsObject.serialize()
     }
 
-    override fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray): Credential {
-        TODO("Not yet implemented")
-    }
+    override fun credentialToStorableCredential(credential: Credential): StorableCredential {
+        return when (credential::class) {
+            JWTCredential::class -> {
+                val jwt: JWTCredential = credential as JWTCredential
+                StorableCredential(
+                    id = jwt.id,
+                    recoveryId = "jwt+credential",
+                    credentialData = jwt.data.toByteArray(),
+                    issuer = jwt.issuer,
+                    subject = jwt.subject,
+                    credentialCreated = jwt.jwtPayload.verifiableCredential.issuanceDate,
+                    credentialUpdated = null,
+                    credentialSchema = jwt.jwtPayload.verifiableCredential.credentialSchema?.type,
+                    validUntil = jwt.jwtPayload.verifiableCredential.expirationDate,
+                    revoked = null,
+                    availableClaims = jwt.claims.map { "${it.key}:${it.value}" }.toTypedArray()
+                )
+            }
 
-    override fun restoreFromStorableCredential(storeableCredential: StorableCredential): Credential {
-        TODO("Not yet implemented")
+            W3CCredential::class -> {
+                val w3c: W3CCredential = credential as W3CCredential
+                StorableCredential(
+                    id = w3c.id,
+                    recoveryId = "w3c+credential",
+                    credentialData = byteArrayOf(),
+                    issuer = w3c.issuer,
+                    subject = w3c.subject,
+                    credentialCreated = w3c.issuanceDate,
+                    credentialUpdated = null,
+                    credentialSchema = w3c.credentialSchema?.type,
+                    validUntil = w3c.expirationDate,
+                    revoked = null,
+                    availableClaims = w3c.claims.map { "${it.key}:${it.value}" }.toTypedArray()
+                )
+            }
+
+            else -> {
+                throw PolluxError.InvalidCredentialError()
+            }
+        }
     }
 }

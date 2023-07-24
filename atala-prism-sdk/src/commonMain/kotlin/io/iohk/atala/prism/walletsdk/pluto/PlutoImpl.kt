@@ -8,10 +8,8 @@ import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.JWTCredentialPayload
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
@@ -19,8 +17,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.W3CVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
@@ -31,14 +27,12 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlin.jvm.Throws
 import ioiohkatalaprismwalletsdkpluto.data.DID as DIDDB
 import ioiohkatalaprismwalletsdkpluto.data.DIDPair as DIDPairDB
 import ioiohkatalaprismwalletsdkpluto.data.Mediator as MediatorDB
 import ioiohkatalaprismwalletsdkpluto.data.Message as MessageDB
 import ioiohkatalaprismwalletsdkpluto.data.PrivateKey as PrivateKeyDB
 import ioiohkatalaprismwalletsdkpluto.data.StorableCredential as StorableCredentialDB
-import ioiohkatalaprismwalletsdkpluto.data.VerifiableCredential as VerifiableCredentialDB
 
 class PlutoImpl(private val connection: DbConnection) : Pluto {
     private var db: PrismPlutoDb? = null
@@ -197,17 +191,26 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
-    override fun storeCredential(credential: VerifiableCredential) {
-        getInstance().verifiableCredentialQueries.insert(
-            VerifiableCredentialDB(
-                credential.id,
-                credential.credentialType.type,
-                credential.expirationDate,
-                credential.issuanceDate,
-                credential.toJsonString(),
-                credential.issuer.toString()
+    override fun storeCredential(storableCredential: StorableCredential) {
+        getInstance().storableCredentialQueries.insert(
+            StorableCredentialDB(
+                id = storableCredential.id,
+                recoveryId = storableCredential.recoveryId,
+                credentialSchema = storableCredential.credentialSchema ?: "",
+                credentialData = storableCredential.credentialData,
+                issuer = storableCredential.issuer,
+                subject = storableCredential.subject,
+                credentialCreated = storableCredential.credentialCreated,
+                credentialUpdated = storableCredential.credentialUpdated,
+                validUntil = storableCredential.validUntil,
+                revoked = if (storableCredential.revoked == true) 1 else 0
             )
         )
+        getInstance().availableClaimsQueries.transaction {
+            storableCredential.availableClaims.forEach { claim ->
+                getInstance().availableClaimsQueries.insert(storableCredential.id, claim)
+            }
+        }
     }
 
     override fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>> {
@@ -594,126 +597,14 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getAllCredentials(): Flow<List<VerifiableCredential>> {
-        return getInstance().verifiableCredentialQueries.fetchAllCredentials()
-            .asFlow()
-            .map {
-                it.executeAsList().map { verifiableCredential ->
-                    val verifiableCredential =
-                        Json.decodeFromString<VerifiableCredential>(verifiableCredential.verifiableCredentialJson)
-                    when (verifiableCredential.credentialType) {
-                        CredentialType.JWT -> {
-                            JWTCredentialPayload.JWTVerifiableCredential(
-                                id = verifiableCredential.id,
-                                credentialType = CredentialType.JWT,
-                                context = verifiableCredential.context,
-                                type = verifiableCredential.type,
-                                credentialSchema = verifiableCredential.credentialSchema,
-                                credentialSubject = verifiableCredential.credentialSubject,
-                                credentialStatus = verifiableCredential.credentialStatus,
-                                refreshService = verifiableCredential.refreshService,
-                                evidence = verifiableCredential.evidence,
-                                termsOfUse = verifiableCredential.termsOfUse,
-                                issuer = verifiableCredential.issuer,
-                                issuanceDate = verifiableCredential.issuanceDate,
-                                expirationDate = verifiableCredential.expirationDate,
-                                validFrom = verifiableCredential.validFrom,
-                                validUntil = verifiableCredential.validUntil,
-                                proof = verifiableCredential.proof,
-                                aud = verifiableCredential.aud
-                            )
-                        }
-
-                        CredentialType.W3C ->
-                            W3CVerifiableCredential(
-                                id = verifiableCredential.id,
-                                credentialType = CredentialType.JWT,
-                                context = verifiableCredential.context,
-                                type = verifiableCredential.type,
-                                credentialSchema = verifiableCredential.credentialSchema,
-                                credentialSubject = verifiableCredential.credentialSubject,
-                                credentialStatus = verifiableCredential.credentialStatus,
-                                refreshService = verifiableCredential.refreshService,
-                                evidence = verifiableCredential.evidence,
-                                termsOfUse = verifiableCredential.termsOfUse,
-                                issuer = verifiableCredential.issuer,
-                                issuanceDate = verifiableCredential.issuanceDate,
-                                expirationDate = verifiableCredential.expirationDate,
-                                validFrom = verifiableCredential.validFrom,
-                                validUntil = verifiableCredential.validUntil,
-                                proof = verifiableCredential.proof,
-                                aud = verifiableCredential.aud
-                            )
-
-                        else ->
-                            JWTCredentialPayload.JWTVerifiableCredential(
-                                id = verifiableCredential.id,
-                                credentialType = CredentialType.JWT,
-                                context = verifiableCredential.context,
-                                type = verifiableCredential.type,
-                                credentialSchema = verifiableCredential.credentialSchema,
-                                credentialSubject = verifiableCredential.credentialSubject,
-                                credentialStatus = verifiableCredential.credentialStatus,
-                                refreshService = verifiableCredential.refreshService,
-                                evidence = verifiableCredential.evidence,
-                                termsOfUse = verifiableCredential.termsOfUse,
-                                issuer = verifiableCredential.issuer,
-                                issuanceDate = verifiableCredential.issuanceDate,
-                                expirationDate = verifiableCredential.expirationDate,
-                                validFrom = verifiableCredential.validFrom,
-                                validUntil = verifiableCredential.validUntil,
-                                proof = verifiableCredential.proof,
-                                aud = verifiableCredential.aud
-                            )
-                    }
-                }
-            }
-    }
-
-    override fun insertNewCredential(storableCredential: StorableCredential) {
-        getInstance().storableCredentialQueries.insert(
-            StorableCredentialDB(
-                id = storableCredential.id,
-                recoveryId = storableCredential.recoveryId,
-                credentialSchema = storableCredential.credentialSchema ?: "",
-                credentialData = storableCredential.credentialData,
-                issuer = storableCredential.issuer,
-                subject = storableCredential.subject,
-                credentialCreated = storableCredential.credentialCreated,
-                credentialUpdated = storableCredential.credentialUpdated,
-                validUntil = storableCredential.validUntil,
-                revoked = if (storableCredential.revoked == true) 1 else 0
-            )
-        )
-        getInstance().availableClaimsQueries.transaction {
-            storableCredential.availableClaims.forEach { claim ->
-                getInstance().availableClaimsQueries.insert(storableCredential.id, claim)
-            }
-        }
-    }
-
-    override fun getNewAllCredentials(): Flow<List<StorableCredential>> {
+    override fun getAllCredentials(): Flow<List<CredentialRecovery>> {
         return getInstance().storableCredentialQueries.fetchAllCredentials()
             .asFlow()
-            .map { credentials ->
-                credentials.executeAsList().map {
-                    StorableCredential(
-                        id = it.id,
-                        recoveryId = it.recoveryId,
-                        credentialData = it.credentialData,
-                        issuer = it.issuer,
-                        subject = it.subject,
-                        credentialCreated = it.credentialCreated,
-                        credentialUpdated = it.credentialUpdated,
-                        credentialSchema = it.credentialSchema,
-                        validUntil = it.validUntil,
-                        revoked = it.revoked == 1,
-                        availableClaims = if (it.claims != null && (it.claims.contains(",") || it.claims.isNotEmpty())) {
-                            it.claims.split(",")
-                                .toTypedArray()
-                        } else {
-                            emptyArray()
-                        }
+            .map {
+                it.executeAsList().map { credential ->
+                    CredentialRecovery(
+                        restorationId = credential.recoveryId,
+                        credentialData = credential.credentialData
                     )
                 }
             }

@@ -8,7 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
 import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 
@@ -33,7 +33,7 @@ interface Pluto {
 
     fun storeMediator(mediator: DID, host: DID, routing: DID)
 
-    fun storeCredential(credential: VerifiableCredential)
+    fun storeCredential(credential: StorableCredential)
 
     fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>>
 
@@ -80,11 +80,7 @@ interface Pluto {
 
     fun getAllMediators(): Flow<List<Mediator>>
 
-    fun getAllCredentials(): Flow<List<VerifiableCredential>>
-
-    fun insertNewCredential(storableCredential: StorableCredential)
-
-    fun getNewAllCredentials(): Flow<List<StorableCredential>>
+    fun getAllCredentials(): Flow<List<CredentialRecovery>>
 
     fun insertAvailableClaim(credentialId: String, claim: String)
 

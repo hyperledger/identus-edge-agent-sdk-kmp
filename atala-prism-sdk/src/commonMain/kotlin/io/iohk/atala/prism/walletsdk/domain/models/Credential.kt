@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-sealed interface Credential {
+abstract interface Credential {
+    val id: String
     val issuer: String
-    val subject: String
+    val subject: String?
     val claims: Array<Claim>
-    val properties: Map<String, String>
+    val properties: Map<String, Any?>
 }

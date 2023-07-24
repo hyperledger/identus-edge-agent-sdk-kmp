@@ -10,7 +10,7 @@ import kotlinx.serialization.json.JsonObject
 
 class PolluxMock : Pollux {
 
-    override fun parseVerifiableCredential(jwtString: String): VerifiableCredential {
+    override fun parseVerifiableCredential(jwtString: String): Credential {
         TODO("Not yet implemented")
     }
 
@@ -31,7 +31,7 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun restoreFromStorableCredential(storeableCredential: StorableCredential): Credential {
+    override fun credentialToStorableCredential(credential: Credential): StorableCredential {
         TODO("Not yet implemented")
     }
 }

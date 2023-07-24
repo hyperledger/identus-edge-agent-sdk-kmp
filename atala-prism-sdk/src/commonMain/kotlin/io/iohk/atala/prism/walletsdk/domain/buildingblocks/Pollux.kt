@@ -8,7 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import kotlinx.serialization.json.JsonObject
 
 interface Pollux {
-    fun parseVerifiableCredential(jwtString: String): VerifiableCredential
+    fun parseVerifiableCredential(data: String): Credential
 
     fun createRequestCredentialJWT(
         subjectDID: DID,
@@ -25,5 +25,5 @@ interface Pollux {
 
     fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray): Credential
 
-    fun restoreFromStorableCredential(storeableCredential: StorableCredential): Credential
+    fun credentialToStorableCredential(credential: Credential): StorableCredential
 }
