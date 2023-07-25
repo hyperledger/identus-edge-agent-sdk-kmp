@@ -7,6 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import io.iohk.atala.prism.sampleapp.Sdk
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 class CredentialsViewModel(application: Application) : AndroidViewModel(application) {
@@ -16,7 +17,9 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
     init {
         viewModelScope.launch {
             Sdk.getInstance(application).agent?.let {
-                credentials.postValue(it.getAllCredentials() ?: listOf())
+                it.getAllCredentials().collect { list ->
+                    credentials.postValue(list)
+                }
             }
         }
     }

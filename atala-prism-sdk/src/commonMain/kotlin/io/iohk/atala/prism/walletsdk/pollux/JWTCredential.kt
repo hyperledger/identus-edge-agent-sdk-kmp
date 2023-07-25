@@ -20,12 +20,8 @@ data class JWTCredential(val data: String) : Credential {
         val jsonString = base64Data.toString(Charsets.UTF_8)
         val dataValue = jsonString.toByteArray(Charsets.UTF_8)
 
-        try {
-            this.jwtPayload = Json.decodeFromString(dataValue.decodeToString())
-        } catch (e: Exception) {
-            println(e.message)
-            this.jwtPayload = Json.decodeFromString("")
-        }
+        val json = Json { ignoreUnknownKeys = true }
+        this.jwtPayload = json.decodeFromString(dataValue.decodeToString())
     }
 
     override val id: String
@@ -56,7 +52,9 @@ data class JWTCredential(val data: String) : Credential {
             jwtPayload.verifiableCredential.credentialStatus?.let {
                 properties["credentialStatus"] = it.type
             }
-            jwtPayload.verifiableCredential.refreshService?.let { properties["refreshService"] = it.type }
+            jwtPayload.verifiableCredential.refreshService?.let {
+                properties["refreshService"] = it.type
+            }
             jwtPayload.verifiableCredential.evidence?.let { properties["evidence"] = it.type }
             jwtPayload.verifiableCredential.termsOfUse?.let { properties["termsOfUse"] = it.type }
 

@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
 import io.iohk.atala.prism.walletsdk.domain.VC
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
@@ -15,16 +16,19 @@ import kotlinx.serialization.json.jsonPrimitive
  *Note: This data class conforms to the JSON Web Token (JWT) format. For more information, see https://jwt.io/introduction/.
  */
 @Serializable
-data class JWTPayload(
+data class JWTPayload @JvmOverloads constructor(
     val iss: String?,
     val sub: String?,
     @SerialName(VC)
     val verifiableCredential: JWTVerifiableCredential,
-    val nbf: Int?,
-    val exp: Int?,
-    val jti: String?,
-    val aud: Array<String>,
-    val originalJWTString: String
+    val nbf: Long?,
+    val exp: Long?,
+    @EncodeDefault
+    val jti: String? = null,
+    @EncodeDefault
+    val aud: Array<String>? = null,
+    @EncodeDefault
+    val originalJWTString: String? = null
 ) {
 
     /**
@@ -32,72 +36,42 @@ data class JWTPayload(
      */
     @Serializable
     data class JWTVerifiableCredential @JvmOverloads constructor(
-        val credentialType: CredentialType,
         val context: Array<String> = arrayOf(),
         val type: Array<String> = arrayOf(),
-        override val issuer: String,
         val credentialSchema: VerifiableCredentialTypeContainer? = null,
         val credentialSubject: Map<String, String>,
         val credentialStatus: VerifiableCredentialTypeContainer? = null,
         val refreshService: VerifiableCredentialTypeContainer? = null,
         val evidence: VerifiableCredentialTypeContainer? = null,
         val termsOfUse: VerifiableCredentialTypeContainer? = null,
-        override val id: String,
-        val issuanceDate: String,
-        val expirationDate: String?,
-        val validFrom: VerifiableCredentialTypeContainer? = null,
-        val validUntil: VerifiableCredentialTypeContainer? = null,
-        val proof: JsonString?,
-        val aud: Array<String> = arrayOf(),
-        override val subject: String?,
-        override val claims: Array<Claim>,
-        override val properties: Map<String, String>
-    ) : Credential {
+    ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
 
             other as JWTVerifiableCredential
 
-            if (credentialType != other.credentialType) return false
             if (!context.contentEquals(other.context)) return false
             if (!type.contentEquals(other.type)) return false
-            if (issuer != other.issuer) return false
             if (credentialSchema != other.credentialSchema) return false
             if (credentialSubject != other.credentialSubject) return false
             if (credentialStatus != other.credentialStatus) return false
             if (refreshService != other.refreshService) return false
             if (evidence != other.evidence) return false
             if (termsOfUse != other.termsOfUse) return false
-            if (id != other.id) return false
-            if (issuanceDate != other.issuanceDate) return false
-            if (expirationDate != other.expirationDate) return false
-            if (validFrom != other.validFrom) return false
-            if (validUntil != other.validUntil) return false
-            if (proof != other.proof) return false
-            if (!aud.contentEquals(other.aud)) return false
 
             return true
         }
 
         override fun hashCode(): Int {
-            var result = credentialType.hashCode()
-            result = 31 * result + context.contentHashCode()
+            var result = context.contentHashCode()
             result = 31 * result + type.contentHashCode()
-            result = 31 * result + issuer.hashCode()
             result = 31 * result + (credentialSchema?.hashCode() ?: 0)
             result = 31 * result + credentialSubject.hashCode()
             result = 31 * result + (credentialStatus?.hashCode() ?: 0)
             result = 31 * result + (refreshService?.hashCode() ?: 0)
             result = 31 * result + (evidence?.hashCode() ?: 0)
             result = 31 * result + (termsOfUse?.hashCode() ?: 0)
-            result = 31 * result + id.hashCode()
-            result = 31 * result + issuanceDate.hashCode()
-            result = 31 * result + (expirationDate?.hashCode() ?: 0)
-            result = 31 * result + (validFrom?.hashCode() ?: 0)
-            result = 31 * result + (validUntil?.hashCode() ?: 0)
-            result = 31 * result + (proof?.hashCode() ?: 0)
-            result = 31 * result + aud.contentHashCode()
             return result
         }
     }

@@ -13,6 +13,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -98,13 +99,14 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                         if (message.piuri == ProtocolType.DidcommRequestPresentation.value && !presentationDone) {
                             viewModelScope.launch {
                                 presentationDone = true
-                                val credential = pluto.getAllCredentials().first().first()
-                                // TODO: Update to use credential instead of verifiable credential
-//                                val presentation = agent.preparePresentationForRequestProof(
-//                                    RequestPresentation.fromMessage(message),
-//                                    credential
-//                                )
-//                                mercury.sendMessage(presentation.makeMessage())
+                                agent.getAllCredentials().collect {
+                                    val credential = it.first()
+                                    val presentation = agent.preparePresentationForRequestProof(
+                                        RequestPresentation.fromMessage(message),
+                                        credential
+                                    )
+                                    mercury.sendMessage(presentation.makeMessage())
+                                }
                             }
                         }
                     }

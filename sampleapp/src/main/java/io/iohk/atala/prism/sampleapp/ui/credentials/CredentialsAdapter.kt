@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.W3CCredential
+import io.iohk.atala.prism.walletsdk.pollux.JWTCredential
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -73,19 +75,23 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
         }
 
         fun bind(credential: Credential) {
-            // TODO: Update to use credential instead of verifiable credential
+            when (credential::class) {
+                JWTCredential::class -> {
+                    val jwt = credential as JWTCredential
+                    type.text = String.format(typeString, "JWT")
+                    // TODO: Check what else to display
+                    jwt.jwtPayload.nbf?.let {
+                        issuanceDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
+                    }
+                    jwt.jwtPayload.exp?.let {
+                        expDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
+                    }
+                }
 
-//            type.text = String.format(typeString, credential.credentialType.type)
-//            issuanceDate.text = String.format(
-//                issuanceString,
-//                formatTimeStamp(Instant.ofEpochMilli(credential.issuanceDate.toLong()))
-//            )
-//            credential.expirationDate?.let {
-//                expDate.text = String.format(
-//                    expirationString,
-//                    formatTimeStamp(Instant.ofEpochMilli(it.toLong()))
-//                )
-//            }
+                W3CCredential::class -> {
+                    type.text = String.format(typeString, "W3C")
+                }
+            }
         }
 
         private fun formatTimeStamp(instant: Instant): String {

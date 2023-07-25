@@ -27,7 +27,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
-import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
@@ -58,6 +57,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -753,12 +753,13 @@ class PrismAgent {
     /**
      * This method returns a list of all the VerifiableCredentials stored locally.
      */
-    suspend fun getAllCredentials(): List<Credential> {
-        val credentials = mutableListOf<Credential>()
-        pluto.getAllCredentials().first().map {
-            credentials.add(pollux.restoreCredential(it.restorationId, it.credentialData))
-        }
-        return credentials
+    suspend fun getAllCredentials(): Flow<List<Credential>> {
+        return pluto.getAllCredentials()
+            .map { list ->
+                list.map {
+                    pollux.restoreCredential(it.restorationId, it.credentialData)
+                }
+            }
     }
 
     // Proof related actions
@@ -773,9 +774,11 @@ class PrismAgent {
     @Throws(PolluxError.InvalidPrismDID::class)
     suspend fun preparePresentationForRequestProof(
         request: RequestPresentation,
-        credential: VerifiableCredential
+        credential: Credential
     ): Presentation {
-        val subjectDID = DID(credential.credentialSubject)
+        val subjectDID = credential.subject?.let {
+            DID(it)
+        } ?: DID("")
         if (subjectDID.method != PRISM) {
             throw PolluxError.InvalidPrismDID()
         }

@@ -4,7 +4,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import kotlinx.serialization.json.JsonObject
 
 interface Pollux {
@@ -19,7 +18,7 @@ interface Pollux {
     fun createVerifiablePresentationJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
-        credential: VerifiableCredential,
+        credential: Credential,
         requestPresentationJson: JsonObject
     ): String
 

@@ -14,7 +14,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.W3CCredential
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -48,7 +47,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
     override fun restoreCredential(recoveryId: String, credentialData: ByteArray): Credential {
         return when (recoveryId) {
             "jwt+credential" -> {
-                Json.decodeFromString<JWTCredential>(credentialData.decodeToString())
+                JWTCredential(credentialData.decodeToString())
             }
 
             "w3c+credential" -> {
@@ -77,13 +76,21 @@ class PolluxImpl(val castor: Castor) : Pollux {
     override fun createVerifiablePresentationJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
-        credential: VerifiableCredential,
+        credential: Credential,
         requestPresentationJson: JsonObject
     ): String {
         val parsedPrivateKey = parsePrivateKey(privateKey)
-        val domain = getDomain(requestPresentationJson) ?: throw PolluxError.NoDomainOrChallengeFound()
-        val challenge = getChallenge(requestPresentationJson) ?: throw PolluxError.NoDomainOrChallengeFound()
-        return signClaimsProofPresentationJWT(subjectDID, parsedPrivateKey, credential, domain, challenge)
+        val domain =
+            getDomain(requestPresentationJson) ?: throw PolluxError.NoDomainOrChallengeFound()
+        val challenge =
+            getChallenge(requestPresentationJson) ?: throw PolluxError.NoDomainOrChallengeFound()
+        return signClaimsProofPresentationJWT(
+            subjectDID,
+            parsedPrivateKey,
+            credential,
+            domain,
+            challenge
+        )
     }
 
     private fun parsePrivateKey(privateKey: PrivateKey): ECPrivateKey {
@@ -127,7 +134,10 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
         // Sign the JWT with the private key
         val jwsObject = SignedJWT(header, claims)
-        val signer = ECDSASigner(privateKey as java.security.PrivateKey, com.nimbusds.jose.jwk.Curve.SECP256K1)
+        val signer = ECDSASigner(
+            privateKey as java.security.PrivateKey,
+            com.nimbusds.jose.jwk.Curve.SECP256K1
+        )
         val provider = BouncyCastleProviderSingleton.getInstance()
         signer.jcaContext.provider = provider
         jwsObject.sign(signer)
@@ -139,7 +149,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
     private fun signClaimsProofPresentationJWT(
         subjectDID: DID,
         privateKey: ECPrivateKey,
-        credential: VerifiableCredential,
+        credential: Credential,
         domain: String,
         challenge: String
     ): String {
@@ -162,7 +172,10 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
         // Sign the JWT with the private key
         val jwsObject = SignedJWT(header, claims)
-        val signer = ECDSASigner(privateKey as java.security.PrivateKey, com.nimbusds.jose.jwk.Curve.SECP256K1)
+        val signer = ECDSASigner(
+            privateKey as java.security.PrivateKey,
+            com.nimbusds.jose.jwk.Curve.SECP256K1
+        )
         val provider = BouncyCastleProviderSingleton.getInstance()
         signer.jcaContext.provider = provider
         jwsObject.sign(signer)
@@ -181,11 +194,11 @@ class PolluxImpl(val castor: Castor) : Pollux {
                     credentialData = jwt.data.toByteArray(),
                     issuer = jwt.issuer,
                     subject = jwt.subject,
-                    credentialCreated = jwt.jwtPayload.verifiableCredential.issuanceDate,
-                    credentialUpdated = null,
+                    credentialCreated = null, // TODO: Where to extract created
+                    credentialUpdated = null, // TODO: Where to extract udpated
                     credentialSchema = jwt.jwtPayload.verifiableCredential.credentialSchema?.type,
-                    validUntil = jwt.jwtPayload.verifiableCredential.expirationDate,
-                    revoked = null,
+                    validUntil = null, // TODO: Where to extract valid until
+                    revoked = null, // TODO: Where to extract revoked
                     availableClaims = jwt.claims.map { "${it.key}:${it.value}" }.toTypedArray()
                 )
             }
@@ -199,10 +212,10 @@ class PolluxImpl(val castor: Castor) : Pollux {
                     issuer = w3c.issuer,
                     subject = w3c.subject,
                     credentialCreated = w3c.issuanceDate,
-                    credentialUpdated = null,
+                    credentialUpdated = null, // TODO: Where to extract updated
                     credentialSchema = w3c.credentialSchema?.type,
                     validUntil = w3c.expirationDate,
-                    revoked = null,
+                    revoked = null, // TODO: Where to extract revoked
                     availableClaims = w3c.claims.map { "${it.key}:${it.value}" }.toTypedArray()
                 )
             }
