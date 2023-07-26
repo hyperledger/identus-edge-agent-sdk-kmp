@@ -8,7 +8,7 @@ CREATE TABLE DID (
 );
 
 insert:
-INSERT INTO DID(did, method, methodId, schema, alias)
+INSERT OR IGNORE INTO DID(did, method, methodId, schema, alias)
 VALUES ?;
 
 fetchAllPrismDID:

@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup
 
+import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
@@ -57,7 +58,7 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
     // TODO: Clean this method
     private fun processAttachment(attachment: AttachmentDescriptor): PickupAttachment? {
         return if (Message.isBase64Attachment(attachment.data)) {
-            PickupAttachment(attachmentId = attachment.id, data = (attachment.data as AttachmentBase64).base64)
+            PickupAttachment(attachmentId = attachment.id, data = (attachment.data as AttachmentBase64).base64.base64UrlDecoded)
         } else if (Message.isJsonAttachment(attachment.data)) {
             PickupAttachment(
                 attachmentId = attachment.id,

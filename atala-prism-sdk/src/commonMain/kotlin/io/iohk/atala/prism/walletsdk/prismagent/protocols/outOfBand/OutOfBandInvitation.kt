@@ -21,7 +21,9 @@ constructor(
     val body: Body,
     val from: String,
     @EncodeDefault
-    val type: ProtocolType = ProtocolType.Didcomminvitation
+    val type: ProtocolType = ProtocolType.Didcomminvitation,
+    @EncodeDefault
+    val typ: String? = null
 ) : InvitationType() {
 
     /**

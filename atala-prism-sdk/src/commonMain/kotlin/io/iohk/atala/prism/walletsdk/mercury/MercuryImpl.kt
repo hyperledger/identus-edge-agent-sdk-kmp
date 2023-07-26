@@ -218,7 +218,7 @@ class MercuryImpl(
             HttpMethod.Post.value,
             uri,
             emptyArray(),
-            emptyArray(),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
             message
         )
         if (result.status >= 400) {
