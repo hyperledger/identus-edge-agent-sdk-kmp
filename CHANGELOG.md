@@ -1,3 +1,17 @@
+# [2.1.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.0.2...v2.1.0) (2023-07-26)
+
+
+### Bug Fixes
+
+* base64 attachments and http correct request headers ([#85](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/85)) ([ad223b9](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/ad223b9914836a46127d4e6db66d94d57b9c1076))
+* delete unwanted comment from README.md ([#84](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/84)) ([47e4a0a](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/47e4a0a05d72a0c23b691d396e3b344b7bb49d02))
+* make forward message and its body non internal ([#82](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/82)) ([ae2caa8](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/ae2caa80de37133a7c3bb3ba59f20ab414eca7e9))
+
+
+### Features
+
+* Update README.md ([#83](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/83)) ([df70182](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/df701825c3565eda0477fdb3cef2d189b0fa4436))
+
 ## [2.0.2](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.0.1...v2.0.2) (2023-06-27)
 
 
