@@ -1,3 +1,11 @@
+## [2.1.1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.1.0...v2.1.1) (2023-07-27)
+
+
+### Bug Fixes
+
+* message model id generates a duplicity issue ([#86](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/86)) ([f00b53a](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/f00b53a5a14f5c8026ca18fbf4b984e13e361f43))
+* override received message if already exists ([#87](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/87)) ([7cac37c](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/7cac37c1b39328d1ed5ed52f492e4fb316000908))
+
 # [2.1.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.0.2...v2.1.0) (2023-07-26)
 
 
