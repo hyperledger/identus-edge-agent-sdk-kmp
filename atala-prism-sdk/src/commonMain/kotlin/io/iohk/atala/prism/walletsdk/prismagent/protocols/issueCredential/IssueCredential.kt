@@ -20,7 +20,7 @@ import kotlinx.serialization.json.Json
 
 @Serializable
 data class IssueCredential(
-    val id: String? = UUID.randomUUID4().toString(),
+    val id: String = UUID.randomUUID4().toString(),
     val body: Body,
     val attachments: Array<AttachmentDescriptor>,
     val thid: String?,
@@ -31,7 +31,7 @@ data class IssueCredential(
 
     fun makeMessage(): Message {
         return Message(
-            id = id ?: UUID.randomUUID4().toString(),
+            id = id,
             piuri = type,
             from = from,
             to = to,
