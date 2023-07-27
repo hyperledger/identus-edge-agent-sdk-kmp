@@ -109,7 +109,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun storeMessage(message: Message) {
         getInstance().messageQueries.insert(
             MessageDB(
-                UUID.randomUUID4().toString(),
+                message.id,
                 message.createdTime,
                 message.toJsonString(),
                 message.from.toString(),
