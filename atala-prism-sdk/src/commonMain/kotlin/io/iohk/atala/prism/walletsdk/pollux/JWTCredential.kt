@@ -4,6 +4,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Claim
 import io.iohk.atala.prism.walletsdk.domain.models.ClaimType
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.JWTPayload
+import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.Base64
@@ -28,7 +29,7 @@ data class JWTCredential(val data: String) : Credential {
         get() = jwtString
 
     override val issuer: String
-        get() = jwtPayload.iss.toString()
+        get() = jwtPayload.iss
 
     override val subject: String?
         get() = jwtPayload.sub
@@ -48,16 +49,86 @@ data class JWTCredential(val data: String) : Credential {
             properties["id"] = jwtString
 
             jwtPayload.exp?.let { properties["exp"] = it }
-            jwtPayload.verifiableCredential.credentialSchema?.let { properties["schema"] = it.id }
+            jwtPayload.verifiableCredential.credentialSchema?.let {
+                properties["schema"] = it.id
+            }
             jwtPayload.verifiableCredential.credentialStatus?.let {
                 properties["credentialStatus"] = it.type
             }
             jwtPayload.verifiableCredential.refreshService?.let {
                 properties["refreshService"] = it.type
             }
-            jwtPayload.verifiableCredential.evidence?.let { properties["evidence"] = it.type }
-            jwtPayload.verifiableCredential.termsOfUse?.let { properties["termsOfUse"] = it.type }
+            jwtPayload.verifiableCredential.evidence?.let {
+                properties["evidence"] = it.type
+            }
+            jwtPayload.verifiableCredential.termsOfUse?.let {
+                properties["termsOfUse"] = it.type
+            }
 
             return properties.toMap()
         }
+
+    fun toStorableCredential(): StorableCredential {
+        val c = this
+        return object : StorableCredential {
+            override val id: String
+                get() = jwtString
+            override val recoveryId: String
+                get() = "jwt+credential"
+            override val credentialData: ByteArray
+                get() = c.data.toByteArray()
+
+            override val issuer: String
+                get() = c.issuer
+
+            override val subject: String?
+                get() = c.subject
+            override val credentialCreated: String?
+                get() = null
+            override val credentialUpdated: String?
+                get() = null
+            override val credentialSchema: String?
+                get() = c.jwtPayload.verifiableCredential.credentialSchema?.type
+            override val validUntil: String?
+                get() = null
+            override val revoked: Boolean?
+                get() = null
+            override val availableClaims: Array<String>
+                get() = c.claims.map { it.key }.toTypedArray()
+
+            override val claims: Array<Claim>
+                get() = jwtPayload.verifiableCredential.credentialSubject.map {
+                    Claim(key = it.key, value = ClaimType.StringValue(it.value))
+                }.toTypedArray()
+
+            override val properties: Map<String, Any?>
+                get() {
+                    val properties = mutableMapOf<String, Any?>()
+                    properties["nbf"] = jwtPayload.nbf
+                    properties["jti"] = jwtPayload.jti
+                    properties["type"] = jwtPayload.verifiableCredential.type
+                    properties["aud"] = jwtPayload.aud
+                    properties["id"] = jwtString
+
+                    jwtPayload.exp?.let { properties["exp"] = it }
+                    jwtPayload.verifiableCredential.credentialSchema?.let {
+                        properties["schema"] = it.id
+                    }
+                    jwtPayload.verifiableCredential.credentialStatus?.let {
+                        properties["credentialStatus"] = it.type
+                    }
+                    jwtPayload.verifiableCredential.refreshService?.let {
+                        properties["refreshService"] = it.type
+                    }
+                    jwtPayload.verifiableCredential.evidence?.let {
+                        properties["evidence"] = it.type
+                    }
+                    jwtPayload.verifiableCredential.termsOfUse?.let {
+                        properties["termsOfUse"] = it.type
+                    }
+
+                    return properties.toMap()
+                }
+        }
+    }
 }

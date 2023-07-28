@@ -47,11 +47,12 @@ class PolluxImpl(val castor: Castor) : Pollux {
     override fun restoreCredential(recoveryId: String, credentialData: ByteArray): Credential {
         return when (recoveryId) {
             "jwt+credential" -> {
-                JWTCredential(credentialData.decodeToString())
+                JWTCredential(credentialData.decodeToString()).toStorableCredential()
             }
 
             "w3c+credential" -> {
                 Json.decodeFromString<W3CCredential>(credentialData.decodeToString())
+                    .toStorableCredential()
             }
 
             else -> {
@@ -187,37 +188,12 @@ class PolluxImpl(val castor: Castor) : Pollux {
     override fun credentialToStorableCredential(credential: Credential): StorableCredential {
         return when (credential::class) {
             JWTCredential::class -> {
-                val jwt: JWTCredential = credential as JWTCredential
-                StorableCredential(
-                    id = jwt.id,
-                    recoveryId = "jwt+credential",
-                    credentialData = jwt.data.toByteArray(),
-                    issuer = jwt.issuer,
-                    subject = jwt.subject,
-                    credentialCreated = null, // TODO: Where to extract created
-                    credentialUpdated = null, // TODO: Where to extract udpated
-                    credentialSchema = jwt.jwtPayload.verifiableCredential.credentialSchema?.type,
-                    validUntil = null, // TODO: Where to extract valid until
-                    revoked = null, // TODO: Where to extract revoked
-                    availableClaims = jwt.claims.map { "${it.key}:${it.value}" }.toTypedArray()
-                )
+                (credential as JWTCredential).toStorableCredential()
             }
 
             W3CCredential::class -> {
                 val w3c: W3CCredential = credential as W3CCredential
-                StorableCredential(
-                    id = w3c.id,
-                    recoveryId = "w3c+credential",
-                    credentialData = byteArrayOf(),
-                    issuer = w3c.issuer,
-                    subject = w3c.subject,
-                    credentialCreated = w3c.issuanceDate,
-                    credentialUpdated = null, // TODO: Where to extract updated
-                    credentialSchema = w3c.credentialSchema?.type,
-                    validUntil = w3c.expirationDate,
-                    revoked = null, // TODO: Where to extract revoked
-                    availableClaims = w3c.claims.map { "${it.key}:${it.value}" }.toTypedArray()
-                )
+                w3c.toStorableCredential()
             }
 
             else -> {

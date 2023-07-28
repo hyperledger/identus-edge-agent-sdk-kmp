@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 /**
  * A data class representing a W3C Verifiable Credential.
@@ -14,15 +16,16 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class W3CCredential @JvmOverloads constructor(
-    override val id: String,
     val credentialType: CredentialType = CredentialType.W3C,
     val context: Array<String>,
     val type: Array<String>,
-    override val issuer: String,
+    val _id: String,
+    val _issuer: String,
+    val _subject: String?,
     val issuanceDate: String,
     val expirationDate: String? = null,
     val credentialSchema: VerifiableCredentialTypeContainer? = null,
-    val credentialSubject: Map<String, String>,
+    val credentialSubject: Map<String, String>? = null,
     val credentialStatus: VerifiableCredentialTypeContainer? = null,
     val refreshService: VerifiableCredentialTypeContainer? = null,
     val evidence: VerifiableCredentialTypeContainer? = null,
@@ -31,36 +34,105 @@ data class W3CCredential @JvmOverloads constructor(
     val validUntil: VerifiableCredentialTypeContainer? = null,
     val proof: JsonString?,
     val aud: Array<String> = arrayOf(),
-    override val subject: String?,
 ) : Credential {
 
-    override val claims: Array<Claim>
-        get() = credentialSubject.map {
-            Claim(key = it.key, value = ClaimType.StringValue(it.value))
-        }.toTypedArray()
+    override val id: String
+        get() = _id
 
-    override val properties: Map<String, Any>
+    override val issuer: String
+        get() = _issuer
+    override val subject: String?
+        get() = _subject
+
+    override val claims: Array<Claim>
+        get() {
+            return credentialSubject?.let {
+                it.map { entry ->
+                    Claim(key = entry.key, value = ClaimType.StringValue(entry.value))
+                }.toTypedArray()
+            } ?: emptyArray()
+        }
+    override val properties: Map<String, *>
         get() {
             val properties = mutableMapOf(
                 "issuanceDate" to issuanceDate,
                 "context" to context,
                 "type" to type,
-                "id" to id,
+                "id" to this.id,
                 "aud" to aud
             )
 
-            expirationDate?.let { properties["expirationDate"] = it }
-            credentialSchema?.let { properties["schema"] = it.type }
-            credentialStatus?.let { properties["credentialStatus"] = it.type }
-            refreshService?.let { properties["refreshService"] = it.type }
-            evidence?.let { properties["evidence"] = it.type }
-            termsOfUse?.let { properties["termsOfUse"] = it.type }
-            validFrom?.let { properties["validFrom"] = it.type }
-            validUntil?.let { properties["validUntil"] = it.type }
-            proof?.let { properties["proof"] = it }
+            this.expirationDate?.let { properties["expirationDate"] = it }
+            this.credentialSchema?.let { properties["schema"] = it.type }
+            this.credentialStatus?.let { properties["credentialStatus"] = it.type }
+            this.refreshService?.let { properties["refreshService"] = it.type }
+            this.evidence?.let { properties["evidence"] = it.type }
+            this.termsOfUse?.let { properties["termsOfUse"] = it.type }
+            this.validFrom?.let { properties["validFrom"] = it.type }
+            this.validUntil?.let { properties["validUntil"] = it.type }
+            this.proof?.let { properties["proof"] = it }
 
-            return properties
+            return properties.toMap()
         }
+
+    fun toStorableCredential(): StorableCredential {
+        val c = this
+        return object : StorableCredential {
+            override val recoveryId: String
+                get() = "w3c+credential"
+            override val credentialData: ByteArray
+                get() = Json.encodeToString(c).toByteArray()
+            override val credentialCreated: String?
+                get() = null
+            override val credentialUpdated: String?
+                get() = null
+            override val credentialSchema: String?
+                get() = c.credentialSchema?.type
+            override val validUntil: String?
+                get() = null
+            override val revoked: Boolean?
+                get() = null
+            override val availableClaims: Array<String>
+                get() = claims.map { it.key }.toTypedArray()
+            override val id: String
+                get() = c.id
+            override val issuer: String
+                get() = c.issuer
+            override val subject: String?
+                get() = c.subject
+
+            override val claims: Array<Claim>
+                get() {
+                    return credentialSubject?.let {
+                        it.map { entry ->
+                            Claim(key = entry.key, value = ClaimType.StringValue(entry.value))
+                        }.toTypedArray()
+                    } ?: emptyArray()
+                }
+            override val properties: Map<String, *>
+                get() {
+                    val properties = mutableMapOf(
+                        "issuanceDate" to issuanceDate,
+                        "context" to context,
+                        "type" to type,
+                        "id" to id,
+                        "aud" to aud
+                    )
+
+                    c.expirationDate?.let { properties["expirationDate"] = it }
+                    c.credentialSchema?.let { properties["schema"] = it.type }
+                    c.credentialStatus?.let { properties["credentialStatus"] = it.type }
+                    c.refreshService?.let { properties["refreshService"] = it.type }
+                    c.evidence?.let { properties["evidence"] = it.type }
+                    c.termsOfUse?.let { properties["termsOfUse"] = it.type }
+                    c.validFrom?.let { properties["validFrom"] = it.type }
+                    c.validUntil?.let { properties["validUntil"] = it.type }
+                    c.proof?.let { properties["proof"] = it }
+
+                    return properties.toMap()
+                }
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

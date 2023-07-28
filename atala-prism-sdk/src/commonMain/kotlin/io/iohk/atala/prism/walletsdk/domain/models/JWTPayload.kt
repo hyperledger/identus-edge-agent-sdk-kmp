@@ -17,7 +17,7 @@ import kotlinx.serialization.json.jsonPrimitive
  */
 @Serializable
 data class JWTPayload @JvmOverloads constructor(
-    val iss: String?,
+    val iss: String,
     val sub: String?,
     @SerialName(VC)
     val verifiableCredential: JWTVerifiableCredential,
