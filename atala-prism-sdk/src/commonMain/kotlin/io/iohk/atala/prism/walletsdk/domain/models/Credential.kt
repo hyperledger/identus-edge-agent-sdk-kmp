@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-abstract interface Credential {
+interface Credential {
     val id: String
     val issuer: String
     val subject: String?
