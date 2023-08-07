@@ -8,9 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
-import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
-import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
+import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import kotlinx.coroutines.flow.Flow
 
 class PlutoMock : Pluto {
@@ -61,7 +59,7 @@ class PlutoMock : Pluto {
     lateinit var getAllMessagesOfTypeReturn: Flow<List<Message>>
     lateinit var getMessageReturn: Flow<Message?>
     lateinit var getAllMediatorsReturn: Flow<List<Mediator>>
-    lateinit var getAllCredentialsReturn: Flow<List<CredentialRecovery>>
+    lateinit var getAllCredentialsReturn: Flow<List<VerifiableCredential>>
 
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
@@ -98,7 +96,7 @@ class PlutoMock : Pluto {
         wasStoreMediatorCalled = true
     }
 
-    override fun storeCredential(credential: StorableCredential) {
+    override fun storeCredential(credential: VerifiableCredential) {
         wasStoreCredentialCalled = true
     }
 
@@ -201,24 +199,8 @@ class PlutoMock : Pluto {
         return getAllMediatorsReturn
     }
 
-    override fun getAllCredentials(): Flow<List<CredentialRecovery>> {
+    override fun getAllCredentials(): Flow<List<VerifiableCredential>> {
         wasGetAllCredentialsCalled = true
         return getAllCredentialsReturn
-    }
-
-    override fun insertAvailableClaim(credentialId: String, claim: String) {
-        TODO("Not yet implemented")
-    }
-
-    override fun insertAvailableClaims(credentialId: String, claims: Array<String>) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAvailableClaimsByCredentialId(credentialId: String): Flow<Array<AvailableClaims>> {
-        TODO("Not yet implemented")
-    }
-
-    override fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>> {
-        TODO("Not yet implemented")
     }
 }

@@ -99,14 +99,12 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                         if (message.piuri == ProtocolType.DidcommRequestPresentation.value && !presentationDone) {
                             viewModelScope.launch {
                                 presentationDone = true
-                                agent.getAllCredentials().collect {
-                                    val credential = it.first()
-                                    val presentation = agent.preparePresentationForRequestProof(
-                                        RequestPresentation.fromMessage(message),
-                                        credential
-                                    )
-                                    mercury.sendMessage(presentation.makeMessage())
-                                }
+                                val credential = pluto.getAllCredentials().first().first()
+                                val presentation = agent.preparePresentationForRequestProof(
+                                    RequestPresentation.fromMessage(message),
+                                    credential
+                                )
+                                mercury.sendMessage(presentation.makeMessage())
                             }
                         }
                     }
