@@ -13,6 +13,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
+import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
@@ -26,7 +27,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
-import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
@@ -57,6 +57,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -553,13 +554,13 @@ class PrismAgent {
      * @return The parsed verifiable credential.
      * @throws PrismAgentError if there is a problem parsing the credential.
      */
-    fun processIssuedCredentialMessage(message: IssueCredential): VerifiableCredential {
+    fun processIssuedCredentialMessage(message: IssueCredential): Credential {
         val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
-        val jwtString = attachment?.let { it.base64.base64UrlDecoded }
 
-        return jwtString?.let {
-            val credential = pollux.parseVerifiableCredential(it)
-            pluto.storeCredential(credential)
+        return attachment?.let {
+            val credential = pollux.parseVerifiableCredential(it.base64.base64UrlDecoded)
+            val storableCredential = pollux.credentialToStorableCredential(credential)
+            pluto.storeCredential(storableCredential)
             return credential
         } ?: throw UnknownError("Cannot find attachment base64 in message")
     }
@@ -752,8 +753,13 @@ class PrismAgent {
     /**
      * This method returns a list of all the VerifiableCredentials stored locally.
      */
-    suspend fun getAllVerifiableCredentials(): List<VerifiableCredential> {
-        return pluto.getAllCredentials().first()
+    suspend fun getAllCredentials(): Flow<List<Credential>> {
+        return pluto.getAllCredentials()
+            .map { list ->
+                list.map {
+                    pollux.restoreCredential(it.restorationId, it.credentialData)
+                }
+            }
     }
 
     // Proof related actions
@@ -768,9 +774,11 @@ class PrismAgent {
     @Throws(PolluxError.InvalidPrismDID::class)
     suspend fun preparePresentationForRequestProof(
         request: RequestPresentation,
-        credential: VerifiableCredential
+        credential: Credential
     ): Presentation {
-        val subjectDID = DID(credential.credentialSubject)
+        val subjectDID = credential.subject?.let {
+            DID(it)
+        } ?: DID("")
         if (subjectDID.method != PRISM) {
             throw PolluxError.InvalidPrismDID()
         }
