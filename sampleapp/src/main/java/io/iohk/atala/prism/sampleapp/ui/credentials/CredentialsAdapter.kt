@@ -7,16 +7,18 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
-import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredential
+import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.W3CCredential
+import io.iohk.atala.prism.walletsdk.pollux.JWTCredential
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class CredentialsAdapter(private var data: MutableList<VerifiableCredential> = mutableListOf()) :
+class CredentialsAdapter(private var data: MutableList<Credential> = mutableListOf()) :
     RecyclerView.Adapter<CredentialsAdapter.CredentialHolder>() {
 
-    fun updateCredentials(updatedCredentials: List<VerifiableCredential>) {
+    fun updateCredentials(updatedCredentials: List<Credential>) {
         val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int {
                 return data.size
@@ -72,17 +74,23 @@ class CredentialsAdapter(private var data: MutableList<VerifiableCredential> = m
             expirationString = itemView.context.getString(R.string.credential_expiration)
         }
 
-        fun bind(credential: VerifiableCredential) {
-            type.text = String.format(typeString, credential.credentialType.type)
-            issuanceDate.text = String.format(
-                issuanceString,
-                formatTimeStamp(Instant.ofEpochMilli(credential.issuanceDate.toLong()))
-            )
-            credential.expirationDate?.let {
-                expDate.text = String.format(
-                    expirationString,
-                    formatTimeStamp(Instant.ofEpochMilli(it.toLong()))
-                )
+        fun bind(credential: Credential) {
+            when (credential::class) {
+                JWTCredential::class -> {
+                    val jwt = credential as JWTCredential
+                    type.text = String.format(typeString, "JWT")
+                    // TODO: Check what else to display
+                    jwt.jwtPayload.nbf?.let {
+                        issuanceDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
+                    }
+                    jwt.jwtPayload.exp?.let {
+                        expDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
+                    }
+                }
+
+                W3CCredential::class -> {
+                    type.text = String.format(typeString, "W3C")
+                }
             }
         }
 
