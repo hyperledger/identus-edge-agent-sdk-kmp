@@ -2,18 +2,29 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialDefinition
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequest
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import kotlinx.serialization.json.JsonObject
 
 class PolluxMock : Pollux {
 
-    override fun parseVerifiableCredential(jwtString: String): Credential {
+    override fun parseCredential(
+        data: String,
+        type: CredentialType,
+        linkSecret: String?,
+        credentialMetadata: CredentialRequestMeta?
+    ): Credential {
         TODO("Not yet implemented")
     }
 
-    override fun createRequestCredentialJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
+    override fun processCredentialRequestJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
         TODO("Not yet implemented")
     }
 
@@ -30,7 +41,23 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun credentialToStorableCredential(credential: Credential): StorableCredential {
+    override fun processCredentialRequestAnoncreds(
+        offer: OfferCredential,
+        linkSecret: String,
+        linkSecretName: String
+    ): Pair<CredentialRequest, CredentialRequestMeta> {
+        TODO("Not yet implemented")
+    }
+
+    override fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential {
+        TODO("Not yet implemented")
+    }
+
+    override fun extractCredentialFormatFromMessage(formats: Array<CredentialFormat>): CredentialType {
+        TODO("Not yet implemented")
+    }
+
+    override fun getCredentialDefinition(id: String): CredentialDefinition {
         TODO("Not yet implemented")
     }
 }

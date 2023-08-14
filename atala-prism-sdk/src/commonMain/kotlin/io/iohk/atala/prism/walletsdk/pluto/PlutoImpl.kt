@@ -8,8 +8,10 @@ import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
+import io.iohk.atala.prism.walletsdk.domain.models.LinkSecretBlindingData
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
@@ -20,15 +22,17 @@ import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
-import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims as AvailableClaimsDB
 import ioiohkatalaprismwalletsdkpluto.data.DID as DIDDB
 import ioiohkatalaprismwalletsdkpluto.data.DIDPair as DIDPairDB
+import ioiohkatalaprismwalletsdkpluto.data.LinkSecret as LinkSecretDB
 import ioiohkatalaprismwalletsdkpluto.data.Mediator as MediatorDB
 import ioiohkatalaprismwalletsdkpluto.data.Message as MessageDB
 import ioiohkatalaprismwalletsdkpluto.data.PrivateKey as PrivateKeyDB
@@ -211,6 +215,20 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 getInstance().availableClaimsQueries.insert(storableCredential.id, claim)
             }
         }
+    }
+
+    override fun storeLinkSecret(linkSecret: String) {
+        getInstance().linkSecretQueries
+            .insert(LinkSecretDB(linkSecret))
+    }
+
+    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
+        getInstance().credentialMetadataQueries.insert(
+            id = UUID.randomUUID4().toString(),
+            nonce = metadata.nonce,
+            linkSecretName = metadata.linkSecretName,
+            linkSecretBlindingData = Json.encodeToString(metadata.linkSecretBlindingData)
+        )
     }
 
     override fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>> {
@@ -622,7 +640,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         }
     }
 
-    override fun getAvailableClaimsByCredentialId(credentialId: String): Flow<Array<AvailableClaims>> {
+    override fun getAvailableClaimsByCredentialId(credentialId: String): Flow<Array<AvailableClaimsDB>> {
         return getInstance().availableClaimsQueries.fetchAvailableClaimsByCredentialId(credentialId)
             .asFlow()
             .map { claims ->
@@ -630,11 +648,30 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>> {
+    override fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaimsDB>> {
         return getInstance().availableClaimsQueries.fetchAvailableClaimsByClaim(claim)
             .asFlow()
             .map { claims ->
                 claims.executeAsList().toTypedArray()
+            }
+    }
+
+    override fun getLinkSecret(): Flow<String> {
+        return getInstance().linkSecretQueries.fetchLinkSecret()
+            .asFlow()
+            .map { it.executeAsOne() }
+    }
+
+    override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {
+        return getInstance().credentialMetadataQueries.fetchCredentialMetadata(linkSecretName = linkSecretName)
+            .asFlow()
+            .map {
+                val metadata = it.executeAsOne()
+                CredentialRequestMeta(
+                    nonce = metadata.nonce,
+                    linkSecretName = metadata.linkSecretName,
+                    linkSecretBlindingData = LinkSecretBlindingData(metadata.linkSecretBlindingData)
+                )
             }
     }
 }

@@ -89,11 +89,13 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                         }
 
                         if (message.piuri == ProtocolType.DidcommIssueCredential.value) {
-                            agent.processIssuedCredentialMessage(
-                                IssueCredential.fromMessage(
-                                    message
+                            viewModelScope.launch {
+                                agent.processIssuedCredentialMessage(
+                                    IssueCredential.fromMessage(
+                                        message
+                                    )
                                 )
-                            )
+                            }
                         }
 
                         if (message.piuri == ProtocolType.DidcommRequestPresentation.value && !presentationDone) {

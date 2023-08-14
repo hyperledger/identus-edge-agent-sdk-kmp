@@ -8,8 +8,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.domain.models.W3CCredential
-import io.iohk.atala.prism.walletsdk.pollux.JWTCredential
+import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
+import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId

@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.mercury
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
@@ -157,6 +158,22 @@ class PlutoMock : Pluto {
     }
 
     override fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun storeLinkSecret(linkSecret: String) {
+        TODO("Not yet implemented")
+    }
+
+    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getLinkSecret(): Flow<String> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {
         TODO("Not yet implemented")
     }
 }

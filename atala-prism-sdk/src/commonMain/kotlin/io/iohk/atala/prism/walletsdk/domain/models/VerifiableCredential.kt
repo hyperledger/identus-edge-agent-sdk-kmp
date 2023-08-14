@@ -26,6 +26,7 @@ data class VerifiableCredentialTypeContainer(
 enum class CredentialType(val type: String) {
     JWT("jwt"),
     W3C("w3c"),
+    ANONCREDS("anon"),
     Unknown("Unknown")
 }
 

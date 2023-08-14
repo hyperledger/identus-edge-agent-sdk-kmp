@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.pollux
+package io.iohk.atala.prism.walletsdk.pollux.models
 
 import io.iohk.atala.prism.walletsdk.domain.models.Claim
 import io.iohk.atala.prism.walletsdk.domain.models.ClaimType
@@ -19,10 +19,9 @@ data class JWTCredential(val data: String) : Credential {
         val credentialString = jwtParts[1]
         val base64Data = Base64.getUrlDecoder().decode(credentialString)
         val jsonString = base64Data.toString(Charsets.UTF_8)
-        val dataValue = jsonString.toByteArray(Charsets.UTF_8)
 
         val json = Json { ignoreUnknownKeys = true }
-        this.jwtPayload = json.decodeFromString(dataValue.decodeToString())
+        this.jwtPayload = json.decodeFromString(jsonString)
     }
 
     override val id: String

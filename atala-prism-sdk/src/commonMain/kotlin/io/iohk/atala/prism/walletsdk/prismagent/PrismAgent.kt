@@ -14,6 +14,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
@@ -63,6 +64,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -519,33 +521,77 @@ class PrismAgent {
         if (did.method != "prism") {
             throw PolluxError.InvalidPrismDID()
         }
-        val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
-        val privateKey =
-            apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
-        val offerDataString = offer.attachments.mapNotNull {
-            when (it.data) {
-                is AttachmentJsonData -> it.data.data
-                else -> null
+
+        return when (val credentialType = pollux.extractCredentialFormatFromMessage(offer.body.formats)) {
+            CredentialType.JWT -> {
+                val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
+                val keyPair =
+                    apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
+                val offerDataString = offer.attachments.mapNotNull {
+                    when (it.data) {
+                        is AttachmentJsonData -> it.data.data
+                        else -> null
+                    }
+                }.first()
+                val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
+                val jwtString = pollux.processCredentialRequestJWT(did, keyPair.privateKey, offerJsonObject)
+                val attachmentDescriptor =
+                    AttachmentDescriptor(
+                        mediaType = credentialType.type,
+                        data = AttachmentBase64(jwtString.base64UrlEncoded)
+                    )
+                RequestCredential(
+                    from = offer.to,
+                    to = offer.from,
+                    thid = offer.thid,
+                    body = RequestCredential.Body(
+                        offer.body.goalCode,
+                        offer.body.comment,
+                        offer.body.formats
+                    ),
+                    attachments = arrayOf(attachmentDescriptor)
+                )
             }
-        }.first()
-        val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
-        val jwtString = pollux.createRequestCredentialJWT(did, privateKey, offerJsonObject)
-        val attachmentDescriptor =
-            AttachmentDescriptor(
-                mediaType = "prism/jwt",
-                data = AttachmentBase64(jwtString.base64UrlEncoded)
-            )
-        return RequestCredential(
-            from = offer.to,
-            to = offer.from,
-            thid = offer.thid,
-            body = RequestCredential.Body(
-                offer.body.goalCode,
-                offer.body.comment,
-                offer.body.formats
-            ),
-            attachments = arrayOf(attachmentDescriptor)
-        )
+
+            CredentialType.ANONCREDS -> {
+                val linkSecret = pluto.getLinkSecret().first()
+                linkSecret?.let {
+                    val pair = pollux.processCredentialRequestAnoncreds(
+                        offer = offer,
+                        linkSecret = linkSecret,
+                        linkSecretName = offer.thid ?: ""
+                    )
+                    val credentialRequest = pair.first
+                    val credentialRequestMetadata = pair.second
+
+                    val json = Json.encodeToString(credentialRequest)
+
+                    pluto.storeCredentialMetadata(credentialRequestMetadata)
+
+                    val attachmentDescriptor =
+                        AttachmentDescriptor(
+                            mediaType = credentialType.type,
+                            data = AttachmentBase64(json.base64UrlEncoded)
+                        )
+                    RequestCredential(
+                        from = offer.to,
+                        to = offer.from,
+                        thid = offer.thid,
+                        body = RequestCredential.Body(
+                            offer.body.goalCode,
+                            offer.body.comment,
+                            offer.body.formats
+                        ),
+                        attachments = arrayOf(attachmentDescriptor)
+                    )
+                } ?: throw Error("Link secret is null") // TODO: Create new prism agent error message
+            }
+
+            else -> {
+                // TODO: Create new prism agent error message
+                throw Error("Not supported credential type")
+            }
+        }
     }
 
     /**
@@ -554,18 +600,32 @@ class PrismAgent {
      * @return The parsed verifiable credential.
      * @throws PrismAgentError if there is a problem parsing the credential.
      */
-    fun processIssuedCredentialMessage(message: IssueCredential): Credential {
+    suspend fun processIssuedCredentialMessage(message: IssueCredential): Credential {
+        val credentialType = pollux.extractCredentialFormatFromMessage(message.body.formats)
         val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
 
         return attachment?.let {
-            val credential = pollux.parseVerifiableCredential(it.base64.base64UrlDecoded)
-            val storableCredential = pollux.credentialToStorableCredential(credential)
-            pluto.storeCredential(storableCredential)
-            return credential
+            val credentialData = it.base64.base64UrlDecoded
+            var linkSecret: String? = null
+            if (credentialType == CredentialType.ANONCREDS) {
+                linkSecret = pluto.getLinkSecret().first()
+            }
+
+            message.thid?.let {
+                val metadata =
+                    pluto.getCredentialMetadata(message.thid).first() ?: throw Exception("Invalid credential metadata")
+                val credential =
+                    pollux.parseCredential(data = credentialData, type = credentialType, linkSecret = linkSecret, metadata)
+
+                val storableCredential =
+                    pollux.credentialToStorableCredential(type = credentialType, credential = credential)
+                pluto.storeCredential(storableCredential)
+                return credential
+            } ?: throw UnknownError("Thid should not be null")
         } ?: throw UnknownError("Cannot find attachment base64 in message")
     }
 
-    // Message Events
+// Message Events
     /**
      * Start fetching the messages from the mediator.
      */
@@ -625,7 +685,7 @@ class PrismAgent {
         return pluto.getAllMessagesReceived()
     }
 
-    // Invitation functionalities
+// Invitation functionalities
     /**
      * Parses the given string as an invitation
      * @param str The string to parse
@@ -762,7 +822,7 @@ class PrismAgent {
             }
     }
 
-    // Proof related actions
+// Proof related actions
 
     /**
      * This function creates a Presentation from a request verification.

@@ -1,5 +1,12 @@
-package io.iohk.atala.prism.walletsdk.domain.models
+package io.iohk.atala.prism.walletsdk.pollux.models
 
+import io.iohk.atala.prism.walletsdk.domain.models.Claim
+import io.iohk.atala.prism.walletsdk.domain.models.ClaimType
+import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
+import io.iohk.atala.prism.walletsdk.domain.models.JsonString
+import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
+import io.iohk.atala.prism.walletsdk.domain.models.VerifiableCredentialTypeContainer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
