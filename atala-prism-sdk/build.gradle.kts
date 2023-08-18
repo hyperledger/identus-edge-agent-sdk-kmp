@@ -131,6 +131,8 @@ kotlin {
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.5.4")
 
                 api("org.lighthousegames:logging:1.1.2")
+
+                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmm:1.0.0-alpha")
             }
         }
         val commonTest by getting {

@@ -1,6 +1,9 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
+import anoncreds_wrapper.CredentialOffer
+import anoncreds_wrapper.CredentialRequestMetadata
+import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
@@ -14,6 +17,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
@@ -557,8 +561,8 @@ class PrismAgent {
                 val linkSecret = pluto.getLinkSecret().first()
                 linkSecret?.let {
                     val pair = pollux.processCredentialRequestAnoncreds(
-                        offer = offer,
-                        linkSecret = linkSecret,
+                        offer = CredentialOffer(Json.encodeToString(offer)),
+                        linkSecret = LinkSecret.newFromJson(linkSecret),
                         linkSecretName = offer.thid ?: ""
                     )
                     val credentialRequest = pair.first
@@ -566,7 +570,8 @@ class PrismAgent {
 
                     val json = Json.encodeToString(credentialRequest)
 
-                    pluto.storeCredentialMetadata(credentialRequestMetadata)
+                    val metadata = CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
+                    pluto.storeCredentialMetadata(metadata)
 
                     val attachmentDescriptor =
                         AttachmentDescriptor(
@@ -606,16 +611,28 @@ class PrismAgent {
 
         return attachment?.let {
             val credentialData = it.base64.base64UrlDecoded
-            var linkSecret: String? = null
+            var linkSecret: LinkSecret? = null
             if (credentialType == CredentialType.ANONCREDS) {
-                linkSecret = pluto.getLinkSecret().first()
+                linkSecret = LinkSecret.newFromJson(pluto.getLinkSecret().first())
             }
 
             message.thid?.let {
-                val metadata =
+                val plutoMetadata =
                     pluto.getCredentialMetadata(message.thid).first() ?: throw Exception("Invalid credential metadata")
+                val metadata =
+                    CredentialRequestMetadata(
+                        linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
+                        linkSecretName = plutoMetadata.linkSecretName,
+                        nonce = plutoMetadata.nonce // TODO: How to transform String to Nonce?
+                    )
+
                 val credential =
-                    pollux.parseCredential(data = credentialData, type = credentialType, linkSecret = linkSecret, metadata)
+                    pollux.parseCredential(
+                        data = credentialData,
+                        type = credentialType,
+                        linkSecret = linkSecret,
+                        credentialMetadata = metadata
+                    )
 
                 val storableCredential =
                     pollux.credentialToStorableCredential(type = credentialType, credential = credential)

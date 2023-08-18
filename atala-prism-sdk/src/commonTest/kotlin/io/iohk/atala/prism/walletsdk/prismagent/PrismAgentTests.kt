@@ -3,6 +3,9 @@ package io.iohk.atala.prism.walletsdk.prismagent
 /* ktlint-disable import-ordering */
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
@@ -13,12 +16,17 @@ import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -37,6 +45,7 @@ class PrismAgentTests {
     lateinit var polluxMock: PolluxMock
     lateinit var mediationHandlerMock: MediationHandlerMock
     lateinit var connectionManager: ConnectionManager
+    lateinit var json: Json
 
     @BeforeTest
     fun setup() {
@@ -48,6 +57,11 @@ class PrismAgentTests {
         mediationHandlerMock = MediationHandlerMock()
         // Pairing will be removed in the future
         connectionManager = ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf())
+        json = Json {
+            ignoreUnknownKeys = true
+            prettyPrint = true
+            isLenient = true
+        }
     }
 
     @Test
@@ -384,5 +398,60 @@ class PrismAgentTests {
         val x = agent.parseInvitation(oob)
         assert(x is OutOfBandInvitation)
         assert((x as OutOfBandInvitation).type == ProtocolType.Didcomminvitation)
+    }
+
+    @Ignore("Work in progress")
+    @Test
+    fun test_anoncreds() = runTest {
+        val fromDID = DID("did:prism:asdf42sf")
+        val toDID = DID("did:prism:asdf42sf")
+
+        polluxMock.extractedCredentialFormatFromMessageReturn = CredentialType.ANONCREDS
+        plutoMock
+
+        val agent = PrismAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            pollux = polluxMock,
+            connectionManager = connectionManager,
+            seed = null,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock()
+        )
+
+        val attachmentDescriptor =
+            AttachmentDescriptor(
+                mediaType = CredentialType.ANONCREDS.type,
+                data = AttachmentBase64(
+                    ""
+                )
+            )
+        val attachmentID = attachmentDescriptor.id
+
+        val offerCredential = OfferCredential(
+            body = OfferCredential.Body(
+                credentialPreview = CredentialPreview(
+                    attributes = arrayOf(
+                        CredentialPreview.Attribute("", "", "")
+                    )
+                ),
+                formats = arrayOf(
+                    CredentialFormat(
+                        attachId = attachmentID,
+                        format = CredentialType.ANONCREDS.type
+                    )
+                )
+            ),
+            attachments = arrayOf(attachmentDescriptor),
+            thid = "1",
+            from = fromDID,
+            to = toDID
+        )
+
+        val invitation = agent.prepareRequestCredentialWithIssuer(did = toDID, offer = offerCredential)
+//        val message = json.decodeFromString<Message>(invitationString)
+        println("stop")
     }
 }

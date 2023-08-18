@@ -15,6 +15,9 @@ import kotlinx.serialization.json.JsonObject
 
 class PolluxMock : Pollux {
 
+    var extractedCredentialFormatFromMessageReturn: CredentialType? = null
+    var processCredentialRequestAnoncredsReturn: Pair<CredentialRequest, CredentialRequestMeta>? = null
+
     override fun parseCredential(
         data: String,
         type: CredentialType,
@@ -46,7 +49,7 @@ class PolluxMock : Pollux {
         linkSecret: String,
         linkSecretName: String
     ): Pair<CredentialRequest, CredentialRequestMeta> {
-        TODO("Not yet implemented")
+        return processCredentialRequestAnoncredsReturn ?: throw Exception("Return not defined")
     }
 
     override fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential {
@@ -54,7 +57,7 @@ class PolluxMock : Pollux {
     }
 
     override fun extractCredentialFormatFromMessage(formats: Array<CredentialFormat>): CredentialType {
-        TODO("Not yet implemented")
+        return extractedCredentialFormatFromMessageReturn ?: throw Exception("Return not defined")
     }
 
     override fun getCredentialDefinition(id: String): CredentialDefinition {

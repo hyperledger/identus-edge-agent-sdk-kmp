@@ -5,7 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.ClaimType
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 
-data class AnonCredential @JvmOverloads constructor(
+data class AnonCredential constructor(
     val schemaID: String,
     val credentialDefinitionID: String,
     val values: Map<String, Attribute>,

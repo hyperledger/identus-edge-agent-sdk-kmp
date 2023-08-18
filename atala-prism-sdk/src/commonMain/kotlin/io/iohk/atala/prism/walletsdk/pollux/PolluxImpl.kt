@@ -1,22 +1,21 @@
 package io.iohk.atala.prism.walletsdk.pollux
 
+import anoncreds_wrapper.CredentialDefinition
+import anoncreds_wrapper.CredentialOffer
+import anoncreds_wrapper.CredentialRequest
+import anoncreds_wrapper.CredentialRequestMetadata
+import anoncreds_wrapper.LinkSecret
+import anoncreds_wrapper.Prover
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
-import io.iohk.atala.prism.walletsdk.domain.models.AnoncredPayload
-import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialDefinition
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialIssued
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequest
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
@@ -26,7 +25,6 @@ import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -40,24 +38,25 @@ import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPrivateKeySpec
-import java.util.Base64
+import java.util.*
 
 class PolluxImpl(val castor: Castor) : Pollux {
 
     @Throws(PolluxError.InvalidJWTString::class, PolluxError.InvalidCredentialError::class)
     override fun parseCredential(
-        data: String,
+        jsonData: String,
         type: CredentialType,
-        linkSecret: String?,
-        credentialMetadata: CredentialRequestMeta?
+        linkSecret: LinkSecret?,
+        credentialMetadata: CredentialRequestMetadata?
     ): Credential {
         return when (type) {
             CredentialType.JWT -> {
-                JWTCredential(data)
+                JWTCredential(jsonData)
             }
 
             CredentialType.ANONCREDS -> {
-                val parts = data.split(".")
+                // TODO: Discuss with team if this string format as JWT will be used or not
+                val parts = jsonData.split(".")
                 require(parts.size != 2) { "Invalid AnonCreds string" }
                 if (linkSecret == null) {
                     throw Error("LinkSecret is required")
@@ -68,9 +67,35 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
                 val base64Data = Base64.getUrlDecoder().decode(parts[0])
                 val jsonString = base64Data.toString(Charsets.UTF_8)
-                val credentialIssued = Json.decodeFromString<CredentialIssued>(jsonString)
 
-                TODO("Use wrapper to generate anoncreds object")
+                // TODO: Do the above jsonString contains all the fields to construct an AnonCredential object?
+                // TODO: Or do we need to process this using the rust wrapper?
+
+                val credentialDefinition = getCredentialDefinition("")
+
+
+                // TODO: Prover().processCredential should return a Credential??
+                val cred = Prover().processCredential(
+                    credential = anoncreds_wrapper.Credential(jsonData),
+                    credRequestMetadata = credentialMetadata,
+                    linkSecret = linkSecret,
+                    credDef = credentialDefinition,
+                    revRegDef = null // TODO: Is null correct?
+                )
+
+                AnonCredential(
+                    schemaID = cred.,
+                    credentialDefinitionID = ,
+                    values = ,
+                    signatureJson = ,
+                    signatureCorrectnessProofJson = ,
+                    revocationRegistryId = ,
+                    revocationRegistryJson = ,
+                    witnessJson = ,
+                    json =
+                )
+
+                return Json.decodeFromString<AnonCredential>(jsonString)
             }
 
             else -> {
@@ -164,35 +189,35 @@ class PolluxImpl(val castor: Castor) : Pollux {
     }
 
     override fun processCredentialRequestAnoncreds(
-        offer: OfferCredential,
-        linkSecret: String,
+        offer: CredentialOffer,
+        linkSecret: LinkSecret,
         linkSecretName: String
-    ): Pair<CredentialRequest, CredentialRequestMeta> {
-        offer.body.formats.find { it.format == "ANONCREDS" }?.let { credentialFormat ->
-            val attachId = credentialFormat.attachId
-            val attachment = offer.attachments.find { it.id == attachId } ?: throw Exception("")
-            val attachmentBase64 = attachment.data as AttachmentBase64
-            val data = attachmentBase64.base64.base64UrlDecoded
-            val payload: AnoncredPayload = Json.decodeFromString(data)
+    ): Pair<CredentialRequest, CredentialRequestMetadata> {
+        val credentialDefinition = getCredentialDefinition(offer.getCredDefId())
 
-            val credentialDefinition = getCredentialDefinition(payload.credDefId)
-
-            return createAnonCredentialRequest(
-                credentialDefinition = credentialDefinition,
-                credentialOffer = payload,
-                linkSecret = linkSecret,
-                linkSecretId = linkSecretName
-            )
-        } ?: throw Exception("OfferCredential is not for anoncreds")
+        return createAnonCredentialRequest(
+            credentialDefinition = credentialDefinition,
+            credentialOffer = offer,
+            linkSecret = linkSecret,
+            linkSecretId = linkSecretName
+        )
     }
 
     private fun createAnonCredentialRequest(
         credentialDefinition: CredentialDefinition,
-        credentialOffer: AnoncredPayload,
-        linkSecret: String,
+        credentialOffer: CredentialOffer,
+        linkSecret: LinkSecret,
         linkSecretId: String
-    ): Pair<CredentialRequest, CredentialRequestMeta> {
-        TODO("I assume will use rust wrapper to get anoncred from the passed arguments")
+    ): Pair<CredentialRequest, CredentialRequestMetadata> {
+        val credentialRequest = Prover().createCredentialRequest(
+            entropy = "Prism",
+            proverDid = null, // TODO: add your did
+            credDef = credentialDefinition,
+            linkSecret = linkSecret,
+            linkSecretId = linkSecretId,
+            credentialOffer = credentialOffer
+        )
+        return Pair(credentialRequest.request, credentialRequest.metadata)
     }
 
     override fun getCredentialDefinition(id: String): CredentialDefinition {

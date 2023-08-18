@@ -21,12 +21,6 @@ interface CredentialRequestBlindedMSCorrectnessProof {
     val m_caps: Map<String, String>
 }
 
-data class CredentialRequestMeta(
-    var linkSecretBlindingData: LinkSecretBlindingData,
-    var linkSecretName: String,
-    var nonce: String,
-)
-
 @Serializable
 data class LinkSecretBlindingData(
     var vPrime: String
