@@ -14,7 +14,7 @@ data class CredentialRequestMeta(
             return CredentialRequestMeta(
                 linkSecretName = metadata.linkSecretName,
                 linkSecretBlindingData = Json.decodeFromString(metadata.linkSecretBlindingData),
-                nonce = metadata.nonce
+                nonce = metadata.nonce // TODO: How to transform `Nonce` to String or any other data type to store it into pluto?
             )
         }
     }

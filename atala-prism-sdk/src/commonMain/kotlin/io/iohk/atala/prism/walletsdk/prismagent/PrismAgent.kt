@@ -561,11 +561,13 @@ class PrismAgent {
                 val linkSecret = pluto.getLinkSecret().first()
                 // TODO: If link secret is null, create and store a new link secret
                 linkSecret?.let {
+                    val anonOffer = CredentialOffer(Json.encodeToString(offer))
                     val pair = pollux.processCredentialRequestAnoncreds(
-                        offer = CredentialOffer(Json.encodeToString(offer)),
+                        offer = anonOffer,
                         linkSecret = LinkSecret.newFromJson(linkSecret),
                         linkSecretName = offer.thid ?: ""
                     )
+
                     val credentialRequest = pair.first
                     val credentialRequestMetadata = pair.second
 
@@ -620,11 +622,12 @@ class PrismAgent {
             message.thid?.let {
                 val plutoMetadata =
                     pluto.getCredentialMetadata(message.thid).first() ?: throw Exception("Invalid credential metadata")
+
                 val metadata =
                     CredentialRequestMetadata(
                         linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
                         linkSecretName = plutoMetadata.linkSecretName,
-                        nonce = plutoMetadata.nonce // TODO: How to transform String to Nonce?
+                        nonce = plutoMetadata.nonce // TODO: How to transform NonceString back to Nonce?
                     )
 
                 val credential =
