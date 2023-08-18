@@ -559,6 +559,7 @@ class PrismAgent {
 
             CredentialType.ANONCREDS -> {
                 val linkSecret = pluto.getLinkSecret().first()
+                // TODO: If link secret is null, create and store a new link secret
                 linkSecret?.let {
                     val pair = pollux.processCredentialRequestAnoncreds(
                         offer = CredentialOffer(Json.encodeToString(offer)),

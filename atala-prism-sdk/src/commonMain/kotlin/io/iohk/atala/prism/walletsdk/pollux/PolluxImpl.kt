@@ -73,29 +73,32 @@ class PolluxImpl(val castor: Castor) : Pollux {
 
                 val credentialDefinition = getCredentialDefinition("")
 
+                val cred = anoncreds_wrapper.Credential(jsonData)
 
-                // TODO: Prover().processCredential should return a Credential??
-                val cred = Prover().processCredential(
-                    credential = anoncreds_wrapper.Credential(jsonData),
-                    credRequestMetadata = credentialMetadata,
-                    linkSecret = linkSecret,
-                    credDef = credentialDefinition,
-                    revRegDef = null // TODO: Is null correct?
+                // TODO: Should use Prover().processCredential
+//                val cred = Prover().processCredential(
+//                    credential = anoncreds_wrapper.Credential(jsonData),
+//                    credRequestMetadata = credentialMetadata,
+//                    linkSecret = linkSecret,
+//                    credDef = credentialDefinition,
+//                    revRegDef = null // TODO: Is null correct?
+//                )
+
+                val values: Map<String, AnonCredential.Attribute> = cred.getValues().values.mapValues {
+                    AnonCredential.Attribute(raw = it.value.raw, encoded = it.value.encoded)
+                }
+
+                return AnonCredential(
+                    schemaID = cred.getSchemaId(),
+                    credentialDefinitionID = cred.getCredDefId(),
+                    values = values,
+                    signatureJson = cred.getSignatureJson(),
+                    signatureCorrectnessProofJson = cred.getSignatureCorrectnessProofJson(),
+                    revocationRegistryId = cred.getRevRegId(),
+                    revocationRegistryJson = cred.getRevRegJson(),
+                    witnessJson = cred.getWitnessJson() ?: "",
+                    json = cred.getJson(),
                 )
-
-                AnonCredential(
-                    schemaID = cred.,
-                    credentialDefinitionID = ,
-                    values = ,
-                    signatureJson = ,
-                    signatureCorrectnessProofJson = ,
-                    revocationRegistryId = ,
-                    revocationRegistryJson = ,
-                    witnessJson = ,
-                    json =
-                )
-
-                return Json.decodeFromString<AnonCredential>(jsonString)
             }
 
             else -> {
