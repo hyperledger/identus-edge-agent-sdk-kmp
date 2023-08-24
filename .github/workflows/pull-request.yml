@@ -72,6 +72,6 @@ jobs:
       - name: Publish coverage report
         uses: actions/upload-artifact@v3
         with:
-          name: kover-html.zip
+          name: kover-html
           path: atala-prism-sdk/build/kover/atala-prism-sdk/xml
           if-no-files-found: error
