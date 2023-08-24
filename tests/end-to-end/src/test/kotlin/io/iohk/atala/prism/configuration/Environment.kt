@@ -46,10 +46,12 @@ object Environment {
         agentUrl = properties.getProperty("PRISM_AGENT_URL")
 
         // configure rest assured
-        val requestSpecification = RequestSpecBuilder()
-            .addHeader("APIKEY", properties.getProperty("APIKEY"))
-            .build()
-        SerenityRest.setDefaultRequestSpecification(requestSpecification)
+        if (properties.containsKey("APIKEY")) {
+            val requestSpecification = RequestSpecBuilder()
+                .addHeader("APIKEY", properties.getProperty("APIKEY"))
+                .build()
+            SerenityRest.setDefaultRequestSpecification(requestSpecification)
+        }
         SerenityRest.setDefaultConfig(
             RestAssuredConfig.newConfig().objectMapperConfig(ObjectMapperConfig(ObjectMapperType.GSON))
         )
