@@ -47,7 +47,7 @@ final class MediationKeysUpdateList {
             to = to,
             fromPrior = null,
             body = Json.encodeToString(body),
-            extraHeaders = emptyArray(),
+            extraHeaders = emptyMap(),
             createdTime = "",
             expiresTimePlus = "",
             attachments = emptyArray(),
