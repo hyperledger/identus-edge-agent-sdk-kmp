@@ -11,7 +11,7 @@ fun Message.Companion.testable(
     to: DID? = null,
     fromPrior: String? = null,
     body: String = "",
-    extraHeaders: Array<String> = emptyArray(),
+    extraHeaders: Map<String, String> = emptyMap(),
     createdTime: String = "",
     expiresTimePlus: String = "",
     attachments: Array<AttachmentDescriptor> = emptyArray(),
