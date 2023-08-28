@@ -29,7 +29,7 @@ final class MediationRequest @JvmOverloads constructor(
             to = to,
             fromPrior = null,
             body = EMPTY_BODY,
-            extraHeaders = emptyArray(),
+            extraHeaders = emptyMap(),
             attachments = emptyArray(),
             thid = null,
             pthid = null,

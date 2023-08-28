@@ -142,7 +142,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
             pthid = message.pthid,
             ack = null,
             pleaseAck = null,
-            customHeaders = mapOf()
+            customHeaders = message.extraHeaders
         )
         val builder = PackEncryptedParams.builder(didCommMsg, toString).forward(false).protectSenderId(false)
         didCommMsg.from?.let { builder.from(it) }
@@ -217,7 +217,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
             ack = result.message.ack?.let { arrayOf(it) } ?: emptyArray(),
             createdTime = result.message.createdTime?.toString() ?: now().toEpochMilli().toString(),
             // expiresTimePlus = result.message.expiresTime?.toString()
-            // extraHeaders = result.message.customHeaders
+            // extraHeaders = result.message.customHeaders,
             attachments = parseAttachmentsToDomain(result.message.attachments)
         )
 

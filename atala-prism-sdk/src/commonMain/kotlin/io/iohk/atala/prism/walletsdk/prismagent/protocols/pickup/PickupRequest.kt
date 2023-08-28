@@ -24,7 +24,7 @@ final class PickupRequest @JvmOverloads constructor(
             to = to,
             fromPrior = null,
             body = Json.encodeToString(body),
-            extraHeaders = emptyArray(),
+            extraHeaders = mapOf(Pair("return_route", "all")),
             createdTime = "",
             expiresTimePlus = "",
             attachments = emptyArray(),
