@@ -51,7 +51,7 @@ jobs:
 
       - name: Build for JS, Android, JVM
         run: |
-          ./gradlew build test koverXmlReport
+          ./gradlew build test koverXmlReport koverHtmlReport
 
       - name: Coverage Report
         uses: mi-kas/kover-report@v1
@@ -60,7 +60,6 @@ jobs:
           token: ${{ env.ATALA_GITHUB_TOKEN }}
           title: Code Coverage
           update-comment: true
-          coverage-counter-type: LINE
 
       - name: Publish test results
         if: always()
@@ -69,3 +68,10 @@ jobs:
           files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
           comment_title: "Unit Test Results"
           check_name: "Unit Test Results"
+
+      - name: Publish coverage report
+        uses: actions/upload-artifact@v3
+        with:
+          name: kover-html
+          path: atala-prism-sdk/build/kover/atala-prism-sdk/xml
+          if-no-files-found: error
