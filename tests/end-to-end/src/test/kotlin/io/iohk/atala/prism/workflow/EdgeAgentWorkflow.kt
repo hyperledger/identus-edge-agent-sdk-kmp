@@ -9,6 +9,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueC
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import kotlinx.coroutines.flow.first
 import net.serenitybdd.screenplay.Actor
 import org.hamcrest.CoreMatchers.equalTo
 
@@ -55,7 +56,7 @@ class EdgeAgentWorkflow {
     fun presentProof(edgeAgent: Actor) {
         edgeAgent.attemptsTo(
             UseWalletSdk.execute {
-                val credentials = it.sdk.getAllVerifiableCredentials()
+                val credentials = it.sdk.getAllCredentials().first()
                 val credential = credentials.first()
                 val requestPresentationMessage = RequestPresentation.fromMessage(it.proofRequestStack.removeFirst())
                 val presentation = it.sdk.preparePresentationForRequestProof(requestPresentationMessage, credential)
