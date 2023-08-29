@@ -59,6 +59,11 @@ object Environment {
         // check if DID and schema exist
         preparePublishedDid(properties.getProperty("PUBLISHED_DID"))
         checkSchema(properties.getProperty("SCHEMA_ID"))
+
+        Notes.appendMessage("Mediator: $mediatorOobUrl")
+        Notes.appendMessage("Agent: $agentUrl")
+        Notes.appendMessage("DID: $publishedDid")
+        Notes.appendMessage("Schema: $schemaId")
     }
 
     /**
