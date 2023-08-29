@@ -22,7 +22,7 @@ data class Message @JvmOverloads constructor(
     @EncodeDefault val to: DID? = null,
     @EncodeDefault val fromPrior: String? = null,
     val body: String,
-    val extraHeaders: Array<String> = arrayOf(),
+    val extraHeaders: Map<String, String> = emptyMap(),
     val createdTime: String = Clock.System.now().toString(),
     val expiresTimePlus: String = Clock.System.now().plus(1.days).toString(),
     val attachments: Array<AttachmentDescriptor> = arrayOf(),
@@ -43,7 +43,6 @@ data class Message @JvmOverloads constructor(
         if (to != other.to) return false
         if (fromPrior != other.fromPrior) return false
         if (body != other.body) return false
-        if (!extraHeaders.contentEquals(other.extraHeaders)) return false
         if (createdTime != other.createdTime) return false
         if (expiresTimePlus != other.expiresTimePlus) return false
         if (!attachments.contentEquals(other.attachments)) return false
@@ -61,7 +60,7 @@ data class Message @JvmOverloads constructor(
         result = 31 * result + (to?.hashCode() ?: 0)
         result = 31 * result + (fromPrior?.hashCode() ?: 0)
         result = 31 * result + body.hashCode()
-        result = 31 * result + extraHeaders.contentHashCode()
+        result = 31 * result + extraHeaders.hashCode()
         result = 31 * result + createdTime.hashCode()
         result = 31 * result + expiresTimePlus.hashCode()
         result = 31 * result + attachments.contentHashCode()

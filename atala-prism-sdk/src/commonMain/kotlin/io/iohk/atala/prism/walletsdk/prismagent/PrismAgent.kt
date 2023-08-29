@@ -62,6 +62,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
@@ -94,7 +95,6 @@ private fun Url.Companion.parse(str: String): Url? {
  * PrismAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
  * Service Endpoint and seed data.
  */
-
 class PrismAgent {
     var state: State = State.STOPPED
         private set(value) {
@@ -558,8 +558,10 @@ class PrismAgent {
             }
 
             CredentialType.ANONCREDS -> {
-                val linkSecret = pluto.getLinkSecret().first()
-                // TODO: If link secret is null, create and store a new link secret
+                val linkSecret = pluto.getLinkSecret().firstOrNull()
+                if (linkSecret == null) {
+                    // TODO: Create and store a new link secret
+                }
                 linkSecret?.let {
                     val anonOffer = CredentialOffer(Json.encodeToString(offer))
                     val pair = pollux.processCredentialRequestAnoncreds(
