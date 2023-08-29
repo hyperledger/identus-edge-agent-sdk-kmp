@@ -1,3 +1,16 @@
+# [2.2.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.1.1...v2.2.0) (2023-08-29)
+
+
+### Bug Fixes
+
+* pr change request ATL-4965 ([#90](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/90)) ([023f285](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/023f285f5b75ac0305db8e8b3a9e8f6f11f5d6d2))
+
+
+### Features
+
+* credential abstraction ([#88](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/88)) ([4354341](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/435434147457022ba86a42f970b7170b082330e4))
+* **mercury:** add extra headers and add to pickup return route ([#94](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/94)) ([ae8fe21](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/ae8fe2155647c61c91998cac8df20d3f82ae33d1))
+
 ## [2.1.1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.1.0...v2.1.1) (2023-07-27)
 
 
