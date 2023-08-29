@@ -72,6 +72,7 @@ jobs:
           ./gradlew test --tests "TestSuite"
 
       - name: Add notes to summary
+        if: always()
         working-directory: tests/end-to-end
         run: cat notes >> $GITHUB_STEP_SUMMARY
 
