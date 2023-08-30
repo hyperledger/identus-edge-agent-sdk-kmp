@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.2.0...v2.3.0) (2023-08-30)
+
+
+### Features
+
+* **agent:** add extra headers that were missing ([#96](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/96)) ([eaf8b23](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/eaf8b233d05feddbaf96893d1b941a8604e5a5b7))
+
 # [2.2.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.1.1...v2.2.0) (2023-08-29)
 
 
