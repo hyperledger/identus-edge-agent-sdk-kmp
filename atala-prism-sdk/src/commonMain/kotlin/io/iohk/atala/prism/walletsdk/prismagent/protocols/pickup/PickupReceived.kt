@@ -35,7 +35,8 @@ final class PickupReceived {
             piuri = type,
             from = from,
             to = to,
-            body = Json.encodeToString(body)
+            body = Json.encodeToString(body),
+            extraHeaders = mapOf(Pair("return_route", "all"))
         )
     }
 
