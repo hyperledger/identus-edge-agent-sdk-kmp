@@ -16,7 +16,7 @@ abstract interface Error {
  * This object may include an error code, an error message, and possibly an array of underlying errors. If the error
  * received does not conform to the [Error] interface, it will be classified as an [UnknownPrismError].
  */
-abstract class UnknownPrismError : Error, Throwable() {
+abstract class UnknownPrismError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : Error, Throwable(message, cause) {
 
     override val code: Int?
         get() = null
@@ -36,7 +36,7 @@ abstract class UnknownPrismError : Error, Throwable() {
  * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
-abstract class KnownPrismError : Error, Throwable() {
+abstract class KnownPrismError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : Error, Throwable(message, cause) {
     override val code: Int?
         get() = null
     override val message: String?
@@ -54,12 +54,14 @@ abstract class KnownPrismError : Error, Throwable() {
  * This object may include an error code, an error message, and possibly an array of underlying errors.
  * If the error received does not conform to the [KnownPrismError], it will be classified as an [UnknownPrismError].
  */
-abstract class UnknownError : UnknownPrismError() {
+abstract class UnknownError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : UnknownPrismError(message, cause) {
 
     class SomethingWentWrongError(
+        message: String? = null,
+        cause: Throwable? = null,
         private val customMessage: String? = null,
         private val customUnderlyingErrors: Array<Error> = emptyArray()
-    ) : UnknownError() {
+    ) : UnknownError(message, cause) {
         override val code: Int? = -1
         override val message: String?
             get() {
@@ -76,7 +78,7 @@ abstract class UnknownError : UnknownPrismError() {
  * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
-sealed class CommonError : KnownPrismError() {
+sealed class CommonError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : KnownPrismError(message, cause) {
     class InvalidURLError(val url: String) : CommonError() {
         override val code: Int
             get() = -2
@@ -101,7 +103,7 @@ sealed class CommonError : KnownPrismError() {
  * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
-sealed class ApolloError : KnownPrismError() {
+sealed class ApolloError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : KnownPrismError(message, cause) {
     class InvalidMnemonicWord(private val invalidWords: Array<String>? = null) : ApolloError() {
         override val code: Int
             get() = 11
@@ -147,7 +149,7 @@ sealed class ApolloError : KnownPrismError() {
  * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
-sealed class CastorError : KnownPrismError() {
+sealed class CastorError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : KnownPrismError(message, cause) {
     class KeyCurveNotSupported(val curve: String) : CastorError() {
         override val code: Int
             get() = 21
@@ -234,7 +236,7 @@ sealed class CastorError : KnownPrismError() {
  * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
-sealed class MercuryError : KnownPrismError() {
+sealed class MercuryError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : KnownPrismError(message, cause) {
 
     class NoDIDReceiverSetError : MercuryError() {
         override val code: Int
@@ -307,7 +309,7 @@ sealed class MercuryError : KnownPrismError() {
  * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
-sealed class PlutoError : KnownPrismError() {
+sealed class PlutoError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : KnownPrismError(message, cause) {
     class MissingDataPersistence(val type: String, private val affecting: String) :
         PlutoError() {
         override val code: Int
@@ -383,7 +385,7 @@ sealed class PlutoError : KnownPrismError() {
  * This object may include an error code and an error message. If the error received conforms to the [KnownPrismError],
  * it will be classified as a known error.
  */
-sealed class PolluxError : KnownPrismError() {
+sealed class PolluxError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : KnownPrismError(message, cause) {
     class InvalidPrismDID : PolluxError() {
         override val code: Int
             get() = 53
@@ -392,7 +394,7 @@ sealed class PolluxError : KnownPrismError() {
             get() = "To create a JWT presentation a Prism DID is required"
     }
 
-    class InvalidCredentialError : PolluxError() {
+    class InvalidCredentialError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : PolluxError(message, cause) {
         override val code: Int
             get() = 51
 
