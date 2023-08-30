@@ -532,7 +532,7 @@ class PrismAgent {
         val jwtString = pollux.createRequestCredentialJWT(did, privateKey, offerJsonObject)
         val attachmentDescriptor =
             AttachmentDescriptor(
-                mediaType = "prism/jwt",
+                mediaType = JWT_MEDIA_TYPE,
                 data = AttachmentBase64(jwtString.base64UrlEncoded)
             )
         return RequestCredential(

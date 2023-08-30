@@ -39,7 +39,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
             try {
                 Json.decodeFromString<W3CCredential>(data)
             } catch (e: Exception) {
-                throw PolluxError.InvalidCredentialError()
+                throw PolluxError.InvalidCredentialError(cause = e.cause)
             }
         }
     }
