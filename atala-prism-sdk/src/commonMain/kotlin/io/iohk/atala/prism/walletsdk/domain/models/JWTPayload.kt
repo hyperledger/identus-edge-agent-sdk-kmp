@@ -2,6 +2,7 @@ package io.iohk.atala.prism.walletsdk.domain.models
 
 import io.iohk.atala.prism.walletsdk.domain.VC
 import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonArray
@@ -15,14 +16,17 @@ import kotlinx.serialization.json.jsonPrimitive
  *
  *Note: This data class conforms to the JSON Web Token (JWT) format. For more information, see https://jwt.io/introduction/.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class JWTPayload @JvmOverloads constructor(
+data class JWTPayload
+@JvmOverloads constructor(
     val iss: String,
     val sub: String?,
     @SerialName(VC)
     val verifiableCredential: JWTVerifiableCredential,
     val nbf: Long?,
-    val exp: Long?,
+    @EncodeDefault
+    val exp: Long? = null,
     @EncodeDefault
     val jti: String? = null,
     @EncodeDefault
@@ -74,6 +78,39 @@ data class JWTPayload @JvmOverloads constructor(
             result = 31 * result + (termsOfUse?.hashCode() ?: 0)
             return result
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as JWTPayload
+
+        if (iss != other.iss) return false
+        if (sub != other.sub) return false
+        if (verifiableCredential != other.verifiableCredential) return false
+        if (nbf != other.nbf) return false
+        if (exp != other.exp) return false
+        if (jti != other.jti) return false
+        if (aud != null) {
+            if (other.aud == null) return false
+            if (!aud.contentEquals(other.aud)) return false
+        } else if (other.aud != null) return false
+        if (originalJWTString != other.originalJWTString) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = iss.hashCode()
+        result = 31 * result + (sub?.hashCode() ?: 0)
+        result = 31 * result + verifiableCredential.hashCode()
+        result = 31 * result + (nbf?.hashCode() ?: 0)
+        result = 31 * result + (exp?.hashCode() ?: 0)
+        result = 31 * result + (jti?.hashCode() ?: 0)
+        result = 31 * result + (aud?.contentHashCode() ?: 0)
+        result = 31 * result + (originalJWTString?.hashCode() ?: 0)
+        return result
     }
 }
 
