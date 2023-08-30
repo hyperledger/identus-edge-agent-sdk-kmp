@@ -1,3 +1,10 @@
+## [2.3.1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.3.0...v2.3.1) (2023-08-30)
+
+
+### Bug Fixes
+
+* **pollux:** fix JWTPayload serlization & Update Error Handling ([#97](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/97)) ([9eb3927](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/9eb39274c119b293c26dd4e81be674d06fda9fd4))
+
 # [2.3.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.2.0...v2.3.0) (2023-08-30)
 
 
