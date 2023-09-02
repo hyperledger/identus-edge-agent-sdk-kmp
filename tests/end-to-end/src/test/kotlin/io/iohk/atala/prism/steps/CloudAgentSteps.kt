@@ -41,7 +41,8 @@ class CloudAgentSteps {
 
     @When("{actor} should see the credential was accepted")
     fun `Cloud Agent should see the credential was accepted`(cloudAgent: Actor) {
-        cloudAgentWorkflow.verifyCredentialState(cloudAgent, "CredentialSent")
+        val recordId = cloudAgent.recall<String>("recordId")
+        cloudAgentWorkflow.verifyCredentialState(cloudAgent, recordId, "CredentialSent")
     }
 
     @When("{actor} asks for present-proof")
@@ -57,5 +58,13 @@ class CloudAgentSteps {
     @Then("{actor} should see the present-proof is verified")
     fun `Cloud Agent should see the present-proof is verified`(cloudAgent: Actor) {
         cloudAgentWorkflow.verifyPresentProof(cloudAgent, "PresentationVerified")
+    }
+
+    @Then("{actor} should see all credentials were accepted")
+    fun `Cloud Agent should see all credentials were accepted`(cloudAgent: Actor) {
+        val recordIdList = cloudAgent.recall<List<String>>("recordIdList")
+        for (recordId in recordIdList) {
+            cloudAgentWorkflow.verifyCredentialState(cloudAgent, recordId, "CredentialSent")
+        }
     }
 }
