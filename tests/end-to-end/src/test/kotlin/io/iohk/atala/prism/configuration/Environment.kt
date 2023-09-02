@@ -10,6 +10,7 @@ import io.restassured.response.Response
 import net.serenitybdd.rest.SerenityRest
 import org.apache.http.HttpStatus
 import org.assertj.core.api.Assertions
+import java.io.File
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
@@ -58,6 +59,13 @@ object Environment {
         Notes.appendMessage("Agent: $agentUrl")
         Notes.appendMessage("DID: $publishedDid")
         Notes.appendMessage("Schema: $schemaId")
+    }
+
+    private fun getSdkVersion(): String {
+        val file = File("build.gradle.kts")
+        val input = file.readText()
+        val regex = Regex("prism-sdk:(.*)(?=\")")
+        return regex.find(input)!!.groups[1]!!.value
     }
 
     /**

@@ -10,3 +10,4 @@ import org.junit.runner.RunWith
     plugin = ["pretty"]
 )
 class TestSuite
+

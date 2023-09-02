@@ -23,11 +23,16 @@ class EdgeAgentSteps {
         edgeAgentWorkflow.connect(edgeAgent)
     }
 
-    @When("{actor} has an issued credential from {actor}")
-    fun `Edge Agent has an issued credential`(edgeAgent: Actor, cloudAgent: Actor) {
-        cloudAgentWorkflow.offerCredential(cloudAgent)
-        edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, 1)
-        edgeAgentWorkflow.acceptCredential(edgeAgent)
+    @When("{actor} has {} credentials issued by {actor}")
+    fun `Edge Agent has {} issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+        repeat(numberOfCredentialsIssued) {
+            cloudAgentWorkflow.offerCredential(cloudAgent)
+            edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
+            edgeAgentWorkflow.acceptCredential(edgeAgent)
+            cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")
+            edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, 1)
+            edgeAgentWorkflow.processIssuedCredential(edgeAgent, 1)
+        }
     }
 
     @When("{actor} accepts {} credential offer sequentially from {actor}")
@@ -60,6 +65,7 @@ class EdgeAgentSteps {
             cloudAgentWorkflow.offerCredential(cloudAgent)
             recordIdList.add(cloudAgent.recall("recordId"))
         }
+        cloudAgent.remember("recordIdList", recordIdList)
 
         // wait to receive
         edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 3)
