@@ -1,8 +1,10 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+import anoncreds_wrapper.CredentialOffer
+import anoncreds_wrapper.CredentialRequestMetadata
+import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.pollux.models.CredentialDefinition
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequest
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
@@ -10,7 +12,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import kotlinx.serialization.json.JsonObject
 
 class PolluxMock : Pollux {
@@ -21,8 +22,8 @@ class PolluxMock : Pollux {
     override fun parseCredential(
         data: String,
         type: CredentialType,
-        linkSecret: String?,
-        credentialMetadata: CredentialRequestMeta?
+        linkSecret: LinkSecret?,
+        credentialMetadata: CredentialRequestMetadata?
     ): Credential {
         TODO("Not yet implemented")
     }
@@ -45,11 +46,12 @@ class PolluxMock : Pollux {
     }
 
     override fun processCredentialRequestAnoncreds(
-        offer: OfferCredential,
-        linkSecret: String,
+        offer: CredentialOffer,
+        linkSecret: LinkSecret,
         linkSecretName: String
-    ): Pair<CredentialRequest, CredentialRequestMeta> {
-        return processCredentialRequestAnoncredsReturn ?: throw Exception("Return not defined")
+    ): Pair<anoncreds_wrapper.CredentialRequest, CredentialRequestMetadata> {
+        TODO("Not yet implemented")
+        // return processCredentialRequestAnoncredsReturn ?: throw Exception("Return not defined")
     }
 
     override fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential {
@@ -60,7 +62,7 @@ class PolluxMock : Pollux {
         return extractedCredentialFormatFromMessageReturn ?: throw Exception("Return not defined")
     }
 
-    override fun getCredentialDefinition(id: String): CredentialDefinition {
+    override fun getCredentialDefinition(id: String): anoncreds_wrapper.CredentialDefinition {
         TODO("Not yet implemented")
     }
 }

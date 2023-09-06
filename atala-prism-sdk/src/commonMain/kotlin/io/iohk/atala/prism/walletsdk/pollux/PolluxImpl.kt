@@ -38,11 +38,23 @@ import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPrivateKeySpec
-import java.util.*
+import java.util.Base64
 
 class PolluxImpl(val castor: Castor) : Pollux {
 
     @Throws(PolluxError.InvalidJWTString::class, PolluxError.InvalidCredentialError::class)
+    fun parseVerifiableCredential(data: String): Credential {
+        return try {
+            JWTCredential(data)
+        } catch (e: Exception) {
+            try {
+                Json.decodeFromString<W3CCredential>(data)
+            } catch (e: Exception) {
+                throw PolluxError.InvalidCredentialError(cause = e.cause)
+            }
+        }
+    }
+
     override fun parseCredential(
         jsonData: String,
         type: CredentialType,
