@@ -1,5 +1,6 @@
-package io.iohk.atala.prism.walletsdk.domain.models
+package io.iohk.atala.prism.walletsdk.pollux.models
 
+import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import kotlinx.serialization.Serializable
 
 interface CredentialRequest {

@@ -8,10 +8,10 @@ import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
-import io.iohk.atala.prism.walletsdk.domain.models.LinkSecretBlindingData
+import io.iohk.atala.prism.walletsdk.pollux.models.LinkSecretBlindingData
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID

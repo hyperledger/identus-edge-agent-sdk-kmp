@@ -4,6 +4,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
+import anoncreds_wrapper.Nonce
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
@@ -17,7 +18,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
@@ -558,43 +559,43 @@ class PrismAgent {
             }
 
             CredentialType.ANONCREDS -> {
-                val linkSecret = pluto.getLinkSecret().firstOrNull()
+                var linkSecret = pluto.getLinkSecret().firstOrNull()
                 if (linkSecret == null) {
-                    // TODO: Create and store a new link secret
+                    val linkSecretObj = LinkSecret()
+                    linkSecret = linkSecretObj.getJson()
+                    pluto.storeLinkSecret(linkSecret)
                 }
-                linkSecret?.let {
-                    val anonOffer = CredentialOffer(Json.encodeToString(offer))
-                    val pair = pollux.processCredentialRequestAnoncreds(
-                        offer = anonOffer,
-                        linkSecret = LinkSecret.newFromJson(linkSecret),
-                        linkSecretName = offer.thid ?: ""
+                val anonOffer = CredentialOffer(Json.encodeToString(offer))
+                val pair = pollux.processCredentialRequestAnoncreds(
+                    offer = anonOffer,
+                    linkSecret = LinkSecret.newFromJson(linkSecret),
+                    linkSecretName = offer.thid ?: ""
+                )
+
+                val credentialRequest = pair.first
+                val credentialRequestMetadata = pair.second
+
+                val json = Json.encodeToString(credentialRequest)
+
+                val metadata = CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
+                pluto.storeCredentialMetadata(metadata)
+
+                val attachmentDescriptor =
+                    AttachmentDescriptor(
+                        mediaType = credentialType.type,
+                        data = AttachmentBase64(json.base64UrlEncoded)
                     )
-
-                    val credentialRequest = pair.first
-                    val credentialRequestMetadata = pair.second
-
-                    val json = Json.encodeToString(credentialRequest)
-
-                    val metadata = CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
-                    pluto.storeCredentialMetadata(metadata)
-
-                    val attachmentDescriptor =
-                        AttachmentDescriptor(
-                            mediaType = credentialType.type,
-                            data = AttachmentBase64(json.base64UrlEncoded)
-                        )
-                    RequestCredential(
-                        from = offer.to,
-                        to = offer.from,
-                        thid = offer.thid,
-                        body = RequestCredential.Body(
-                            offer.body.goalCode,
-                            offer.body.comment,
-                            offer.body.formats
-                        ),
-                        attachments = arrayOf(attachmentDescriptor)
-                    )
-                } ?: throw Error("Link secret is null") // TODO: Create new prism agent error message
+                RequestCredential(
+                    from = offer.to,
+                    to = offer.from,
+                    thid = offer.thid,
+                    body = RequestCredential.Body(
+                        offer.body.goalCode,
+                        offer.body.comment,
+                        offer.body.formats
+                    ),
+                    attachments = arrayOf(attachmentDescriptor)
+                )
             }
 
             else -> {
@@ -629,7 +630,7 @@ class PrismAgent {
                     CredentialRequestMetadata(
                         linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
                         linkSecretName = plutoMetadata.linkSecretName,
-                        nonce = plutoMetadata.nonce // TODO: How to transform NonceString back to Nonce?
+                        nonce = Nonce.newFromValue(plutoMetadata.nonce)
                     )
 
                 val credential =

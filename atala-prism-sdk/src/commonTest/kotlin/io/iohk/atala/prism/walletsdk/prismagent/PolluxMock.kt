@@ -2,9 +2,9 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialDefinition
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequest
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialDefinition
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequest
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey

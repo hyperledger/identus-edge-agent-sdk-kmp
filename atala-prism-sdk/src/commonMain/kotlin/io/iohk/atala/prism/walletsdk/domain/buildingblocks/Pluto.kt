@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.domain.buildingblocks
 
-import io.iohk.atala.prism.walletsdk.domain.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator

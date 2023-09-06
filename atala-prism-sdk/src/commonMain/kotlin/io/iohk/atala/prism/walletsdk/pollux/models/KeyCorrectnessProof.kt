@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.domain.models
+package io.iohk.atala.prism.walletsdk.pollux.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

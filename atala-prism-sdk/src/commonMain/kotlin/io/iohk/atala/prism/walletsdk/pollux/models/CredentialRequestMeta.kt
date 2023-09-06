@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.domain.models
+package io.iohk.atala.prism.walletsdk.pollux.models
 
 import anoncreds_wrapper.CredentialRequestMetadata
 import kotlinx.serialization.decodeFromString
@@ -14,7 +14,7 @@ data class CredentialRequestMeta(
             return CredentialRequestMeta(
                 linkSecretName = metadata.linkSecretName,
                 linkSecretBlindingData = Json.decodeFromString(metadata.linkSecretBlindingData),
-                nonce = metadata.nonce // TODO: How to transform `Nonce` to String or any other data type to store it into pluto?
+                nonce = metadata.nonce.getValue()
             )
         }
     }

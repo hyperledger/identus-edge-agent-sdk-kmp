@@ -1,8 +1,8 @@
-package io.iohk.atala.prism.walletsdk.domain.models
+package io.iohk.atala.prism.walletsdk.pollux.models
 
 import kotlinx.serialization.SerialName
 
-data class AnoncredPayload @JvmOverloads constructor(
+data class AnoncredPayload(
     @SerialName("schema_id")
     val schemaId: String,
     @SerialName("cred_def_id")
