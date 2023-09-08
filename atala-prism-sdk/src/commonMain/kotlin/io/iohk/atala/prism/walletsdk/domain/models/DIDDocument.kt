@@ -57,7 +57,7 @@ data class DIDDocument(
         val controller: DID,
         val type: String,
         val publicKeyJwk: Map<String, String>? = null,
-        val publicKeyMultibase: String? = null,
+        val publicKeyMultibase: String? = null
     ) {
         companion object {
             @JvmStatic

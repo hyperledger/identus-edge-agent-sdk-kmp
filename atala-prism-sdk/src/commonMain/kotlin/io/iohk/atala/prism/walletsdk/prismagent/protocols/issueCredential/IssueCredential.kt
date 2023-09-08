@@ -153,7 +153,7 @@ data class IssueCredential(
     }
 
     override fun hashCode(): Int {
-        var result = id?.hashCode() ?: 0
+        var result = id.hashCode()
         result = 31 * result + body.hashCode()
         result = 31 * result + attachments.contentHashCode()
         result = 31 * result + (thid?.hashCode() ?: 0)
@@ -169,7 +169,7 @@ inline fun <reified T : Serializable> IssueCredential.Companion.build(
     fromDID: DID,
     toDID: DID,
     thid: String?,
-    credentials: Map<String, T> = mapOf(),
+    credentials: Map<String, T> = mapOf()
 ): IssueCredential {
     val aux = credentials.map { (key, value) ->
         val attachment = AttachmentDescriptor.build(payload = value)

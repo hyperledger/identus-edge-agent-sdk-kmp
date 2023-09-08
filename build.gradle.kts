@@ -2,13 +2,13 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
 plugins {
-    id("org.jetbrains.kotlin.android") version "1.7.10" apply false
-    kotlin("jvm") version "1.7.20"
-    kotlin("plugin.serialization") version "1.7.20"
+    id("org.jetbrains.kotlin.android") version "1.9.10" apply false
+    kotlin("jvm") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.2.1"
-    id("org.jlleitschuh.gradle.ktlint") version "11.0.0"
-    id("org.jetbrains.dokka") version "1.8.10"
+    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
+    id("org.jetbrains.dokka") version "1.9.0"
 }
 
 buildscript {
@@ -19,10 +19,10 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.20")
-        classpath("com.android.tools.build:gradle:7.2.2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
+        classpath("com.android.tools.build:gradle:7.4.0") // 7.4.2 is still not supported
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
-        classpath("com.squareup.sqldelight:gradle-plugin:1.5.4")
+        classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
         classpath("com.github.piacenti:antlr-kotlin-gradle-plugin:0.0.14")
     }
 }
@@ -30,7 +30,7 @@ buildscript {
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
-        vendor.set(JvmVendorSpec.ADOPTOPENJDK)
+        vendor.set(JvmVendorSpec.AZUL)
     }
 }
 
@@ -122,7 +122,7 @@ subprojects {
 }
 
 rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
-    rootProject.extensions.getByType(NodeJsRootExtension::class.java).nodeVersion = "16.17.0"
+    rootProject.extensions.getByType(NodeJsRootExtension::class.java).nodeVersion = "18.17.1"
 }
 
 tasks.dokkaGfmMultiModule.configure {

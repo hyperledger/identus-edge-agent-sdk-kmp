@@ -18,7 +18,7 @@ final class MediationRequest @JvmOverloads constructor(
     ) : this(
         id = UUID.randomUUID4().toString(),
         from = from,
-        to = to,
+        to = to
     )
 
     fun makeMessage(): Message {
