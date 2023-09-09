@@ -19,7 +19,7 @@ interface Pluto {
         did: DID,
         keyPathIndex: Int,
         alias: String?,
-        privateKeys: List<PrivateKey>,
+        privateKeys: List<PrivateKey>
     )
 
     fun storePeerDID(did: DID)

@@ -14,7 +14,7 @@ class LongFormPrismDIDResolver(
     override suspend fun resolve(didString: String): DIDDocument {
         return CastorShared.resolveLongFormPrismDID(
             apollo = apollo,
-            didString = didString,
+            didString = didString
         )
     }
 }

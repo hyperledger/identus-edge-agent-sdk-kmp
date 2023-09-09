@@ -135,8 +135,8 @@ class PrismAgentTests {
             serviceEndpoint = DIDDocument.ServiceEndpoint(
                 uri = "localhost:8082",
                 accept = seAccept,
-                routingKeys = seRoutingKeys,
-            ),
+                routingKeys = seRoutingKeys
+            )
         )
         val newDID = agent.createNewPeerDID(services = arrayOf(service), updateMediator = false)
 
@@ -311,9 +311,9 @@ class PrismAgentTests {
             OutOfBandInvitation.Body(
                 "issue-vc",
                 "To issue a Faber College Graduate credential",
-                listOf("didcomm/v2", "didcomm/aip2;env=rfc587"),
+                listOf("didcomm/v2", "didcomm/aip2;env=rfc587")
             ),
-            oobInvitation.body,
+            oobInvitation.body
         )
     }
 

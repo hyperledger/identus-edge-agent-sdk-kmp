@@ -44,8 +44,8 @@ class PrismDIDPublicKey {
             id = id,
             usage = usage.toProto(),
             keyData = io.iohk.atala.prism.protos.PublicKey.KeyData.CompressedEcKeyData(
-                compressed.toProto(),
-            ),
+                compressed.toProto()
+            )
         )
     }
 
@@ -57,7 +57,7 @@ class PrismDIDPublicKey {
         CAPABILITY_DELEGATION_KEY("capabilityDelegationKey"),
         CAPABILITY_INVOCATION_KEY("capabilityInvocationKey"),
         KEY_AGREEMENT_KEY("keyAgreementKey"),
-        UNKNOWN_KEY("unknownKey"),
+        UNKNOWN_KEY("unknownKey")
     }
 }
 
@@ -78,7 +78,7 @@ fun KeyUsage.fromProto(): PrismDIDPublicKey.Usage {
 fun CompressedPublicKey.toProto(): CompressedECKeyData {
     return CompressedECKeyData(
         curve = uncompressed.curve.curve.value,
-        data = ByteArr(value),
+        data = ByteArr(value)
     )
 }
 

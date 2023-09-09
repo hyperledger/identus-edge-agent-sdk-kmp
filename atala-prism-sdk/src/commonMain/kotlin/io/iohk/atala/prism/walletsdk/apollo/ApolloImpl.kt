@@ -51,8 +51,8 @@ class ApolloImpl : Apollo {
         return Seed(
             value = KeyDerivation.binarySeed(
                 seed = mnemonicCode,
-                passphrase = passphrase,
-            ),
+                passphrase = passphrase
+            )
         )
     }
 
@@ -70,9 +70,9 @@ class ApolloImpl : Apollo {
             Seed(
                 value = KeyDerivation.binarySeed(
                     seed = mnemonicCode,
-                    passphrase = passphrase ?: "",
-                ),
-            ),
+                    passphrase = passphrase ?: ""
+                )
+            )
         )
     }
 
@@ -98,12 +98,12 @@ class ApolloImpl : Apollo {
                     keyCurve = curve,
                     privateKey = PrivateKey(
                         keyCurve = curve,
-                        value = privateKey.getEncoded(),
+                        value = privateKey.getEncoded()
                     ),
                     publicKey = PublicKey(
                         curve = curve,
-                        value = publicKey.getEncoded(),
-                    ),
+                        value = publicKey.getEncoded()
+                    )
                 )
             }
 
@@ -133,12 +133,12 @@ class ApolloImpl : Apollo {
                     keyCurve = privateKey.keyCurve,
                     privateKey = PrivateKey(
                         keyCurve = privateKey.keyCurve,
-                        value = kmmPrivateKey.getEncoded(),
+                        value = kmmPrivateKey.getEncoded()
                     ),
                     publicKey = PublicKey(
                         curve = privateKey.keyCurve,
-                        value = kmmPrivateKey.getPublicKey().getEncoded(),
-                    ),
+                        value = kmmPrivateKey.getPublicKey().getEncoded()
+                    )
                 )
             }
 
@@ -150,12 +150,12 @@ class ApolloImpl : Apollo {
                     keyCurve = privateKey.keyCurve,
                     privateKey = PrivateKey(
                         keyCurve = privateKey.keyCurve,
-                        value = edPrivateKey.encoded,
+                        value = edPrivateKey.encoded
                     ),
                     publicKey = PublicKey(
                         curve = privateKey.keyCurve,
-                        value = edPublicKey.encoded,
-                    ),
+                        value = edPublicKey.encoded
+                    )
                 )
             }
 
@@ -167,12 +167,12 @@ class ApolloImpl : Apollo {
                     keyCurve = privateKey.keyCurve,
                     privateKey = PrivateKey(
                         keyCurve = privateKey.keyCurve,
-                        value = xPrivateKey.encoded,
+                        value = xPrivateKey.encoded
                     ),
                     publicKey = PublicKey(
                         curve = privateKey.keyCurve,
-                        value = xPublicKey.encoded,
-                    ),
+                        value = xPublicKey.encoded
+                    )
                 )
             }
         }
@@ -189,7 +189,7 @@ class ApolloImpl : Apollo {
         val kmmCompressed = kmmPublicKey.getEncodedCompressed()
         return CompressedPublicKey(
             uncompressed = publicKey,
-            value = kmmCompressed,
+            value = kmmCompressed
         )
     }
 
@@ -204,11 +204,11 @@ class ApolloImpl : Apollo {
         val kmmCompressed = kmmPublicKey.getEncodedCompressed()
         val publicKey = PublicKey(
             curve = KeyCurve(Curve.SECP256K1),
-            value = kmmPublicKey.getEncoded(),
+            value = kmmPublicKey.getEncoded()
         )
         return CompressedPublicKey(
             uncompressed = publicKey,
-            value = kmmCompressed,
+            value = kmmCompressed
         )
     }
 
@@ -226,7 +226,7 @@ class ApolloImpl : Apollo {
                 val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(x, y)
                 PublicKey(
                     curve = curve,
-                    value = kmmPublicKey.getEncoded(),
+                    value = kmmPublicKey.getEncoded()
                 )
             }
 
@@ -250,7 +250,7 @@ class ApolloImpl : Apollo {
                 val kmmPublicKey = KMMECSecp256k1PublicKey.secp256k1FromBytes(x)
                 PublicKey(
                     curve = curve,
-                    value = kmmPublicKey.getEncoded(),
+                    value = kmmPublicKey.getEncoded()
                 )
             }
 
@@ -275,11 +275,9 @@ class ApolloImpl : Apollo {
                 val kmmSignature = KMMECDSA.sign(
                     type = ECDSAType.ECDSA_SHA256,
                     data = message,
-                    privateKey = kmmPrivateKey,
+                    privateKey = kmmPrivateKey
                 )
-                Signature(
-                    value = kmmSignature,
-                )
+                Signature(value = kmmSignature)
             }
 
             Curve.ED25519 -> {
@@ -287,9 +285,7 @@ class ApolloImpl : Apollo {
                     privateKey = privateKey,
                     message = message
                 )
-                Signature(
-                    value = signature
-                )
+                Signature(value = signature)
             }
 
             else -> {
@@ -344,7 +340,7 @@ class ApolloImpl : Apollo {
                     type = ECDSAType.ECDSA_SHA256,
                     data = challenge,
                     publicKey = kmmPublicKey,
-                    signature = signature.value,
+                    signature = signature.value
                 )
             }
             Curve.ED25519 -> {

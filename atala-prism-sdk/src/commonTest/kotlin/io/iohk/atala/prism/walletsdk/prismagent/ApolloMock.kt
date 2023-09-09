@@ -17,18 +17,18 @@ class ApolloMock : Apollo {
     var createRandomSeedReturn: SeedWords = SeedWords(emptyArray(), Seed(ByteArray(0)))
     var createKeyPairReturn: KeyPair = KeyPair(
         privateKey = PrivateKey(KeyCurve(Curve.ED25519), ByteArray(0)),
-        publicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
+        publicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0))
     )
     var compressedPublicKeyReturn: CompressedPublicKey = CompressedPublicKey(
         PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
-        ByteArray(0),
+        ByteArray(0)
     )
     var publicKeyReturn: PublicKey = PublicKey(KeyCurve(Curve.ED25519), ByteArray(0))
     var signMessageReturn: Signature = Signature(ByteArray(0))
     var verifySignatureReturn: Boolean = false
     var compressedPublicKeyDataReturn: CompressedPublicKey = CompressedPublicKey(
         PublicKey(KeyCurve(Curve.ED25519), ByteArray(0)),
-        ByteArray(0),
+        ByteArray(0)
     )
     var signMessageByteArrayReturn: Signature = Signature(ByteArray(0))
     var signMessageStringReturn: Signature = Signature(ByteArray(0))
@@ -74,6 +74,6 @@ class ApolloMock : Apollo {
     override fun verifySignature(
         publicKey: PublicKey,
         challenge: ByteArray,
-        signature: Signature,
+        signature: Signature
     ): Boolean = verifySignatureReturn
 }

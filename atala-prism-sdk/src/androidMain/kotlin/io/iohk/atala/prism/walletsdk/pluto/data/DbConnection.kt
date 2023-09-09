@@ -8,15 +8,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 
 actual class DbConnection actual constructor() {
     actual var driver: SqlDriver? = null
-    actual suspend fun connectDb(
-        context: Any?,
-    ): PrismPlutoDb {
+    actual suspend fun connectDb(context: Any?): PrismPlutoDb {
         val androidContext: Context = (context as? Context) ?: throw PlutoError.DatabaseContextError()
         val driver = AndroidSqliteDriver(PrismPlutoDb.Schema, androidContext, "prism.db")
         this.driver = driver
-        return PrismPlutoDb(
-            driver,
-        )
+        return PrismPlutoDb(driver)
     }
 }
 
