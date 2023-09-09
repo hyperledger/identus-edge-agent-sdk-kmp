@@ -13,7 +13,7 @@ constructor(val did: DID) {
 
     init {
         val methodId = PrismDIDMethodId(
-            did.methodId,
+            did.methodId
         )
 
         if (methodId.sections.size != 2) {

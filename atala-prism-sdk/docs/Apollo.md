@@ -22,7 +22,7 @@ Public-key encryption uses a public encryption key to encrypt data so that only 
 
 ### Accumulators
 
-Cryptographic accumulators allow for the accumulation of multiple values into one. Merkle trees are the most common type of accumulator used in the cryptocurrency domain. Accumulators make it possible to check (and prove) whether a given value has been accumulated.
+Cryptographic accumulators allow for the accumulation of multiple values into one. Merkle's trees are the most common type of accumulator used in the cryptocurrency domain. Accumulators make it possible to check (and prove) whether a given value has been accumulated.
 
 ### MAC
 

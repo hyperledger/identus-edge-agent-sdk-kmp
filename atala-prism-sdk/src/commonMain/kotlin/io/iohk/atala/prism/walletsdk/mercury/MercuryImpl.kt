@@ -176,7 +176,7 @@ class MercuryImpl(
             body = ForwardMessage.ForwardBody(message.to.toString()),
             encryptedMessage = encrypted,
             from = message.from!!,
-            to = mediatorDid,
+            to = mediatorDid
         )
     }
 

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.domain.models
 import io.iohk.atala.prism.apollo.uuid.UUID
 import kotlinx.datetime.Clock
 import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -15,7 +16,9 @@ import kotlin.time.Duration.Companion.days
  * [Message] objects are typically exchanged between DID controllers using the [Mercury] building block.
  */
 @Serializable
-data class Message @JvmOverloads constructor(
+data class Message @OptIn(ExperimentalSerializationApi::class)
+@JvmOverloads
+constructor(
     val id: String = UUID.randomUUID4().toString(),
     val piuri: String,
     @EncodeDefault val from: DID? = null,
@@ -76,7 +79,7 @@ data class Message @JvmOverloads constructor(
 
     enum class Direction(val value: Int) {
         SENT(0),
-        RECEIVED(1),
+        RECEIVED(1)
     }
 
     companion object {

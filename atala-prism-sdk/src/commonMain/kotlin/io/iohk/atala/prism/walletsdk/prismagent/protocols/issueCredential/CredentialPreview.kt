@@ -24,10 +24,11 @@ constructor(
     data class Attribute(
         val name: String,
         val value: String,
+        @SerialName("mime_type")
         val mimeType: String?
     )
 
-    public val type: String = ProtocolType.DidcommCredentialPreview.value
+    val type: String = ProtocolType.DidcommCredentialPreview.value
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

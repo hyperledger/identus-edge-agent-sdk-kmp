@@ -35,9 +35,9 @@ class DefaultSecretsResolverImpl(val pluto: Pluto) : SecretsResolver {
                     PrivateJWK(
                         secretId,
                         privateKey.keyCurve.curve.toString(),
-                        privateKey.value.base64UrlEncoded,
-                    ).toString(),
-                ),
+                        privateKey.value.base64UrlEncoded
+                    ).toString()
+                )
             )
         }
     }

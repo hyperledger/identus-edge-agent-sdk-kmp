@@ -34,7 +34,7 @@ interface Castor {
      */
     fun createPrismDID(
         masterPublicKey: PublicKey,
-        services: Array<DIDDocument.Service>?,
+        services: Array<DIDDocument.Service>?
     ): DID
 
     /**
@@ -48,7 +48,7 @@ interface Castor {
      */
     fun createPeerDID(
         keyPairs: Array<KeyPair>,
-        services: Array<DIDDocument.Service>,
+        services: Array<DIDDocument.Service>
     ): DID
 
     /**
@@ -77,6 +77,6 @@ interface Castor {
     suspend fun verifySignature(
         did: DID,
         challenge: ByteArray,
-        signature: ByteArray,
+        signature: ByteArray
     ): Boolean
 }

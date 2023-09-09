@@ -33,7 +33,7 @@ data class W3CCredential @JvmOverloads constructor(
     val validFrom: VerifiableCredentialTypeContainer? = null,
     val validUntil: VerifiableCredentialTypeContainer? = null,
     val proof: JsonString?,
-    val aud: Array<String> = arrayOf(),
+    val aud: Array<String> = arrayOf()
 ) : Credential {
 
     override val id: String

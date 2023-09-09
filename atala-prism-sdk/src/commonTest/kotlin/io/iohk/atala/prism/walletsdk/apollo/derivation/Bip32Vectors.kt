@@ -11,7 +11,7 @@ sealed class RawTestVectorBase {
 @Serializable
 class RawTestVector(
     override val seed: String,
-    override val derivations: List<List<String>>,
+    override val derivations: List<List<String>>
 ) : RawTestVectorBase()
 
 val bip32Vectors =

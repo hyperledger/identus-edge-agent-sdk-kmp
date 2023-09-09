@@ -67,7 +67,7 @@ class PlutoMock : Pluto {
         did: DID,
         keyPathIndex: Int,
         alias: String?,
-        privateKeys: List<PrivateKey>,
+        privateKeys: List<PrivateKey>
     ) {
         storedPrismDID += did
         wasStorePrismDIDAndPrivateKeysCalled = true

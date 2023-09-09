@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.flow
 
 class MediationHandlerMock(
     override var mediator: Mediator? = null,
-    override var mediatorDID: DID = DID.testable(),
+    override var mediatorDID: DID = DID.testable()
 ) : MediationHandler {
 
     var bootMediatorResponse: Mediator? = null
