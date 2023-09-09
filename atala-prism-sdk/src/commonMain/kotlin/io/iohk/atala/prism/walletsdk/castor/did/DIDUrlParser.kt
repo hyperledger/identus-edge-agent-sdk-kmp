@@ -35,7 +35,7 @@ object DIDUrlParser {
             did,
             listener.path ?: emptyArray(),
             listener.query,
-            listener.fragment,
+            listener.fragment
         )
     }
 }

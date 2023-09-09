@@ -47,7 +47,7 @@ data class JWTPayload
         val credentialStatus: VerifiableCredentialTypeContainer? = null,
         val refreshService: VerifiableCredentialTypeContainer? = null,
         val evidence: VerifiableCredentialTypeContainer? = null,
-        val termsOfUse: VerifiableCredentialTypeContainer? = null,
+        val termsOfUse: VerifiableCredentialTypeContainer? = null
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

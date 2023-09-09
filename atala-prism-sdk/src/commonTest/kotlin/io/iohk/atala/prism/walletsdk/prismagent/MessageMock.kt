@@ -18,7 +18,7 @@ fun Message.Companion.testable(
     thid: String? = null,
     pthid: String? = null,
     ack: Array<String> = emptyArray(),
-    direction: Message.Direction = Message.Direction.RECEIVED,
+    direction: Message.Direction = Message.Direction.RECEIVED
 ): Message {
     return Message(
         id,
@@ -34,6 +34,6 @@ fun Message.Companion.testable(
         thid,
         pthid,
         ack,
-        direction,
+        direction
     )
 }

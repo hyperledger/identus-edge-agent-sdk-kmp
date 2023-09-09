@@ -11,9 +11,7 @@ actual class DbConnection actual constructor() {
             PrismPlutoDb.Schema.create(driver)
         }
         this.driver = driver
-        return PrismPlutoDb(
-            driver,
-        )
+        return PrismPlutoDb(driver)
     }
 }
 

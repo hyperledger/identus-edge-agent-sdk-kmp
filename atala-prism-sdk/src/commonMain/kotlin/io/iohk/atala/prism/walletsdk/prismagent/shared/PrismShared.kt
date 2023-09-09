@@ -25,7 +25,7 @@ internal object PrismShared {
         url: Url,
         urlParametersArray: Array<KeyValue>,
         httpHeadersArray: Array<KeyValue>,
-        body: Any?,
+        body: Any?
     ): HttpRequestBuilder {
         val urlParameters: Map<String, String> = mapFromKeyValueArray(urlParametersArray)
         val httpHeaders: Map<String, String> = mapFromKeyValueArray(httpHeadersArray)
