@@ -9,9 +9,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
-import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.LogLevel
 import io.iohk.atala.prism.walletsdk.logger.Metadata

@@ -3,12 +3,12 @@ package io.iohk.atala.prism.walletsdk.domain.buildingblocks
 import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
 import io.iohk.atala.prism.walletsdk.domain.models.CompressedPublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
-import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import kotlin.jvm.Throws
 
 /**
@@ -70,7 +70,7 @@ interface Apollo {
      * @return [CompressedPublicKey].
      */
     // @JsName("compressedPublicKeyFromPublicKey")
-    fun compressedPublicKey(publicKey: PublicKey): CompressedPublicKey
+    fun compressedPublicKey(publicKey: PublicKey): PublicKey
 
     /**
      * Decompresses a given compressed public key into its original form.
@@ -79,7 +79,7 @@ interface Apollo {
      * @return [CompressedPublicKey].
      */
     // @JsName("compressedPublicKeyFromCompressedData")
-    fun compressedPublicKey(compressedData: ByteArray): CompressedPublicKey
+    fun compressedPublicKey(compressedData: ByteArray): PublicKey
 
     /**
      * Create a public key from byte coordinates.

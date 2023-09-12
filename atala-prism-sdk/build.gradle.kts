@@ -131,6 +131,8 @@ kotlin {
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.5.4")
 
                 api("org.lighthousegames:logging:1.1.2")
+
+                implementation("com.ionspin.kotlin:bignum:0.3.7")
             }
         }
         val commonTest by getting {

@@ -19,6 +19,12 @@ import io.iohk.atala.prism.didcomm.didpeer.createPeerDIDNumalgo2
 import io.iohk.atala.prism.protos.AtalaOperation
 import io.iohk.atala.prism.protos.CreateDIDOperation
 import io.iohk.atala.prism.protos.Service
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.castor.DID
 import io.iohk.atala.prism.walletsdk.castor.PRISM
 import io.iohk.atala.prism.walletsdk.castor.did.DIDParser
@@ -35,10 +41,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
-import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.OctetPublicKey
-import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.LogLevel
 import io.iohk.atala.prism.walletsdk.logger.Metadata
@@ -398,8 +403,8 @@ internal class CastorShared {
                     val method = DIDDocument.VerificationMethod(
                         id = didUrl,
                         controller = did,
-                        type = publicKey.keyData.curve.curve.value,
-                        publicKeyMultibase = publicKey.keyData.value.base64Encoded,
+                        type = publicKey.keyData.getCurve(),
+                        publicKeyMultibase = publicKey.keyData.getValue().base64Encoded,
                     )
                     partialResult + (didUrl.string() to method)
                 }
@@ -437,10 +442,19 @@ internal class CastorShared {
                 .flatMap { it.verificationMethods.toList() }
                 .mapNotNull {
                     it.publicKeyMultibase?.let { publicKey ->
-                        PublicKey(
-                            curve = KeyCurve(DIDDocument.VerificationMethod.getCurveByType(it.type)),
-                            value = publicKey.encodeToByteArray(),
-                        )
+                        when (DIDDocument.VerificationMethod.getCurveByType(it.type)) {
+                            Curve.SECP256K1 -> {
+                                Secp256k1PublicKey(publicKey.encodeToByteArray())
+                            }
+
+                            Curve.ED25519 -> {
+                                Ed25519PublicKey(publicKey.encodeToByteArray())
+                            }
+
+                            Curve.X25519 -> {
+                                X25519PublicKey(publicKey.encodeToByteArray())
+                            }
+                        }
                     }
                 }
         }
@@ -452,7 +466,24 @@ internal class CastorShared {
          * @return [OctetPublicKey].
          */
         private fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
-            return OctetPublicKey(crv = keyPair.keyCurve.curve.value, x = keyPair.publicKey.value.base64UrlEncoded)
+            val curve = when (keyPair::class) {
+                Secp256k1KeyPair::class -> {
+                    Curve.SECP256K1
+                }
+
+                Ed25519KeyPair::class -> {
+                    Curve.ED25519
+                }
+
+                X25519KeyPair::class -> {
+                    Curve.X25519
+                }
+
+                else -> {
+                    throw CastorError.KeyCurveNotSupported(KeyPair::class.simpleName ?: "")
+                }
+            }
+            return OctetPublicKey(crv = curve.value, x = keyPair.publicKey.getValue().base64UrlEncoded)
         }
 
         /**
@@ -474,8 +505,8 @@ internal class CastorShared {
             val signingKeys: MutableList<VerificationMaterialAuthentication> = mutableListOf()
 
             keyPairs.forEach {
-                when (it.keyCurve.curve) {
-                    Curve.X25519 -> {
+                when (it::class) {
+                    X25519KeyPair::class -> {
                         val octetString = Json.encodeToString(octetPublicKey(it))
                         encryptionKeys.add(
                             VerificationMaterialAgreement(
@@ -486,7 +517,7 @@ internal class CastorShared {
                         )
                     }
 
-                    Curve.ED25519 -> {
+                    Ed25519KeyPair::class -> {
                         val octetString = Json.encodeToString(octetPublicKey(it))
                         signingKeys.add(
                             VerificationMaterialAuthentication(
