@@ -2,12 +2,10 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
-import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
@@ -248,7 +246,7 @@ class PrismAgentTests {
             logger = PrismLoggerMock()
         )
 
-        val privateKeys = listOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
+        val privateKeys = listOf(Secp256k1PrivateKey(byteArrayOf()))
         plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
 
         val did = DID("did", "peer", "asdf1234asdf1234")

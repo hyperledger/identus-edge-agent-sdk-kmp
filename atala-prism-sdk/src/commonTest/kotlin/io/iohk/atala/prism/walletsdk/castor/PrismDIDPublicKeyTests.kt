@@ -39,7 +39,7 @@ class PrismDIDPublicKeyTests {
             proto = proto,
         )
         assertEquals(parsedPublicKey.id, "master0")
-        assertContentEquals(parsedPublicKey.keyData.value, publicKey.keyData.value)
+        assertContentEquals(parsedPublicKey.keyData.raw, publicKey.keyData.raw)
         assertEquals(parsedPublicKey.usage, publicKey.usage)
     }
 }

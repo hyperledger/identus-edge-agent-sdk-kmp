@@ -9,7 +9,7 @@ import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
@@ -87,8 +87,8 @@ class ApolloTests {
 
     @Test
     fun testKeyPairGeneration() {
-        assertEquals(keyPair.publicKey.value.size, ECConfig.PUBLIC_KEY_BYTE_SIZE)
-        assertEquals(keyPair.privateKey.value.size, ECConfig.PRIVATE_KEY_BYTE_SIZE)
+        assertEquals(keyPair.publicKey.raw.size, ECConfig.PUBLIC_KEY_BYTE_SIZE)
+        assertEquals(keyPair.privateKey.raw.size, ECConfig.PRIVATE_KEY_BYTE_SIZE)
     }
 
     @Test
@@ -106,8 +106,8 @@ class ApolloTests {
         val keyPair = apollo.createKeyPair(curve = KeyCurve(Curve.ED25519))
         val privateKey = keyPair.privateKey
         val publicKey = keyPair.publicKey
-        assertEquals(32, privateKey.value.size)
-        assertEquals(32, publicKey.value.size)
+        assertEquals(32, privateKey.raw.size)
+        assertEquals(32, publicKey.raw.size)
     }
 
     @Test
@@ -115,8 +115,8 @@ class ApolloTests {
         val keyPair = apollo.createKeyPair(curve = KeyCurve(Curve.X25519))
         val privateKey = keyPair.privateKey
         val publicKey = keyPair.publicKey
-        assertEquals(32, privateKey.value.size)
-        assertEquals(32, publicKey.value.size)
+        assertEquals(32, privateKey.raw.size)
+        assertEquals(32, publicKey.raw.size)
     }
 
     @Test
@@ -178,7 +178,7 @@ class ApolloTests {
         val expectedPrivateKeyBase64Url = "xURclKhT6as1Tb9vg4AJRRLPAMWb9dYTTthDvXEKjMc"
 
         val keyPair = apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1))
-        assertEquals(expectedPrivateKeyBase64Url, keyPair.privateKey.value.base64UrlEncoded)
+        assertEquals(expectedPrivateKeyBase64Url, keyPair.privateKey.raw.base64UrlEncoded)
     }
 
     @Test

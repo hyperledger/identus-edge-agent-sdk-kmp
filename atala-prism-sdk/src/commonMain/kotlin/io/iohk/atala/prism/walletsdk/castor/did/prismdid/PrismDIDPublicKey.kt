@@ -1,10 +1,13 @@
 package io.iohk.atala.prism.walletsdk.castor.did.prismdid
 
+import io.iohk.atala.prism.protos.CompressedECKeyData
 import io.iohk.atala.prism.protos.KeyUsage
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
+import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
+import pbandk.ByteArr
 import kotlin.jvm.Throws
 
 class PrismDIDPublicKey {
@@ -27,9 +30,7 @@ class PrismDIDPublicKey {
         this.usage = proto.usage.fromProto()
         this.keyData = when (proto.keyData) {
             is io.iohk.atala.prism.protos.PublicKey.KeyData.CompressedEcKeyData -> {
-                // TODO: Is it always secp256k1
                 Secp256k1PublicKey(proto.keyData.value.data.array)
-//                apollo.compressedPublicKey(compressedData = proto.keyData.value.data.array)
             }
 
             else -> {
@@ -39,7 +40,7 @@ class PrismDIDPublicKey {
     }
 
     fun toProto(): io.iohk.atala.prism.protos.PublicKey {
-        val compressedPublicKey = apollo.compressedPublicKey(keyData)
+        val compressedPublicKey: Secp256k1PublicKey = apollo.compressedPublicKey(keyData) as Secp256k1PublicKey
         return io.iohk.atala.prism.protos.PublicKey(
             id = id,
             usage = usage.toProto(),
@@ -75,12 +76,12 @@ fun KeyUsage.fromProto(): PrismDIDPublicKey.Usage {
     }
 }
 
-// fun PublicKey.toProto(): CompressedECKeyData {
-//    return CompressedECKeyData(
-//        curve = uncompressed.curve.curve.value,
-//        data = ByteArr(value),
-//    )
-// }
+fun Secp256k1PublicKey.toProto(): CompressedECKeyData {
+    return CompressedECKeyData(
+        curve = Curve.SECP256K1.value,
+        data = ByteArr(raw),
+    )
+}
 
 fun PrismDIDPublicKey.Usage.id(index: Int): String {
     return when (this) {
