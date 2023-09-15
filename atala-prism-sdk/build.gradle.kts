@@ -204,6 +204,9 @@ android {
         }
     }
 }
+dependencies {
+    testImplementation("org.testng:testng:7.1.0")
+}
 
 sqldelight {
     database("PrismPlutoDb") {

@@ -16,6 +16,7 @@ import kotlin.time.Duration.Companion.days
  */
 @Serializable
 data class Message @JvmOverloads constructor(
+    @EncodeDefault
     val id: String = UUID.randomUUID4().toString(),
     val piuri: String,
     @EncodeDefault val from: DID? = null,

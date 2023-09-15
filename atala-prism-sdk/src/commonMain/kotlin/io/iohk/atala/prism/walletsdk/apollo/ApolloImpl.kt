@@ -112,19 +112,19 @@ class ApolloImpl : Apollo {
      * @return A [KeyPair] object containing a private and public key.
      */
     override fun createKeyPair(seed: Seed?, privateKey: PrivateKey): KeyPair {
-        return when (privateKey::class) {
-            Secp256k1PrivateKey::class -> {
+        return when (privateKey.getCurve()) {
+            Curve.SECP256K1.value -> {
                 val key = privateKey as Secp256k1PrivateKey
-                val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromBytes(key.getEncoded())
+                val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromBytes(key.getValue())
                 Secp256k1KeyPair(
                     privateKey = Secp256k1PrivateKey(kmmPrivateKey.getEncoded()),
                     publicKey = Secp256k1PublicKey(kmmPrivateKey.getPublicKey().getEncoded())
                 )
             }
 
-            Ed25519PrivateKey::class -> {
+            Curve.ED25519.value -> {
                 val key = privateKey as Ed25519PrivateKey
-                val edPrivateKey = Ed25519PrivateKeyParameters(key.getEncoded(), 0)
+                val edPrivateKey = Ed25519PrivateKeyParameters(key.getValue(), 0)
                 val edPublicKey = edPrivateKey.generatePublicKey()
 
                 Ed25519KeyPair(
@@ -133,9 +133,9 @@ class ApolloImpl : Apollo {
                 )
             }
 
-            X25519PrivateKey::class -> {
+            Curve.X25519.value -> {
                 val key = privateKey as X25519PrivateKey
-                val xPrivateKey = X25519PrivateKeyParameters(key.getEncoded(), 0)
+                val xPrivateKey = X25519PrivateKeyParameters(key.getValue(), 0)
                 val xPublicKey = xPrivateKey.generatePublicKey()
 
                 X25519KeyPair(
@@ -223,8 +223,8 @@ class ApolloImpl : Apollo {
      */
     override fun signMessage(privateKey: PrivateKey, message: ByteArray): Signature {
         if (privateKey.isSignable()) {
-            return when (privateKey::class) {
-                Secp256k1PrivateKey::class -> {
+            return when (privateKey.getCurve()) {
+                Curve.SECP256K1.value -> {
                     val key = privateKey as Secp256k1PrivateKey
                     val signature = key.sign(message)
 
@@ -233,7 +233,7 @@ class ApolloImpl : Apollo {
                     )
                 }
 
-                Ed25519PrivateKey::class -> {
+                Curve.ED25519.value -> {
                     val key = privateKey as Ed25519PrivateKey
                     val signature = key.sign(message)
 
@@ -273,13 +273,13 @@ class ApolloImpl : Apollo {
      */
     override fun verifySignature(publicKey: PublicKey, challenge: ByteArray, signature: Signature): Boolean {
         if (publicKey.canVerify()) {
-            return when (publicKey::class) {
-                Secp256k1PublicKey::class -> {
+            return when (publicKey.getCurve()) {
+                Curve.SECP256K1.value -> {
                     val key = publicKey as Secp256k1PublicKey
                     key.verify(challenge, signature.value)
                 }
 
-                Ed25519PublicKey::class -> {
+                Curve.ED25519.value -> {
                     val key = publicKey as Ed25519PublicKey
                     key.verify(challenge, signature.value)
                 }

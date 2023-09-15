@@ -7,9 +7,32 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 
 abstract class Key {
     abstract val type: KeyTypes
-    abstract val keySpecification: MutableMap<KeyProperties, String>
+    abstract val keySpecification: MutableMap<String, String>
     abstract val size: Int
     abstract val raw: ByteArray
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || this::class != other::class) return false
+
+        other as Key
+
+        if (!raw.contentEquals(other.raw)) {
+            return false
+        }
+        if (!keySpecification.containsKey(CurveKey().property) ||
+            keySpecification[CurveKey().property] != other.getProperty(CurveKey().property)
+        ) {
+            return false
+        }
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = keySpecification[CurveKey().property].hashCode()
+        result = 31 * result + raw.contentHashCode()
+        return result
+    }
 
     fun getEncoded(): ByteArray {
         return raw.base64UrlEncoded.encodeToByteArray()
@@ -32,15 +55,14 @@ abstract class Key {
     }
 
     fun getProperty(name: String): String {
-        val property = getKeyPropertyByName(name)
-        if (!keySpecification.containsKey(property)) {
+        if (!keySpecification.containsKey(name)) {
             throw Exception("KeySpecification do not contain $name")
         }
-        return this.keySpecification[property].toString()
+        return this.keySpecification[name].toString()
     }
 
     fun isCurve(curve: String): Boolean {
-        val keyCurve = keySpecification[CurveKey()]
+        val keyCurve = keySpecification[CurveKey().property]
         return keyCurve == curve
     }
 }

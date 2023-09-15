@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.pluto
 
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
-import io.iohk.atala.prism.apollo.base64.base64DecodedBytes
+import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
@@ -10,7 +10,6 @@ import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
@@ -20,7 +19,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
@@ -132,30 +130,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         keyPathIndex: Int,
         metaId: String?
     ) {
-        val curve = when (privateKey::class) {
-            Secp256k1PrivateKey::class -> {
-                Curve.SECP256K1
-            }
-
-            Ed25519PrivateKey::class -> {
-                Curve.ED25519
-            }
-
-            X25519PrivateKey::class -> {
-                Curve.X25519
-            }
-
-            else -> {
-                throw CastorError.KeyCurveNotSupported(KeyPair::class.simpleName ?: "")
-            }
-        }
         metaId?.let { id ->
             val list = getInstance().privateKeyQueries.fetchPrivateKeyByID(id).executeAsList()
             if (list.isEmpty()) {
                 getInstance().privateKeyQueries.insert(
                     PrivateKeyDB(
                         metaId,
-                        curve.value,
+                        privateKey.getCurve(),
                         privateKey.getValue().base64UrlEncoded,
                         keyPathIndex,
                         did.toString()
@@ -168,7 +149,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             getInstance().privateKeyQueries.insert(
                 PrivateKeyDB(
                     UUID.randomUUID4().toString(),
-                    curve.value,
+                    privateKey.getCurve(),
                     privateKey.getValue().base64UrlEncoded,
                     keyPathIndex,
                     did.toString()
@@ -288,15 +269,15 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             )
                             when (keyCurve.curve) {
                                 Curve.SECP256K1 -> {
-                                    Secp256k1PrivateKey(didInfo.privateKey.base64DecodedBytes)
+                                    Secp256k1PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
                                 }
 
                                 Curve.ED25519 -> {
-                                    Ed25519PrivateKey(didInfo.privateKey.base64DecodedBytes)
+                                    Ed25519PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
                                 }
 
                                 Curve.X25519 -> {
-                                    X25519PrivateKey(didInfo.privateKey.base64DecodedBytes)
+                                    X25519PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
                                 }
                             }
                         } catch (e: IllegalStateException) {
@@ -318,15 +299,15 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                     )
                     when (keyCurve.curve) {
                         Curve.SECP256K1 -> {
-                            Secp256k1PrivateKey(it.privateKey.base64DecodedBytes)
+                            Secp256k1PrivateKey(it.privateKey.base64UrlDecodedBytes)
                         }
 
                         Curve.ED25519 -> {
-                            Ed25519PrivateKey(it.privateKey.base64DecodedBytes)
+                            Ed25519PrivateKey(it.privateKey.base64UrlDecodedBytes)
                         }
 
                         Curve.X25519 -> {
-                            X25519PrivateKey(it.privateKey.base64DecodedBytes)
+                            X25519PrivateKey(it.privateKey.base64UrlDecodedBytes)
                         }
                     }
                 }
@@ -367,15 +348,15 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             )
                             when (keyCurve.curve) {
                                 Curve.SECP256K1 -> {
-                                    Secp256k1PrivateKey(data.privateKey.base64DecodedBytes)
+                                    Secp256k1PrivateKey(data.privateKey.base64UrlDecodedBytes)
                                 }
 
                                 Curve.ED25519 -> {
-                                    Ed25519PrivateKey(data.privateKey.base64DecodedBytes)
+                                    Ed25519PrivateKey(data.privateKey.base64UrlDecodedBytes)
                                 }
 
                                 Curve.X25519 -> {
-                                    X25519PrivateKey(data.privateKey.base64DecodedBytes)
+                                    X25519PrivateKey(data.privateKey.base64UrlDecodedBytes)
                                 }
                             }
                         }.toTypedArray()

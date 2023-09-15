@@ -5,6 +5,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.ktor.http.ContentType
+import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -15,6 +16,7 @@ class ForwardMessage @JvmOverloads constructor(
     val from: DID,
     val to: DID,
     val encryptedMessage: String,
+    @EncodeDefault
     val id: String = UUID.randomUUID().toString()
 ) {
     fun makeMessage(): Message {

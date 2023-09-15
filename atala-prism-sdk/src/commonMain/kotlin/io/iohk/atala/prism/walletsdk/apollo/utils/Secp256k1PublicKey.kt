@@ -13,7 +13,6 @@ import io.iohk.atala.prism.walletsdk.apollo.utils.ec._ECPoint
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurveKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CustomKey
-import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyProperties
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.VerifiableKey
@@ -29,18 +28,18 @@ import kotlin.experimental.and
 
 class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey {
     override val type: KeyTypes = KeyTypes.EC
-    override val keySpecification: MutableMap<KeyProperties, String> = mutableMapOf()
+    override val keySpecification: MutableMap<String, String> = mutableMapOf()
     override val size: Int
     override val raw: ByteArray = nativeValue
 
     init {
         size = raw.size
         if (size == ECConfig.PUBLIC_KEY_COMPRESSED_BYTE_SIZE) {
-            keySpecification[CustomKey("compressed")] = "true"
+            keySpecification[CustomKey("compressed").property] = "true"
         } else {
-            keySpecification[CustomKey("compressed")] = "false"
+            keySpecification[CustomKey("compressed").property] = "false"
         }
-        keySpecification[CurveKey()] = Curve.SECP256K1.value
+        keySpecification[CurveKey().property] = Curve.SECP256K1.value
     }
 
     override fun verify(message: ByteArray, signature: ByteArray): Boolean {
@@ -55,8 +54,8 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey {
 
     fun isCompressed(): Boolean {
         return (
-            keySpecification.containsKey(CustomKey("compressed")) &&
-                keySpecification[CustomKey("compressed")] == "true"
+            keySpecification.containsKey("compressed") &&
+                keySpecification[CustomKey("compressed").property] == "true"
             )
     }
 
