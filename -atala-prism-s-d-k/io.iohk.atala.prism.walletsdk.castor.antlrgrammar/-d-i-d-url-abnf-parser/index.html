@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
     <title>DIDUrlAbnfParser</title>
     <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
     <script>const storage = localStorage.getItem("dokka-dark-mode")
     if (storage == null) {
         const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -18,12 +19,13 @@
         }
     }
     </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
 <link href="../../../styles/style.css" rel="Stylesheet">
-<link href="../../../styles/jetbrains-mono.css" rel="Stylesheet">
 <link href="../../../styles/main.css" rel="Stylesheet">
 <link href="../../../styles/prism.css" rel="Stylesheet">
 <link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
 <script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
 <script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
@@ -32,28 +34,33 @@
 <script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
 </head>
 <body>
-<div class="navigation-wrapper" id="navigation-wrapper">
-    <div id="leftToggler"><span class="icon-toggler"></span></div>
-    <div class="library-name">
-            <a href="../../../index.html">
-                    <span>AtalaPrismSDK</span>
-            </a>
-    </div>
-    <div>
-2.3.1    </div>
-    <div class="pull-right d-flex">
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            AtalaPrismSDK
+                    </a>
+            </div>
+            <div class="library-version">
+2.3.2            </div>
+        </div>
         <div class="filter-section" id="filter-section">
                 <button class="platform-tag platform-selector common-like" data-active="" data-filter=":atala-prism-sdk:dokkaHtml/commonMain">common</button>
         </div>
-        <button id="theme-toggle-button"><span id="theme-toggle"></span></button>
-        <div id="searchBar"></div>
     </div>
-</div>
-<div id="container">
-    <div id="leftColumn">
-        <div id="sideMenu"></div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
     </div>
-    <div id="main">
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
 <div class="main-content" data-page-type="classlike" id="content" pageIds="AtalaPrismSDK::io.iohk.atala.prism.walletsdk.castor.antlrgrammar/DIDUrlAbnfParser///PointingToDeclaration//-1716531196">
   <div class="breadcrumbs"><a href="../../../index.html">AtalaPrismSDK</a><span class="delimiter">/</span><a href="../index.html">io.iohk.atala.prism.walletsdk.castor.antlrgrammar</a><span class="delimiter">/</span><span class="current">DIDUrlAbnfParser</span></div>
   <div class="cover ">
@@ -63,7 +70,7 @@
 <div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">class </span><a href="index.html">DIDUrlAbnfParser</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">input<span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/TokenStream///PointingToDeclaration/">TokenStream</span></span></span><span class="token punctuation">)</span> : <span data-unresolved-link="org.antlr.v4.kotlinruntime/Parser///PointingToDeclaration/">Parser</span></div></div>    </div>
   </div>
   <div class="tabbedcontent">
-    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,FUNCTION,PROPERTY">Members</button></div>
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
     <div class="tabs-section-body">
       <div data-togglable="CONSTRUCTOR">
         <h2 class="">Constructors</h2>
@@ -322,6 +329,469 @@
                   <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
                     <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
 <div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">enum </span><a href="-tokens/index.html">Tokens</a> : <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-enum/index.html">Enum</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="-tokens/index.html">DIDUrlAbnfParser.Tokens</a><span class="token operator">&gt; </span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="1459985182%2FProperties%2F-1716531196" anchor-label="atn" id="1459985182%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="atn.html"><span><span>atn</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1459985182%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="atn.html">atn</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.atn/ATN///PointingToDeclaration/">ATN</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-585086937%2FProperties%2F-1716531196" anchor-label="buildParseTree" id="-585086937%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-585086937%2FProperties%2F-1716531196"><span>build</span><wbr></wbr><span>Parse</span><wbr></wbr><span><span>Tree</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-585086937%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-585086937%2FProperties%2F-1716531196">buildParseTree</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2134115231%2FProperties%2F-1716531196" anchor-label="context" id="-2134115231%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-2134115231%2FProperties%2F-1716531196"><span><span>context</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2134115231%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-2134115231%2FProperties%2F-1716531196">context</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ParserRuleContext///PointingToDeclaration/">ParserRuleContext</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2021206058%2FProperties%2F-1716531196" anchor-label="currentToken" id="2021206058%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#2021206058%2FProperties%2F-1716531196"><span>current</span><wbr></wbr><span><span>Token</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2021206058%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#2021206058%2FProperties%2F-1716531196">currentToken</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/Token///PointingToDeclaration/">Token</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1300951193%2FProperties%2F-1716531196" anchor-label="dfaStrings" id="-1300951193%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1300951193%2FProperties%2F-1716531196"><span>dfa</span><wbr></wbr><span><span>Strings</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1300951193%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1300951193%2FProperties%2F-1716531196">dfaStrings</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1853947464%2FProperties%2F-1716531196" anchor-label="errorHandler" id="1853947464%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1853947464%2FProperties%2F-1716531196"><span>error</span><wbr></wbr><span><span>Handler</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1853947464%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1853947464%2FProperties%2F-1716531196">errorHandler</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ANTLRErrorStrategy///PointingToDeclaration/">ANTLRErrorStrategy</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="961002901%2FProperties%2F-1716531196" anchor-label="errorListenerDispatch" id="961002901%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#961002901%2FProperties%2F-1716531196"><span>error</span><wbr></wbr><span>Listener</span><wbr></wbr><span><span>Dispatch</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="961002901%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#961002901%2FProperties%2F-1716531196">errorListenerDispatch</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ANTLRErrorListener///PointingToDeclaration/">ANTLRErrorListener</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1837478472%2FProperties%2F-1716531196" anchor-label="errorListeners" id="-1837478472%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1837478472%2FProperties%2F-1716531196"><span>error</span><wbr></wbr><span><span>Listeners</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1837478472%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1837478472%2FProperties%2F-1716531196">errorListeners</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ANTLRErrorListener///PointingToDeclaration/">ANTLRErrorListener</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2043918664%2FProperties%2F-1716531196" anchor-label="expectedTokens" id="-2043918664%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-2043918664%2FProperties%2F-1716531196"><span>expected</span><wbr></wbr><span><span>Tokens</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2043918664%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-2043918664%2FProperties%2F-1716531196">expectedTokens</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.misc/IntervalSet///PointingToDeclaration/">IntervalSet</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1367374805%2FProperties%2F-1716531196" anchor-label="grammarFileName" id="-1367374805%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="grammar-file-name.html"><span>grammar</span><wbr></wbr><span>File</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1367374805%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="grammar-file-name.html">grammarFileName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1505235823%2FProperties%2F-1716531196" anchor-label="interpreter" id="-1505235823%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1505235823%2FProperties%2F-1716531196"><span><span>interpreter</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1505235823%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1505235823%2FProperties%2F-1716531196">interpreter</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.atn/ParserATNSimulator///PointingToDeclaration/">ParserATNSimulator</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-214507416%2FProperties%2F-1716531196" anchor-label="isMatchedEOF" id="-214507416%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-214507416%2FProperties%2F-1716531196"><span>is</span><wbr></wbr><span>Matched</span><wbr></wbr><span><span>EOF</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-214507416%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-214507416%2FProperties%2F-1716531196">isMatchedEOF</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1856959132%2FProperties%2F-1716531196" anchor-label="numberOfSyntaxErrors" id="1856959132%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1856959132%2FProperties%2F-1716531196"><span>number</span><wbr></wbr><span>Of</span><wbr></wbr><span>Syntax</span><wbr></wbr><span><span>Errors</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1856959132%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1856959132%2FProperties%2F-1716531196">numberOfSyntaxErrors</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1119346575%2FProperties%2F-1716531196" anchor-label="parseInfo" id="1119346575%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1119346575%2FProperties%2F-1716531196"><span>parse</span><wbr></wbr><span><span>Info</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1119346575%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#1119346575%2FProperties%2F-1716531196">parseInfo</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.atn/ParseInfo///PointingToDeclaration/">ParseInfo</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="403398046%2FProperties%2F-1716531196" anchor-label="parseListeners" id="403398046%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#403398046%2FProperties%2F-1716531196"><span>parse</span><wbr></wbr><span><span>Listeners</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="403398046%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#403398046%2FProperties%2F-1716531196">parseListeners</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.antlr.v4.kotlinruntime.tree/ParseTreeListener///PointingToDeclaration/">ParseTreeListener</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-184374112%2FProperties%2F-1716531196" anchor-label="precedence" id="-184374112%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-184374112%2FProperties%2F-1716531196"><span><span>precedence</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-184374112%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-184374112%2FProperties%2F-1716531196">precedence</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="150733801%2FProperties%2F-1716531196" anchor-label="ruleIndexMap" id="150733801%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#150733801%2FProperties%2F-1716531196"><span>rule</span><wbr></wbr><span>Index</span><wbr></wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="150733801%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#150733801%2FProperties%2F-1716531196">ruleIndexMap</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1413499124%2FProperties%2F-1716531196" anchor-label="ruleInvocationStack" id="1413499124%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1413499124%2FProperties%2F-1716531196"><span>rule</span><wbr></wbr><span>Invocation</span><wbr></wbr><span><span>Stack</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1413499124%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#1413499124%2FProperties%2F-1716531196">ruleInvocationStack</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1030420435%2FProperties%2F-1716531196" anchor-label="ruleNames" id="-1030420435%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="rule-names.html"><span>rule</span><wbr></wbr><span><span>Names</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1030420435%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="rule-names.html">ruleNames</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="350024628%2FProperties%2F-1716531196" anchor-label="serializedATN" id="350024628%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#350024628%2FProperties%2F-1716531196"><span>serialized</span><wbr></wbr><span><span>ATN</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="350024628%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#350024628%2FProperties%2F-1716531196">serializedATN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1840773348%2FProperties%2F-1716531196" anchor-label="sourceName" id="1840773348%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1840773348%2FProperties%2F-1716531196"><span>source</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1840773348%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#1840773348%2FProperties%2F-1716531196">sourceName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1417824038%2FProperties%2F-1716531196" anchor-label="state" id="-1417824038%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#-1417824038%2FProperties%2F-1716531196"><span><span>state</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1417824038%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1417824038%2FProperties%2F-1716531196">state</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1405321337%2FProperties%2F-1716531196" anchor-label="tokenFactory" id="1405321337%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#1405321337%2FProperties%2F-1716531196"><span>token</span><wbr></wbr><span><span>Factory</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1405321337%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="index.html#1405321337%2FProperties%2F-1716531196">tokenFactory</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/TokenFactory///PointingToDeclaration/">TokenFactory</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-752536398%2FProperties%2F-1716531196" anchor-label="tokenNames" id="-752536398%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="token-names.html"><span>token</span><wbr></wbr><span><span>Names</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-752536398%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="token-names.html">tokenNames</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="376384759%2FProperties%2F-1716531196" anchor-label="tokenStream" id="376384759%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#376384759%2FProperties%2F-1716531196"><span>token</span><wbr></wbr><span><span>Stream</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="376384759%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#376384759%2FProperties%2F-1716531196">tokenStream</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/TokenStream///PointingToDeclaration/">TokenStream</span><span class="token operator">?</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="416620550%2FProperties%2F-1716531196" anchor-label="tokenTypeMap" id="416620550%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="index.html#416620550%2FProperties%2F-1716531196"><span>token</span><wbr></wbr><span>Type</span><wbr></wbr><span><span>Map</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="416620550%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#416620550%2FProperties%2F-1716531196">tokenTypeMap</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div></div>                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="563403899%2FProperties%2F-1716531196" anchor-label="vocabulary" id="563403899%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="vocabulary.html"><span><span>vocabulary</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="563403899%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
+                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="vocabulary.html">vocabulary</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/Vocabulary///PointingToDeclaration/">Vocabulary</span></div></div>                  </div>
                 </div>
               </div>
             </div>
@@ -1012,469 +1482,6 @@
           </div>
         </div>
       </div>
-      <div data-togglable="PROPERTY">
-        <h2 class="">Properties</h2>
-        <div class="table"><a data-name="1459985182%2FProperties%2F-1716531196" anchor-label="atn" id="1459985182%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="atn.html"><span><span>atn</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1459985182%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="atn.html">atn</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.atn/ATN///PointingToDeclaration/">ATN</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-585086937%2FProperties%2F-1716531196" anchor-label="buildParseTree" id="-585086937%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-585086937%2FProperties%2F-1716531196"><span>build</span><wbr></wbr><span>Parse</span><wbr></wbr><span><span>Tree</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-585086937%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-585086937%2FProperties%2F-1716531196">buildParseTree</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-2134115231%2FProperties%2F-1716531196" anchor-label="context" id="-2134115231%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-2134115231%2FProperties%2F-1716531196"><span><span>context</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2134115231%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-2134115231%2FProperties%2F-1716531196">context</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ParserRuleContext///PointingToDeclaration/">ParserRuleContext</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="2021206058%2FProperties%2F-1716531196" anchor-label="currentToken" id="2021206058%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#2021206058%2FProperties%2F-1716531196"><span>current</span><wbr></wbr><span><span>Token</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2021206058%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#2021206058%2FProperties%2F-1716531196">currentToken</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/Token///PointingToDeclaration/">Token</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1300951193%2FProperties%2F-1716531196" anchor-label="dfaStrings" id="-1300951193%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1300951193%2FProperties%2F-1716531196"><span>dfa</span><wbr></wbr><span><span>Strings</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1300951193%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1300951193%2FProperties%2F-1716531196">dfaStrings</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1853947464%2FProperties%2F-1716531196" anchor-label="errorHandler" id="1853947464%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1853947464%2FProperties%2F-1716531196"><span>error</span><wbr></wbr><span><span>Handler</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1853947464%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1853947464%2FProperties%2F-1716531196">errorHandler</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ANTLRErrorStrategy///PointingToDeclaration/">ANTLRErrorStrategy</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="961002901%2FProperties%2F-1716531196" anchor-label="errorListenerDispatch" id="961002901%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#961002901%2FProperties%2F-1716531196"><span>error</span><wbr></wbr><span>Listener</span><wbr></wbr><span><span>Dispatch</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="961002901%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#961002901%2FProperties%2F-1716531196">errorListenerDispatch</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ANTLRErrorListener///PointingToDeclaration/">ANTLRErrorListener</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1837478472%2FProperties%2F-1716531196" anchor-label="errorListeners" id="-1837478472%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1837478472%2FProperties%2F-1716531196"><span>error</span><wbr></wbr><span><span>Listeners</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1837478472%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-1837478472%2FProperties%2F-1716531196">errorListeners</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.antlr.v4.kotlinruntime/ANTLRErrorListener///PointingToDeclaration/">ANTLRErrorListener</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-2043918664%2FProperties%2F-1716531196" anchor-label="expectedTokens" id="-2043918664%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-2043918664%2FProperties%2F-1716531196"><span>expected</span><wbr></wbr><span><span>Tokens</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2043918664%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-2043918664%2FProperties%2F-1716531196">expectedTokens</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.misc/IntervalSet///PointingToDeclaration/">IntervalSet</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1367374805%2FProperties%2F-1716531196" anchor-label="grammarFileName" id="-1367374805%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="grammar-file-name.html"><span>grammar</span><wbr></wbr><span>File</span><wbr></wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1367374805%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="grammar-file-name.html">grammarFileName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1505235823%2FProperties%2F-1716531196" anchor-label="interpreter" id="-1505235823%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1505235823%2FProperties%2F-1716531196"><span><span>interpreter</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1505235823%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1505235823%2FProperties%2F-1716531196">interpreter</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.atn/ParserATNSimulator///PointingToDeclaration/">ParserATNSimulator</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-214507416%2FProperties%2F-1716531196" anchor-label="isMatchedEOF" id="-214507416%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-214507416%2FProperties%2F-1716531196"><span>is</span><wbr></wbr><span>Matched</span><wbr></wbr><span><span>EOF</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-214507416%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-214507416%2FProperties%2F-1716531196">isMatchedEOF</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html">Boolean</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1856959132%2FProperties%2F-1716531196" anchor-label="numberOfSyntaxErrors" id="1856959132%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1856959132%2FProperties%2F-1716531196"><span>number</span><wbr></wbr><span>Of</span><wbr></wbr><span>Syntax</span><wbr></wbr><span><span>Errors</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1856959132%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#1856959132%2FProperties%2F-1716531196">numberOfSyntaxErrors</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1119346575%2FProperties%2F-1716531196" anchor-label="parseInfo" id="1119346575%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1119346575%2FProperties%2F-1716531196"><span>parse</span><wbr></wbr><span><span>Info</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1119346575%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="index.html#1119346575%2FProperties%2F-1716531196">parseInfo</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime.atn/ParseInfo///PointingToDeclaration/">ParseInfo</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="403398046%2FProperties%2F-1716531196" anchor-label="parseListeners" id="403398046%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#403398046%2FProperties%2F-1716531196"><span>parse</span><wbr></wbr><span><span>Listeners</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="403398046%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#403398046%2FProperties%2F-1716531196">parseListeners</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><span data-unresolved-link="org.antlr.v4.kotlinruntime.tree/ParseTreeListener///PointingToDeclaration/">ParseTreeListener</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-184374112%2FProperties%2F-1716531196" anchor-label="precedence" id="-184374112%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-184374112%2FProperties%2F-1716531196"><span><span>precedence</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-184374112%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#-184374112%2FProperties%2F-1716531196">precedence</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="150733801%2FProperties%2F-1716531196" anchor-label="ruleIndexMap" id="150733801%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#150733801%2FProperties%2F-1716531196"><span>rule</span><wbr></wbr><span>Index</span><wbr></wbr><span><span>Map</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="150733801%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#150733801%2FProperties%2F-1716531196">ruleIndexMap</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1413499124%2FProperties%2F-1716531196" anchor-label="ruleInvocationStack" id="1413499124%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1413499124%2FProperties%2F-1716531196"><span>rule</span><wbr></wbr><span>Invocation</span><wbr></wbr><span><span>Stack</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1413499124%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#1413499124%2FProperties%2F-1716531196">ruleInvocationStack</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1030420435%2FProperties%2F-1716531196" anchor-label="ruleNames" id="-1030420435%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="rule-names.html"><span>rule</span><wbr></wbr><span><span>Names</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1030420435%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="rule-names.html">ruleNames</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="350024628%2FProperties%2F-1716531196" anchor-label="serializedATN" id="350024628%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#350024628%2FProperties%2F-1716531196"><span>serialized</span><wbr></wbr><span><span>ATN</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="350024628%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#350024628%2FProperties%2F-1716531196">serializedATN</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1840773348%2FProperties%2F-1716531196" anchor-label="sourceName" id="1840773348%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1840773348%2FProperties%2F-1716531196"><span>source</span><wbr></wbr><span><span>Name</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1840773348%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#1840773348%2FProperties%2F-1716531196">sourceName</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-1417824038%2FProperties%2F-1716531196" anchor-label="state" id="-1417824038%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#-1417824038%2FProperties%2F-1716531196"><span><span>state</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1417824038%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#-1417824038%2FProperties%2F-1716531196">state</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="1405321337%2FProperties%2F-1716531196" anchor-label="tokenFactory" id="1405321337%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#1405321337%2FProperties%2F-1716531196"><span>token</span><wbr></wbr><span><span>Factory</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1405321337%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">var </span><a href="index.html#1405321337%2FProperties%2F-1716531196">tokenFactory</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/TokenFactory///PointingToDeclaration/">TokenFactory</span><span class="token operator">&lt;</span><span class="token operator">*</span><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="-752536398%2FProperties%2F-1716531196" anchor-label="tokenNames" id="-752536398%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="token-names.html"><span>token</span><wbr></wbr><span><span>Names</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-752536398%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="token-names.html">tokenNames</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="376384759%2FProperties%2F-1716531196" anchor-label="tokenStream" id="376384759%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#376384759%2FProperties%2F-1716531196"><span>token</span><wbr></wbr><span><span>Stream</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="376384759%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">var </span><a href="index.html#376384759%2FProperties%2F-1716531196">tokenStream</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/TokenStream///PointingToDeclaration/">TokenStream</span><span class="token operator">?</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="416620550%2FProperties%2F-1716531196" anchor-label="tokenTypeMap" id="416620550%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="index.html#416620550%2FProperties%2F-1716531196"><span>token</span><wbr></wbr><span>Type</span><wbr></wbr><span><span>Map</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="416620550%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword"></span><span class="token keyword">val </span><a href="index.html#416620550%2FProperties%2F-1716531196">tokenTypeMap</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-map/index.html">Map</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span><span class="token keyword"></span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-<a data-name="563403899%2FProperties%2F-1716531196" anchor-label="vocabulary" id="563403899%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-            <div class="main-subrow keyValue ">
-              <div class=""><span class="inline-flex">
-                  <div><a href="vocabulary.html"><span><span>vocabulary</span></span></a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="563403899%2FProperties%2F-1716531196"></span>
-                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-                  </span></span></div>
-              <div>
-                <div class="title">
-                  <div class="platform-hinted  with-platform-tabs" data-platform-hinted="data-platform-hinted">
-                    <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="vocabulary.html">vocabulary</a><span class="token operator">: </span><span data-unresolved-link="org.antlr.v4.kotlinruntime/Vocabulary///PointingToDeclaration/">Vocabulary</span></div></div>                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </div>
@@ -1483,7 +1490,8 @@
                 class="pull-right"><span>Generated by </span><a
                 href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
       </div>
+            </div>
+        </div>
     </div>
-</div>
 </body>
 </html>
