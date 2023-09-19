@@ -31,7 +31,7 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey {
         return KMMECDSA.sign(
             type = ECDSAType.ECDSA_SHA256,
             data = message,
-            privateKey = kmmPrivateKey,
+            privateKey = kmmPrivateKey
         )
     }
 }

@@ -18,7 +18,7 @@ class ApolloMock : Apollo {
     var createRandomSeedReturn: SeedWords = SeedWords(emptyArray(), Seed(ByteArray(0)))
     var createKeyPairReturn: KeyPair = Ed25519KeyPair(
         privateKey = Ed25519PrivateKey(ByteArray(0)),
-        publicKey = Ed25519PublicKey(ByteArray(0)),
+        publicKey = Ed25519PublicKey(ByteArray(0))
     )
     var compressedPublicKeyReturn = Ed25519PublicKey(ByteArray(0))
     var publicKeyReturn: PublicKey = Ed25519PublicKey(ByteArray(0))

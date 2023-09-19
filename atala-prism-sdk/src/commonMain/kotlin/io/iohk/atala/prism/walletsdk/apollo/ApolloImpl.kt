@@ -229,7 +229,7 @@ class ApolloImpl : Apollo {
                     val signature = key.sign(message)
 
                     Signature(
-                        value = signature,
+                        value = signature
                     )
                 }
 

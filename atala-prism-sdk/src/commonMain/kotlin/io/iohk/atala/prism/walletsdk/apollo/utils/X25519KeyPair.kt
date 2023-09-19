@@ -18,7 +18,7 @@ class X25519KeyPair(override var privateKey: PrivateKey, override var publicKey:
             val keyPair = generator.generateKeyPair()
             return X25519KeyPair(
                 privateKey = X25519PrivateKey((keyPair.private as X25519PrivateKeyParameters).encoded),
-                publicKey = X25519PublicKey((keyPair.public as X25519PublicKeyParameters).encoded),
+                publicKey = X25519PublicKey((keyPair.public as X25519PublicKeyParameters).encoded)
             )
         }
     }

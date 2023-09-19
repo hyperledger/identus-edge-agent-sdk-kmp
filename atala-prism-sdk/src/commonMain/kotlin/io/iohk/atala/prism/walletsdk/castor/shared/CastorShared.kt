@@ -404,7 +404,7 @@ internal class CastorShared {
                         id = didUrl,
                         controller = did,
                         type = publicKey.keyData.getCurve(),
-                        publicKeyMultibase = publicKey.keyData.getValue().base64Encoded,
+                        publicKeyMultibase = publicKey.keyData.getValue().base64Encoded
                     )
                     partialResult + (didUrl.string() to method)
                 }

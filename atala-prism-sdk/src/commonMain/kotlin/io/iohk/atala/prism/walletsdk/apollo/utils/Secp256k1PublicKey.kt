@@ -48,7 +48,7 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey {
             type = ECDSAType.ECDSA_SHA256,
             data = message,
             publicKey = kmmPublicKey,
-            signature = signature,
+            signature = signature
         )
     }
 

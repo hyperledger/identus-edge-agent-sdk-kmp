@@ -45,8 +45,8 @@ class PrismDIDPublicKey {
             id = id,
             usage = usage.toProto(),
             keyData = io.iohk.atala.prism.protos.PublicKey.KeyData.CompressedEcKeyData(
-                compressedPublicKey.toProto(),
-            ),
+                compressedPublicKey.toProto()
+            )
         )
     }
 
@@ -79,7 +79,7 @@ fun KeyUsage.fromProto(): PrismDIDPublicKey.Usage {
 fun Secp256k1PublicKey.toProto(): CompressedECKeyData {
     return CompressedECKeyData(
         curve = Curve.SECP256K1.value,
-        data = ByteArr(raw),
+        data = ByteArr(raw)
     )
 }
 
