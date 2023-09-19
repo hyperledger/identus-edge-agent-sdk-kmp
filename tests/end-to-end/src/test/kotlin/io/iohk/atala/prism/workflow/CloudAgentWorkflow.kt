@@ -21,6 +21,7 @@ class CloudAgentWorkflow {
             Post.to("/connections").body(createConnection),
             Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
         )
+
         cloudAgent.remember("invitation", lastResponse().get<String>("invitation.invitationUrl"))
         cloudAgent.remember("connectionId", lastResponse().get<String>("connectionId"))
     }
