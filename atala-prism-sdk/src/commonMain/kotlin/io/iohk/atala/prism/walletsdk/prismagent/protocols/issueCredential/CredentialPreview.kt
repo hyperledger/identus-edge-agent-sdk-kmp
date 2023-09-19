@@ -24,6 +24,7 @@ constructor(
     data class Attribute(
         val name: String,
         val value: String,
+        @SerialName("mime_type")
         val mimeType: String?
     )
 
