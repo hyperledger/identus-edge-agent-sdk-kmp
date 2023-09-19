@@ -6,9 +6,6 @@ import io.iohk.atala.prism.models.*
 import io.iohk.atala.prism.utils.Notes
 import io.restassured.RestAssured
 import io.restassured.builder.RequestSpecBuilder
-import io.restassured.config.ObjectMapperConfig
-import io.restassured.config.RestAssuredConfig
-import io.restassured.mapper.ObjectMapperType
 import io.restassured.response.Response
 import net.serenitybdd.rest.SerenityRest
 import org.apache.http.HttpStatus
@@ -52,9 +49,6 @@ object Environment {
                 .build()
             SerenityRest.setDefaultRequestSpecification(requestSpecification)
         }
-        SerenityRest.setDefaultConfig(
-            RestAssuredConfig.newConfig().objectMapperConfig(ObjectMapperConfig(ObjectMapperType.GSON))
-        )
 
         // check if DID and schema exist
         preparePublishedDid(properties.getProperty("PUBLISHED_DID"))
