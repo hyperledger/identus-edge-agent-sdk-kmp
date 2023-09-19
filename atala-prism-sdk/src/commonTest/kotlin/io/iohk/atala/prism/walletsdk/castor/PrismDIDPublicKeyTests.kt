@@ -20,23 +20,23 @@ class PrismDIDPublicKeyTests {
         val seed = apollo.createRandomSeed().seed
         val keyPair = apollo.createKeyPair(
             seed = seed,
-            curve = KeyCurve(Curve.SECP256K1),
+            curve = KeyCurve(Curve.SECP256K1)
         )
         val publicKey = PrismDIDPublicKey(
             apollo = ApolloMock(),
             id = PrismDIDPublicKey.Usage.MASTER_KEY.id(0),
             usage = PrismDIDPublicKey.Usage.MASTER_KEY,
-            keyData = keyPair.publicKey,
+            keyData = keyPair.publicKey
         )
         val protoData = publicKey.toProto()
         val proto = PublicKey(
             id = protoData.id,
             usage = protoData.usage,
-            keyData = protoData.keyData,
+            keyData = protoData.keyData
         )
         val parsedPublicKey = PrismDIDPublicKey(
             apollo = apollo,
-            proto = proto,
+            proto = proto
         )
         assertEquals(parsedPublicKey.id, "master0")
         assertContentEquals(parsedPublicKey.keyData.raw, publicKey.keyData.raw)

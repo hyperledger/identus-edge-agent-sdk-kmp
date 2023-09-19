@@ -28,7 +28,7 @@ constructor(
         val mimeType: String?
     )
 
-    public val type: String = ProtocolType.DidcommCredentialPreview.value
+    val type: String = ProtocolType.DidcommCredentialPreview.value
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

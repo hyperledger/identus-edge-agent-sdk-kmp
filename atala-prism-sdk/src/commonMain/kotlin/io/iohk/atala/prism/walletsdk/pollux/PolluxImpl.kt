@@ -44,8 +44,8 @@ class PolluxImpl(val castor: Castor) : Pollux {
         }
     }
 
-    override fun restoreCredential(recoveryId: String, credentialData: ByteArray): Credential {
-        return when (recoveryId) {
+    override fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray): Credential {
+        return when (restorationIdentifier) {
             "jwt+credential" -> {
                 JWTCredential(credentialData.decodeToString()).toStorableCredential()
             }

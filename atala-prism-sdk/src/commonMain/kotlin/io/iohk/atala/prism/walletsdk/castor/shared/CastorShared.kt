@@ -87,7 +87,7 @@ internal class CastorShared {
         internal fun createPrismDID(
             apollo: Apollo,
             masterPublicKey: PublicKey,
-            services: Array<DIDDocument.Service>?,
+            services: Array<DIDDocument.Service>?
         ): DID {
             val atalaOperation = AtalaOperation(
                 operation = AtalaOperation.Operation.CreateDid(
@@ -98,25 +98,25 @@ internal class CastorShared {
                                     apollo = apollo,
                                     id = PrismDIDPublicKey.Usage.MASTER_KEY.defaultId(),
                                     usage = PrismDIDPublicKey.Usage.MASTER_KEY,
-                                    keyData = masterPublicKey,
+                                    keyData = masterPublicKey
                                 ).toProto(),
                                 PrismDIDPublicKey(
                                     apollo = apollo,
                                     id = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY.defaultId(),
                                     usage = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY,
-                                    keyData = masterPublicKey,
+                                    keyData = masterPublicKey
                                 ).toProto()
                             ),
                             services = services?.map {
                                 Service(
                                     id = it.id,
                                     type = it.type.first(),
-                                    serviceEndpoint = listOf(it.serviceEndpoint.uri),
+                                    serviceEndpoint = listOf(it.serviceEndpoint.uri)
                                 )
-                            } ?: emptyList(),
-                        ),
-                    ),
-                ),
+                            } ?: emptyList()
+                        )
+                    )
+                )
             )
 
             val encodedState = atalaOperation.encodeToByteArray()
@@ -125,14 +125,14 @@ internal class CastorShared {
             val methodSpecificId = PrismDIDMethodId(
                 sections = listOf(
                     stateHash,
-                    base64State,
-                ),
+                    base64State
+                )
             )
 
             return DID(
                 schema = DID,
                 method = PRISM,
-                methodId = methodSpecificId.toString(),
+                methodId = methodSpecificId.toString()
             )
         }
 
@@ -165,16 +165,16 @@ internal class CastorShared {
                     urls = arrayOf(),
                     verificationMethods = peerDIDDocument.authentication.map {
                         fromVerificationMethodPeerDID(it.id, it)
-                    }.toTypedArray(),
-                ),
+                    }.toTypedArray()
+                )
             )
             coreProperties.add(
                 DIDDocument.KeyAgreement(
                     urls = arrayOf(),
                     verificationMethods = peerDIDDocument.keyAgreement.map {
                         fromVerificationMethodPeerDID(it.id, it)
-                    }.toTypedArray(),
-                ),
+                    }.toTypedArray()
+                )
             )
 
             val peerDIDServices = peerDIDDocument.service ?: listOf()
@@ -190,9 +190,9 @@ internal class CastorShared {
                                 serviceEndpoint = DIDDocument.ServiceEndpoint(
                                     uri = service.serviceEndpoint,
                                     accept = service.accept.toTypedArray(),
-                                    routingKeys = service.routingKeys.toTypedArray(),
-                                ),
-                            ),
+                                    routingKeys = service.routingKeys.toTypedArray()
+                                )
+                            )
                         )
                     }
                 }
@@ -200,15 +200,15 @@ internal class CastorShared {
 
             coreProperties.add(
                 DIDDocument.Services(
-                    services.toTypedArray(),
-                ),
+                    services.toTypedArray()
+                )
             )
 
             val did = DIDParser.parse(didString)
 
             return DIDDocument(
                 id = did,
-                coreProperties = coreProperties.toTypedArray(),
+                coreProperties = coreProperties.toTypedArray()
             )
         }
 
@@ -224,7 +224,7 @@ internal class CastorShared {
         @Throws(CastorError.InvalidKeyError::class)
         private fun fromVerificationMethodPeerDID(
             did: String,
-            verificationMethod: VerificationMethodPeerDID,
+            verificationMethod: VerificationMethodPeerDID
         ): DIDDocument.VerificationMethod {
             val didUrl = DIDUrlParser.parse(did)
             val controller = DIDParser.parse(verificationMethod.controller)
@@ -250,7 +250,7 @@ internal class CastorShared {
                         didUrl,
                         controller,
                         type,
-                        Json.decodeFromString<Map<String, String>>(verificationMethod.verMaterial.value as String),
+                        Json.decodeFromString<Map<String, String>>(verificationMethod.verMaterial.value as String)
                     )
                 }
 
@@ -260,7 +260,7 @@ internal class CastorShared {
                         controller,
                         type,
                         null,
-                        verificationMethod.verMaterial.value as String,
+                        verificationMethod.verMaterial.value as String
                     )
                 }
 
@@ -270,7 +270,7 @@ internal class CastorShared {
                         controller,
                         type,
                         null,
-                        verificationMethod.verMaterial.value as String,
+                        verificationMethod.verMaterial.value as String
                     )
                 }
             }
@@ -295,7 +295,7 @@ internal class CastorShared {
                     apollo = apollo,
                     did = did,
                     stateHash = prismDID.stateHash,
-                    encodedData = prismDID.encodedState.base64UrlDecodedBytes,
+                    encodedData = prismDID.encodedState.base64UrlDecodedBytes
                 )
             } catch (e: Throwable) {
                 logger.error(
@@ -318,7 +318,7 @@ internal class CastorShared {
             val authenticate = verificationMethods.entries.map {
                 DIDDocument.Authentication(
                     urls = arrayOf(it.key),
-                    verificationMethods = verificationMethods.values.toTypedArray(),
+                    verificationMethods = verificationMethods.values.toTypedArray()
                 )
             }
 
@@ -331,7 +331,7 @@ internal class CastorShared {
 
             return DIDDocument(
                 id = did,
-                coreProperties = coreProperties.toTypedArray(),
+                coreProperties = coreProperties.toTypedArray()
             )
         }
 
@@ -354,7 +354,7 @@ internal class CastorShared {
             apollo: Apollo,
             did: DID,
             stateHash: String,
-            encodedData: ByteArray,
+            encodedData: ByteArray
         ): Pair<Map<String, DIDDocument.VerificationMethod>, List<DIDDocument.Service>> {
             val sha256 = SHA256()
             val verifyEncodedState = sha256.digest(encodedData)
@@ -389,8 +389,8 @@ internal class CastorShared {
                     it.id,
                     arrayOf(it.type),
                     DIDDocument.ServiceEndpoint(
-                        uri = it.serviceEndpoint.first(),
-                    ),
+                        uri = it.serviceEndpoint.first()
+                    )
                 )
             } ?: listOf()
 
@@ -398,7 +398,7 @@ internal class CastorShared {
                 publicKeys.fold(emptyMap<String, DIDDocument.VerificationMethod>()) { partialResult, publicKey ->
                     val didUrl = DIDUrl(
                         did = did,
-                        fragment = publicKey.id,
+                        fragment = publicKey.id
                     )
                     val method = DIDDocument.VerificationMethod(
                         id = didUrl,
@@ -499,7 +499,7 @@ internal class CastorShared {
         @Throws(CastorError.InvalidKeyError::class)
         internal fun createPeerDID(
             keyPairs: Array<KeyPair>,
-            services: Array<DIDDocument.Service>,
+            services: Array<DIDDocument.Service>
         ): DID {
             val encryptionKeys: MutableList<VerificationMaterialAgreement> = mutableListOf()
             val signingKeys: MutableList<VerificationMaterialAuthentication> = mutableListOf()
@@ -512,8 +512,8 @@ internal class CastorShared {
                             VerificationMaterialAgreement(
                                 format = VerificationMaterialFormatPeerDID.JWK,
                                 value = octetString,
-                                type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020,
-                            ),
+                                type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020
+                            )
                         )
                     }
 
@@ -523,8 +523,8 @@ internal class CastorShared {
                             VerificationMaterialAuthentication(
                                 format = VerificationMaterialFormatPeerDID.JWK,
                                 value = octetString,
-                                type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020,
-                            ),
+                                type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020
+                            )
                         )
                     }
 
@@ -548,10 +548,10 @@ internal class CastorShared {
                             type = it.type[0],
                             serviceEndpoint = it.serviceEndpoint.uri,
                             routingKeys = it.serviceEndpoint.routingKeys?.toList() ?: listOf(),
-                            accept = it.serviceEndpoint.accept?.asList() ?: listOf(),
-                        ).toDict().toJsonElement(),
+                            accept = it.serviceEndpoint.accept?.asList() ?: listOf()
+                        ).toDict().toJsonElement()
                     )
-                }.firstOrNull(),
+                }.firstOrNull()
             )
 
             return DIDParser.parse(peerDID)

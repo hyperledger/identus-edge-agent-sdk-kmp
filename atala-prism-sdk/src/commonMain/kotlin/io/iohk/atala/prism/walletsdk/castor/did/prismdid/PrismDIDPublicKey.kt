@@ -58,7 +58,7 @@ class PrismDIDPublicKey {
         CAPABILITY_DELEGATION_KEY("capabilityDelegationKey"),
         CAPABILITY_INVOCATION_KEY("capabilityInvocationKey"),
         KEY_AGREEMENT_KEY("keyAgreementKey"),
-        UNKNOWN_KEY("unknownKey"),
+        UNKNOWN_KEY("unknownKey")
     }
 }
 

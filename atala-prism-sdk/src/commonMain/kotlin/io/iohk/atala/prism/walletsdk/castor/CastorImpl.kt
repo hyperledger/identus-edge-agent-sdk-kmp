@@ -32,7 +32,7 @@ class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerIm
         this.apollo = apollo
         this.resolvers = arrayOf(
             PeerDIDResolver(),
-            LongFormPrismDIDResolver(this.apollo),
+            LongFormPrismDIDResolver(this.apollo)
         )
     }
 
@@ -63,7 +63,7 @@ class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerIm
         return CastorShared.createPrismDID(
             apollo = apollo,
             masterPublicKey = masterPublicKey,
-            services = services,
+            services = services
         )
     }
 
@@ -83,7 +83,7 @@ class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerIm
     ): DID {
         return CastorShared.createPeerDID(
             keyPairs = keyPairs,
-            services = services,
+            services = services
         )
     }
 

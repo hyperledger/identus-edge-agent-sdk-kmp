@@ -70,6 +70,6 @@ class ApolloMock : Apollo {
     override fun verifySignature(
         publicKey: PublicKey,
         challenge: ByteArray,
-        signature: Signature,
+        signature: Signature
     ): Boolean = verifySignatureReturn
 }

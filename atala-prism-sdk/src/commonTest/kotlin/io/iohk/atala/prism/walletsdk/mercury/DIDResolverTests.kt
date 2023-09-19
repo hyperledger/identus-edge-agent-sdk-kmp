@@ -57,8 +57,8 @@ class DIDResolverTests {
             serviceEndpoint = DIDDocument.ServiceEndpoint(
                 uri = "localhost:8082",
                 accept = seAccept,
-                routingKeys = seRoutingKeys,
-            ),
+                routingKeys = seRoutingKeys
+            )
         )
 
         val allAuthentication = DIDDocument.Authentication(arrayOf(), arrayOf())

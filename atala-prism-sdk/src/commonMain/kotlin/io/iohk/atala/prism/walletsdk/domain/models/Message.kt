@@ -77,7 +77,7 @@ data class Message @JvmOverloads constructor(
 
     enum class Direction(val value: Int) {
         SENT(0),
-        RECEIVED(1),
+        RECEIVED(1)
     }
 
     companion object {

@@ -240,7 +240,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
                     filename = attachment.filename?.split(ATTACHMENT_SEPARATOR)?.toTypedArray(),
                     format = attachment.format,
                     lastModTime = attachment.lastModTime?.toString(),
-                    mediaType = attachment.mediaType,
+                    mediaType = attachment.mediaType
                 )
 
                 return acc.plus(attachmentDescriptor)
@@ -261,16 +261,15 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
 
         val json = jsonObj[JSON]
         if (json is JSONObject) {
+            @Suppress("UNCHECKED_CAST") // JSONObject can be always cast as Map<String, *>
             return AttachmentJsonData(JSONObject.toJSONString(json as Map<String, *>))
         }
 
         val links = jsonObj[LINKS]
         val hash = jsonObj[HASH]
         if (links is Array<*> && links.isArrayOf<String>() && hash is String) {
-            return AttachmentLinkData(
-                links as Array<String>,
-                hash
-            )
+            @Suppress("UNCHECKED_CAST") // checks are applied in the if condition
+            return AttachmentLinkData(links as Array<String>, hash)
         }
 
         throw MercuryError.UnknownAttachmentDataError()

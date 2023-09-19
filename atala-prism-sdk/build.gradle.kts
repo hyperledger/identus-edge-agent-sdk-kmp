@@ -10,10 +10,10 @@ val didpeerVersion = project.property("didpeer_version")
 plugins {
     id("com.squareup.sqldelight")
     kotlin("multiplatform")
-    kotlin("plugin.serialization") version "1.7.20"
+    kotlin("plugin.serialization")
     id("com.android.library")
     id("org.jetbrains.dokka")
-    id("org.jetbrains.kotlinx.kover") version "0.7.0"
+    id("org.jetbrains.kotlinx.kover") version "0.7.3"
 }
 
 koverReport {
@@ -39,7 +39,7 @@ koverReport {
 }
 
 kotlin {
-    android {
+    androidTarget {
         publishAllLibraryVariants()
     }
 
@@ -100,14 +100,14 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
-                implementation("io.ktor:ktor-client-core:2.1.3")
-                implementation("io.ktor:ktor-client-content-negotiation:2.1.3")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:2.1.3")
-                implementation("io.ktor:ktor-client-logging:2.1.3")
+                implementation("io.ktor:ktor-client-core:2.3.4")
+                implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
+                implementation("io.ktor:ktor-client-logging:2.3.4")
 
                 implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
@@ -122,13 +122,13 @@ kotlin {
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 
-                implementation("org.didcommx:didcomm:0.3.0")
+                implementation("org.didcommx:didcomm:0.3.2")
 
                 implementation("com.google.protobuf:protoc:3.12.0") {
                     exclude("com.google.protobuf")
                 }
 
-                implementation("com.squareup.sqldelight:coroutines-extensions:1.5.4")
+                implementation("com.squareup.sqldelight:coroutines-extensions:1.5.5")
 
                 api("org.lighthousegames:logging:1.1.2")
 
@@ -138,15 +138,15 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
-                implementation("io.ktor:ktor-client-mock:2.1.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+                implementation("io.ktor:ktor-client-mock:2.3.4")
             }
         }
         val jvmMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-okhttp:2.1.3")
+                implementation("io.ktor:ktor-client-okhttp:2.3.4")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
-                implementation("com.squareup.sqldelight:sqlite-driver:1.5.4")
+                implementation("com.squareup.sqldelight:sqlite-driver:1.5.5")
             }
         }
         val jvmTest by getting {
@@ -156,13 +156,13 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-                implementation("io.ktor:ktor-client-okhttp:2.1.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+                implementation("io.ktor:ktor-client-okhttp:2.3.4")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
-                implementation("com.squareup.sqldelight:android-driver:1.5.4")
+                implementation("com.squareup.sqldelight:android-driver:1.5.5")
             }
         }
-        val androidTest by getting {
+        val androidUnitTest by getting {
             dependencies {
                 implementation("junit:junit:4.13.2")
             }
@@ -262,7 +262,7 @@ tasks.withType<DokkaTask>().configureEach {
 val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinCommonGrammarSource") {
     // the classpath used to run antlr code generation
     antlrClasspath = configurations.detachedConfiguration(
-        project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14"),
+        project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
     )
     maxHeapSize = "64m"
     packageName = "io.iohk.atala.prism.walletsdk.castor.antlrgrammar"

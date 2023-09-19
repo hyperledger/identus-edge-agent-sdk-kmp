@@ -1,3 +1,10 @@
+## [2.3.2](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.3.1...v2.3.2) (2023-09-19)
+
+
+### Bug Fixes
+
+* bump version for prism-agent v1.16 compatibility ([#99](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/99)) ([238a17c](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/238a17ccbd60253d862bad043bf23fccd87772a0))
+
 ## [2.3.1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.3.0...v2.3.1) (2023-08-30)
 
 

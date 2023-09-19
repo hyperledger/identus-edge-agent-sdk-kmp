@@ -30,7 +30,7 @@ class ForwardMessage @JvmOverloads constructor(
             from = from,
             to = to,
             body = forwardBody,
-            attachments = arrayOf(attachment),
+            attachments = arrayOf(attachment)
         )
 
         return message

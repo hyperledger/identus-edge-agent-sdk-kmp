@@ -24,12 +24,12 @@ open class ApiImpl(override var client: HttpClient) : Api {
             url = Url(url),
             urlParametersArray = urlParameters,
             httpHeadersArray = httpHeaders,
-            body = body,
+            body = body
         )
         val response = client.request(request)
         return HttpResponse(
             status = response.status.value,
-            jsonString = response.bodyAsText(),
+            jsonString = response.bodyAsText()
         )
     }
 }

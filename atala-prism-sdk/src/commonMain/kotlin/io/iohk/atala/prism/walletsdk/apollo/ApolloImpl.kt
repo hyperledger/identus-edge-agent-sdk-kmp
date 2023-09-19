@@ -56,8 +56,8 @@ class ApolloImpl : Apollo {
         return Seed(
             value = KeyDerivation.binarySeed(
                 seed = mnemonicCode,
-                passphrase = passphrase,
-            ),
+                passphrase = passphrase
+            )
         )
     }
 
@@ -75,9 +75,9 @@ class ApolloImpl : Apollo {
             Seed(
                 value = KeyDerivation.binarySeed(
                     seed = mnemonicCode,
-                    passphrase = passphrase ?: "",
-                ),
-            ),
+                    passphrase = passphrase ?: ""
+                )
+            )
         )
     }
 
@@ -271,7 +271,11 @@ class ApolloImpl : Apollo {
      * @param signature The signature to verify.
      * @return A boolean value indicating whether the signature is valid or not.
      */
-    override fun verifySignature(publicKey: PublicKey, challenge: ByteArray, signature: Signature): Boolean {
+    override fun verifySignature(
+        publicKey: PublicKey,
+        challenge: ByteArray,
+        signature: Signature
+    ): Boolean {
         if (publicKey.canVerify()) {
             return when (publicKey.getCurve()) {
                 Curve.SECP256K1.value -> {
