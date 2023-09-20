@@ -17,15 +17,15 @@ import kotlin.time.Duration.Companion.seconds
 object Environment {
     private val logger = Logger.get<Environment>()
 
-    val agentUrl: String
-    val mediatorOobUrl: String
+    lateinit var agentUrl: String
+    lateinit var mediatorOobUrl: String
     lateinit var publishedDid: String
     lateinit var schemaId: String
 
     /**
      * Set up the variables based on the properties config file
      */
-    init {
+    fun setup() {
         // prepare notes
         Notes.prepareNotes()
 
@@ -83,7 +83,7 @@ object Environment {
             this.publishedDid = publishedDid!!
             return
         } catch (e: AssertionError) {
-            Notes.appendMessage("DID [${this.publishedDid}] not found. Creating a new one.")
+            Notes.appendMessage("DID [${publishedDid}] not found. Creating a new one.")
         }
 
         val publicKey = ManagedDIDKeyTemplate(
@@ -138,7 +138,7 @@ object Environment {
             this.schemaId = schemaId!!
             return
         } catch (e: AssertionError) {
-            Notes.appendMessage("Schema [${this.schemaId}] not found. Creating a new one.")
+            Notes.appendMessage("Schema [${schemaId}] not found. Creating a new one.")
         }
 
         val schemaName = "automation-schema-" + UUID.randomUUID()
