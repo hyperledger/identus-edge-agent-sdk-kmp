@@ -68,7 +68,7 @@ class EdgeAgentSteps {
         cloudAgent.remember("recordIdList", recordIdList)
 
         // wait to receive
-        edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 3)
+        edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, numberOfCredentials)
 
         // accept all
         repeat(numberOfCredentials) {
