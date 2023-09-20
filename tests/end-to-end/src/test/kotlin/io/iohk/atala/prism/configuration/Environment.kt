@@ -59,6 +59,7 @@ object Environment {
         Notes.appendMessage("Agent: $agentUrl")
         Notes.appendMessage("DID: $publishedDid")
         Notes.appendMessage("Schema: $schemaId")
+        Notes.appendMessage("SDK Version: ${getSdkVersion()}")
     }
 
     private fun getSdkVersion(): String {
@@ -82,7 +83,7 @@ object Environment {
             this.publishedDid = publishedDid!!
             return
         } catch (e: AssertionError) {
-            logger.warn("DID not found. Creating a new one.")
+            Notes.appendMessage("DID [${this.publishedDid}] not found. Creating a new one.")
         }
 
         val publicKey = ManagedDIDKeyTemplate(
@@ -121,14 +122,12 @@ object Environment {
             response.body.jsonPath().getString("status") == "PUBLISHED"
         }
         this.publishedDid = response.body.jsonPath().getString("did")
-
-        Notes.appendMessage("Created new DID: ${this.publishedDid}")
     }
 
     /**
      * Checks if the environment SCHEMA_ID variable exists in prism-agent, otherwise it creates a new one.
      */
-    fun checkSchema(schemaId: String?) {
+    private fun checkSchema(schemaId: String?) {
         try {
             RestAssured
                 .given()
@@ -139,7 +138,7 @@ object Environment {
             this.schemaId = schemaId!!
             return
         } catch (e: AssertionError) {
-            logger.warn("Schema not found. Creating a new one.")
+            Notes.appendMessage("Schema [${this.schemaId}] not found. Creating a new one.")
         }
 
         val schemaName = "automation-schema-" + UUID.randomUUID()
@@ -169,7 +168,6 @@ object Environment {
             .thenReturn()
 
         this.schemaId = schemaCreationResponse.body.jsonPath().getString("guid")
-        Notes.appendMessage("Created new schema: ${this.schemaId}")
     }
 
 }
