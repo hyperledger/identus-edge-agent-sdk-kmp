@@ -133,6 +133,8 @@ kotlin {
                 api("org.lighthousegames:logging:1.1.2")
 
                 implementation("com.ionspin.kotlin:bignum:0.3.7")
+
+//                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
             }
         }
         val commonTest by getting {
@@ -203,9 +205,6 @@ android {
             allVariants()
         }
     }
-}
-dependencies {
-    testImplementation("org.testng:testng:7.1.0")
 }
 
 sqldelight {
