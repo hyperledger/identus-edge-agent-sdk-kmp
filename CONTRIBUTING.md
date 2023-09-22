@@ -64,7 +64,7 @@ Before creating bug reports, please check [this list](#before-submitting-a-bug-r
 > **Note:** If you find a **Closed** issue that seems like it is the same thing that you're experiencing, open a new issue and include a link to the original issue in the body of your new one.
 
 * **You might be able to find the cause of the problem and fix things yourself by Debugging**. Most importantly, check if you can reproduce the problem in the latest version.
-* **Check the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md) ** if you have problems on the setup and the [discussions](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/discussions)** for a list of common questions and problems.
+* **Check the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md) ** if you have problems with the setup and the [discussions](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/discussions)** for a list of common questions and problems.
 * **Perform a cursory search to see if the problem has already been reported**. If it has **and the issue is still open**, add a comment to the existing issue instead of opening a new one.
 
 Bugs are tracked as [GitHub issues](https://guides.github.com/features/issues/). Create an issue on that repository and provide the following information by filling in [the template](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/new/choose).
