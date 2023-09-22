@@ -4,7 +4,8 @@ import com.ionspin.kotlin.bignum.integer.Sign
 import java.math.BigInteger
 
 fun BigInteger.toUnsignedByteArray(): ByteArray {
-    return toByteArray().dropWhile { it == 0.toByte() }.toByteArray()
+    val comparedValue = 0.toByte()
+    return toByteArray().dropWhile { it == comparedValue }.toByteArray()
 }
 
 fun BigInteger.toKotlinBigInteger(): com.ionspin.kotlin.bignum.integer.BigInteger {

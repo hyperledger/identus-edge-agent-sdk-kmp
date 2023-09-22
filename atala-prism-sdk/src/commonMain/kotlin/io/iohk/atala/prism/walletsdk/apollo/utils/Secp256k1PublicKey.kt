@@ -9,7 +9,7 @@ import io.iohk.atala.prism.apollo.utils.KMMECPoint
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.apollo.config.ECConfig
-import io.iohk.atala.prism.walletsdk.apollo.utils.ec._ECPoint
+import io.iohk.atala.prism.walletsdk.apollo.utils.ec.KMMECPoint
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurveKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CustomKey
@@ -93,9 +93,9 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey {
     }
 
     companion object {
-        fun computeCurvePoint(key: BCECPublicKey): _ECPoint {
+        fun computeCurvePoint(key: BCECPublicKey): io.iohk.atala.prism.walletsdk.apollo.utils.ec.KMMECPoint {
             val javaPoint = key.w
-            return _ECPoint(javaPoint.affineX.toKotlinBigInteger(), javaPoint.affineY.toKotlinBigInteger())
+            return KMMECPoint(javaPoint.affineX.toKotlinBigInteger(), javaPoint.affineY.toKotlinBigInteger())
         }
 
         fun secp256k1FromCompressed(compressed: ByteArray): Secp256k1PublicKey {
