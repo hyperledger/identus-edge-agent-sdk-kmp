@@ -65,37 +65,33 @@ class EdgeAgentWorkflow {
         )
     }
 
-    fun waitForCredentialOffer(edgeAgent: Actor) {
+    fun waitForCredentialOffer(edgeAgent: Actor, numberOfCredentialOffer: Int) {
         edgeAgent.attemptsTo(
             PollingWait.until(
                 UseWalletSdk.credentialOfferStackSize(),
-                equalTo(1)
+                equalTo(numberOfCredentialOffer)
             )
         )
     }
 
-    fun waitToReceiveIssuedCredential(edgeAgent: Actor) {
+    fun waitToReceiveCredentialIssuance(edgeAgent: Actor, expectedNumberOfCredentials: Int) {
         edgeAgent.attemptsTo(
             PollingWait.until(
                 UseWalletSdk.issuedCredentialStackSize(),
-                equalTo(1)
+                equalTo(expectedNumberOfCredentials)
             )
         )
     }
 
-    fun processIssuedCredential(edgeAgent: Actor) {
+    fun processIssuedCredential(edgeAgent: Actor, numberOfCredentials: Int) {
         edgeAgent.attemptsTo(
-            UseWalletSdk.execute {
-                val issuedCredentialMessage = it.issuedCredentialStack.removeFirst()
-                val issuedCredential = IssueCredential.fromMessage(issuedCredentialMessage)
-                it.sdk.processIssuedCredentialMessage(issuedCredential)
+            UseWalletSdk.execute { sdkContext ->
+                repeat(numberOfCredentials) {
+                    val issuedCredentialMessage = sdkContext.issuedCredentialStack.removeFirst()
+                    val issuedCredential = IssueCredential.fromMessage(issuedCredentialMessage)
+                    sdkContext.sdk.processIssuedCredentialMessage(issuedCredential)
+                }
             }
-        )
-    }
-
-    fun stopSdk(edgeAgent: Actor) {
-        edgeAgent.attemptsTo(
-            UseWalletSdk.stop()
         )
     }
 }
