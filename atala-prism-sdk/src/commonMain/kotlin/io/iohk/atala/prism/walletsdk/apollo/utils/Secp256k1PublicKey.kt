@@ -5,7 +5,6 @@ import com.ionspin.kotlin.bignum.integer.base63.toJavaBigInteger
 import io.iohk.atala.prism.apollo.ecdsa.ECDSAType
 import io.iohk.atala.prism.apollo.ecdsa.KMMECDSA
 import io.iohk.atala.prism.apollo.utils.ECPublicKeyInitializationException
-import io.iohk.atala.prism.apollo.utils.KMMECPoint
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.apollo.config.ECConfig
@@ -93,7 +92,7 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey {
     }
 
     companion object {
-        fun computeCurvePoint(key: BCECPublicKey): io.iohk.atala.prism.walletsdk.apollo.utils.ec.KMMECPoint {
+        fun computeCurvePoint(key: BCECPublicKey): KMMECPoint {
             val javaPoint = key.w
             return KMMECPoint(javaPoint.affineX.toKotlinBigInteger(), javaPoint.affineY.toKotlinBigInteger())
         }
