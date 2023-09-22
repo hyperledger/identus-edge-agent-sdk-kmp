@@ -82,6 +82,6 @@ jobs:
       - name: Publish Serenity report
         uses: actions/upload-artifact@v3
         with:
-          name: atala-prism-sdk-kmm.zip
+          name: atala-prism-sdk-kmm
           path: tests/end-to-end/target/site/serenity
           if-no-files-found: error
