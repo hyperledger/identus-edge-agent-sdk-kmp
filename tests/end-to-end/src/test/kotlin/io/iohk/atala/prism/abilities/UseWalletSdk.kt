@@ -81,6 +81,7 @@ class UseWalletSdk : Ability {
 
     private val logger = Logger.get<EdgeAgentWorkflow>()
     private val context: SdkContext
+    private val receivedMessages = mutableListOf<String>()
 
     init {
         val apollo = ApolloImpl()
@@ -119,6 +120,10 @@ class UseWalletSdk : Ability {
         CoroutineScope(Dispatchers.Default).launch {
             sdk.handleReceivedMessagesEvents().collect { messageList: List<Message> ->
                 messageList.forEach { message ->
+                    if (receivedMessages.contains(message.id)) {
+                        return@forEach
+                    }
+                    receivedMessages.add(message.id)
                     when (message.piuri) {
                         ProtocolType.DidcommOfferCredential.value -> context.credentialOfferStack.add(message)
                         ProtocolType.DidcommIssueCredential.value -> context.issuedCredentialStack.add(message)

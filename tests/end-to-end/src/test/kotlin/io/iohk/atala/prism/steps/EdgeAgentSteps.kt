@@ -4,6 +4,7 @@ import io.cucumber.java.After
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import io.iohk.atala.prism.abilities.UseWalletSdk
+import io.iohk.atala.prism.workflow.CloudAgentWorkflow
 import io.iohk.atala.prism.workflow.EdgeAgentWorkflow
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.actors.OnStage
@@ -14,9 +15,65 @@ class EdgeAgentSteps {
     @Inject
     private lateinit var edgeAgentWorkflow: EdgeAgentWorkflow
 
+    @Inject
+    private lateinit var cloudAgentWorkflow: CloudAgentWorkflow
+
     @When("{actor} connects through the invite")
     fun `Edge Agent connects through the invite`(edgeAgent: Actor) {
         edgeAgentWorkflow.connect(edgeAgent)
+    }
+
+    @When("{actor} has {} credentials issued by {actor}")
+    fun `Edge Agent has {} issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+        repeat(numberOfCredentialsIssued) {
+            cloudAgentWorkflow.offerCredential(cloudAgent)
+            edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
+            edgeAgentWorkflow.acceptCredential(edgeAgent)
+            cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")
+            edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, 1)
+            edgeAgentWorkflow.processIssuedCredential(edgeAgent, 1)
+        }
+    }
+
+    @When("{actor} accepts {} credential offer sequentially from {actor}")
+    fun `Edge Agent accepts multiple credentials offer sequentially from Cloud Agent`(
+        edgeAgent: Actor,
+        numberOfCredentials: Int,
+        cloudAgent: Actor
+    ) {
+        val recordIdList = mutableListOf<String>()
+        repeat(numberOfCredentials) {
+            cloudAgentWorkflow.offerCredential(cloudAgent)
+            edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
+            edgeAgentWorkflow.acceptCredential(edgeAgent)
+            cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")
+            recordIdList.add(cloudAgent.recall("recordId"))
+        }
+        cloudAgent.remember("recordIdList", recordIdList)
+    }
+
+    @When("{actor} accepts {} credentials offer at once from {actor}")
+    fun `Edge Agent accepts multiple credentials offer at once from Cloud Agent`(
+        edgeAgent: Actor,
+        numberOfCredentials: Int,
+        cloudAgent: Actor
+    ) {
+        val recordIdList = mutableListOf<String>()
+
+        // offer multiple credentials
+        repeat(numberOfCredentials) {
+            cloudAgentWorkflow.offerCredential(cloudAgent)
+            recordIdList.add(cloudAgent.recall("recordId"))
+        }
+        cloudAgent.remember("recordIdList", recordIdList)
+
+        // wait to receive
+        edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, numberOfCredentials)
+
+        // accept all
+        repeat(numberOfCredentials) {
+            edgeAgentWorkflow.acceptCredential(edgeAgent)
+        }
     }
 
     @When("{actor} accepts the credential")
@@ -32,17 +89,17 @@ class EdgeAgentSteps {
 
     @Then("{actor} should receive the credential")
     fun `Edge Agent should receive the credential`(edgeAgent: Actor) {
-        edgeAgentWorkflow.waitForCredentialOffer(edgeAgent)
+        edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
     }
 
-    @Then("{actor} wait to receive an issued credential")
-    fun `Edge Agent wait to receive an issued credential`(edgeAgent: Actor) {
-        edgeAgentWorkflow.waitToReceiveIssuedCredential(edgeAgent)
+    @Then("{actor} wait to receive {} issued credentials")
+    fun `Edge Agent wait to receive issued credentials`(edgeAgent: Actor, expectedNumberOfCredentials: Int) {
+        edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, expectedNumberOfCredentials)
     }
 
-    @Then("{actor} process the issued credential")
-    fun `Edge Agent process the issued credential`(edgeAgent: Actor) {
-        edgeAgentWorkflow.processIssuedCredential(edgeAgent)
+    @Then("{actor} process {} issued credentials")
+    fun `Edge Agent process multiple issued credentials`(edgeAgent: Actor, numberOfCredentials: Int) {
+        edgeAgentWorkflow.processIssuedCredential(edgeAgent, numberOfCredentials)
     }
 
     @After
