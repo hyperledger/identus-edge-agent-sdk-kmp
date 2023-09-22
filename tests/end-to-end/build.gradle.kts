@@ -22,9 +22,9 @@ repositories {
 }
 
 dependencies {
-    testImplementation("io.iohk.atala.prism.walletsdk:atala-prism-sdk:2.3.1")
+    testImplementation("io.iohk.atala.prism.walletsdk:atala-prism-sdk:2.3.2")
     testImplementation("io.iohk.atala.prism:prism-kotlin-client:1.9.2")
-    testImplementation("io.iohk.atala:atala-automation:0.1.2")
+    testImplementation("io.iohk.atala:atala-automation:0.3.0")
 }
 
 tasks.test {
