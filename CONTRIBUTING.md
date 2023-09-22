@@ -109,7 +109,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://guides.github.com
 
 ### Git Commit Messages
 
-Atala PRISM uses [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#specification) please always provide a commit following this specifications.
+Atala PRISM uses [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#specification). Please always provide a commit following these specifications.
 
 #### Commit Message Format
 
