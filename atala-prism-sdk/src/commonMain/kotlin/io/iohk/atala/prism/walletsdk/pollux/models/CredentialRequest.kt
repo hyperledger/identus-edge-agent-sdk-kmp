@@ -32,8 +32,32 @@ data class CredentialDefinition(
     val type: String,
     val tag: String,
     val value: Array<String>,
-    val issuerId: String,
-)
+    val issuerId: String
+) {
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as CredentialDefinition
+
+        if (schemaId != other.schemaId) return false
+        if (type != other.type) return false
+        if (tag != other.tag) return false
+        if (!value.contentEquals(other.value)) return false
+        if (issuerId != other.issuerId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = schemaId.hashCode()
+        result = 31 * result + type.hashCode()
+        result = 31 * result + tag.hashCode()
+        result = 31 * result + value.contentHashCode()
+        result = 31 * result + issuerId.hashCode()
+        return result
+    }
+}
 
 interface CredentialIssued : Credential {
     val values: List<Pair<String, CredentialValue>>

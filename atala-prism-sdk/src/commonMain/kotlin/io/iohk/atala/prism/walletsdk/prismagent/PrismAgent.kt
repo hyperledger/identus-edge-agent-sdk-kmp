@@ -562,13 +562,13 @@ class PrismAgent {
                 var linkSecret = pluto.getLinkSecret().firstOrNull()
                 if (linkSecret == null) {
                     val linkSecretObj = LinkSecret()
-                    linkSecret = linkSecretObj.getJson()
+                    linkSecret = linkSecretObj.getValue()
                     pluto.storeLinkSecret(linkSecret)
                 }
                 val anonOffer = CredentialOffer(Json.encodeToString(offer))
                 val pair = pollux.processCredentialRequestAnoncreds(
                     offer = anonOffer,
-                    linkSecret = LinkSecret.newFromJson(linkSecret),
+                    linkSecret = LinkSecret.newFromValue(linkSecret),
                     linkSecretName = offer.thid ?: ""
                 )
 
@@ -619,7 +619,7 @@ class PrismAgent {
             val credentialData = it.base64.base64UrlDecoded
             var linkSecret: LinkSecret? = null
             if (credentialType == CredentialType.ANONCREDS) {
-                linkSecret = LinkSecret.newFromJson(pluto.getLinkSecret().first())
+                linkSecret = LinkSecret.newFromValue(pluto.getLinkSecret().first())
             }
 
             message.thid?.let {

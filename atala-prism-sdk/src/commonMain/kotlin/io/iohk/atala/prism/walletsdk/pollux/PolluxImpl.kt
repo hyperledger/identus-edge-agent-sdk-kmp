@@ -55,7 +55,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
         }
     }
 
-	override fun parseCredential(
+    override fun parseCredential(
         jsonData: String,
         type: CredentialType,
         linkSecret: LinkSecret?,
@@ -109,7 +109,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
                     revocationRegistryId = cred.getRevRegId(),
                     revocationRegistryJson = cred.getRevRegJson(),
                     witnessJson = cred.getWitnessJson() ?: "",
-                    json = cred.getJson(),
+                    json = cred.getJson()
                 )
             }
 

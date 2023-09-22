@@ -24,7 +24,7 @@ interface Pollux {
     fun processCredentialRequestJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
-        offerJson: JsonObject,
+        offerJson: JsonObject
     ): String
 
     fun processCredentialRequestAnoncreds(

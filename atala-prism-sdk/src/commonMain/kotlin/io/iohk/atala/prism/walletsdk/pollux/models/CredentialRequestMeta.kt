@@ -7,7 +7,7 @@ import kotlinx.serialization.json.Json
 data class CredentialRequestMeta(
     var linkSecretBlindingData: LinkSecretBlindingData,
     var linkSecretName: String,
-    var nonce: String,
+    var nonce: String
 ) {
     companion object {
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {

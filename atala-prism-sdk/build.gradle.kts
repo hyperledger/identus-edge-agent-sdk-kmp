@@ -132,7 +132,7 @@ kotlin {
 
                 api("org.lighthousegames:logging:1.1.2")
 
-                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmm:1.0.0-alpha")
+                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:1.0.0-alpha")
             }
         }
         val commonTest by getting {
