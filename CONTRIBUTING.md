@@ -32,7 +32,7 @@ The complete platform is separated into multiple repositories:
 
 ### Atala PRISM KMM SDK
 
-Atala PRISM KMM software development kit will help adoption within Kotlin platforms (Java/Android) by providing key functionalities. For more information around the SDK please have a look at the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md)
+Atala PRISM KMM software development kit will help adoption within Kotlin platforms (Java/Android) by providing key functionalities. For more information about the SDK, please have a look at the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md)
 
 ### Your First Code Contribution
 
