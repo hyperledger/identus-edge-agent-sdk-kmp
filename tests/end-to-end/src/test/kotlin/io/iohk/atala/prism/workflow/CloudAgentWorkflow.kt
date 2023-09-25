@@ -44,7 +44,7 @@ class CloudAgentWorkflow {
     fun offerCredential(cloudAgent: Actor) {
         val connectionId = cloudAgent.recall<String>("connectionId")
         val credential = CreateIssueCredentialRecordRequest(
-            claims = mapOf(Pair("automation-required", "required value")),
+            claims = mapOf(Pair("automation-required", UUID.randomUUID())),
             issuingDID = Environment.publishedDid,
             connectionId = connectionId,
             schemaId = "${Environment.agentUrl}/schema-registry/schemas/${Environment.schemaId}"
@@ -79,8 +79,7 @@ class CloudAgentWorkflow {
         cloudAgent.remember("presentationId", lastResponse().get<String>("presentationId"))
     }
 
-    fun verifyCredentialState(cloudAgent: Actor, state: String) {
-        val recordId = cloudAgent.recall<String>("recordId")
+    fun verifyCredentialState(cloudAgent: Actor, recordId: String, state: String) {
         cloudAgent.attemptsTo(
             PollingWait.until(
                 HttpRequest.get("/issue-credentials/records/$recordId"),
