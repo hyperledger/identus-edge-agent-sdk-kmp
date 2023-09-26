@@ -1,9 +1,6 @@
 package io.iohk.atala.prism.walletsdk.apollo.utils
 
-import io.iohk.atala.prism.apollo.ecdsa.ECDSAType
-import io.iohk.atala.prism.apollo.ecdsa.KMMECDSA
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PrivateKey
-import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurveKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
@@ -23,15 +20,11 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey {
     }
 
     override fun publicKey(): PublicKey {
-        return Secp256k1PublicKey(KMMECSecp256k1PublicKey.secp256k1FromBytes(raw).getEncoded())
+        return Secp256k1PublicKey(KMMECSecp256k1PrivateKey.secp256k1FromByteArray(raw).getPublicKey().raw)
     }
 
     override fun sign(message: ByteArray): ByteArray {
-        val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromBytes(raw)
-        return KMMECDSA.sign(
-            type = ECDSAType.ECDSA_SHA256,
-            data = message,
-            privateKey = kmmPrivateKey
-        )
+        val kmmPrivateKey = KMMECSecp256k1PrivateKey.secp256k1FromByteArray(raw)
+        return kmmPrivateKey.sign(data = message)
     }
 }

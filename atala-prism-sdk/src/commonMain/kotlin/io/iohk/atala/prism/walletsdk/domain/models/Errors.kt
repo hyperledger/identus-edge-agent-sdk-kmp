@@ -133,12 +133,52 @@ sealed class ApolloError @JvmOverloads constructor(message: String? = null, caus
             get() = "JWK is not in a valid format"
     }
 
-    class InvalidKeyCurve : ApolloError() {
+    class InvalidKeyCurve(val invalidCurve: String, val validCurves: Array<String>) : ApolloError() {
 
         override val code: Int
             get() = 14
         override val message: String
-            get() = "Only SECP256K1 can be initialised by using byte Coordinates for EC Curve"
+            get() = "Invalid key curve $invalidCurve. Valid options are: ${validCurves.joinToString(", ")}"
+    }
+
+    class InvalidKeyType(val invalidType: String, val validTypes: Array<String>) : ApolloError() {
+
+        override val code: Int
+            get() = 15
+        override val message: String
+            get() = "Invalid key type $invalidType. Valid options are: ${validTypes.joinToString(", ")}"
+    }
+
+    class InvalidIndex(val invalidMessage: String) : ApolloError() {
+
+        override val code: Int
+            get() = 16
+        override val message: String
+            get() = invalidMessage
+    }
+
+    class InvalidDerivationPath(val invalidMessage: String) : ApolloError() {
+
+        override val code: Int
+            get() = 17
+        override val message: String
+            get() = invalidMessage
+    }
+
+    class InvalidSeed(val invalidMessage: String) : ApolloError() {
+
+        override val code: Int
+            get() = 18
+        override val message: String
+            get() = invalidMessage
+    }
+
+    class InvalidRawData(val invalidMessage: String) : ApolloError() {
+
+        override val code: Int
+            get() = 19
+        override val message: String
+            get() = invalidMessage
     }
 }
 

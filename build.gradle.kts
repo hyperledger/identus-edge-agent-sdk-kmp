@@ -13,8 +13,8 @@ plugins {
 
 buildscript {
     repositories {
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
         google()
         gradlePluginPortal()
     }
@@ -38,8 +38,8 @@ allprojects {
     this.group = "io.iohk.atala.prism.walletsdk"
 
     repositories {
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
         google()
         maven("https://plugins.gradle.org/m2/")
         // Needed for Kotlin coroutines that support new memory management mode
