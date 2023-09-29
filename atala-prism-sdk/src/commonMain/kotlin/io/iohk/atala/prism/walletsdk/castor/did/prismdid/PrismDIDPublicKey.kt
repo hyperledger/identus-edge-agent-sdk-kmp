@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor.did.prismdid
 
+import io.iohk.atala.prism.apollo.secp256k1.Secp256k1Lib
 import io.iohk.atala.prism.protos.CompressedECKeyData
 import io.iohk.atala.prism.protos.KeyUsage
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
@@ -40,7 +41,7 @@ class PrismDIDPublicKey {
     }
 
     fun toProto(): io.iohk.atala.prism.protos.PublicKey {
-        val compressedPublicKey: Secp256k1PublicKey = apollo.compressedPublicKey(keyData) as Secp256k1PublicKey
+        val compressedPublicKey = Secp256k1PublicKey(Secp256k1Lib().compressPublicKey(keyData.getValue()))
         return io.iohk.atala.prism.protos.PublicKey(
             id = id,
             usage = usage.toProto(),

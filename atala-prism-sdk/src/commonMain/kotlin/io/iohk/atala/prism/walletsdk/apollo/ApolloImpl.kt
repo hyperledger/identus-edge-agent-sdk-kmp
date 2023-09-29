@@ -47,7 +47,7 @@ class ApolloImpl : Apollo {
      */
     @Throws(MnemonicLengthException::class)
     override fun createSeed(mnemonics: Array<String>, passphrase: String): Seed {
-        return Seed(Mnemonic.createSeed(mnemonics.joinToString(separator = " "), passphrase))
+        return Seed(Mnemonic.createSeed(mnemonics, passphrase))
     }
 
     /**
@@ -62,7 +62,7 @@ class ApolloImpl : Apollo {
             mnemonics,
             Seed(
                 value = Mnemonic.createSeed(
-                    mnemonics = mnemonics.joinToString(separator = " "),
+                    mnemonics = mnemonics,
                     passphrase = passphrase ?: ""
                 )
             )

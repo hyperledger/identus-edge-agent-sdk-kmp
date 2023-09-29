@@ -1,15 +1,19 @@
 package io.iohk.atala.prism.walletsdk.castor
 
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.resolvers.PeerDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.shared.CastorShared
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
+import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
-import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
@@ -127,9 +131,16 @@ class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerIm
         }
 
         for (keyPair in keyPairs) {
-            val verified = apollo.verifySignature(keyPair, challenge, Signature(signature))
-            if (verified) {
-                return true
+            when (keyPair.getCurve()) {
+                Curve.SECP256K1.value -> {
+                    val secp = keyPair as Secp256k1KeyPair
+                    return (secp.publicKey as Secp256k1PublicKey).verify(challenge, signature)
+                }
+
+                Curve.ED25519.value -> {
+                    val ed = keyPair as Ed25519KeyPair
+                    return (ed.publicKey as Ed25519PublicKey).verify(challenge, signature)
+                }
             }
         }
 
