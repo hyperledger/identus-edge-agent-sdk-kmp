@@ -12,11 +12,11 @@ on:
       mediatorOobUrl:
         required: true
         description: Mediator out-of-band url
-        default: https://mediator.rootsid.cloud/oob_url
+        default: https://sit-prism-mediator.atalaprism.io/invitationOOB
       prismAgentUrl:
         required: true
         description: Prism-agent server url
-        default: https://k8s-dev.atalaprism.io/prism-agent
+        default: https://sit-prism-agent-issuer.atalaprism.io/prism-agent
       publishedDid:
         required: false
         description: Published DID
@@ -27,6 +27,9 @@ on:
         required: false
         description: Authorization key
   pull_request:
+    branches:
+      - main
+  push:
     branches:
       - main
 
@@ -79,6 +82,6 @@ jobs:
       - name: Publish Serenity report
         uses: actions/upload-artifact@v3
         with:
-          name: atala-prism-sdk-kmm.zip
+          name: atala-prism-sdk-kmm
           path: tests/end-to-end/target/site/serenity
           if-no-files-found: error
