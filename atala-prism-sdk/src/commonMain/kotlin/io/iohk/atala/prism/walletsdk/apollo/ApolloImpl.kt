@@ -71,10 +71,10 @@ class ApolloImpl : Apollo {
 
     override fun createPrivateKey(properties: Map<String, Any>): PrivateKey {
         if (!properties.containsKey(TypeKey().property)) {
-            throw ApolloError.InvalidKeyType(TypeKey().property, KeyTypes.entries.map { it.type }.toTypedArray())
+            throw ApolloError.InvalidKeyType(TypeKey().property, KeyTypes.values().map { it.type }.toTypedArray())
         }
         if (!properties.containsKey(CurveKey().property)) {
-            throw ApolloError.InvalidKeyCurve(CurveKey().property, Curve.entries.map { it.value }.toTypedArray())
+            throw ApolloError.InvalidKeyCurve(CurveKey().property, Curve.values().map { it.value }.toTypedArray())
         }
 
         val keyType = properties[TypeKey().property]
@@ -141,6 +141,6 @@ class ApolloImpl : Apollo {
                 return keyPair.privateKey
             }
         }
-        throw ApolloError.InvalidKeyType(TypeKey().property, KeyTypes.entries.map { it.type }.toTypedArray())
+        throw ApolloError.InvalidKeyType(TypeKey().property, KeyTypes.values().map { it.type }.toTypedArray())
     }
 }

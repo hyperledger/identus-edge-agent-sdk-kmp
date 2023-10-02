@@ -82,7 +82,7 @@ fun getKeyCurveByNameAndIndex(name: String, index: Int?): KeyCurve {
         }
 
         else -> {
-            throw ApolloError.InvalidKeyCurve(name, Curve.entries.map { it.value }.toTypedArray())
+            throw ApolloError.InvalidKeyCurve(name, Curve.values().map { it.value }.toTypedArray())
         }
     }
 }

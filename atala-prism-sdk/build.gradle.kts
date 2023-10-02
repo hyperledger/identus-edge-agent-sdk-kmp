@@ -39,7 +39,7 @@ koverReport {
 }
 
 kotlin {
-    androidTarget {
+    android {
         publishAllLibraryVariants()
     }
 
@@ -100,7 +100,7 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.2")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
 
@@ -137,7 +137,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.2")
                 implementation("io.ktor:ktor-client-mock:2.3.4")
                 implementation("junit:junit:4.13.2")
             }
@@ -156,7 +156,7 @@ kotlin {
         }
         val androidMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.2")
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
                 implementation("com.squareup.sqldelight:android-driver:1.5.5")
@@ -174,7 +174,10 @@ kotlin {
          */
 
         all {
-            languageSettings.optIn("kotlin.RequiresOptIn")
+            languageSettings {
+                optIn("kotlin.RequiresOptIn")
+                optIn("kotlin.ExperimentalStdlibApi")
+            }
         }
     }
 }
