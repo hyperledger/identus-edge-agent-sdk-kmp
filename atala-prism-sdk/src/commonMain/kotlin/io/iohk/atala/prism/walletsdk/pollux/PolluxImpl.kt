@@ -13,18 +13,24 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
+import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
+import io.iohk.atala.prism.walletsdk.domain.models.Api
+import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
+import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
+import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
+import io.ktor.http.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -33,14 +39,17 @@ import kotlinx.serialization.json.jsonPrimitive
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
+import org.didcommx.didcomm.common.Typ
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPrivateKeySpec
-import java.util.Base64
 
-class PolluxImpl(val castor: Castor) : Pollux {
+class PolluxImpl(
+    val castor: Castor,
+    private val api: Api = ApiImpl(httpClient()),
+) : Pollux {
 
     @Throws(PolluxError.InvalidJWTString::class, PolluxError.InvalidCredentialError::class)
     fun parseVerifiableCredential(data: String): Credential {
@@ -55,7 +64,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
         }
     }
 
-    override fun parseCredential(
+    override suspend fun parseCredential(
         jsonData: String,
         type: CredentialType,
         linkSecret: LinkSecret?,
@@ -67,9 +76,6 @@ class PolluxImpl(val castor: Castor) : Pollux {
             }
 
             CredentialType.ANONCREDS -> {
-                // TODO: Discuss with team if this string format as JWT will be used or not
-                val parts = jsonData.split(".")
-                require(parts.size != 2) { "Invalid AnonCreds string" }
                 if (linkSecret == null) {
                     throw Error("LinkSecret is required")
                 }
@@ -77,24 +83,22 @@ class PolluxImpl(val castor: Castor) : Pollux {
                     throw Error("Invalid credential metadata")
                 }
 
-                val base64Data = Base64.getUrlDecoder().decode(parts[0])
-                val jsonString = base64Data.toString(Charsets.UTF_8)
-
-                // TODO: Do the above jsonString contains all the fields to construct an AnonCredential object?
-                // TODO: Or do we need to process this using the rust wrapper?
-
-                val credentialDefinition = getCredentialDefinition("")
+                val jsonElement = jsonData.toJsonElement()
+                if (!jsonElement.jsonObject.contains("cred_def_id")) {
+                    throw Exception("cred_def_id is required")
+                }
+                val credDefId = jsonElement.jsonObject["cred_def_id"].toString()
+                val credentialDefinition = getCredentialDefinition(credDefId)
 
                 val cred = anoncreds_wrapper.Credential(jsonData)
 
-                // TODO: Should use Prover().processCredential
-//                val cred = Prover().processCredential(
-//                    credential = anoncreds_wrapper.Credential(jsonData),
-//                    credRequestMetadata = credentialMetadata,
-//                    linkSecret = linkSecret,
-//                    credDef = credentialDefinition,
-//                    revRegDef = null // TODO: Is null correct?
-//                )
+                Prover().processCredential(
+                    credential = cred,
+                    credRequestMetadata = credentialMetadata,
+                    linkSecret = linkSecret,
+                    credDef = credentialDefinition,
+                    revRegDef = null // TODO: Is null correct?
+                )
 
                 val values: Map<String, AnonCredential.Attribute> = cred.getValues().values.mapValues {
                     AnonCredential.Attribute(raw = it.value.raw, encoded = it.value.encoded)
@@ -103,13 +107,13 @@ class PolluxImpl(val castor: Castor) : Pollux {
                 return AnonCredential(
                     schemaID = cred.getSchemaId(),
                     credentialDefinitionID = cred.getCredDefId(),
-                    values = values,
                     signatureJson = cred.getSignatureJson(),
                     signatureCorrectnessProofJson = cred.getSignatureCorrectnessProofJson(),
                     revocationRegistryId = cred.getRevRegId(),
                     revocationRegistryJson = cred.getRevRegJson(),
                     witnessJson = cred.getWitnessJson() ?: "",
-                    json = cred.getJson()
+                    json = cred.getJson(),
+                    values = values
                 )
             }
 
@@ -142,7 +146,9 @@ class PolluxImpl(val castor: Castor) : Pollux {
         privateKey: PrivateKey,
         offerJson: JsonObject
     ): String {
-        val parsedPrivateKey = parsePrivateKey(privateKey)
+        val parsedPrivateKey =
+
+            parsePrivateKey(privateKey)
         val domain = getDomain(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         val challenge = getChallenge(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         return signClaimsRequestCredentialJWT(subjectDID, parsedPrivateKey, domain, challenge)
@@ -203,7 +209,8 @@ class PolluxImpl(val castor: Castor) : Pollux {
         } ?: throw Error("Unknown credential type")
     }
 
-    override fun processCredentialRequestAnoncreds(
+    override suspend fun processCredentialRequestAnoncreds(
+        did: DID,
         offer: CredentialOffer,
         linkSecret: LinkSecret,
         linkSecretName: String
@@ -211,6 +218,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
         val credentialDefinition = getCredentialDefinition(offer.getCredDefId())
 
         return createAnonCredentialRequest(
+            did = did,
             credentialDefinition = credentialDefinition,
             credentialOffer = offer,
             linkSecret = linkSecret,
@@ -219,14 +227,15 @@ class PolluxImpl(val castor: Castor) : Pollux {
     }
 
     private fun createAnonCredentialRequest(
+        did: DID,
         credentialDefinition: CredentialDefinition,
         credentialOffer: CredentialOffer,
         linkSecret: LinkSecret,
         linkSecretId: String
     ): Pair<CredentialRequest, CredentialRequestMetadata> {
         val credentialRequest = Prover().createCredentialRequest(
-            entropy = "Prism",
-            proverDid = null, // TODO: add your did
+            entropy = did.toString(),
+            proverDid = null,
             credDef = credentialDefinition,
             linkSecret = linkSecret,
             linkSecretId = linkSecretId,
@@ -235,9 +244,18 @@ class PolluxImpl(val castor: Castor) : Pollux {
         return Pair(credentialRequest.request, credentialRequest.metadata)
     }
 
-    override fun getCredentialDefinition(id: String): CredentialDefinition {
-        // https:// -> cred + schemas
-        TODO("Not yet implemented")
+    override suspend fun getCredentialDefinition(id: String): CredentialDefinition {
+        val result = api.request(
+            HttpMethod.Post.value,
+            id,
+            emptyArray(),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+            null
+        )
+        if (result.status == 200) {
+            return CredentialDefinition(result.jsonString)
+        }
+        throw PolluxError.InvalidCredentialDefinitionError()
     }
 
     private fun parsePrivateKey(privateKey: PrivateKey): ECPrivateKey {

@@ -220,6 +220,10 @@ class PrismAgent {
         }
         logger.info(message = "Starting agent")
         state = State.STARTING
+        if (pluto.getLinkSecret().firstOrNull() == null) {
+            val linkSecretObj = LinkSecret()
+            pluto.storeLinkSecret(linkSecretObj.getValue())
+        }
         try {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
@@ -559,14 +563,12 @@ class PrismAgent {
             }
 
             CredentialType.ANONCREDS -> {
-                var linkSecret = pluto.getLinkSecret().firstOrNull()
-                if (linkSecret == null) {
-                    val linkSecretObj = LinkSecret()
-                    linkSecret = linkSecretObj.getValue()
-                    pluto.storeLinkSecret(linkSecret)
-                }
+                var linkSecret: String = pluto.getLinkSecret().firstOrNull()
+                    ?: throw Exception("")
+                // TODO: Custom error
                 val anonOffer = CredentialOffer(Json.encodeToString(offer))
                 val pair = pollux.processCredentialRequestAnoncreds(
+                    did = did,
                     offer = anonOffer,
                     linkSecret = LinkSecret.newFromValue(linkSecret),
                     linkSecretName = offer.thid ?: ""

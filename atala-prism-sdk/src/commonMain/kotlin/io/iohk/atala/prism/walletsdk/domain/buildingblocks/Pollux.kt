@@ -14,7 +14,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.Creden
 import kotlinx.serialization.json.JsonObject
 
 interface Pollux {
-    fun parseCredential(
+    suspend fun parseCredential(
         data: String,
         type: CredentialType,
         linkSecret: LinkSecret? = null,
@@ -27,7 +27,8 @@ interface Pollux {
         offerJson: JsonObject
     ): String
 
-    fun processCredentialRequestAnoncreds(
+    suspend fun processCredentialRequestAnoncreds(
+        did: DID,
         offer: CredentialOffer,
         linkSecret: LinkSecret,
         linkSecretName: String
@@ -46,5 +47,5 @@ interface Pollux {
 
     fun extractCredentialFormatFromMessage(formats: Array<CredentialFormat>): CredentialType
 
-    fun getCredentialDefinition(id: String): CredentialDefinition
+    suspend fun getCredentialDefinition(id: String): CredentialDefinition
 }
