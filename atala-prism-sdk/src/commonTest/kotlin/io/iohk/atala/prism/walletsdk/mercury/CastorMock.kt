@@ -3,8 +3,8 @@ package io.iohk.atala.prism.walletsdk.mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
-import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import kotlin.jvm.Throws
 
 class CastorMock : Castor {

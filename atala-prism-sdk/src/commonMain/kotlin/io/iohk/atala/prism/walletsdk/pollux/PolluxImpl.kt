@@ -22,9 +22,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
@@ -262,7 +262,7 @@ class PolluxImpl(
         val curveName = KMMEllipticCurve.SECP256k1.value
         val sp = ECNamedCurveTable.getParameterSpec(curveName)
         val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
-        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.value), params)
+        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.getValue()), params)
         val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
         return keyFactory.generatePrivate(privateKeySpec) as ECPrivateKey
     }

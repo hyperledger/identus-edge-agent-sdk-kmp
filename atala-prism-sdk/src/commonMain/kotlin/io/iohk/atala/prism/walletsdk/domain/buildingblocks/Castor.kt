@@ -3,9 +3,8 @@ package io.iohk.atala.prism.walletsdk.domain.buildingblocks
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
-import io.iohk.atala.prism.walletsdk.domain.models.PublicKey
-import kotlin.jvm.Throws
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 
 /**
  * Castor is a powerful and flexible library for working with DIDs. Whether you are building a decentralised application

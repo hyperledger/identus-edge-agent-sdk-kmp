@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
+import io.iohk.atala.prism.apollo.utils.Mnemonic
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
@@ -10,7 +12,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
@@ -25,9 +26,8 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlin.test.BeforeTest
-import kotlin.test.Ignore
-import kotlin.test.Test
+import org.junit.Before
+import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -47,7 +47,7 @@ class PrismAgentTests {
     lateinit var connectionManager: ConnectionManager
     lateinit var json: Json
 
-    @BeforeTest
+    @Before
     fun setup() {
         apolloMock = ApolloMock()
         castorMock = CastorMock()
@@ -66,7 +66,7 @@ class PrismAgentTests {
 
     @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val seed = Seed(ByteArray(0))
+        val seed = Seed(Mnemonic.createRandomSeed())
         val validDID = DID("did", "test", "123")
         castorMock.createPrismDIDReturn = validDID
         val agent = PrismAgent(
@@ -262,7 +262,12 @@ class PrismAgentTests {
             logger = PrismLoggerMock()
         )
 
-        val privateKeys = listOf(PrivateKey(KeyCurve(Curve.SECP256K1), byteArrayOf()))
+        val privateKeys = listOf(
+            Secp256k1KeyPair.generateKeyPair(
+                seed = Seed(Mnemonic.createRandomSeed()),
+                curve = KeyCurve(Curve.SECP256K1)
+            ).privateKey
+        )
         plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
 
         val did = DID("did", "peer", "asdf1234asdf1234")

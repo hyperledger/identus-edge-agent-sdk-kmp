@@ -8,9 +8,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
 import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +21,9 @@ class PlutoMock : Pluto {
     var privateKeys = mutableListOf<PrivateKey>()
 
     override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
-        val pk = privateKeys.find { it.keyCurve.curve.value == id }
+        val pk = privateKeys.find {
+            it.getCurve() == id
+        }
 
         return flow { emit(pk) }
     }

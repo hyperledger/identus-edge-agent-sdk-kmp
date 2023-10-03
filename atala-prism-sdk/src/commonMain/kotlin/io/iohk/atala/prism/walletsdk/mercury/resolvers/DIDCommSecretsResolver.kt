@@ -28,12 +28,11 @@ class DIDCommSecretsResolver(val pluto: Pluto, val apollo: Apollo) : SecretResol
             pluto.getDIDPrivateKeyByID(kid)
                 .firstOrNull()
                 ?.let { privateKey ->
-                    val keyPair = apollo.createKeyPair(privateKey = privateKey)
                     val octetJwk = OctetPrivateKey(
-                        crv = privateKey.keyCurve.curve.value,
+                        crv = privateKey.getCurve(),
                         kty = OKP,
-                        d = privateKey.value.base64UrlEncoded,
-                        x = keyPair.publicKey.value.base64UrlEncoded
+                        d = privateKey.getValue().base64UrlEncoded,
+                        x = privateKey.publicKey().getValue().base64UrlEncoded
                     )
                     Optional.of(
                         Secret(

@@ -7,6 +7,11 @@ import anoncreds_wrapper.LinkSecret
 import anoncreds_wrapper.Nonce
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
@@ -14,6 +19,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Api
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
+import io.iohk.atala.prism.walletsdk.domain.models.ApolloError
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
@@ -25,15 +31,15 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
@@ -289,7 +295,7 @@ class PrismAgent {
         services: Array<DIDDocument.Service> = emptyArray()
     ): DID {
         val index = keyPathIndex ?: (pluto.getPrismLastKeyPathIndex().first() + 1)
-        val keyPair = apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.SECP256K1, index))
+        val keyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, index))
         val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
         registerPrismDID(did, index, alias, keyPair.privateKey)
         return did
@@ -330,10 +336,8 @@ class PrismAgent {
         services: Array<DIDDocument.Service> = emptyArray(),
         updateMediator: Boolean
     ): DID {
-        val keyAgreementKeyPair =
-            apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.X25519))
-        val authenticationKeyPair =
-            apollo.createKeyPair(seed = seed, curve = KeyCurve(Curve.ED25519))
+        val keyAgreementKeyPair = X25519KeyPair.generateKeyPair()
+        val authenticationKeyPair = Ed25519KeyPair.generateKeyPair()
 
         var tmpServices = services
         if (updateMediator) {
@@ -512,7 +516,26 @@ class PrismAgent {
         val privateKey =
             pluto.getDIDPrivateKeysByDID(did).first().first()
                 ?: throw PrismAgentError.CannotFindDIDPrivateKey(did.toString())
-        return apollo.signMessage(privateKey, message)
+        var returnByteArray: ByteArray
+        when (privateKey.getCurve()) {
+            Curve.ED25519.value -> {
+                val ed = privateKey as Ed25519PrivateKey
+                returnByteArray = ed.sign(message)
+            }
+
+            Curve.SECP256K1.value -> {
+                val secp = privateKey as Secp256k1PrivateKey
+                returnByteArray = secp.sign(message)
+            }
+
+            else -> {
+                throw ApolloError.InvalidKeyCurve(
+                    privateKey.getCurve(),
+                    arrayOf(Curve.SECP256K1.value, Curve.ED25519.value)
+                )
+            }
+        }
+        return Signature(returnByteArray)
     }
 
     /**
@@ -534,8 +557,7 @@ class PrismAgent {
         return when (val credentialType = pollux.extractCredentialFormatFromMessage(offer.body.formats)) {
             CredentialType.JWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
-                val keyPair =
-                    apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
+                val keyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
                 val offerDataString = offer.attachments.mapNotNull {
                     when (it.data) {
                         is AttachmentJsonData -> it.data.data
@@ -546,10 +568,10 @@ class PrismAgent {
                 val jwtString = pollux.processCredentialRequestJWT(did, keyPair.privateKey, offerJsonObject)
                 val attachmentDescriptor =
                     AttachmentDescriptor(
-                        mediaType = credentialType.type,
+                        mediaType = JWT_MEDIA_TYPE,
                         data = AttachmentBase64(jwtString.base64UrlEncoded)
                     )
-                RequestCredential(
+                return RequestCredential(
                     from = offer.to,
                     to = offer.from,
                     thid = offer.thid,
@@ -870,8 +892,7 @@ class PrismAgent {
         }
 
         val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
-        val privateKey =
-            apollo.createKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath)).privateKey
+        val keyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
         val requestData = request.attachments.mapNotNull {
             when (it.data) {
                 is AttachmentJsonData -> it.data.data
@@ -881,7 +902,7 @@ class PrismAgent {
         val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
         val jwtString = pollux.createVerifiablePresentationJWT(
             subjectDID,
-            privateKey,
+            keyPair.privateKey,
             credential,
             requestJsonObject
         )

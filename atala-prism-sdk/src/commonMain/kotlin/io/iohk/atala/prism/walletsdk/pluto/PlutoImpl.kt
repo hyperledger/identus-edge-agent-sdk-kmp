@@ -2,12 +2,15 @@ package io.iohk.atala.prism.walletsdk.pluto
 
 import com.squareup.sqldelight.runtime.coroutines.asFlow
 import com.squareup.sqldelight.runtime.coroutines.mapToList
-import io.iohk.atala.prism.apollo.base64.base64DecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
@@ -15,9 +18,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.getKeyCurveByNameAndIndex
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.getKeyCurveByNameAndIndex
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
@@ -136,8 +139,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 getInstance().privateKeyQueries.insert(
                     PrivateKeyDB(
                         metaId,
-                        privateKey.keyCurve.curve.value,
-                        privateKey.value.base64UrlEncoded,
+                        privateKey.getCurve(),
+                        privateKey.getValue().base64UrlEncoded,
                         keyPathIndex,
                         did.toString()
                     )
@@ -149,8 +152,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             getInstance().privateKeyQueries.insert(
                 PrivateKeyDB(
                     UUID.randomUUID4().toString(),
-                    privateKey.keyCurve.curve.value,
-                    privateKey.value.base64UrlEncoded,
+                    privateKey.getCurve(),
+                    privateKey.getValue().base64UrlEncoded,
                     keyPathIndex,
                     did.toString()
                 )
@@ -277,13 +280,23 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 it.executeAsList()
                     .map { didInfo ->
                         try {
-                            PrivateKey(
-                                getKeyCurveByNameAndIndex(
-                                    didInfo.curve,
-                                    didInfo.keyPathIndex
-                                ),
-                                didInfo.privateKey.base64DecodedBytes
+                            val keyCurve = getKeyCurveByNameAndIndex(
+                                didInfo.curve,
+                                didInfo.keyPathIndex
                             )
+                            when (keyCurve.curve) {
+                                Curve.SECP256K1 -> {
+                                    Secp256k1PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
+                                }
+
+                                Curve.ED25519 -> {
+                                    Ed25519PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
+                                }
+
+                                Curve.X25519 -> {
+                                    X25519PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
+                                }
+                            }
                         } catch (e: IllegalStateException) {
                             null
                         }
@@ -297,13 +310,23 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             .asFlow()
             .map { it ->
                 it.executeAsList().firstOrNull()?.let {
-                    PrivateKey(
-                        getKeyCurveByNameAndIndex(
-                            it.curve,
-                            it.keyPathIndex
-                        ),
-                        it.privateKey.base64UrlDecodedBytes
+                    val keyCurve = getKeyCurveByNameAndIndex(
+                        it.curve,
+                        it.keyPathIndex
                     )
+                    when (keyCurve.curve) {
+                        Curve.SECP256K1 -> {
+                            Secp256k1PrivateKey(it.privateKey.base64UrlDecodedBytes)
+                        }
+
+                        Curve.ED25519 -> {
+                            Ed25519PrivateKey(it.privateKey.base64UrlDecodedBytes)
+                        }
+
+                        Curve.X25519 -> {
+                            X25519PrivateKey(it.privateKey.base64UrlDecodedBytes)
+                        }
+                    }
                 }
             }
     }
@@ -336,10 +359,23 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                     .groupBy { allPeerDid -> allPeerDid.did }
                     .map {
                         val privateKeyList = it.value.mapNotNull { data ->
-                            PrivateKey(
-                                getKeyCurveByNameAndIndex(data.curve, data.keyPathIndex),
-                                data.privateKey.base64UrlDecodedBytes
+                            val keyCurve = getKeyCurveByNameAndIndex(
+                                data.curve,
+                                data.keyPathIndex
                             )
+                            when (keyCurve.curve) {
+                                Curve.SECP256K1 -> {
+                                    Secp256k1PrivateKey(data.privateKey.base64UrlDecodedBytes)
+                                }
+
+                                Curve.ED25519 -> {
+                                    Ed25519PrivateKey(data.privateKey.base64UrlDecodedBytes)
+                                }
+
+                                Curve.X25519 -> {
+                                    X25519PrivateKey(data.privateKey.base64UrlDecodedBytes)
+                                }
+                            }
                         }.toTypedArray()
                         PeerDID(DID(it.key), privateKeyList)
                     }
