@@ -18,6 +18,7 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Api
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
@@ -28,7 +29,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -197,7 +197,7 @@ class PolluxImpl(
         }
     }
 
-    override fun extractCredentialFormatFromMessage(formats: Array<CredentialFormat>): CredentialType {
+    override fun extractCredentialFormatFromMessage(formats: Array<AttachmentDescriptor>): CredentialType {
         val desiredFormats = setOf(CredentialType.JWT.type, CredentialType.ANONCREDS.type)
         val foundFormat = formats.find { it.format in desiredFormats }
         return foundFormat?.format?.let { format ->

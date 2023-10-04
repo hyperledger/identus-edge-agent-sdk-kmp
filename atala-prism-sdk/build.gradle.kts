@@ -54,39 +54,6 @@ kotlin {
         }
     }
 
-    /*
-    Not going to support JS for the time being
-    js(IR) {
-        this.moduleName = currentModuleName
-        this.binaries.library()
-        this.useCommonJs()
-        this.compilations["main"].packageJson {
-            this.version = rootProject.version.toString()
-        }
-        this.compilations["test"].packageJson {
-            this.version = rootProject.version.toString()
-        }
-        browser {
-            this.webpackTask {
-                this.output.library = currentModuleName
-                this.output.libraryTarget = Target.VAR
-            }
-            this.testTask {
-                this.useKarma {
-                    this.useChromeHeadless()
-                }
-            }
-        }
-        nodejs {
-            this.testTask {
-                this.useKarma {
-                    this.useChromeHeadless()
-                }
-            }
-        }
-    }
-     */
-
     sourceSets {
         val commonAntlr by creating {
             kotlin.srcDir("build/generated-src/commonAntlr/kotlin")
@@ -147,7 +114,6 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
                 implementation("com.squareup.sqldelight:sqlite-driver:1.5.5")
             }
         }
@@ -160,7 +126,6 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
                 implementation("com.squareup.sqldelight:android-driver:1.5.5")
             }
         }

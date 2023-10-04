@@ -17,7 +17,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
@@ -444,13 +443,13 @@ class PrismAgentTests {
                     attributes = arrayOf(
                         CredentialPreview.Attribute("", "", "")
                     )
-                ),
-                formats = arrayOf(
-                    CredentialFormat(
-                        attachId = attachmentID,
-                        format = CredentialType.ANONCREDS.type
-                    )
                 )
+//                formats = arrayOf(
+//                    CredentialFormat(
+//                        attachId = attachmentID,
+//                        format = CredentialType.ANONCREDS.type
+//                    )
+//                )
             ),
             attachments = arrayOf(attachmentDescriptor),
             thid = "1",

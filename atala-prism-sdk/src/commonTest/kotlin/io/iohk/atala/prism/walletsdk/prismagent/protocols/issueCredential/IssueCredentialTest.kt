@@ -5,7 +5,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.fromIndex
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -17,12 +16,12 @@ class IssueCredentialTest {
         val toDID = DID.fromIndex(index = 1)
         val validIssueCredential = IssueCredential(
             body = IssueCredential.Body(
-                formats = arrayOf(
-                    CredentialFormat(
-                        attachId = "test1",
-                        format = "test"
-                    )
-                )
+//                formats = arrayOf(
+//                    CredentialFormat(
+//                        attachId = "test1",
+//                        format = "test"
+//                    )
+//                )
             ),
             attachments = arrayOf(),
             thid = "1",
@@ -53,12 +52,12 @@ class IssueCredentialTest {
         val toDID = DID.fromIndex(index = 1)
         val validRequestCredential = RequestCredential(
             body = RequestCredential.Body(
-                formats = arrayOf(
-                    CredentialFormat(
-                        attachId = "test1",
-                        format = "test"
-                    )
-                )
+//                formats = arrayOf(
+//                    CredentialFormat(
+//                        attachId = "test1",
+//                        format = "test"
+//                    )
+//                )
             ),
             attachments = arrayOf(),
             thid = "1",
@@ -75,6 +74,6 @@ class IssueCredentialTest {
         assertEquals(testIssueCredential.thid, requestMessage.id)
         assertEquals(validRequestCredential.body.goalCode, testIssueCredential.body.goalCode)
         assertEquals(validRequestCredential.body.comment, testIssueCredential.body.comment)
-        assertContentEquals(validRequestCredential.body.formats, testIssueCredential.body.formats)
+//        assertContentEquals(validRequestCredential.body.formats, testIssueCredential.body.formats)
     }
 }

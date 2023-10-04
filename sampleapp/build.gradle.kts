@@ -34,6 +34,7 @@ android {
     }
     buildFeatures {
         dataBinding = true
+        viewBinding = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -43,9 +44,6 @@ android {
         jvmTarget = "11"
     }
     buildToolsVersion = "33.0.0"
-    buildFeatures {
-        viewBinding = true
-    }
 }
 
 dependencies {

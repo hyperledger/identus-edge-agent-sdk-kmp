@@ -52,8 +52,8 @@ data class OfferCredential @JvmOverloads constructor(
                 body = Body(
                     goalCode = proposed.body.goalCode,
                     comment = proposed.body.comment,
-                    credentialPreview = proposed.body.credentialPreview,
-                    formats = proposed.body.formats
+                    credentialPreview = proposed.body.credentialPreview
+//                    formats = proposed.body.formats
                 ),
                 attachments = proposed.attachments,
                 thid = proposed.thid,
@@ -132,8 +132,8 @@ data class OfferCredential @JvmOverloads constructor(
         @SerialName(MULTIPLE_AVAILABLE)
         val multipleAvailable: String? = null,
         @SerialName(CREDENTIAL_PREVIEW)
-        val credentialPreview: CredentialPreview,
-        val formats: Array<CredentialFormat>
+        val credentialPreview: CredentialPreview
+//        val formats: Array<CredentialFormat>
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -146,7 +146,7 @@ data class OfferCredential @JvmOverloads constructor(
             if (replacementId != other.replacementId) return false
             if (multipleAvailable != other.multipleAvailable) return false
             if (credentialPreview != other.credentialPreview) return false
-            if (!formats.contentEquals(other.formats)) return false
+//            if (!formats.contentEquals(other.formats)) return false
 
             return true
         }
@@ -157,7 +157,7 @@ data class OfferCredential @JvmOverloads constructor(
             result = 31 * result + (replacementId?.hashCode() ?: 0)
             result = 31 * result + (multipleAvailable?.hashCode() ?: 0)
             result = 31 * result + credentialPreview.hashCode()
-            result = 31 * result + formats.contentHashCode()
+//            result = 31 * result + formats.contentHashCode()
             return result
         }
     }
@@ -180,8 +180,8 @@ inline fun <reified T : Serializable> OfferCredential.Companion.build(
     }
     return OfferCredential(
         body = OfferCredential.Body(
-            credentialPreview = credentialPreview,
-            formats = aux.map { it.first }.toTypedArray()
+            credentialPreview = credentialPreview
+//            formats = aux.map { it.first }.toTypedArray()
         ),
         attachments = aux.map { it.second }.toTypedArray(),
         thid = thid,

@@ -24,13 +24,13 @@ class OfferCredentialTest {
                             mediaType = "test.x"
                         )
                     )
-                ),
-                formats = arrayOf(
-                    CredentialFormat(
-                        attachId = "test1",
-                        format = "test"
-                    )
                 )
+//                formats = arrayOf(
+//                    CredentialFormat(
+//                        attachId = "test1",
+//                        format = "test"
+//                    )
+//                )
             ),
             attachments = arrayOf(),
             thid = "1",

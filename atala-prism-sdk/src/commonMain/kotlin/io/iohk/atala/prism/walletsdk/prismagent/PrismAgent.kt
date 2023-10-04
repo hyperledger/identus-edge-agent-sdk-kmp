@@ -24,7 +24,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
@@ -44,6 +43,7 @@ import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -75,7 +75,6 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -554,7 +553,7 @@ class PrismAgent {
             throw PolluxError.InvalidPrismDID()
         }
 
-        return when (val credentialType = pollux.extractCredentialFormatFromMessage(offer.body.formats)) {
+        return when (val credentialType = pollux.extractCredentialFormatFromMessage(offer.attachments)) {
             CredentialType.JWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
                 val keyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
@@ -577,8 +576,8 @@ class PrismAgent {
                     thid = offer.thid,
                     body = RequestCredential.Body(
                         offer.body.goalCode,
-                        offer.body.comment,
-                        offer.body.formats
+                        offer.body.comment
+//                        offer.body.formats
                     ),
                     attachments = arrayOf(attachmentDescriptor)
                 )
@@ -615,8 +614,8 @@ class PrismAgent {
                     thid = offer.thid,
                     body = RequestCredential.Body(
                         offer.body.goalCode,
-                        offer.body.comment,
-                        offer.body.formats
+                        offer.body.comment
+//                        offer.body.formats
                     ),
                     attachments = arrayOf(attachmentDescriptor)
                 )
@@ -636,7 +635,7 @@ class PrismAgent {
      * @throws PrismAgentError if there is a problem parsing the credential.
      */
     suspend fun processIssuedCredentialMessage(message: IssueCredential): Credential {
-        val credentialType = pollux.extractCredentialFormatFromMessage(message.body.formats)
+        val credentialType = pollux.extractCredentialFormatFromMessage(message.attachments)
         val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
 
         return attachment?.let {

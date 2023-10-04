@@ -73,8 +73,8 @@ data class ProposeCredential @JvmOverloads constructor(
     data class Body @JvmOverloads constructor(
         val goalCode: String? = null,
         val comment: String? = null,
-        val credentialPreview: CredentialPreview,
-        val formats: Array<CredentialFormat>
+        val credentialPreview: CredentialPreview
+//        val formats: Array<CredentialFormat>
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -85,7 +85,7 @@ data class ProposeCredential @JvmOverloads constructor(
             if (goalCode != other.goalCode) return false
             if (comment != other.comment) return false
             if (credentialPreview != other.credentialPreview) return false
-            if (!formats.contentEquals(other.formats)) return false
+//            if (!formats.contentEquals(other.formats)) return false
 
             return true
         }
@@ -94,7 +94,7 @@ data class ProposeCredential @JvmOverloads constructor(
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)
             result = 31 * result + credentialPreview.hashCode()
-            result = 31 * result + formats.contentHashCode()
+//            result = 31 * result + formats.contentHashCode()
             return result
         }
     }
@@ -145,8 +145,8 @@ inline fun <reified T : Serializable> ProposeCredential.Companion.build(
     }
     return ProposeCredential(
         body = ProposeCredential.Body(
-            credentialPreview = credentialPreview,
-            formats = aux.map { it.first }.toTypedArray()
+            credentialPreview = credentialPreview
+//            formats = aux.map { it.first }.toTypedArray()
         ),
         attachments = aux.map { it.second }.toTypedArray(),
         thid = thid,
