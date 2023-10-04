@@ -117,11 +117,7 @@ kotlin {
                 implementation("com.squareup.sqldelight:sqlite-driver:1.5.5")
             }
         }
-        val jvmTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
-        }
+        val jvmTest by getting
         val androidMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
@@ -129,11 +125,7 @@ kotlin {
                 implementation("com.squareup.sqldelight:android-driver:1.5.5")
             }
         }
-        val androidUnitTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
-        }
+        val androidUnitTest by getting
         /*
         Not going to support JS for the time being
         val jsMain by getting
