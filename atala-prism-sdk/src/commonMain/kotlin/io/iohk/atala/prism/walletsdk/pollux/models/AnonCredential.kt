@@ -96,6 +96,10 @@ data class AnonCredential constructor(
 
             override val availableClaims: Array<String>
                 get() = c.claims.map { it.key }.toTypedArray()
+
+            override fun fromStorableCredential(): Credential {
+                TODO("Not yet implemented")
+            }
         }
     }
 }

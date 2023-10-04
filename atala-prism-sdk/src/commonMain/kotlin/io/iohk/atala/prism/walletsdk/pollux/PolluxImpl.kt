@@ -30,8 +30,8 @@ import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialFormat
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
-import io.ktor.http.*
-import kotlinx.serialization.decodeFromString
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -48,7 +48,7 @@ import java.security.spec.ECPrivateKeySpec
 
 class PolluxImpl(
     val castor: Castor,
-    private val api: Api = ApiImpl(httpClient()),
+    private val api: Api = ApiImpl(httpClient())
 ) : Pollux {
 
     @Throws(PolluxError.InvalidJWTString::class, PolluxError.InvalidCredentialError::class)

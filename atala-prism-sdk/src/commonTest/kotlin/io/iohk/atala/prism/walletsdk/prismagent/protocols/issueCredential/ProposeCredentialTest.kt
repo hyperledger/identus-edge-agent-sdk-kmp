@@ -21,7 +21,7 @@ class ProposeCredentialTest {
                         CredentialPreview.Attribute(
                             name = "test1",
                             value = "test",
-                            mimeType = "test.x"
+                            mediaType = "test.x"
                         )
                     )
                 ),

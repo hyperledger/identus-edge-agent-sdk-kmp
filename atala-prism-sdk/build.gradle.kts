@@ -133,6 +133,7 @@ kotlin {
 
                 implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:1.0.0-alpha")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")
+                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
             }
         }
         val commonTest by getting {

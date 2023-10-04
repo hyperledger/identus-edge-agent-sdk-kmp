@@ -225,7 +225,6 @@ class PlutoMock : Pluto {
     }
 
     override fun storeLinkSecret(linkSecret: String) {
-        TODO("Not yet implemented")
     }
 
     override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {

@@ -7,7 +7,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
-import io.iohk.atala.prism.walletsdk.prismagent.MORE_AVAILABLE
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.REPLACEMENT_ID
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
@@ -70,7 +69,7 @@ data class IssueCredential(
 
             val fromDID = fromMessage.from
             val toDID = fromMessage.to
-            val body = Json.decodeFromString<IssueCredential.Body>(fromMessage.body)
+            val body = Json.decodeFromString<Body>(fromMessage.body)
 
             return IssueCredential(
                 id = fromMessage.id,
@@ -106,8 +105,8 @@ data class IssueCredential(
         val comment: String? = null,
         @SerialName(REPLACEMENT_ID)
         val replacementId: String? = null,
-        @SerialName(MORE_AVAILABLE)
-        val moreAvailable: String? = null,
+//        @SerialName(MORE_AVAILABLE)
+//        val moreAvailable: String? = null,
         val formats: Array<CredentialFormat>
     ) {
         override fun equals(other: Any?): Boolean {
@@ -119,7 +118,7 @@ data class IssueCredential(
             if (goalCode != other.goalCode) return false
             if (comment != other.comment) return false
             if (replacementId != other.replacementId) return false
-            if (moreAvailable != other.moreAvailable) return false
+//            if (moreAvailable != other.moreAvailable) return false
             if (!formats.contentEquals(other.formats)) return false
 
             return true
@@ -129,7 +128,7 @@ data class IssueCredential(
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)
             result = 31 * result + (replacementId?.hashCode() ?: 0)
-            result = 31 * result + (moreAvailable?.hashCode() ?: 0)
+//            result = 31 * result + (moreAvailable?.hashCode() ?: 0)
             result = 31 * result + formats.contentHashCode()
             return result
         }

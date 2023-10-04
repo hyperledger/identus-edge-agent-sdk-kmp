@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -352,6 +353,8 @@ class PrismAgentTests {
 
     @Test
     fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
+        val getLinkSecretReturn = flow<String> { "linkSecret" }
+        plutoMock.getLinkSecretReturn = getLinkSecretReturn
         val agent = PrismAgent(
             apollo = apolloMock,
             castor = castorMock,

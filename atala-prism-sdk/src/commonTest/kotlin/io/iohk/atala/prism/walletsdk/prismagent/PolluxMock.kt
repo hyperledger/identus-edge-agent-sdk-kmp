@@ -19,7 +19,7 @@ class PolluxMock : Pollux {
     var extractedCredentialFormatFromMessageReturn: CredentialType? = null
     var processCredentialRequestAnoncredsReturn: Pair<CredentialRequest, CredentialRequestMeta>? = null
 
-    override fun parseCredential(
+    override suspend fun parseCredential(
         data: String,
         type: CredentialType,
         linkSecret: LinkSecret?,
@@ -45,7 +45,8 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun processCredentialRequestAnoncreds(
+    override suspend fun processCredentialRequestAnoncreds(
+        did: DID,
         offer: CredentialOffer,
         linkSecret: LinkSecret,
         linkSecretName: String
@@ -62,7 +63,7 @@ class PolluxMock : Pollux {
         return extractedCredentialFormatFromMessageReturn ?: throw Exception("Return not defined")
     }
 
-    override fun getCredentialDefinition(id: String): anoncreds_wrapper.CredentialDefinition {
+    override suspend fun getCredentialDefinition(id: String): anoncreds_wrapper.CredentialDefinition {
         TODO("Not yet implemented")
     }
 }
