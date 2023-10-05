@@ -128,6 +128,10 @@ data class JWTCredential(val data: String) : Credential {
 
                     return properties.toMap()
                 }
+
+            override fun fromStorableCredential(): Credential {
+                return c
+            }
         }
     }
 }

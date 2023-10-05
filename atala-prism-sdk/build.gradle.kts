@@ -39,7 +39,7 @@ koverReport {
 }
 
 kotlin {
-    androidTarget {
+    android {
         publishAllLibraryVariants()
     }
 
@@ -111,9 +111,8 @@ kotlin {
 
                 implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
-                implementation("io.iohk.atala.prism.apollo:base64:$apolloVersion")
                 implementation("io.iohk.atala.prism.apollo:base-asymmetric-encryption:$apolloVersion")
-                implementation("io.iohk.atala.prism.apollo:ecdsa:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:base64:$apolloVersion")
                 implementation("io.iohk.atala.prism.apollo:hashing:$apolloVersion")
                 implementation("io.iohk.atala.prism.apollo:uuid:$apolloVersion")
                 implementation("io.iohk.atala.prism.apollo:multibase:$apolloVersion")
@@ -131,6 +130,8 @@ kotlin {
                 implementation("com.squareup.sqldelight:coroutines-extensions:1.5.5")
 
                 api("org.lighthousegames:logging:1.1.2")
+
+                implementation("com.ionspin.kotlin:bignum:0.3.8")
             }
         }
         val commonTest by getting {
@@ -138,6 +139,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
                 implementation("io.ktor:ktor-client-mock:2.3.4")
+                implementation("junit:junit:4.13.2")
             }
         }
         val jvmMain by getting {
@@ -172,7 +174,10 @@ kotlin {
          */
 
         all {
-            languageSettings.optIn("kotlin.RequiresOptIn")
+            languageSettings {
+                optIn("kotlin.RequiresOptIn")
+                optIn("kotlin.ExperimentalStdlibApi")
+            }
         }
     }
 }

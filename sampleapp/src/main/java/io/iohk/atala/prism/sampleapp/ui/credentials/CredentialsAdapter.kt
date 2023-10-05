@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.W3CCredential
 import io.iohk.atala.prism.walletsdk.pollux.JWTCredential
 import java.time.Instant
@@ -75,9 +76,10 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
         }
 
         fun bind(credential: Credential) {
-            when (credential::class) {
+            val cred = (credential as StorableCredential).fromStorableCredential()
+            when (cred::class) {
                 JWTCredential::class -> {
-                    val jwt = credential as JWTCredential
+                    val jwt = cred as JWTCredential
                     type.text = String.format(typeString, "JWT")
                     // TODO: Check what else to display
                     jwt.jwtPayload.nbf?.let {
@@ -89,15 +91,16 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                 }
 
                 W3CCredential::class -> {
+                    val w3c = cred as W3CCredential
                     type.text = String.format(typeString, "W3C")
                 }
             }
         }
+    }
 
-        private fun formatTimeStamp(instant: Instant): String {
-            val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-            return localDateTime.format(formatter)
-        }
+    private fun formatTimeStamp(instant: Instant): String {
+        val localDateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        return localDateTime.format(formatter)
     }
 }

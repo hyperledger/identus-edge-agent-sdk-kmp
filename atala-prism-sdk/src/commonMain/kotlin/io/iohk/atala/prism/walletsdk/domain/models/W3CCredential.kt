@@ -94,6 +94,7 @@ data class W3CCredential @JvmOverloads constructor(
                 get() = null
             override val availableClaims: Array<String>
                 get() = claims.map { it.key }.toTypedArray()
+
             override val id: String
                 get() = c.id
             override val issuer: String
@@ -131,6 +132,10 @@ data class W3CCredential @JvmOverloads constructor(
 
                     return properties.toMap()
                 }
+
+            override fun fromStorableCredential(): Credential {
+                return c
+            }
         }
     }
 

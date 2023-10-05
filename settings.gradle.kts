@@ -10,9 +10,9 @@ pluginManagement {
 
 buildscript {
     repositories {
+        mavenLocal()
         gradlePluginPortal()
         mavenCentral()
-        mavenLocal()
         google()
         maven("https://plugins.gradle.org/m2/")
         // Needed for Kotlin coroutines that support new memory management mode
