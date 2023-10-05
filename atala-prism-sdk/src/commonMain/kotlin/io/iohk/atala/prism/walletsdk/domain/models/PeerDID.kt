@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+
 data class PeerDID(
     val did: DID,
     val privateKeys: Array<PrivateKey>

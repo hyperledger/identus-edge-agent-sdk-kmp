@@ -1,8 +1,6 @@
 package io.iohk.atala.prism.walletsdk.mercury
 
-import io.iohk.atala.prism.walletsdk.domain.models.Curve
-import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
 import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommSecretsResolver
 import io.iohk.atala.prism.walletsdk.prismagent.ApolloMock
 import org.didcommx.didcomm.common.VerificationMaterialFormat
@@ -30,8 +28,8 @@ class SecretsResolverTests {
     @Ignore("Ignore this test for now until we can review with the team.")
     @Test
     fun testFindKey() {
-        val privateKey = PrivateKey(KeyCurve(Curve.X25519), ByteArray(4))
-        val kid = privateKey.keyCurve.curve.value
+        val privateKey = X25519PrivateKey(ByteArray(4))
+        val kid = privateKey.getCurve()
         plutoMock.privateKeys.add(privateKey)
 
         val result = sut.findKey(kid)
@@ -41,25 +39,25 @@ class SecretsResolverTests {
         assertTrue { key.kid == kid }
         assertTrue { key.type == VerificationMethodType.JSON_WEB_KEY_2020 }
         assertTrue { key.verificationMaterial.format == VerificationMaterialFormat.MULTIBASE }
-        assertTrue { key.verificationMaterial.value == privateKey.value.toString() }
+        assertTrue { key.verificationMaterial.value == privateKey.raw.toString() }
     }
 
     @Test
     fun testFindKeys_kidMatches_isReturned() {
-        val privateKey = PrivateKey(KeyCurve(Curve.X25519), ByteArray(0))
+        val privateKey = X25519PrivateKey(ByteArray(0))
         plutoMock.privateKeys.add(privateKey)
 
-        val kids = listOf(privateKey.keyCurve.curve.value)
+        val kids = listOf(privateKey.getCurve())
         val result = sut.findKeys(kids)
 
         assertTrue { result.size == 1 }
-        assertContains(result, privateKey.keyCurve.curve.value)
+        assertContains(result, privateKey.getCurve())
     }
 
     @Test
     fun testFindKeys_kidNoMatch_emptySetReturned() {
-        val privateKey = PrivateKey(KeyCurve(Curve.X25519), ByteArray(0))
-        val kids = listOf(privateKey.keyCurve.curve.value)
+        val privateKey = X25519PrivateKey(ByteArray(0))
+        val kids = listOf(privateKey.getCurve())
         val result = sut.findKeys(kids)
 
         assertTrue { result.isEmpty() }

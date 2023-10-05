@@ -12,9 +12,9 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
-import io.iohk.atala.prism.walletsdk.domain.models.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.W3CCredential
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -98,7 +98,7 @@ class PolluxImpl(val castor: Castor) : Pollux {
         val curveName = KMMEllipticCurve.SECP256k1.value
         val sp = ECNamedCurveTable.getParameterSpec(curveName)
         val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
-        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.value), params)
+        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.getValue()), params)
         val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
         return keyFactory.generatePrivate(privateKeySpec) as ECPrivateKey
     }

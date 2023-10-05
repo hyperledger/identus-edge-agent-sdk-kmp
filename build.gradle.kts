@@ -2,9 +2,9 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin
 
 plugins {
-    id("org.jetbrains.kotlin.android") version "1.9.10" apply false
-    kotlin("jvm") version "1.9.10"
-    kotlin("plugin.serialization") version "1.9.10"
+    id("org.jetbrains.kotlin.android") version "1.8.20" apply false
+    kotlin("jvm") version "1.8.20"
+    kotlin("plugin.serialization") version "1.8.20"
     id("maven-publish")
     id("dev.petuska.npm.publish") version "3.2.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
@@ -13,14 +13,14 @@ plugins {
 
 buildscript {
     repositories {
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
         google()
         gradlePluginPortal()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.10")
-        classpath("com.android.tools.build:gradle:7.4.0") // 7.4.2 is still not supported
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20")
+        classpath("com.android.tools.build:gradle:7.2.2") // 7.4.2 is still not supported
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
         classpath("com.github.piacenti:antlr-kotlin-gradle-plugin:0.0.14")
@@ -38,8 +38,8 @@ allprojects {
     this.group = "io.iohk.atala.prism.walletsdk"
 
     repositories {
-        mavenCentral()
         mavenLocal()
+        mavenCentral()
         google()
         maven("https://plugins.gradle.org/m2/")
         // Needed for Kotlin coroutines that support new memory management mode

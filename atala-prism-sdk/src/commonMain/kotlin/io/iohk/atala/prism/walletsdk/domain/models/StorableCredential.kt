@@ -9,4 +9,6 @@ interface StorableCredential : Credential {
     val validUntil: String?
     val revoked: Boolean?
     val availableClaims: Array<String>
+
+    fun fromStorableCredential(): Credential
 }
