@@ -95,7 +95,7 @@ interface Pluto {
 
     fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>>
 
-    fun getLinkSecret(): Flow<String>
+    fun getLinkSecret(): Flow<String?>
 
     fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?>
 }

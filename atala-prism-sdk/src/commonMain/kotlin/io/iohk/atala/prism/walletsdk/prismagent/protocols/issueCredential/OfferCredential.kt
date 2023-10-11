@@ -83,6 +83,11 @@ data class OfferCredential @JvmOverloads constructor(
             }
             val body = Json.decodeFromString<Body>(fromMessage.body)
 
+            println("Attachments: ${fromMessage.attachments.size}")
+            fromMessage.attachments.forEach {
+                println("Attachment format: ${it.format}")
+            }
+
             return OfferCredential(
                 id = fromMessage.id,
                 body = body,

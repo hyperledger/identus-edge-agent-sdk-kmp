@@ -137,7 +137,7 @@ class MercuryImpl(
             }
         }
         logger.debug(
-            message = "Sending message with type ${message.piuri}",
+            message = "Sending message with type` ${message.piuri}",
             metadata = arrayOf(
                 Metadata.MaskedMetadataByLevel(
                     key = "Sender",
@@ -151,6 +151,11 @@ class MercuryImpl(
                 )
             )
         )
+        try {
+            return makeRequest(service, packedMessage)
+        } catch (e: Exception) {
+            println("Make request exception: ${e.message}")
+        }
         return makeRequest(service, packedMessage)
     }
 

@@ -691,10 +691,17 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
-    override fun getLinkSecret(): Flow<String> {
+    override fun getLinkSecret(): Flow<String?> {
         return getInstance().linkSecretQueries.fetchLinkSecret()
             .asFlow()
-            .map { it.executeAsOne() }
+            .map {
+                val result = it.executeAsList()
+                if (result.isEmpty()) {
+                    null
+                } else {
+                    it.executeAsOne()
+                }
+            }
     }
 
     override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {

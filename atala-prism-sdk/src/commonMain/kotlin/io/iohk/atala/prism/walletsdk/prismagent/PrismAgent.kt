@@ -59,8 +59,8 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboard
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.Url
 import io.ktor.http.HttpMethod
+import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -223,12 +223,9 @@ class PrismAgent {
         if (state != State.STOPPED) {
             return
         }
+        getLinkSecret()
         logger.info(message = "Starting agent")
         state = State.STARTING
-        if (pluto.getLinkSecret().firstOrNull() == null) {
-            val linkSecretObj = LinkSecret()
-            pluto.storeLinkSecret(linkSecretObj.getValue())
-        }
         try {
             connectionManager.startMediator()
         } catch (error: PrismAgentError.NoMediatorAvailableError) {
@@ -584,14 +581,20 @@ class PrismAgent {
             }
 
             CredentialType.ANONCREDS -> {
-                var linkSecret: String = pluto.getLinkSecret().firstOrNull()
-                    ?: throw Exception("")
-                // TODO: Custom error
-                val anonOffer = CredentialOffer(Json.encodeToString(offer))
+                val linkSecret = getLinkSecret()
+                val offerDataString = offer.attachments.mapNotNull {
+                    when (it.data) {
+                        is AttachmentBase64 -> it.data.base64
+                        else -> null
+                    }
+                }.first()
+                println("Base 64 encoded: $offerDataString")
+                println("Base64 decoded: ${offerDataString.base64UrlDecoded}")
+                val anonOffer = CredentialOffer(Json.encodeToString(offerDataString.base64UrlDecoded))
                 val pair = pollux.processCredentialRequestAnoncreds(
                     did = did,
                     offer = anonOffer,
-                    linkSecret = LinkSecret.newFromValue(linkSecret),
+                    linkSecret = linkSecret,
                     linkSecretName = offer.thid ?: ""
                 )
 
@@ -640,10 +643,6 @@ class PrismAgent {
 
         return attachment?.let {
             val credentialData = it.base64.base64UrlDecoded
-            var linkSecret: LinkSecret? = null
-            if (credentialType == CredentialType.ANONCREDS) {
-                linkSecret = LinkSecret.newFromValue(pluto.getLinkSecret().first())
-            }
 
             message.thid?.let {
                 val plutoMetadata =
@@ -660,7 +659,11 @@ class PrismAgent {
                     pollux.parseCredential(
                         data = credentialData,
                         type = credentialType,
-                        linkSecret = linkSecret,
+                        linkSecret = if (credentialType == CredentialType.ANONCREDS) {
+                            getLinkSecret()
+                        } else {
+                            null
+                        },
                         credentialMetadata = metadata
                     )
 
@@ -917,6 +920,17 @@ class PrismAgent {
             body = Presentation.Body(request.body.goalCode, request.body.comment),
             attachments = arrayOf(attachmentDescriptor)
         )
+    }
+
+    private suspend fun getLinkSecret(): LinkSecret {
+        val linkSecret = pluto.getLinkSecret().firstOrNull()
+        return if (linkSecret == null) {
+            val linkSecretObj = LinkSecret()
+            pluto.storeLinkSecret(linkSecretObj.getValue())
+            linkSecretObj
+        } else {
+            LinkSecret.newFromValue(linkSecret)
+        }
     }
 
     /**

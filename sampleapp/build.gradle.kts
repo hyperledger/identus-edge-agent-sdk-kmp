@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+apply(plugin = "kotlinx-atomicfu")
+
 android {
     namespace = "io.iohk.atala.prism.sampleapp"
     compileSdk = 33
@@ -77,8 +79,11 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 }
 
-tasks.matching {
-    it.name == ":sampleapp:lintVitalAnalyzeRelease"
-}.all {
-    this.enabled = false
+afterEvaluate {
+    tasks.named("lintAnalyzeDebug") {
+        this.enabled = false
+    }
+    tasks.named("lintAnalyzeRelease") {
+        this.enabled = false
+    }
 }
