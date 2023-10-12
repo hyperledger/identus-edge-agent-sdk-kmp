@@ -246,14 +246,17 @@ class PolluxImpl(
 
     override suspend fun getCredentialDefinition(id: String): CredentialDefinition {
         val result = api.request(
-            HttpMethod.Post.value,
+            HttpMethod.Get.value,
             id,
             emptyArray(),
             arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
             null
         )
         if (result.status == 200) {
+            print("Result json: ${result.jsonString}")
             return CredentialDefinition(result.jsonString)
+        } else {
+            throw Exception("${result.status} ${result.jsonString}")
         }
         throw PolluxError.InvalidCredentialDefinitionError()
     }

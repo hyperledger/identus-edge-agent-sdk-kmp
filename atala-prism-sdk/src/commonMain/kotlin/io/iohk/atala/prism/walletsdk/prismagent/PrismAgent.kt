@@ -590,7 +590,8 @@ class PrismAgent {
                 }.first()
                 println("Base 64 encoded: $offerDataString")
                 println("Base64 decoded: ${offerDataString.base64UrlDecoded}")
-                val anonOffer = CredentialOffer(Json.encodeToString(offerDataString.base64UrlDecoded))
+
+                val anonOffer = CredentialOffer(offerDataString.base64UrlDecoded)
                 val pair = pollux.processCredentialRequestAnoncreds(
                     did = did,
                     offer = anonOffer,

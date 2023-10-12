@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
+import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
 import java.time.Instant
@@ -93,6 +94,12 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                 W3CCredential::class -> {
                     val w3c = cred as W3CCredential
                     type.text = String.format(typeString, "W3C")
+                }
+
+                AnonCredential::class -> {
+                    val anon = cred as AnonCredential
+                    type.text = String.format(typeString, "Anoncred")
+                    issuanceDate.text = "Issuer: ${anon.issuer}"
                 }
             }
         }
