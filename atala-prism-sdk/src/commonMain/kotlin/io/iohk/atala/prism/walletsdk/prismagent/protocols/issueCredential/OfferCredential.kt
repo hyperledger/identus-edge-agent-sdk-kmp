@@ -79,6 +79,9 @@ data class OfferCredential @JvmOverloads constructor(
 
             val fromDID = fromMessage.from
             val toDID = fromMessage.to
+            val json = Json {
+                ignoreUnknownKeys = true
+            }
             val body = Json.decodeFromString<Body>(fromMessage.body)
             return OfferCredential(
                 id = fromMessage.id,

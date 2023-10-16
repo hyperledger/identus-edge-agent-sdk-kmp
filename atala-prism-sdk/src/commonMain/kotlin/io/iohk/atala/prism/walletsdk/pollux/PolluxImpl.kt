@@ -192,7 +192,12 @@ class PolluxImpl(
     }
 
     override fun extractCredentialFormatFromMessage(formats: Array<AttachmentDescriptor>): CredentialType {
-        val desiredFormats = setOf(CredentialType.JWT.type, CredentialType.ANONCREDS_OFFER.type, CredentialType.ANONCREDS_REQUEST.type, CredentialType.ANONCREDS_ISSUE.type)
+        val desiredFormats = setOf(
+            CredentialType.JWT.type,
+            CredentialType.ANONCREDS_OFFER.type,
+            CredentialType.ANONCREDS_REQUEST.type,
+            CredentialType.ANONCREDS_ISSUE.type
+        )
         val foundFormat = formats.find { it.format in desiredFormats }
         return foundFormat?.format?.let { format ->
             when (format) {
