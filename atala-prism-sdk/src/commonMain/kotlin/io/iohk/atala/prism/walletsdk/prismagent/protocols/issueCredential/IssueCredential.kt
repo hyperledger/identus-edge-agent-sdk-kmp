@@ -107,7 +107,7 @@ data class IssueCredential(
         @SerialName(REPLACEMENT_ID)
         val replacementId: String? = null,
         @SerialName(MORE_AVAILABLE)
-        val moreAvailable: String? = null,
+        val moreAvailable: String? = null
 //        val formats: Array<CredentialFormat>
     ) {
         override fun equals(other: Any?): Boolean {

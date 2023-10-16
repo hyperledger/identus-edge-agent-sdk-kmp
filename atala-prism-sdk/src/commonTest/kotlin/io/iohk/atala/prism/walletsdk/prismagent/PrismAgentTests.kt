@@ -350,6 +350,7 @@ class PrismAgentTests {
         }
     }
 
+    @Ignore("libjnidispatch.jnilib not found")
     @Test
     fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
         val getLinkSecretReturn = flow<String> { "linkSecret" }
