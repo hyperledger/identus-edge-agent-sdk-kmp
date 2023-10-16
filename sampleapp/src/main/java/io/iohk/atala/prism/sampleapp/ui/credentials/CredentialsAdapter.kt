@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
-import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
@@ -76,8 +75,7 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
             expirationString = itemView.context.getString(R.string.credential_expiration)
         }
 
-        fun bind(credential: Credential) {
-            val cred = (credential as StorableCredential).fromStorableCredential()
+        fun bind(cred: Credential) {
             when (cred::class) {
                 JWTCredential::class -> {
                     val jwt = cred as JWTCredential
@@ -99,7 +97,7 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                 AnonCredential::class -> {
                     val anon = cred as AnonCredential
                     type.text = String.format(typeString, "Anoncred")
-                    issuanceDate.text = "Issuer: ${anon.issuer}"
+                    issuanceDate.text = "Issuer: ${anon.credentialDefinitionID}"
                 }
             }
         }

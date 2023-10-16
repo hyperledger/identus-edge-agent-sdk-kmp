@@ -413,7 +413,7 @@ class PrismAgentTests {
         val fromDID = DID("did:prism:asdf42sf")
         val toDID = DID("did:prism:asdf42sf")
 
-        polluxMock.extractedCredentialFormatFromMessageReturn = CredentialType.ANONCREDS
+        polluxMock.extractedCredentialFormatFromMessageReturn = CredentialType.ANONCREDS_REQUEST
         plutoMock
 
         val agent = PrismAgent(
@@ -430,7 +430,7 @@ class PrismAgentTests {
 
         val attachmentDescriptor =
             AttachmentDescriptor(
-                mediaType = CredentialType.ANONCREDS.type,
+                mediaType = CredentialType.ANONCREDS_REQUEST.type,
                 data = AttachmentBase64(
                     ""
                 )

@@ -16,15 +16,15 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferC
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
 
     private var messages: MutableLiveData<List<Message>> = MutableLiveData()
-    private var didOfferDone = false
     private var presentationDone = false
+    private val issuedCredentials: ArrayList<String> = arrayListOf()
+    private val processedOffers: ArrayList<String> = arrayListOf()
 
     init {
         viewModelScope.launch {
@@ -71,30 +71,42 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             sdk.agent?.let { agent ->
                 sdk.pluto?.let { pluto ->
                     sdk.mercury?.let { mercury ->
-                        if (message.piuri == ProtocolType.DidcommOfferCredential.value && !didOfferDone) {
-                            didOfferDone = true
-                            viewModelScope.launch {
-                                val credentials = pluto.getAllCredentials().first()
-                                if (credentials.isEmpty()) {
-                                    val offer = OfferCredential.fromMessage(message)
-                                    val subjectDID = agent.createNewPrismDID()
-                                    val request =
-                                        agent.prepareRequestCredentialWithIssuer(
-                                            subjectDID,
-                                            offer
-                                        )
-                                    mercury.sendMessage(request.makeMessage())
+                        if (message.piuri == ProtocolType.DidcommOfferCredential.value) {
+                            message.thid?.let {
+                                println("Processed offers: $it")
+                                if (!processedOffers.contains(it)) {
+                                    println("Processing offer: $it")
+                                    processedOffers.add(it)
+                                    viewModelScope.launch {
+//                                val credentials = pluto.getAllCredentials().first()
+//                                if (credentials.isEmpty()) {
+                                        val offer = OfferCredential.fromMessage(message)
+                                        val subjectDID = agent.createNewPrismDID()
+                                        val request =
+                                            agent.prepareRequestCredentialWithIssuer(
+                                                subjectDID,
+                                                offer
+                                            )
+                                        mercury.sendMessage(request.makeMessage())
+//                                }
+                                    }
                                 }
                             }
                         }
-
                         if (message.piuri == ProtocolType.DidcommIssueCredential.value) {
-                            viewModelScope.launch {
-                                agent.processIssuedCredentialMessage(
-                                    IssueCredential.fromMessage(
-                                        message
-                                    )
-                                )
+                            message.thid?.let {
+                                println("Issued credentials: $it")
+                                if (!issuedCredentials.contains(it)) {
+                                    println("Credential issued: $it")
+                                    issuedCredentials.add(it)
+                                    viewModelScope.launch {
+                                        agent.processIssuedCredentialMessage(
+                                            IssueCredential.fromMessage(
+                                                message
+                                            )
+                                        )
+                                    }
+                                }
                             }
                         }
 

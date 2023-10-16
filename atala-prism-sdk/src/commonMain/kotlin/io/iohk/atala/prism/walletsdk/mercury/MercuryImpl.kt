@@ -151,11 +151,6 @@ class MercuryImpl(
                 )
             )
         )
-        try {
-            return makeRequest(service, packedMessage)
-        } catch (e: Exception) {
-            println("Make request exception: ${e.message}")
-        }
         return makeRequest(service, packedMessage)
     }
 

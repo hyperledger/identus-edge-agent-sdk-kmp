@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
+import io.iohk.atala.prism.walletsdk.prismagent.MORE_AVAILABLE
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.REPLACEMENT_ID
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
@@ -104,9 +105,9 @@ data class IssueCredential(
         val goalCode: String? = null,
         val comment: String? = null,
         @SerialName(REPLACEMENT_ID)
-        val replacementId: String? = null
-//        @SerialName(MORE_AVAILABLE)
-//        val moreAvailable: String? = null,
+        val replacementId: String? = null,
+        @SerialName(MORE_AVAILABLE)
+        val moreAvailable: String? = null,
 //        val formats: Array<CredentialFormat>
     ) {
         override fun equals(other: Any?): Boolean {

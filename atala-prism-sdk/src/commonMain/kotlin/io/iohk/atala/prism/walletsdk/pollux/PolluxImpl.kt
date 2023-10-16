@@ -13,7 +13,6 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
-import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Api
@@ -75,7 +74,7 @@ class PolluxImpl(
                 JWTCredential(jsonData)
             }
 
-            CredentialType.ANONCREDS -> {
+            CredentialType.ANONCREDS_ISSUE -> {
                 if (linkSecret == null) {
                     throw Error("LinkSecret is required")
                 }
@@ -83,26 +82,12 @@ class PolluxImpl(
                     throw Error("Invalid credential metadata")
                 }
 
-                val jsonElement = jsonData.toJsonElement()
-                if (!jsonElement.jsonObject.contains("cred_def_id")) {
-                    throw Exception("cred_def_id is required")
-                }
-                val credDefId = jsonElement.jsonObject["cred_def_id"].toString()
-                val credentialDefinition = getCredentialDefinition(credDefId)
-
                 val cred = anoncreds_wrapper.Credential(jsonData)
 
-                Prover().processCredential(
-                    credential = cred,
-                    credRequestMetadata = credentialMetadata,
-                    linkSecret = linkSecret,
-                    credDef = credentialDefinition,
-                    revRegDef = null // TODO: Is null correct?
-                )
-
-                val values: Map<String, AnonCredential.Attribute> = cred.getValues().values.mapValues {
-                    AnonCredential.Attribute(raw = it.value.raw, encoded = it.value.encoded)
-                }
+                val values: Map<String, AnonCredential.Attribute> =
+                    cred.getValues().values.mapValues {
+                        AnonCredential.Attribute(raw = it.value.raw, encoded = it.value.encoded)
+                    }
 
                 return AnonCredential(
                     schemaID = cred.getSchemaId(),
@@ -123,15 +108,21 @@ class PolluxImpl(
         }
     }
 
-    override fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray): Credential {
+    override fun restoreCredential(
+        restorationIdentifier: String,
+        credentialData: ByteArray
+    ): Credential {
         return when (restorationIdentifier) {
             "jwt+credential" -> {
-                JWTCredential(credentialData.decodeToString()).toStorableCredential()
+                JWTCredential(credentialData.decodeToString())
+            }
+
+            "anon+credential" -> {
+                AnonCredential.fromStorableData(credentialData)
             }
 
             "w3c+credential" -> {
                 Json.decodeFromString<W3CCredential>(credentialData.decodeToString())
-                    .toStorableCredential()
             }
 
             else -> {
@@ -175,7 +166,10 @@ class PolluxImpl(
         )
     }
 
-    override fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential {
+    override fun credentialToStorableCredential(
+        type: CredentialType,
+        credential: Credential
+    ): StorableCredential {
         return when (type) {
             CredentialType.JWT -> {
                 (credential as JWTCredential).toStorableCredential()
@@ -186,7 +180,7 @@ class PolluxImpl(
                 w3c.toStorableCredential()
             }
 
-            CredentialType.ANONCREDS -> {
+            CredentialType.ANONCREDS_ISSUE -> {
                 val anon: AnonCredential = credential as AnonCredential
                 anon.toStorableCredential()
             }
@@ -198,12 +192,14 @@ class PolluxImpl(
     }
 
     override fun extractCredentialFormatFromMessage(formats: Array<AttachmentDescriptor>): CredentialType {
-        val desiredFormats = setOf(CredentialType.JWT.type, CredentialType.ANONCREDS.type)
+        val desiredFormats = setOf(CredentialType.JWT.type, CredentialType.ANONCREDS_OFFER.type, CredentialType.ANONCREDS_REQUEST.type, CredentialType.ANONCREDS_ISSUE.type)
         val foundFormat = formats.find { it.format in desiredFormats }
         return foundFormat?.format?.let { format ->
             when (format) {
                 CredentialType.JWT.type -> CredentialType.JWT
-                CredentialType.ANONCREDS.type -> CredentialType.ANONCREDS
+                CredentialType.ANONCREDS_OFFER.type -> CredentialType.ANONCREDS_OFFER
+                CredentialType.ANONCREDS_REQUEST.type -> CredentialType.ANONCREDS_REQUEST
+                CredentialType.ANONCREDS_ISSUE.type -> CredentialType.ANONCREDS_ISSUE
                 else -> throw Error("$format is not a valid credential type")
             }
         } ?: throw Error("Unknown credential type")
@@ -253,10 +249,7 @@ class PolluxImpl(
             null
         )
         if (result.status == 200) {
-            print("Result json: ${result.jsonString}")
             return CredentialDefinition(result.jsonString)
-        } else {
-            throw Exception("${result.status} ${result.jsonString}")
         }
         throw PolluxError.InvalidCredentialDefinitionError()
     }

@@ -48,6 +48,7 @@ data class OfferCredential @JvmOverloads constructor(
 
         @JvmStatic
         fun makeOfferFromProposedCredential(proposed: ProposeCredential): OfferCredential {
+            println("OfferCredential::makeOfferFromProposedCredential: ${proposed.thid}")
             return OfferCredential(
                 body = Body(
                     goalCode = proposed.body.goalCode,
@@ -78,16 +79,7 @@ data class OfferCredential @JvmOverloads constructor(
 
             val fromDID = fromMessage.from
             val toDID = fromMessage.to
-            val json = Json {
-                ignoreUnknownKeys = true
-            }
             val body = Json.decodeFromString<Body>(fromMessage.body)
-
-            println("Attachments: ${fromMessage.attachments.size}")
-            fromMessage.attachments.forEach {
-                println("Attachment format: ${it.format}")
-            }
-
             return OfferCredential(
                 id = fromMessage.id,
                 body = body,

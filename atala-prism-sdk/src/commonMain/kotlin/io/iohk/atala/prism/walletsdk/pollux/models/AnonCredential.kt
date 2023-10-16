@@ -4,7 +4,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.Claim
 import io.iohk.atala.prism.walletsdk.domain.models.ClaimType
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
+@Serializable
 data class AnonCredential constructor(
     val schemaID: String,
     val credentialDefinitionID: String,
@@ -17,6 +21,7 @@ data class AnonCredential constructor(
     private val json: String
 ) : Credential {
 
+    @Serializable
     data class Attribute(
         val raw: String,
         val encoded: String
@@ -77,7 +82,7 @@ data class AnonCredential constructor(
                 get() = "anon+credential"
 
             override val credentialData: ByteArray
-                get() = c.json.toByteArray()
+                get() = Json.encodeToString(c).toByteArray()
 
             override val credentialCreated: String?
                 get() = null
@@ -100,6 +105,14 @@ data class AnonCredential constructor(
             override fun fromStorableCredential(): Credential {
                 return c
             }
+        }
+    }
+
+    companion object {
+        fun fromStorableData(data: ByteArray): AnonCredential {
+            val dataString = data.decodeToString()
+            val cred = Json.decodeFromString<AnonCredential>(dataString)
+            return cred
         }
     }
 }

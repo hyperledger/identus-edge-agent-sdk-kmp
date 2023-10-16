@@ -1,6 +1,9 @@
 package io.iohk.atala.prism.walletsdk.pollux.models
 
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 interface CredentialRequest {
@@ -23,8 +26,14 @@ interface CredentialRequestBlindedMSCorrectnessProof {
 }
 
 @Serializable
-data class LinkSecretBlindingData(
-    var vPrime: String
+data class LinkSecretBlindingData
+@OptIn(ExperimentalSerializationApi::class)
+constructor(
+    @SerialName("v_prime")
+    var vPrime: String,
+    @SerialName("vr_prime")
+    @EncodeDefault
+    var vrPrime: String? = null
 )
 
 data class CredentialDefinition(

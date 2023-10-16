@@ -24,9 +24,11 @@ data class VerifiableCredentialTypeContainer(
  */
 @Serializable
 enum class CredentialType(val type: String) {
-    JWT("jwt"),
+    JWT("prism/jwt"),
     W3C("w3c"),
-    ANONCREDS("anoncreds/credential-offer@v1.0"),
+    ANONCREDS_OFFER("anoncreds/credential-offer@v1.0"),
+    ANONCREDS_REQUEST("anoncreds/credential-request@v1.0"),
+    ANONCREDS_ISSUE("anoncreds/credential@v1.0"),
     Unknown("Unknown")
 }
 
