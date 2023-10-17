@@ -20,12 +20,15 @@ on:
       publishedDid:
         required: false
         description: Published DID
+        default: did:prism:dac7505c41dd8e380b187544e8ae77e1ff8e39f62cd4d8d83310e23
       schemaId:
         required: false
         description: Schema ID
+        default: 99647c77-5074-369f-85ed-067bfe062f77
       apiKey:
         required: false
         description: Authorization key
+        default: 1gnp5fzLTwNBvLBXLk9THLgxe9SLoh+7
   pull_request:
     branches:
       - main

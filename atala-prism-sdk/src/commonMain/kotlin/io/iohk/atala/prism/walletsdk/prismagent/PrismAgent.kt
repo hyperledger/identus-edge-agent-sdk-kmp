@@ -59,9 +59,9 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboard
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.Url
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
-import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -224,7 +224,6 @@ class PrismAgent {
         if (state != State.STOPPED) {
             return
         }
-        getLinkSecret()
         logger.info(message = "Starting agent")
         state = State.STARTING
         try {
@@ -551,10 +550,7 @@ class PrismAgent {
             throw PolluxError.InvalidPrismDID()
         }
 
-        return when (
-            val credentialType =
-                pollux.extractCredentialFormatFromMessage(offer.attachments)
-        ) {
+        return when (pollux.extractCredentialFormatFromMessage(offer.attachments)) {
             CredentialType.JWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
                 val keyPair = Secp256k1KeyPair.generateKeyPair(
@@ -582,7 +578,6 @@ class PrismAgent {
                     body = RequestCredential.Body(
                         offer.body.goalCode,
                         offer.body.comment
-//                        offer.body.formats
                     ),
                     attachments = arrayOf(attachmentDescriptor)
                 )
