@@ -74,7 +74,6 @@ data class RequestCredential @JvmOverloads constructor(
                 body = Body(
                     goalCode = offer.body.goalCode,
                     comment = offer.body.comment
-//                    formats = offer.body.formats
                 ),
                 attachments = offer.attachments,
                 thid = offer.thid,

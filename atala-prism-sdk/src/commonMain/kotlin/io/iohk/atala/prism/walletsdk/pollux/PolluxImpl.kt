@@ -29,8 +29,7 @@ import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
-import io.ktor.http.HttpHeaders
-import io.ktor.http.HttpMethod
+import io.ktor.http.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -137,9 +136,7 @@ class PolluxImpl(
         privateKey: PrivateKey,
         offerJson: JsonObject
     ): String {
-        val parsedPrivateKey =
-
-            parsePrivateKey(privateKey)
+        val parsedPrivateKey = parsePrivateKey(privateKey)
         val domain = getDomain(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         val challenge = getChallenge(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         return signClaimsRequestCredentialJWT(subjectDID, parsedPrivateKey, domain, challenge)
@@ -176,13 +173,11 @@ class PolluxImpl(
             }
 
             CredentialType.W3C -> {
-                val w3c: W3CCredential = credential as W3CCredential
-                w3c.toStorableCredential()
+                (credential as W3CCredential).toStorableCredential()
             }
 
             CredentialType.ANONCREDS_ISSUE -> {
-                val anon: AnonCredential = credential as AnonCredential
-                anon.toStorableCredential()
+                (credential as AnonCredential).toStorableCredential()
             }
 
             else -> {
