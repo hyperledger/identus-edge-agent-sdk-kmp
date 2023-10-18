@@ -48,7 +48,6 @@ data class OfferCredential @JvmOverloads constructor(
 
         @JvmStatic
         fun makeOfferFromProposedCredential(proposed: ProposeCredential): OfferCredential {
-            println("OfferCredential::makeOfferFromProposedCredential: ${proposed.thid}")
             return OfferCredential(
                 body = Body(
                     goalCode = proposed.body.goalCode,
