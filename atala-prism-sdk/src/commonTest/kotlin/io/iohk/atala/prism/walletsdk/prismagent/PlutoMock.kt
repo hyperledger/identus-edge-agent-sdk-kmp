@@ -64,6 +64,7 @@ class PlutoMock : Pluto {
     lateinit var getAllMediatorsReturn: Flow<List<Mediator>>
     lateinit var getAllCredentialsReturn: Flow<List<CredentialRecovery>>
     lateinit var getLinkSecretReturn: Flow<String>
+    lateinit var getCredentialMetadataReturn: Flow<CredentialRequestMeta?>
 
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
@@ -227,15 +228,13 @@ class PlutoMock : Pluto {
     override fun storeLinkSecret(linkSecret: String) {
     }
 
-    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
-        TODO("Not yet implemented")
-    }
+    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {}
 
     override fun getLinkSecret(): Flow<String> {
         return getLinkSecretReturn
     }
 
     override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {
-        TODO("Not yet implemented")
+        return getCredentialMetadataReturn
     }
 }
