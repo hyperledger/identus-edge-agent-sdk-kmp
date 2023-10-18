@@ -125,7 +125,16 @@ kotlin {
                 implementation("com.squareup.sqldelight:android-driver:1.5.5")
             }
         }
-        val androidUnitTest by getting
+        val androidInstrumentedTest by getting {
+            dependsOn(commonTest)
+            dependencies {
+                implementation("com.google.protobuf:protoc:3.12.0") {
+//                    exclude("com.google.protobuf")
+                    exclude("com.google.protobuf", "protobuf-java")
+                }
+                implementation("androidx.test.ext:junit:1.1.5")
+            }
+        }
         /*
         Not going to support JS for the time being
         val jsMain by getting
@@ -147,6 +156,8 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 32
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -164,6 +175,10 @@ android {
             withJavadocJar()
             allVariants()
         }
+    }
+
+    packagingOptions {
+        exclude("google/protobuf/field_mask.proto")
     }
 }
 

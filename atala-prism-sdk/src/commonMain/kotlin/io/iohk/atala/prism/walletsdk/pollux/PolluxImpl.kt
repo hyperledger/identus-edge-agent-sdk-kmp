@@ -29,7 +29,8 @@ import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
-import io.ktor.http.*
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
