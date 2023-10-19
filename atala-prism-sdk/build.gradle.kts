@@ -129,6 +129,7 @@ kotlin {
             dependsOn(commonTest)
             dependencies {
                 implementation("androidx.test.ext:junit:1.1.5")
+                implementation("junit:junit:4.13.2")
             }
         }
         /*
@@ -152,6 +153,8 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 32
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
