@@ -28,7 +28,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueC
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
-import io.ktor.http.*
+import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
