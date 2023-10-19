@@ -128,10 +128,6 @@ kotlin {
         val androidInstrumentedTest by getting {
             dependsOn(commonTest)
             dependencies {
-                implementation("com.google.protobuf:protoc:3.12.0") {
-//                    exclude("com.google.protobuf")
-                    exclude("com.google.protobuf", "protobuf-java")
-                }
                 implementation("androidx.test.ext:junit:1.1.5")
             }
         }
@@ -156,8 +152,6 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 32
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -178,7 +172,9 @@ android {
     }
 
     packagingOptions {
-        exclude("google/protobuf/field_mask.proto")
+        resources {
+            merges += "**/**.proto"
+        }
     }
 }
 
