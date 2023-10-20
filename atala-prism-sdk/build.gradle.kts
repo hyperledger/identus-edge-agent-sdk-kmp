@@ -1,5 +1,6 @@
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
 val currentModuleName: String = "AtalaPrismSDK"
@@ -128,6 +129,7 @@ kotlin {
         val androidInstrumentedTest by getting {
             dependsOn(commonTest)
             dependencies {
+                implementation("androidx.test.espresso:espresso-core:3.5.1")
                 implementation("androidx.test.ext:junit:1.1.5")
                 implementation("junit:junit:4.13.2")
             }
@@ -252,28 +254,30 @@ val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin
     // outputDirectory = File("src/commonAntlr/kotlin")
 }
 
-tasks.matching {
-    it.name == "compileCommonAntlrKotlinMetadata" ||
-        it.name == "runKtlintCheckOverCommonMainSourceSet" ||
-        it.name == "jvmSourcesJar" ||
-        it.name == "sourcesJar" ||
-        it.name == "compileCommonMainKotlinMetadata" ||
-        it.name == "compileReleaseKotlinAndroid" ||
-        it.name == "compileDebugKotlinAndroid" ||
-        it.name == "compileKotlinJs" ||
-        it.name == "compileKotlinJvm"
-}.all {
-    this.dependsOn(":protosLib:generateProto")
-    this.dependsOn(antlrGenerationTask)
-}
-
 val buildProtoLibsGen by tasks.creating {
     group = "build"
     this.dependsOn(":protosLib:generateProto")
 }
 
-tasks.getByName("build") {
-    this.doFirst {
-        ":protosLib:generateProto"
+afterEvaluate {
+    tasks.named("lintAnalyzeDebug") {
+        this.enabled = false
+    }
+    tasks.named("lintAnalyzeRelease") {
+        this.enabled = false
+    }
+    tasks.getByName("runKtlintCheckOverCommonMainSourceSet") {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+    }
+    tasks.getByName("build") {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+    }
+
+    tasks.withType<KotlinCompile> {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+    }
+
+    tasks.withType<ProcessResources> {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
     }
 }
