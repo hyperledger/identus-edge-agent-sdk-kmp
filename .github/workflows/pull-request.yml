@@ -24,7 +24,7 @@ on:
 jobs:
 
   build:
-    runs-on: linux-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
