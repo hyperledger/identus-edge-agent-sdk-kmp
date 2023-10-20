@@ -70,7 +70,6 @@ class AnoncredsTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
-
         val agent = PrismAgent(
             apollo = apolloMock,
             castor = castorMock,
