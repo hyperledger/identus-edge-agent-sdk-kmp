@@ -18,6 +18,13 @@ repositories {
             password = System.getenv("ATALA_GITHUB_TOKEN")
         }
     }
+    maven {
+        url = uri("https://maven.pkg.github.com/hyperledger-labs/open-enterprise-agent/")
+        credentials {
+            username = System.getenv("ATALA_GITHUB_ACTOR")
+            password = System.getenv("ATALA_GITHUB_TOKEN")
+        }
+    }
     mavenLocal()
 }
 
