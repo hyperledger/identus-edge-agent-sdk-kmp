@@ -1,5 +1,6 @@
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
 val currentModuleName: String = "AtalaPrismSDK"
@@ -54,39 +55,6 @@ kotlin {
         }
     }
 
-    /*
-    Not going to support JS for the time being
-    js(IR) {
-        this.moduleName = currentModuleName
-        this.binaries.library()
-        this.useCommonJs()
-        this.compilations["main"].packageJson {
-            this.version = rootProject.version.toString()
-        }
-        this.compilations["test"].packageJson {
-            this.version = rootProject.version.toString()
-        }
-        browser {
-            this.webpackTask {
-                this.output.library = currentModuleName
-                this.output.libraryTarget = Target.VAR
-            }
-            this.testTask {
-                this.useKarma {
-                    this.useChromeHeadless()
-                }
-            }
-        }
-        nodejs {
-            this.testTask {
-                this.useKarma {
-                    this.useChromeHeadless()
-                }
-            }
-        }
-    }
-     */
-
     sourceSets {
         val commonAntlr by creating {
             kotlin.srcDir("build/generated-src/commonAntlr/kotlin")
@@ -131,7 +99,9 @@ kotlin {
 
                 api("org.lighthousegames:logging:1.1.2")
 
+                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:1.0.0")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")
+                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
             }
         }
         val commonTest by getting {
@@ -145,25 +115,22 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
                 implementation("com.squareup.sqldelight:sqlite-driver:1.5.5")
             }
         }
-        val jvmTest by getting {
-            dependencies {
-                implementation("junit:junit:4.13.2")
-            }
-        }
+        val jvmTest by getting
         val androidMain by getting {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
                 implementation("com.squareup.sqldelight:android-driver:1.5.5")
             }
         }
-        val androidUnitTest by getting {
+        val androidInstrumentedTest by getting {
+            dependsOn(commonTest)
             dependencies {
+                implementation("androidx.test.espresso:espresso-core:3.5.1")
+                implementation("androidx.test.ext:junit:1.1.5")
                 implementation("junit:junit:4.13.2")
             }
         }
@@ -188,6 +155,8 @@ android {
     defaultConfig {
         minSdk = 21
         targetSdk = 32
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -204,6 +173,12 @@ android {
             withSourcesJar()
             withJavadocJar()
             allVariants()
+        }
+    }
+
+    packagingOptions {
+        resources {
+            merges += "**/**.proto"
         }
     }
 }
@@ -279,28 +254,30 @@ val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin
     // outputDirectory = File("src/commonAntlr/kotlin")
 }
 
-tasks.matching {
-    it.name == "compileCommonAntlrKotlinMetadata" ||
-        it.name == "runKtlintCheckOverCommonMainSourceSet" ||
-        it.name == "jvmSourcesJar" ||
-        it.name == "sourcesJar" ||
-        it.name == "compileCommonMainKotlinMetadata" ||
-        it.name == "compileReleaseKotlinAndroid" ||
-        it.name == "compileDebugKotlinAndroid" ||
-        it.name == "compileKotlinJs" ||
-        it.name == "compileKotlinJvm"
-}.all {
-    this.dependsOn(":protosLib:generateProto")
-    this.dependsOn(antlrGenerationTask)
-}
-
 val buildProtoLibsGen by tasks.creating {
     group = "build"
     this.dependsOn(":protosLib:generateProto")
 }
 
-tasks.getByName("build") {
-    this.doFirst {
-        ":protosLib:generateProto"
+afterEvaluate {
+    tasks.named("lintAnalyzeDebug") {
+        this.enabled = false
+    }
+    tasks.named("lintAnalyzeRelease") {
+        this.enabled = false
+    }
+    tasks.getByName("runKtlintCheckOverCommonMainSourceSet") {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+    }
+    tasks.getByName("build") {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+    }
+
+    tasks.withType<KotlinCompile> {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+    }
+
+    tasks.withType<ProcessResources> {
+        dependsOn(buildProtoLibsGen, antlrGenerationTask)
     }
 }

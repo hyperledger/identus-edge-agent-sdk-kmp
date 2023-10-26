@@ -465,4 +465,12 @@ sealed class PolluxError @JvmOverloads constructor(message: String? = null, caus
         override val message: String
             get() = "No domain or challenge found as part of the offer json"
     }
+
+    class InvalidCredentialDefinitionError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) : PolluxError(message, cause) {
+        override val code: Int
+            get() = 56
+
+        override val message: String
+            get() = "Invalid credential definition"
+    }
 }

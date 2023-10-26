@@ -70,7 +70,7 @@ data class IssueCredential(
 
             val fromDID = fromMessage.from
             val toDID = fromMessage.to
-            val body = Json.decodeFromString<IssueCredential.Body>(fromMessage.body)
+            val body = Json.decodeFromString<Body>(fromMessage.body)
 
             return IssueCredential(
                 id = fromMessage.id,
@@ -88,8 +88,8 @@ data class IssueCredential(
             return IssueCredential(
                 body = Body(
                     goalCode = request.body.goalCode,
-                    comment = request.body.comment,
-                    formats = request.body.formats
+                    comment = request.body.comment
+//                    formats = request.body.formats
                 ),
                 attachments = request.attachments,
                 thid = msg.id,
@@ -107,8 +107,8 @@ data class IssueCredential(
         @SerialName(REPLACEMENT_ID)
         val replacementId: String? = null,
         @SerialName(MORE_AVAILABLE)
-        val moreAvailable: String? = null,
-        val formats: Array<CredentialFormat>
+        val moreAvailable: String? = null
+//        val formats: Array<CredentialFormat>
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -119,8 +119,8 @@ data class IssueCredential(
             if (goalCode != other.goalCode) return false
             if (comment != other.comment) return false
             if (replacementId != other.replacementId) return false
-            if (moreAvailable != other.moreAvailable) return false
-            if (!formats.contentEquals(other.formats)) return false
+//            if (moreAvailable != other.moreAvailable) return false
+//            if (!formats.contentEquals(other.formats)) return false
 
             return true
         }
@@ -129,8 +129,8 @@ data class IssueCredential(
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)
             result = 31 * result + (replacementId?.hashCode() ?: 0)
-            result = 31 * result + (moreAvailable?.hashCode() ?: 0)
-            result = 31 * result + formats.contentHashCode()
+//            result = 31 * result + (moreAvailable?.hashCode() ?: 0)
+//            result = 31 * result + formats.contentHashCode()
             return result
         }
     }
@@ -178,7 +178,7 @@ inline fun <reified T : Serializable> IssueCredential.Companion.build(
     }
     return IssueCredential(
         body = IssueCredential.Body(
-            formats = aux.map { it.first }.toTypedArray()
+//            formats = aux.map { it.first }.toTypedArray()
         ),
         attachments = aux.map { it.second }.toTypedArray(),
         thid = thid,

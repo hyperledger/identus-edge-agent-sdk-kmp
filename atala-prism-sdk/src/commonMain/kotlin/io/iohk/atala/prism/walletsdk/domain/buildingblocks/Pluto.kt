@@ -9,6 +9,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 
@@ -34,6 +35,10 @@ interface Pluto {
     fun storeMediator(mediator: DID, host: DID, routing: DID)
 
     fun storeCredential(credential: StorableCredential)
+
+    fun storeLinkSecret(linkSecret: String)
+
+    fun storeCredentialMetadata(metadata: CredentialRequestMeta)
 
     fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>>
 
@@ -89,4 +94,8 @@ interface Pluto {
     fun getAvailableClaimsByCredentialId(credentialId: String): Flow<Array<AvailableClaims>>
 
     fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>>
+
+    fun getLinkSecret(): Flow<String?>
+
+    fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?>
 }

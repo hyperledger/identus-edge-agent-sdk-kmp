@@ -21,16 +21,16 @@ class ProposeCredentialTest {
                         CredentialPreview.Attribute(
                             name = "test1",
                             value = "test",
-                            mimeType = "test.x"
+                            mediaType = "test.x"
                         )
                     )
-                ),
-                formats = arrayOf(
-                    CredentialFormat(
-                        attachId = "test1",
-                        format = "test"
-                    )
                 )
+//                formats = arrayOf(
+//                    CredentialFormat(
+//                        attachId = "test1",
+//                        format = "test"
+//                    )
+//                )
             ),
             attachments = arrayOf(),
             thid = "1",
