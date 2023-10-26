@@ -10,6 +10,7 @@ group = "io.iohk.atala.prism"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         url = uri("https://maven.pkg.github.com/input-output-hk/atala-automation/")
@@ -25,7 +26,6 @@ repositories {
             password = System.getenv("ATALA_GITHUB_TOKEN")
         }
     }
-    mavenLocal()
 }
 
 dependencies {
