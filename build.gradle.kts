@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.8.20"
     kotlin("plugin.serialization") version "1.8.20"
     id("maven-publish")
-    id("dev.petuska.npm.publish") version "3.2.1"
+    // id("dev.petuska.npm.publish") version "3.2.1"
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
     id("org.jetbrains.dokka") version "1.9.0"
 }
@@ -119,10 +119,6 @@ subprojects {
             }
         }
     }
-}
-
-rootProject.plugins.withType(NodeJsRootPlugin::class.java) {
-    rootProject.extensions.getByType(NodeJsRootExtension::class.java).nodeVersion = "18.17.1"
 }
 
 tasks.dokkaGfmMultiModule.configure {
