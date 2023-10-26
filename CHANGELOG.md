@@ -1,3 +1,11 @@
+# [2.4.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.3.2...v2.4.0) (2023-10-26)
+
+
+### Features
+
+* anoncreds receive and store ([#91](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/91)) ([5a757dd](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/5a757dd7add814bdb35901fee1e4d0f9cef3c1ad))
+* cryptographic abstraction and apollo integration ([#100](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/100)) ([0549258](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/0549258251a69eebc3f032466263575966dbad21))
+
 ## [2.3.2](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.3.1...v2.3.2) (2023-09-19)
 
 
