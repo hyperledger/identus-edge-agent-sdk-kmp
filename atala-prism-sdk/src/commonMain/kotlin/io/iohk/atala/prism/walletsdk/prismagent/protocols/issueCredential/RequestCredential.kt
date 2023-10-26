@@ -73,8 +73,7 @@ data class RequestCredential @JvmOverloads constructor(
             return RequestCredential(
                 body = Body(
                     goalCode = offer.body.goalCode,
-                    comment = offer.body.comment,
-                    formats = offer.body.formats
+                    comment = offer.body.comment
                 ),
                 attachments = offer.attachments,
                 thid = offer.thid,
@@ -87,8 +86,7 @@ data class RequestCredential @JvmOverloads constructor(
     @Serializable
     data class Body @JvmOverloads constructor(
         val goalCode: String? = null,
-        val comment: String? = null,
-        val formats: Array<CredentialFormat>
+        val comment: String? = null
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -98,7 +96,6 @@ data class RequestCredential @JvmOverloads constructor(
 
             if (goalCode != other.goalCode) return false
             if (comment != other.comment) return false
-            if (!formats.contentEquals(other.formats)) return false
 
             return true
         }
@@ -106,7 +103,6 @@ data class RequestCredential @JvmOverloads constructor(
         override fun hashCode(): Int {
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)
-            result = 31 * result + formats.contentHashCode()
             return result
         }
     }
@@ -155,9 +151,7 @@ inline fun <reified T : Serializable> RequestCredential.Companion.build(
         format to attachment
     }
     return RequestCredential(
-        body = RequestCredential.Body(
-            formats = aux.map { it.first }.toTypedArray()
-        ),
+        body = RequestCredential.Body(),
         attachments = aux.map { it.second }.toTypedArray(),
         thid = thid,
         from = fromDID,

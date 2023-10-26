@@ -17,18 +17,11 @@ constructor(
     @SerialName("schema_id")
     @EncodeDefault
     val schemaId: String? = null,
-    val attributes: Array<Attribute>
+    val body: Body
 ) {
-
-    @Serializable
-    data class Attribute(
-        val name: String,
-        val value: String,
-        @SerialName("mime_type")
-        val mimeType: String?
-    )
-
     val type: String = ProtocolType.DidcommCredentialPreview.value
+
+    constructor(schemaId: String? = null, attributes: Array<Attribute>) : this(schemaId, Body(attributes))
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -36,15 +29,36 @@ constructor(
 
         other as CredentialPreview
 
-        if (!attributes.contentEquals(other.attributes)) return false
-        if (type != other.type) return false
-
-        return true
+        return type == other.type
     }
 
     override fun hashCode(): Int {
-        var result = attributes.contentHashCode()
-        result = 31 * result + type.hashCode()
-        return result
+        return type.hashCode()
     }
+
+    @Serializable
+    data class Body(
+        val attributes: Array<Attribute>
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (other == null || this::class != other::class) return false
+
+            other as Body
+
+            return attributes.contentEquals(other.attributes)
+        }
+
+        override fun hashCode(): Int {
+            return attributes.contentHashCode()
+        }
+    }
+
+    @Serializable
+    data class Attribute(
+        val name: String,
+        val value: String,
+        @SerialName("media_type")
+        val mediaType: String?
+    )
 }

@@ -17,13 +17,13 @@ class RequestCredentialTest {
         val validRequestCredential = RequestCredential(
             body = RequestCredential.Body(
                 goalCode = "test1",
-                comment = "test1",
-                formats = arrayOf(
-                    CredentialFormat(
-                        attachId = "test1",
-                        format = "test"
-                    )
-                )
+                comment = "test1"
+//                formats = arrayOf(
+//                    CredentialFormat(
+//                        attachId = "test1",
+//                        format = "test"
+//                    )
+//                )
             ),
             attachments = arrayOf(),
             thid = "1",

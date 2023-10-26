@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.pollux
+package io.iohk.atala.prism.walletsdk.pollux.models
 
 import io.iohk.atala.prism.walletsdk.domain.models.Claim
 import io.iohk.atala.prism.walletsdk.domain.models.ClaimType

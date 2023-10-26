@@ -10,6 +10,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
+import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 
@@ -62,6 +63,8 @@ class PlutoMock : Pluto {
     lateinit var getMessageReturn: Flow<Message?>
     lateinit var getAllMediatorsReturn: Flow<List<Mediator>>
     lateinit var getAllCredentialsReturn: Flow<List<CredentialRecovery>>
+    lateinit var getLinkSecretReturn: Flow<String>
+    lateinit var getCredentialMetadataReturn: Flow<CredentialRequestMeta?>
 
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
@@ -220,5 +223,18 @@ class PlutoMock : Pluto {
 
     override fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaims>> {
         TODO("Not yet implemented")
+    }
+
+    override fun storeLinkSecret(linkSecret: String) {
+    }
+
+    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {}
+
+    override fun getLinkSecret(): Flow<String> {
+        return getLinkSecretReturn
+    }
+
+    override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {
+        return getCredentialMetadataReturn
     }
 }

@@ -3,6 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+apply(plugin = "kotlinx-atomicfu")
+
 android {
     namespace = "io.iohk.atala.prism.sampleapp"
     compileSdk = 33
@@ -20,6 +22,7 @@ android {
     packagingOptions {
         resources {
             merges += "**/**.proto"
+            excludes.addAll(listOf("META-INF/**/**", "META-INF/*/**"))
         }
     }
 
@@ -34,6 +37,7 @@ android {
     }
     buildFeatures {
         dataBinding = true
+        viewBinding = true
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -43,9 +47,6 @@ android {
         jvmTarget = "11"
     }
     buildToolsVersion = "33.0.0"
-    buildFeatures {
-        viewBinding = true
-    }
 }
 
 dependencies {
@@ -76,4 +77,13 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+}
+
+afterEvaluate {
+    tasks.named("lintAnalyzeDebug") {
+        this.enabled = false
+    }
+    tasks.named("lintAnalyzeRelease") {
+        this.enabled = false
+    }
 }

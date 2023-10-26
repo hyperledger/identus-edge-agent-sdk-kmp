@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.pollux
+package io.iohk.atala.prism.walletsdk.pollux.models
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement

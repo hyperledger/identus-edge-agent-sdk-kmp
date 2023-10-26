@@ -24,7 +24,7 @@ on:
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
@@ -47,7 +47,10 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: "zulu"
+          distribution: "adopt"
+
+      - name: Runner
+        run: echo ${{ runner.os }}
 
       - name: Build for JS, Android, JVM
         run: |
@@ -61,17 +64,30 @@ jobs:
           title: Code Coverage
           update-comment: true
 
+#      - name: Publish test results
+#        if: always()
+#        uses: EnricoMi/publish-unit-test-result-action@v2
+#        with:
+#          files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
+#          comment_title: "Unit Test Results"
+#          check_name: "Unit Test Results"
+
       - name: Publish test results
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
           files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
           comment_title: "Unit Test Results"
           check_name: "Unit Test Results"
 
-      - name: Publish coverage report
+      - name: Upload Tests Reports
         uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: kover-html
-          path: atala-prism-sdk/build/kover/atala-prism-sdk/xml
+          path: |
+            atala-prism-sdk/build/kover/atala-prism-sdk/xml
+            atala-prism-sdk/build/reports/tests/**/*.html
+            atala-prism-sdk/build/reports/tests/jvmTest/index.html
+
           if-no-files-found: error

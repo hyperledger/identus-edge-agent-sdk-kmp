@@ -5,9 +5,9 @@ import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommSecretsResolver
 import io.iohk.atala.prism.walletsdk.prismagent.ApolloMock
 import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
-import kotlin.test.BeforeTest
-import kotlin.test.Ignore
-import kotlin.test.Test
+import org.junit.Before
+import org.junit.Ignore
+import org.junit.Test
 import kotlin.test.assertContains
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
@@ -18,7 +18,7 @@ class SecretsResolverTests {
     lateinit var apolloMock: ApolloMock
     lateinit var sut: DIDCommSecretsResolver
 
-    @BeforeTest
+    @Before
     fun setup() {
         plutoMock = PlutoMock()
         apolloMock = ApolloMock()
