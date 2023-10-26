@@ -37,6 +37,7 @@ on:
       - main
 
 env:
+  JAVA_VERSION: 11
   ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
   ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
   GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
@@ -56,6 +57,12 @@ jobs:
     steps:
       - name: Mask apikey
         run: echo "::add-mask::${{env.APIKEY}}"
+
+      - name: Install Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: "adopt"
 
       - name: Checkout Code
         uses: actions/checkout@v3
