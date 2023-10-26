@@ -49,6 +49,9 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "adopt"
 
+      - name: Runner
+        run: echo ${{ runner.os }}
+
       - name: Build for JS, Android, JVM
         run: |
           ./gradlew build test koverXmlReport koverHtmlReport
@@ -62,16 +65,29 @@ jobs:
           update-comment: true
 
       - name: Publish test results
-        if: always()
+        if: always() && runner.os == 'Linux'
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
+          comment_title: "Unit Test Results"
+          check_name: "Unit Test Results"
+
+      - name: Publish test results
+        if: always() && runner.os == 'macOS'
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
           files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
           comment_title: "Unit Test Results"
           check_name: "Unit Test Results"
 
-      - name: Publish coverage report
+      - name: Upload Tests Reports
         uses: actions/upload-artifact@v3
+        if: always()
         with:
           name: kover-html
-          path: atala-prism-sdk/build/kover/atala-prism-sdk/xml
+          path: |
+            atala-prism-sdk/build/kover/atala-prism-sdk/xml
+            atala-prism-sdk/build/reports/tests/**/*.html
+            atala-prism-sdk/build/reports/tests/jvmTest/index.html
+
           if-no-files-found: error
