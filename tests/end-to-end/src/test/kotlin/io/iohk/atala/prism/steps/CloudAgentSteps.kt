@@ -39,6 +39,11 @@ class CloudAgentSteps {
         cloudAgentWorkflow.offerCredential(cloudAgent)
     }
 
+    @When("{actor} offers an anonymous credential")
+    fun `Cloud Agent offers an anonymous credential`(cloudAgent: Actor) {
+        cloudAgentWorkflow.offerAnonymousCredential(cloudAgent)
+    }
+
     @When("{actor} should see the credential was accepted")
     fun `Cloud Agent should see the credential was accepted`(cloudAgent: Actor) {
         val recordId = cloudAgent.recall<String>("recordId")
