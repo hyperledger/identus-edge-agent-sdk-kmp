@@ -103,8 +103,4 @@ class EdgeAgentWorkflow {
             }
         )
     }
-
-    fun retrieveCredential() {
-
-    }
 }
