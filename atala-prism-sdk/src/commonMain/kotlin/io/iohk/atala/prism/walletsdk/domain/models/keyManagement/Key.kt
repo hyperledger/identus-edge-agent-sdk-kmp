@@ -39,7 +39,11 @@ abstract class Key {
     }
 
     fun isExportable(): Boolean {
-        return this is StorableKey
+        return this is ExportableKey
+    }
+
+    fun isImportable(): Boolean {
+        return this is ImportableKey
     }
 
     fun isSignable(): Boolean {
