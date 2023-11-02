@@ -3,13 +3,14 @@ package io.iohk.atala.prism.walletsdk.domain.buildingblocks
 import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyRestoration
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import kotlin.jvm.Throws
 
 /**
  * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
  */
-interface Apollo {
+interface Apollo : KeyRestoration {
 
     /**
      * Creates a random set of mnemonic phrases that can be used as a seed for generating
