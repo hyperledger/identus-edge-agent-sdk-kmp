@@ -39,6 +39,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
@@ -315,7 +316,7 @@ class PrismAgent {
             did = did,
             keyPathIndex = keyPathIndex,
             alias = alias,
-            listOf(privateKey)
+            listOf(privateKey as StorableKey)
         )
     }
 
@@ -403,10 +404,10 @@ class PrismAgent {
 
         verificationMethods.values.forEach {
             if (it.type.contains("X25519")) {
-                pluto.storePrivateKeys(keyAgreementKeyPair.privateKey, did, 0, it.id.toString())
+                pluto.storePrivateKeys(keyAgreementKeyPair.privateKey as StorableKey, did, 0, it.id.toString())
             } else if (it.type.contains("Ed25519")) {
                 pluto.storePrivateKeys(
-                    authenticationKeyPair.privateKey,
+                    authenticationKeyPair.privateKey as StorableKey,
                     did,
                     0,
                     it.id.toString()

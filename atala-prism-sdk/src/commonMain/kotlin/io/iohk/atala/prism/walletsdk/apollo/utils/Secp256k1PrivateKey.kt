@@ -6,14 +6,16 @@ import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurveKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurvePointXKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurvePointYKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.ExportableKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.JWK
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PEMKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.SignableKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 
-class Secp256k1PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey {
+class Secp256k1PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey, StorableKey, ExportableKey {
     override val type: KeyTypes = KeyTypes.EC
     override val keySpecification: MutableMap<String, String> = mutableMapOf()
     override val size: Int
@@ -57,4 +59,9 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey {
             y = getProperty(CurvePointYKey().property).base64UrlEncoded
         )
     }
+
+    override val storableData: ByteArray
+        get() = raw
+    override val restorationIdentifier: String
+        get() = "secp256k1+priv"
 }

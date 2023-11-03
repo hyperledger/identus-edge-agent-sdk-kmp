@@ -10,7 +10,6 @@ import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
@@ -20,7 +19,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
-import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.getKeyCurveByNameAndIndex
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
@@ -73,7 +72,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         did: DID,
         keyPathIndex: Int,
         alias: String?,
-        privateKeys: List<PrivateKey>
+        privateKeys: List<StorableKey>
     ) {
         getInstance().dIDQueries.insert(
             DIDDB(
@@ -128,7 +127,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     }
 
     override fun storePrivateKeys(
-        privateKey: PrivateKey,
+        storableKey: StorableKey,
         did: DID,
         keyPathIndex: Int,
         metaId: String?
@@ -139,8 +138,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 getInstance().privateKeyQueries.insert(
                     PrivateKeyDB(
                         metaId,
-                        privateKey.getCurve(),
-                        privateKey.getValue().base64UrlEncoded,
+                        storableKey.restorationIdentifier,
+                        storableKey.storableData.base64UrlEncoded,
                         keyPathIndex,
                         did.toString()
                     )
@@ -152,8 +151,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             getInstance().privateKeyQueries.insert(
                 PrivateKeyDB(
                     UUID.randomUUID4().toString(),
-                    privateKey.getCurve(),
-                    privateKey.getValue().base64UrlEncoded,
+                    storableKey.restorationIdentifier,
+                    storableKey.storableData.base64UrlEncoded,
                     keyPathIndex,
                     did.toString()
                 )
@@ -278,27 +277,23 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             .asFlow()
             .map {
                 it.executeAsList()
-                    .map { didInfo ->
-                        try {
-                            val keyCurve = getKeyCurveByNameAndIndex(
-                                didInfo.curve,
-                                didInfo.keyPathIndex
-                            )
-                            when (keyCurve.curve) {
-                                Curve.SECP256K1 -> {
-                                    Secp256k1PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
-                                }
-
-                                Curve.ED25519 -> {
-                                    Ed25519PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
-                                }
-
-                                Curve.X25519 -> {
-                                    X25519PrivateKey(didInfo.privateKey.base64UrlDecodedBytes)
-                                }
+                    .map { storableKey ->
+                        when (storableKey.restorationIdentifier) {
+                            "secp256k1+priv" -> {
+                                Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
                             }
-                        } catch (e: IllegalStateException) {
-                            null
+
+                            "ed25519+priv" -> {
+                                Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                            }
+
+                            "x25519+priv" -> {
+                                X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                            }
+
+                            else -> {
+                                throw PlutoError.InvalidRestorationIdentifier()
+                            }
                         }
                     }
             }
@@ -309,22 +304,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             .fetchPrivateKeyByID(id)
             .asFlow()
             .map { it ->
-                it.executeAsList().firstOrNull()?.let {
-                    val keyCurve = getKeyCurveByNameAndIndex(
-                        it.curve,
-                        it.keyPathIndex
-                    )
-                    when (keyCurve.curve) {
-                        Curve.SECP256K1 -> {
-                            Secp256k1PrivateKey(it.privateKey.base64UrlDecodedBytes)
+                it.executeAsList().firstOrNull()?.let { storableKey ->
+                    when (storableKey.restorationIdentifier) {
+                        "secp256k1+priv" -> {
+                            Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
                         }
 
-                        Curve.ED25519 -> {
-                            Ed25519PrivateKey(it.privateKey.base64UrlDecodedBytes)
+                        "ed25519+priv" -> {
+                            Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
                         }
 
-                        Curve.X25519 -> {
-                            X25519PrivateKey(it.privateKey.base64UrlDecodedBytes)
+                        "x25519+priv" -> {
+                            X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                        }
+
+                        else -> {
+                            throw PlutoError.InvalidRestorationIdentifier()
                         }
                     }
                 }
@@ -358,22 +353,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 allDIDs.executeAsList()
                     .groupBy { allPeerDid -> allPeerDid.did }
                     .map {
-                        val privateKeyList = it.value.mapNotNull { data ->
-                            val keyCurve = getKeyCurveByNameAndIndex(
-                                data.curve,
-                                data.keyPathIndex
-                            )
-                            when (keyCurve.curve) {
-                                Curve.SECP256K1 -> {
-                                    Secp256k1PrivateKey(data.privateKey.base64UrlDecodedBytes)
+                        val privateKeyList = it.value.mapNotNull { storableKey ->
+                            when (storableKey.restorationIdentifier) {
+                                "secp256k1+priv" -> {
+                                    Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
                                 }
 
-                                Curve.ED25519 -> {
-                                    Ed25519PrivateKey(data.privateKey.base64UrlDecodedBytes)
+                                "ed25519+priv" -> {
+                                    Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
                                 }
 
-                                Curve.X25519 -> {
-                                    X25519PrivateKey(data.privateKey.base64UrlDecodedBytes)
+                                "x25519+priv" -> {
+                                    X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                                }
+
+                                else -> {
+                                    throw PlutoError.InvalidRestorationIdentifier()
                                 }
                             }
                         }.toTypedArray()

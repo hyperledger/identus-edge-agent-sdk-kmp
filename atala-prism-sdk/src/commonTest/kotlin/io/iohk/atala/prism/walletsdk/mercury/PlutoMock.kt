@@ -11,6 +11,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
 import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
@@ -32,7 +33,7 @@ class PlutoMock : Pluto {
         did: DID,
         keyPathIndex: Int,
         alias: String?,
-        privateKeys: List<PrivateKey>
+        privateKeys: List<StorableKey>
     ) {
         TODO("Not yet implemented")
     }
@@ -53,7 +54,7 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(privateKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
         TODO("Not yet implemented")
     }
 

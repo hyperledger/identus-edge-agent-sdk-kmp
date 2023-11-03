@@ -3,12 +3,14 @@ package io.iohk.atala.prism.walletsdk.apollo.utils
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurveKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.ExportableKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.JWK
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PEMKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 
-class X25519PublicKey(nativeValue: ByteArray) : PublicKey() {
+class X25519PublicKey(nativeValue: ByteArray) : PublicKey(), ExportableKey, StorableKey {
     override val type: KeyTypes = KeyTypes.EC
     override val keySpecification: MutableMap<String, String> = mutableMapOf()
     override val size: Int
@@ -42,4 +44,9 @@ class X25519PublicKey(nativeValue: ByteArray) : PublicKey() {
             x = raw.base64UrlEncoded
         )
     }
+
+    override val storableData: ByteArray
+        get() = raw
+    override val restorationIdentifier: String
+        get() = "x25519+pub"
 }

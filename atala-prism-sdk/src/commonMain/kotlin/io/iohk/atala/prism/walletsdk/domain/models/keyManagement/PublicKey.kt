@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.domain.models.keyManagement
 
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 
-abstract class PublicKey : Key(), ExportableKey {
+abstract class PublicKey : Key() {
 
     fun getCurve(): String {
         return this.getProperty(CurveKey().property)
