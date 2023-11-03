@@ -59,10 +59,12 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboard
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.Url
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import java.net.UnknownHostException
+import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,8 +82,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import java.net.UnknownHostException
-import java.time.Duration
 
 /* ktlint-disable import-ordering */
 
@@ -553,6 +553,7 @@ class PrismAgent {
         return when (pollux.extractCredentialFormatFromMessage(offer.attachments)) {
             CredentialType.JWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
+                println("Seed: ${seed.value.base64UrlEncoded}")
                 val keyPair = Secp256k1KeyPair.generateKeyPair(
                     seed,
                     KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
