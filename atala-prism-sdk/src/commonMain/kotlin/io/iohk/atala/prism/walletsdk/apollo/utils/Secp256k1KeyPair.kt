@@ -15,6 +15,7 @@ class Secp256k1KeyPair(override var privateKey: PrivateKey, override var publicK
             println("Seed: ${seed.value.base64UrlEncoded}")
             val path = "m/${curve.index}'/0'/0'"
             val hdKey = HDKey(seed.value, 0, 0)
+            println("HDKey private key size: ${hdKey.privateKey?.size}")
             println("Derive path: $path")
             val derivedHdKey = hdKey.derive(path)
             return Secp256k1KeyPair(
