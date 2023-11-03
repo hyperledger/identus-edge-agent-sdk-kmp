@@ -553,7 +553,7 @@ class PrismAgent {
         return when (pollux.extractCredentialFormatFromMessage(offer.attachments)) {
             CredentialType.JWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
-                println("Seed: ${seed.value.base64UrlEncoded}")
+
                 val keyPair = Secp256k1KeyPair.generateKeyPair(
                     seed,
                     KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
