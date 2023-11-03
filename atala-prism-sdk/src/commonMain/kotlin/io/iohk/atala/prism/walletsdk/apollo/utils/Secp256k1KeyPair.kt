@@ -11,6 +11,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 class Secp256k1KeyPair(override var privateKey: PrivateKey, override var publicKey: PublicKey) : KeyPair() {
     companion object {
         fun generateKeyPair(seed: Seed, curve: KeyCurve): Secp256k1KeyPair {
+            println("Seed size: ${seed.value.size}")
             println("Seed: ${seed.value.base64UrlEncoded}")
             val path = "m/${curve.index}'/0'/0'"
             val hdKey = HDKey(seed.value, 0, 0)
