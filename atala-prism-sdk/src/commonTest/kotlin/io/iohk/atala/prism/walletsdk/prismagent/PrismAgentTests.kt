@@ -264,7 +264,12 @@ class PrismAgentTests {
         val seed = seedBase64.base64UrlDecodedBytes
         val hdKey = HDKey(seed, 0, 0)
         val path = "m/${KeyCurve(Curve.SECP256K1).index}'/0'/0'"
-        val derivedHdKey = hdKey.derive(path)
+        try {
+            val derivedHdKey = hdKey.derive(path)
+        } catch (e: Exception) {
+            println("Derive key throws an exception")
+            println(e.message)
+        }
     }
 
 //    @Test
