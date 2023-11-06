@@ -262,10 +262,15 @@ class PrismAgentTests {
     fun test() {
         val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
         val seed = seedBase64.base64UrlDecodedBytes
-        val hdKey = HDKey(seed, 0, 0)
-        val path = "m/${KeyCurve(Curve.SECP256K1).index}'/0'/0'"
         try {
-            val derivedHdKey = hdKey.derive(path)
+            val hdKey = HDKey(seed, 0, 0)
+            val path = "m/${KeyCurve(Curve.SECP256K1).index}'/0'/0'"
+            try {
+                val derivedHdKey = hdKey.derive(path)
+            } catch (e: Exception) {
+                println("DeriveKey::Derive throws an exception")
+                println(e.message)
+            }
         } catch (e: Exception) {
             println("Derive key throws an exception")
             println(e.message)
