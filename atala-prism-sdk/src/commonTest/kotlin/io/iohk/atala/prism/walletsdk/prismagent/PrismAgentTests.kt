@@ -11,10 +11,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.ClaimType
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
-import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
@@ -262,19 +260,9 @@ class PrismAgentTests {
     fun testHDKey() {
         val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
         val seed = seedBase64.base64UrlDecodedBytes
-        try {
-            val hdKey = HDKey(seed, 0, 0)
-            val path = "m/${KeyCurve(Curve.SECP256K1).index}'/0'/0'"
-            try {
-                val derivedHdKey = hdKey.derive(path)
-            } catch (e: Exception) {
-                println("DeriveKey::Derive throws an exception")
-                println(e.message)
-            }
-        } catch (e: Exception) {
-            println("Derive key throws an exception")
-            println(e.message)
-        }
+        val hdKey = HDKey(seed, 0, 0)
+//        val path = "m/${KeyCurve(Curve.SECP256K1).index}'/0'/0'"
+//        val derivedHdKey = hdKey.derive(path)
     }
 
 //    @Test
