@@ -5,7 +5,6 @@ import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.derivation.HDKey
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
-import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
 import io.iohk.atala.prism.walletsdk.domain.models.Api
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
@@ -16,8 +15,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
-import io.iohk.atala.prism.walletsdk.domain.models.Seed
-import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
@@ -33,7 +30,6 @@ import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import org.junit.Ignore
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -72,36 +68,35 @@ class PrismAgentTests {
         }
     }
 
-    @Ignore("Debug HDKey::Derive error")
-    @Test
-    fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
-        val seedByteArray = seedBase64.base64UrlDecodedBytes
-        val seed = Seed(seedByteArray)
-        val validDID = DID("did", "test", "123")
-        castorMock.createPrismDIDReturn = validDID
-        val agent = PrismAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
-            seed = seed,
-            api = null,
-            logger = PrismLoggerMock()
-        )
-        plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
-        try {
-            val newDID = agent.createNewPrismDID()
-            assertEquals(newDID, validDID)
-            assertEquals(newDID, plutoMock.storedPrismDID.first())
-            assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
-            assertTrue { plutoMock.wasStorePrismDIDAndPrivateKeysCalled }
-        } catch (e: Exception) {
-            throw Exception("StackOverflow: ${e.message}")
-        }
-    }
+//    @Test
+//    fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
+//        val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
+//        val seedByteArray = seedBase64.base64UrlDecodedBytes
+//        val seed = Seed(seedByteArray)
+//        val validDID = DID("did", "test", "123")
+//        castorMock.createPrismDIDReturn = validDID
+//        val agent = PrismAgent(
+//            apollo = apolloMock,
+//            castor = castorMock,
+//            pluto = plutoMock,
+//            mercury = mercuryMock,
+//            pollux = polluxMock,
+//            connectionManager = connectionManager,
+//            seed = seed,
+//            api = null,
+//            logger = PrismLoggerMock()
+//        )
+//        plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
+//        try {
+//            val newDID = agent.createNewPrismDID()
+//            assertEquals(newDID, validDID)
+//            assertEquals(newDID, plutoMock.storedPrismDID.first())
+//            assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
+//            assertTrue { plutoMock.wasStorePrismDIDAndPrivateKeysCalled }
+//        } catch (e: Exception) {
+//            throw Exception("StackOverflow: ${e.message}")
+//        }
+//    }
 
     @Test
     fun testCreateNewPeerDID_shouldCreateNewDID_whenCalled() = runTest {
@@ -272,41 +267,40 @@ class PrismAgentTests {
         val derivedHdKey = hdKey.derive(path)
     }
 
-    @Ignore("Debug HDKey::Derive error")
-    @Test
-    fun testPrismAgentSignWith_whenPrivateKeyAvailable_thenSignatureReturned() = runTest {
-        val agent = PrismAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
-            seed = null,
-            api = null,
-            logger = PrismLoggerMock()
-        )
-        val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
-        val seed = seedBase64.base64UrlDecodedBytes
-
-        try {
-            val privateKeys = listOf(
-                Secp256k1KeyPair.generateKeyPair(
-                    seed = Seed(seed),
-                    curve = KeyCurve(Curve.SECP256K1)
-                ).privateKey
-            )
-            plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
-
-            val did = DID("did", "peer", "asdf1234asdf1234")
-            val messageString = "This is a message"
-
-            assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
-            assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
-        } catch (e: Exception) {
-            throw Exception("StackOverflow: ${e.message}")
-        }
-    }
+//    @Test
+//    fun testPrismAgentSignWith_whenPrivateKeyAvailable_thenSignatureReturned() = runTest {
+//        val agent = PrismAgent(
+//            apollo = apolloMock,
+//            castor = castorMock,
+//            pluto = plutoMock,
+//            mercury = mercuryMock,
+//            pollux = polluxMock,
+//            connectionManager = connectionManager,
+//            seed = null,
+//            api = null,
+//            logger = PrismLoggerMock()
+//        )
+//        val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
+//        val seed = seedBase64.base64UrlDecodedBytes
+//
+//        try {
+//            val privateKeys = listOf(
+//                Secp256k1KeyPair.generateKeyPair(
+//                    seed = Seed(seed),
+//                    curve = KeyCurve(Curve.SECP256K1)
+//                ).privateKey
+//            )
+//            plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
+//
+//            val did = DID("did", "peer", "asdf1234asdf1234")
+//            val messageString = "This is a message"
+//
+//            assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
+//            assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
+//        } catch (e: Exception) {
+//            throw Exception("StackOverflow: ${e.message}")
+//        }
+//    }
 
     @Test
     fun testParseInvitation_whenOutOfBand_thenReturnsOutOfBandInvitationObject() = runTest {
