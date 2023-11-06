@@ -291,10 +291,14 @@ class PrismAgent {
         services: Array<DIDDocument.Service> = emptyArray()
     ): DID {
         val index = keyPathIndex ?: (pluto.getPrismLastKeyPathIndex().first() + 1)
-        val keyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, index))
-        val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
-        registerPrismDID(did, index, alias, keyPair.privateKey)
-        return did
+        try {
+            val keyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, index))
+            val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
+            registerPrismDID(did, index, alias, keyPair.privateKey)
+            return did
+        } catch (e: Exception) {
+            throw Exception("StackOverflow: ${e.message}")
+        }
     }
 
     /**

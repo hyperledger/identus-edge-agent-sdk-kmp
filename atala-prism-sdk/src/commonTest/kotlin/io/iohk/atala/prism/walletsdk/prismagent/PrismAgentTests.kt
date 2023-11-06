@@ -89,11 +89,15 @@ class PrismAgentTests {
             logger = PrismLoggerMock()
         )
         plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
-        val newDID = agent.createNewPrismDID()
-        assertEquals(newDID, validDID)
-        assertEquals(newDID, plutoMock.storedPrismDID.first())
-        assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
-        assertTrue { plutoMock.wasStorePrismDIDAndPrivateKeysCalled }
+        try {
+            val newDID = agent.createNewPrismDID()
+            assertEquals(newDID, validDID)
+            assertEquals(newDID, plutoMock.storedPrismDID.first())
+            assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
+            assertTrue { plutoMock.wasStorePrismDIDAndPrivateKeysCalled }
+        } catch (e: Exception) {
+            throw Exception("StackOverflow: ${e.message}")
+        }
     }
 
     @Test
@@ -272,19 +276,23 @@ class PrismAgentTests {
         val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
         val seed = seedBase64.base64UrlDecodedBytes
 
-        val privateKeys = listOf(
-            Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(seed),
-                curve = KeyCurve(Curve.SECP256K1)
-            ).privateKey
-        )
-        plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
+        try {
+            val privateKeys = listOf(
+                Secp256k1KeyPair.generateKeyPair(
+                    seed = Seed(seed),
+                    curve = KeyCurve(Curve.SECP256K1)
+                ).privateKey
+            )
+            plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
 
-        val did = DID("did", "peer", "asdf1234asdf1234")
-        val messageString = "This is a message"
+            val did = DID("did", "peer", "asdf1234asdf1234")
+            val messageString = "This is a message"
 
-        assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
-        assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
+            assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
+            assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
+        } catch (e: Exception) {
+            throw Exception("StackOverflow: ${e.message}")
+        }
     }
 
     @Test
