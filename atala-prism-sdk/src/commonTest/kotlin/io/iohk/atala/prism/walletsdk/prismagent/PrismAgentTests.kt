@@ -259,7 +259,7 @@ class PrismAgentTests {
     }
 
     @Test
-    fun test() {
+    fun testHDKey() {
         val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
         val seed = seedBase64.base64UrlDecodedBytes
         try {
