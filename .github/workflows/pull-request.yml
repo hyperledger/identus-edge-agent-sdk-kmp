@@ -33,7 +33,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: "azul"
+          distribution: "zulu"
 
       - name: Gradle Build Action
         uses: gradle/gradle-build-action@v2
