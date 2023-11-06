@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.apollo
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.utils.ECConfig
 import io.iohk.atala.prism.apollo.utils.Mnemonic
@@ -168,13 +167,5 @@ class ApolloTests {
         var signature = (keyPair.privateKey as Ed25519PrivateKey).sign(message.toByteArray())
         signature[0] = 1
         assertFalse((keyPair.publicKey as Ed25519PublicKey).verify(message.toByteArray(), signature))
-    }
-
-    @Test
-    fun testSecp256k1_whenApolloDeriveKey_then() {
-        val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
-        val seed = seedBase64.base64UrlDecodedBytes
-
-        keyPair = Secp256k1KeyPair.generateKeyPair(Seed(seed), KeyCurve(Curve.SECP256K1))
     }
 }

@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.utils.Mnemonic
+import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
@@ -72,7 +72,9 @@ class PrismAgentTests {
 
     @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val seed = Seed(Mnemonic.createRandomSeed())
+        val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
+        val seedByteArray = seedBase64.base64UrlDecodedBytes
+        val seed = Seed(seedByteArray)
         val validDID = DID("did", "test", "123")
         castorMock.createPrismDIDReturn = validDID
         val agent = PrismAgent(
@@ -267,10 +269,12 @@ class PrismAgentTests {
             api = null,
             logger = PrismLoggerMock()
         )
+        val seedBase64 = "FJsDqiu6AIamix8TYsGmE2aDU6zo80NyXiQkuFQnfJ0pSQ8wxr0KfTJLJ9CKrmK9qf25VIv6iXNZM1SRgTlYUQ"
+        val seed = seedBase64.base64UrlDecodedBytes
 
         val privateKeys = listOf(
             Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(Mnemonic.createRandomSeed()),
+                seed = Seed(seed),
                 curve = KeyCurve(Curve.SECP256K1)
             ).privateKey
         )
