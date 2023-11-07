@@ -77,7 +77,9 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
                 implementation("io.ktor:ktor-client-logging:2.3.4")
 
-                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
+                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion") {
+                    exclude("io.iohk.atala.prism.apollo")
+                }
 
                 implementation("io.iohk.atala.prism:apollo:$apolloVersion")
 
