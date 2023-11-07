@@ -79,8 +79,7 @@ kotlin {
 
                 implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
-                implementation("io.iohk.atala.prism.apollo:apollo:$apolloVersion")
-                implementation("io.iohk.atala.prism.apollo:uuid:$apolloVersion")
+                implementation("io.iohk.atala.prism:apollo:$apolloVersion")
 
                 // implementation("com.nimbusds:nimbus-jose-jwt:9.31") // We are going to use the `nimbus-jose-jwt` that resides in `didcomm` lib
 
