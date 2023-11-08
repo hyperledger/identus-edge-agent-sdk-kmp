@@ -80,6 +80,10 @@ class Sdk() {
         }
     }
 
+    suspend fun updateMediatorDID(mediatorDID: String) {
+        agent?.setupMediatorDID(DID(mediatorDID))
+    }
+
     fun stopAgent() {
         agent?.let {
             it.stopFetchingMessages()
