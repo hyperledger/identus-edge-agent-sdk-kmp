@@ -8,10 +8,11 @@ import kotlinx.coroutines.launch
 
 class AgentViewModel(application: Application) : AndroidViewModel(application) {
 
-    fun startAgent() {
+    fun startAgent(mediatorDID: String) {
         val sdk = Sdk.getInstance(getApplication<Application>())
         viewModelScope.launch {
             sdk.startAgent()
+            sdk.updateMediatorDID(mediatorDID)
         }
     }
 }
