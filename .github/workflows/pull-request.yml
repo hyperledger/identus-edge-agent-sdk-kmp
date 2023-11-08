@@ -43,7 +43,7 @@ jobs:
 
       - name: Build for JS, Android, JVM
         run: |
-          ./gradlew build test koverXmlReport koverHtmlReport
+          ./gradlew build test koverXmlReport koverHtmlReport --stacktrace
 
       - name: Coverage Report
         uses: mi-kas/kover-report@v1
