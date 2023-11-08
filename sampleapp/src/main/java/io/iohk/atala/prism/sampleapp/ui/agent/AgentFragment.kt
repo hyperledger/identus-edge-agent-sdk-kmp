@@ -32,7 +32,8 @@ class AgentFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.startAgent.setOnClickListener {
-            viewModel.startAgent()
+            val mediatorDID = binding.mediatorDid.text.toString()
+            viewModel.startAgent(mediatorDID)
         }
     }
 
