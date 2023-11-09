@@ -77,13 +77,11 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
                 implementation("io.ktor:ktor-client-logging:2.3.4")
 
-                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
+                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion") {
+                    exclude("io.iohk.atala.prism.apollo")
+                }
 
-                implementation("io.iohk.atala.prism.apollo:base-asymmetric-encryption:$apolloVersion")
-                implementation("io.iohk.atala.prism.apollo:base64:$apolloVersion")
-                implementation("io.iohk.atala.prism.apollo:hashing:$apolloVersion")
-                implementation("io.iohk.atala.prism.apollo:uuid:$apolloVersion")
-                implementation("io.iohk.atala.prism.apollo:multibase:$apolloVersion")
+                implementation("io.iohk.atala.prism.apollo:apollo:$apolloVersion")
 
                 // implementation("com.nimbusds:nimbus-jose-jwt:9.31") // We are going to use the `nimbus-jose-jwt` that resides in `didcomm` lib
 

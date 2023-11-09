@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.utils.Mnemonic
+import io.iohk.atala.prism.apollo.derivation.Mnemonic
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl

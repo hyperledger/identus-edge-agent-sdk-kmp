@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.walletsdk.apollo
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.apollo.derivation.Mnemonic
+import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.apollo.utils.ECConfig
-import io.iohk.atala.prism.apollo.utils.Mnemonic
 import io.iohk.atala.prism.walletsdk.apollo.derivation.bip39Vectors
 import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
@@ -70,7 +71,7 @@ class ApolloTests {
     @Test
     fun testFailWhenInvalidWordIsUsed() {
         val mnemonicCode = arrayOf("hocus", "pocus", "mnemo", "codus") + Array(24) { "abandon" }
-        assertFailsWith<Mnemonic.Companion.InvalidMnemonicCode> {
+        assertFailsWith<MnemonicHelper.Companion.InvalidMnemonicCode> {
             apollo.createSeed(mnemonicCode, "")
         }
     }
@@ -113,7 +114,7 @@ class ApolloTests {
 
     @Test
     fun testCreateKeyPair_whenUsingSeedAndMnemonics_thenKeyPairIsCorrect() {
-        val mnemonics = arrayOf(
+        val mnemonics = listOf(
             "blade",
             "multiply",
             "coil",
