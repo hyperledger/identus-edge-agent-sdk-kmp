@@ -52,7 +52,7 @@ env:
 jobs:
   run-e2e-tests:
     name: "Run"
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Mask apikey
