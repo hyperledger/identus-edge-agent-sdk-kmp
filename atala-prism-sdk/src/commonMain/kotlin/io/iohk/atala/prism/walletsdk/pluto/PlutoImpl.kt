@@ -353,18 +353,19 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 allDIDs.executeAsList()
                     .groupBy { allPeerDid -> allPeerDid.did }
                     .map {
-                        val privateKeyList = it.value.mapNotNull { storableKey ->
-                            when (storableKey.restorationIdentifier) {
+                        println("Restoration ID: ${it.value.get(0).restorationIdentifier}")
+                        val privateKeyList: Array<PrivateKey> = it.value.mapNotNull { allPeerDID ->
+                            when (allPeerDID.restorationIdentifier) {
                                 "secp256k1+priv" -> {
-                                    Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                                    Secp256k1PrivateKey(allPeerDID.data_.base64UrlDecodedBytes)
                                 }
 
                                 "ed25519+priv" -> {
-                                    Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                                    Ed25519PrivateKey(allPeerDID.data_.base64UrlDecodedBytes)
                                 }
 
                                 "x25519+priv" -> {
-                                    X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                                    X25519PrivateKey(allPeerDID.data_.base64UrlDecodedBytes)
                                 }
 
                                 else -> {
