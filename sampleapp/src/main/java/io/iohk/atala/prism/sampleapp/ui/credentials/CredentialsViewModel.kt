@@ -16,7 +16,7 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
 
     init {
         viewModelScope.launch {
-            Sdk.getInstance(application).agent?.let {
+            Sdk.getInstance().agent.let {
                 it.getAllCredentials().collect { list ->
                     credentials.postValue(list)
                 }

@@ -1,13 +1,11 @@
 package io.iohk.atala.prism.sampleapp
 
-import android.content.Context
+import android.app.Application
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.*
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
@@ -23,112 +21,75 @@ import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.subscribe
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.net.UnknownHostException
 
-class Sdk() {
+class Sdk {
+    private val apollo: Apollo = createApollo()
+    private val castor: Castor = createCastor()
+    private var pollux: Pollux = createPollux()
+    private val seed: Seed = createSeed()
+    private val agentStatusStream: MutableLiveData<PrismAgent.State> = MutableLiveData()
 
-    private var apollo: Apollo? = null
-        get() {
-            return field ?: throw IllegalStateException("You haven't started the agent")
-        }
+    val pluto: Pluto = createPluto()
+    val mercury: Mercury = createMercury()
 
-    private var castor: Castor? = null
-        get() {
-            return field ?: throw IllegalStateException("You haven't started the agent")
-        }
-
-    var pluto: Pluto? = null
-        get() {
-            return field ?: throw IllegalStateException("You haven't started the agent")
-        }
-
-    var mercury: Mercury? = null
-        get() {
-            return field ?: throw IllegalStateException("You haven't started the agent")
-        }
-
-    var handler: MediationHandler? = null
-        private set
-        get() {
-            return field ?: throw IllegalStateException("You haven't started the agent")
-        }
-
-    private var seed: Seed? = null
-        private set
-        get() {
-            return field ?: throw IllegalStateException("You haven't started the agent")
-        }
-
-    private var pollux: Pollux? = null
-        private set
-        get() {
-            return field ?: throw IllegalStateException("You haven't started the agent")
-        }
-
-    var agent: PrismAgent? = null
-        private set
-        get() {
-            return field
-        }
+    lateinit var handler: MediationHandler
+    lateinit var agent: PrismAgent
 
     @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
-    suspend fun startAgent() {
-        agent?.let {
-            it.start()
-            it.startFetchingMessages()
-        }
-    }
+    suspend fun startAgent(mediatorDID: String, context: Application) {
+        handler = createHandler(mediatorDID)
+        agent = createAgent(handler)
 
-    suspend fun updateMediatorDID(mediatorDID: String) {
-        agent?.setupMediatorDID(DID(mediatorDID))
+        CoroutineScope(Dispatchers.Default).launch {
+            agent.flowState.collect {
+                agentStatusStream.postValue(it)
+            }
+        }
+
+        (pluto as PlutoImpl).start(context)
+        agent.start()
+        agent.startFetchingMessages()
+
+        agentStatusStream.postValue(PrismAgent.State.RUNNING)
     }
 
     fun stopAgent() {
-        agent?.let {
+        agent.let {
             it.stopFetchingMessages()
             it.stop()
         }
     }
 
-    private suspend fun initializeComponents(context: Context) {
-        initializeApollo()
-        initializePluto(context)
-        initializeCastor()
-        initializePollux()
-        initializeMercury()
-        initializeSeed()
-        initializeHandler()
-        initializeAgent()
+    fun agentStatusStream(): LiveData<PrismAgent.State> {
+        return agentStatusStream
     }
 
-    private suspend fun initializePluto(context: Context) {
-        pluto = PlutoImpl(DbConnection())
-        (pluto as PlutoImpl).start(context)
+    private fun createPluto(): Pluto {
+        return PlutoImpl(DbConnection())
     }
 
-    private fun initializeApollo() {
-        apollo = ApolloImpl()
+    private fun createApollo(): Apollo {
+        return ApolloImpl()
     }
 
-    private fun initializeCastor() {
-        castor = CastorImpl(apollo!!)
+    private fun createCastor(): Castor {
+        return CastorImpl(apollo)
     }
 
-    private fun initializeMercury() {
+    private fun createMercury(): MercuryImpl {
         // This is just to make the code compile, it should be changed accordingly
-        mercury = MercuryImpl(
-            castor!!,
-            DIDCommWrapper(castor!!, pluto!!, apollo!!),
-            ApiImpl(httpClient())
-        )
+        return MercuryImpl(castor, DIDCommWrapper(castor, pluto, apollo), ApiImpl(httpClient()))
     }
 
-    private fun initializePollux() {
-        pollux = PolluxImpl(castor!!)
+    private fun createPollux(): PolluxImpl {
+        return PolluxImpl(castor)
     }
 
-    private fun initializeSeed() {
+    private fun createSeed(): Seed {
         val words = arrayOf(
             "trumpet",
             "mass",
@@ -155,43 +116,38 @@ class Sdk() {
             "admit",
             "peanut"
         )
-        seed = apollo!!.createSeed(words, "")
+        return apollo.createSeed(words, "")
     }
 
-    private fun initializeHandler() {
-        handler = BasicMediatorHandler(
-            // Roots ID
-//            mediatorDID = DID("did:peer:2.Ez6LSms555YhFthn1WV8ciDBpZm86hK9tp83WojJUmxPGk1hZ.Vz6MkmdBjMyB4TS5UbbQw54szm8yvMMf1ftGV2sQVYAxaeWhE.SeyJpZCI6Im5ldy1pZCIsInQiOiJkbSIsInMiOiJodHRwczovL21lZGlhdG9yLnJvb3RzaWQuY2xvdWQiLCJhIjpbImRpZGNvbW0vdjIiXX0"),
-            // Prism Mediator
-            mediatorDID = DID("did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cHM6Ly9zaXQtcHJpc20tbWVkaWF0b3IuYXRhbGFwcmlzbS5pbyIsInIiOltdLCJhIjpbImRpZGNvbW0vdjIiXX0"),
-            mercury = mercury!!,
-            store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto!!)
+    private fun createHandler(mediatorDID: String): MediationHandler {
+        return BasicMediatorHandler(
+            mediatorDID = DID(mediatorDID),
+            mercury = mercury,
+            store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto)
         )
     }
 
-    private fun initializeAgent() {
-        agent = PrismAgent(
-            apollo = apollo!!,
-            castor = castor!!,
-            pluto = pluto!!,
-            mercury = mercury!!,
-            pollux = pollux!!,
+    private fun createAgent(handler: MediationHandler): PrismAgent {
+        return PrismAgent(
+            apollo = apollo,
+            castor = castor,
+            pluto = pluto,
+            mercury = mercury,
+            pollux = pollux,
             seed = seed,
-            mediatorHandler = handler!!
+            mediatorHandler = handler
         )
     }
 
     companion object {
-        private var instance: Sdk? = null
+        private lateinit var instance: Sdk
 
-        fun getInstance(context: Context): Sdk {
-            if (instance == null) {
+        fun getInstance(): Sdk {
+            if (!this::instance.isInitialized) {
                 instance = Sdk()
-                CoroutineScope(Dispatchers.Default).launch {
-                    instance!!.initializeComponents(context)
-                }
             }
-            return instance!!
+            return instance
         }
+
     }
 }

@@ -28,7 +28,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
 
     init {
         viewModelScope.launch {
-            Sdk.getInstance(getApplication()).agent?.let {
+            Sdk.getInstance().agent.let {
                 it.handleReceivedMessagesEvents().collect { list ->
                     messages.postValue(list)
                     processMessages(list)
@@ -43,13 +43,13 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
 
     fun sendMessage() {
         CoroutineScope(Dispatchers.Default).launch {
-            val sdk = Sdk.getInstance(getApplication())
-            val did = sdk.agent?.createNewPeerDID(
+            val sdk = Sdk.getInstance()
+            val did = sdk.agent.createNewPeerDID(
                 arrayOf(
                     DIDDocument.Service(
                         DIDCOMM1,
                         arrayOf(DIDCOMM_MESSAGING),
-                        DIDDocument.ServiceEndpoint(sdk.handler?.mediatorDID.toString())
+                        DIDDocument.ServiceEndpoint(sdk.handler.mediatorDID.toString())
                     )
                 ),
                 true
@@ -61,16 +61,16 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 to = did,
                 body = "{\"msg\":\"This is a new test message ${time}\"}"
             )
-            sdk.mercury?.sendMessage(message)
+            sdk.mercury.sendMessage(message)
         }
     }
 
     private fun processMessages(messages: List<Message>) {
-        val sdk = Sdk.getInstance(getApplication())
+        val sdk = Sdk.getInstance()
         messages.forEach { message ->
-            sdk.agent?.let { agent ->
-                sdk.pluto?.let { pluto ->
-                    sdk.mercury?.let { mercury ->
+            sdk.agent.let { agent ->
+                sdk.pluto.let { pluto ->
+                    sdk.mercury.let { mercury ->
                         if (message.piuri == ProtocolType.DidcommOfferCredential.value) {
                             message.thid?.let {
                                 println("Processed offers: $it")
