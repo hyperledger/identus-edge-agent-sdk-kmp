@@ -9,6 +9,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
@@ -70,7 +71,7 @@ class PlutoMock : Pluto {
         did: DID,
         keyPathIndex: Int,
         alias: String?,
-        privateKeys: List<PrivateKey>
+        privateKeys: List<StorableKey>
     ) {
         storedPrismDID += did
         wasStorePrismDIDAndPrivateKeysCalled = true
@@ -93,7 +94,7 @@ class PlutoMock : Pluto {
         wasStoreMessagesCalled = true
     }
 
-    override fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(privateKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
         wasStorePrivateKeysCalled = true
     }
 
