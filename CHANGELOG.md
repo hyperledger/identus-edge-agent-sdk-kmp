@@ -1,3 +1,10 @@
+# [2.5.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.4.0...v2.5.0) (2023-11-20)
+
+
+### Features
+
+* mediator DID can be updated from sample app UI ([#106](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/106)) ([f20e1bb](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/f20e1bbe98ab6990da69d0c26e733c3a3dc1c604))
+
 # [2.4.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.3.2...v2.4.0) (2023-10-26)
 
 
