@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.apollo
 
 import io.iohk.atala.prism.apollo.derivation.HDKey
+import io.iohk.atala.prism.apollo.derivation.Mnemonic
 import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
-import io.iohk.atala.prism.apollo.utils.Mnemonic
 import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -39,7 +39,7 @@ class ApolloImpl : Apollo {
      * @return An array of mnemonic phrases.
      */
     override fun createRandomMnemonics(): Array<String> {
-        return Mnemonic.createRandomMnemonics()
+        return Mnemonic.createRandomMnemonics().toTypedArray()
     }
 
     /**
@@ -52,7 +52,7 @@ class ApolloImpl : Apollo {
      */
     @Throws(MnemonicLengthException::class)
     override fun createSeed(mnemonics: Array<String>, passphrase: String): Seed {
-        return Seed(Mnemonic.createSeed(mnemonics, passphrase))
+        return Seed(Mnemonic.createSeed(mnemonics.asList(), passphrase))
     }
 
     /**
@@ -67,7 +67,7 @@ class ApolloImpl : Apollo {
             mnemonics,
             Seed(
                 value = Mnemonic.createSeed(
-                    mnemonics = mnemonics,
+                    mnemonics = mnemonics.asList(),
                     passphrase = passphrase ?: ""
                 )
             )

@@ -24,37 +24,26 @@ on:
 jobs:
 
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v3
-
-      - name: Validate Gradle Wrapper
-        uses: gradle/wrapper-validation-action@v1
-
-      - name: Cache gradle
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ~/.konan
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
 
       - name: Install Java ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v3
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: "adopt"
+          distribution: "zulu"
+
+      - name: Gradle Build Action
+        uses: gradle/gradle-build-action@v2
 
       - name: Runner
         run: echo ${{ runner.os }}
 
       - name: Build for JS, Android, JVM
         run: |
-          ./gradlew build test koverXmlReport koverHtmlReport
+          ./gradlew build test koverXmlReport koverHtmlReport --stacktrace
 
       - name: Coverage Report
         uses: mi-kas/kover-report@v1

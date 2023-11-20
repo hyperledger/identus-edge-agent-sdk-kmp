@@ -1,8 +1,9 @@
 package io.iohk.atala.prism.walletsdk.apollo
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.apollo.derivation.Mnemonic
+import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.apollo.utils.ECConfig
-import io.iohk.atala.prism.apollo.utils.Mnemonic
 import io.iohk.atala.prism.walletsdk.apollo.derivation.bip39Vectors
 import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
@@ -12,6 +13,8 @@ import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
@@ -70,7 +73,7 @@ class ApolloTests {
     @Test
     fun testFailWhenInvalidWordIsUsed() {
         val mnemonicCode = arrayOf("hocus", "pocus", "mnemo", "codus") + Array(24) { "abandon" }
-        assertFailsWith<Mnemonic.Companion.InvalidMnemonicCode> {
+        assertFailsWith<MnemonicHelper.Companion.InvalidMnemonicCode> {
             apollo.createSeed(mnemonicCode, "")
         }
     }
@@ -91,6 +94,8 @@ class ApolloTests {
         assertEquals(signature.size <= ECConfig.SIGNATURE_MAX_BYTE_SIZE, true)
 
         assertTrue((keyPair.publicKey as Secp256k1PublicKey).verify(message.encodeToByteArray(), signature))
+        assertTrue((keyPair.publicKey as Secp256k1PublicKey).isExportable())
+        assertTrue((keyPair.privateKey as Secp256k1PrivateKey).isExportable())
     }
 
     @Test
@@ -100,6 +105,8 @@ class ApolloTests {
         val publicKey = keyPair.publicKey
         assertEquals(32, privateKey.raw.size)
         assertEquals(32, publicKey.raw.size)
+        assertTrue((keyPair.publicKey as Ed25519PublicKey).isExportable())
+        assertTrue((keyPair.privateKey as Ed25519PrivateKey).isExportable())
     }
 
     @Test
@@ -109,11 +116,13 @@ class ApolloTests {
         val publicKey = keyPair.publicKey
         assertEquals(32, privateKey.raw.size)
         assertEquals(32, publicKey.raw.size)
+        assertTrue((keyPair.publicKey as X25519PublicKey).isExportable())
+        assertTrue((keyPair.privateKey as X25519PrivateKey).isExportable())
     }
 
     @Test
     fun testCreateKeyPair_whenUsingSeedAndMnemonics_thenKeyPairIsCorrect() {
-        val mnemonics = arrayOf(
+        val mnemonics = listOf(
             "blade",
             "multiply",
             "coil",

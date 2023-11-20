@@ -39,6 +39,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.Signature
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
@@ -59,10 +60,12 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboard
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Presentation
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.Url
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
+import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import java.net.UnknownHostException
+import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,8 +83,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import java.net.UnknownHostException
-import java.time.Duration
 
 /* ktlint-disable import-ordering */
 
@@ -315,7 +316,7 @@ class PrismAgent {
             did = did,
             keyPathIndex = keyPathIndex,
             alias = alias,
-            listOf(privateKey)
+            listOf(privateKey as StorableKey)
         )
     }
 
@@ -403,10 +404,10 @@ class PrismAgent {
 
         verificationMethods.values.forEach {
             if (it.type.contains("X25519")) {
-                pluto.storePrivateKeys(keyAgreementKeyPair.privateKey, did, 0, it.id.toString())
+                pluto.storePrivateKeys(keyAgreementKeyPair.privateKey as StorableKey, did, 0, it.id.toString())
             } else if (it.type.contains("Ed25519")) {
                 pluto.storePrivateKeys(
-                    authenticationKeyPair.privateKey,
+                    authenticationKeyPair.privateKey as StorableKey,
                     did,
                     0,
                     it.id.toString()
@@ -446,6 +447,7 @@ class PrismAgent {
             store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto)
         )
         setupMediatorHandler(tmpMediatorHandler)
+        start()
     }
 
     /**
@@ -553,6 +555,7 @@ class PrismAgent {
         return when (pollux.extractCredentialFormatFromMessage(offer.attachments)) {
             CredentialType.JWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
+
                 val keyPair = Secp256k1KeyPair.generateKeyPair(
                     seed,
                     KeyCurve(Curve.SECP256K1, privateKeyKeyPath)

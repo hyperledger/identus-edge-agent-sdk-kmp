@@ -8,6 +8,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
@@ -19,7 +20,7 @@ interface Pluto {
         did: DID,
         keyPathIndex: Int,
         alias: String?,
-        privateKeys: List<PrivateKey>
+        privateKeys: List<StorableKey>
     )
 
     fun storePeerDID(did: DID)
@@ -30,7 +31,7 @@ interface Pluto {
 
     fun storeMessages(messages: List<Message>)
 
-    fun storePrivateKeys(privateKey: PrivateKey, did: DID, keyPathIndex: Int, metaId: String? = null)
+    fun storePrivateKeys(privateKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String? = null)
 
     fun storeMediator(mediator: DID, host: DID, routing: DID)
 
