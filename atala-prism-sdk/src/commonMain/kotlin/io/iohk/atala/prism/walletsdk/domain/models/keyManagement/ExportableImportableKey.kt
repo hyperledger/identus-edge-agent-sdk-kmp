@@ -1,8 +1,7 @@
 package io.iohk.atala.prism.walletsdk.domain.models.keyManagement
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import io.iohk.atala.prism.apollo.base64.base64PadEncoded
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import kotlinx.serialization.Serializable
 
 interface ExportableKey {
@@ -40,15 +39,15 @@ data class JWK(
     val k: String? = null
 )
 
-data class PEMKey(val keyType: String, val keyData: ByteArray) {
-    constructor(keyType: String, keyData: String) : this(keyType, keyData.base64UrlDecodedBytes)
+data class PEMKey(val keyType: PEMKeyType, val keyData: ByteArray) {
+    constructor(keyType: PEMKeyType, keyData: String) : this(keyType, keyData.base64UrlDecodedBytes)
 
     fun pemEncoded(): String {
-        val base64Data = keyData.base64UrlEncoded
+        val base64Data = keyData.base64PadEncoded
         val beginMarker = "-----BEGIN $keyType-----"
         val endMarker = "-----END $keyType-----"
 
-        return "$beginMarker\n$base64Data$endMarker"
+        return "$beginMarker\n$base64Data\n$endMarker"
     }
 
     companion object {
@@ -61,17 +60,29 @@ data class PEMKey(val keyType: String, val keyData: ByteArray) {
             val beginMarker = lines[0]
             val endMarker = lines[lines.size - 1]
 
-            if (!beginMarker.startsWith("-----BEGIN ") || !beginMarker.endsWith("-----") ||
-                !endMarker.startsWith("-----END ") || !endMarker.endsWith("-----")
+            if (beginMarker.startsWith("-----BEGIN ").not() || beginMarker.endsWith("-----").not() ||
+                endMarker.startsWith("-----END ").not() || endMarker.endsWith("-----").not()
             ) {
                 return null
             }
 
-            val keyType = beginMarker.substring(11, beginMarker.length - 5)
+            val keyType = PEMKeyType.fromString(beginMarker) ?: throw Exception("Unknown PEM Key type")
+
             val base64Data = lines.subList(1, lines.size - 1).joinToString("")
-            val keyData = base64Data.base64UrlDecoded
+            val keyData = base64Data.base64PadEncoded
 
             return PEMKey(keyType = keyType, keyData = keyData)
+        }
+    }
+}
+
+enum class PEMKeyType(val value: Pair<String, String>) {
+    EC_PRIVATE_KEY(Pair("-----BEGIN EC PRIVATE KEY-----", "-----END EC PRIVATE KEY-----")),
+    EC_PUBLIC_KEY(Pair("-----BEGIN EC PUBLIC KEY-----", "-----END EC PUBLIC KEY-----"));
+
+    companion object {
+        fun fromString(value: String): PEMKeyType? {
+            return values().firstOrNull { it.value.first == value || it.value.second == value }
         }
     }
 }
