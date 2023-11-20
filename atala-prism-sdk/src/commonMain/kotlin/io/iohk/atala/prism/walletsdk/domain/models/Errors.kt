@@ -416,6 +416,14 @@ sealed class PlutoError @JvmOverloads constructor(message: String? = null, cause
         override val message: String
             get() = "Database service already running."
     }
+
+    class InvalidRestorationIdentifier : PlutoError() {
+        override val code: Int
+            get() = 49
+
+        override val message: String
+            get() = "Invalid restoration identifier"
+    }
 }
 
 /**

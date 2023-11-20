@@ -1,7 +1,7 @@
 CREATE TABLE PrivateKey (
     id TEXT NOT NULL UNIQUE,
-    curve TEXT NOT NULL,
-    privateKey TEXT NOT NULL,
+    restorationIdentifier TEXT NOT NULL,
+    data TEXT NOT NULL,
     keyPathIndex INTEGER AS Int DEFAULT 0,
     didId TEXT NOT NULL,
     PRIMARY KEY (id),
@@ -9,7 +9,7 @@ CREATE TABLE PrivateKey (
 );
 
 insert:
-INSERT INTO PrivateKey(id, curve, privateKey, keyPathIndex, didId)
+INSERT INTO PrivateKey(id, restorationIdentifier, data, keyPathIndex, didId)
 VALUES ?;
 
 fetchPrivateKeyByDID:
