@@ -7,6 +7,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.ExportableKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.JWK
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PEMKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PEMKeyType
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 
@@ -23,7 +24,7 @@ class X25519PublicKey(nativeValue: ByteArray) : PublicKey(), ExportableKey, Stor
 
     override fun getPem(): String {
         return PEMKey(
-            keyType = "EC PUBLIC KEY",
+            keyType = PEMKeyType.EC_PUBLIC_KEY,
             keyData = raw
         ).pemEncoded()
     }
