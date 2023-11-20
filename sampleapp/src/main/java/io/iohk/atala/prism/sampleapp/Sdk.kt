@@ -5,7 +5,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.*
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
@@ -21,9 +25,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.subscribe
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import java.net.UnknownHostException
 
 class Sdk {
@@ -148,6 +150,5 @@ class Sdk {
             }
             return instance
         }
-
     }
 }
