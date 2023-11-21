@@ -6,9 +6,12 @@ import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
 import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.ApolloError
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
@@ -19,8 +22,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.DerivationPathK
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.IndexKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.RawKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.SeedKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.TypeKey
 
 /**
@@ -108,9 +113,7 @@ class ApolloImpl : Apollo {
                             throw ApolloError.InvalidIndex("Index must be an integer")
                         }
                         val derivationPath =
-                            if (properties[DerivationPathKey().property] != null &&
-                                properties[DerivationPathKey().property] !is String
-                            ) {
+                            if (properties[DerivationPathKey().property] != null && properties[DerivationPathKey().property] !is String) {
                                 throw ApolloError.InvalidDerivationPath("Derivation path must be a string")
                             } else {
                                 "m/$index'/0'/0'"
@@ -142,5 +145,53 @@ class ApolloImpl : Apollo {
             }
         }
         throw ApolloError.InvalidKeyType(TypeKey().property, KeyTypes.values().map { it.type }.toTypedArray())
+    }
+
+    override fun isPrivateKeyData(identifier: String, data: ByteArray): Boolean {
+        return identifier.endsWith("priv")
+    }
+
+    override fun isPublicKeyData(identifier: String, data: ByteArray): Boolean {
+        return identifier.endsWith("pub")
+    }
+
+    override fun restorePrivateKey(key: StorableKey): PrivateKey {
+        return when (key.restorationIdentifier) {
+            "secp256k1+priv" -> {
+                Secp256k1PrivateKey(key.storableData)
+            }
+
+            "x25519+priv" -> {
+                X25519PrivateKey(key.storableData)
+            }
+
+            "ed25519+priv" -> {
+                Ed25519PrivateKey(key.storableData)
+            }
+
+            else -> {
+                throw ApolloError.RestorationFailedNoIdentifierOrInvalid()
+            }
+        }
+    }
+
+    override fun restorePublicKey(key: StorableKey): PublicKey {
+        return when (key.restorationIdentifier) {
+            "secp256k1+pub" -> {
+                Secp256k1PublicKey(key.storableData)
+            }
+
+            "x25519+pub" -> {
+                X25519PublicKey(key.storableData)
+            }
+
+            "ed25519+pub" -> {
+                Ed25519PublicKey(key.storableData)
+            }
+
+            else -> {
+                throw ApolloError.RestorationFailedNoIdentifierOrInvalid()
+            }
+        }
     }
 }

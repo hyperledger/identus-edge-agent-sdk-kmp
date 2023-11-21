@@ -20,7 +20,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import kotlinx.serialization.json.Json
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
@@ -176,5 +178,31 @@ class ApolloTests {
         var signature = (keyPair.privateKey as Ed25519PrivateKey).sign(message.toByteArray())
         signature[0] = 1
         assertFalse((keyPair.publicKey as Ed25519PublicKey).verify(message.toByteArray(), signature))
+    }
+
+    @Test
+    fun testRestorePrivateKey_whenStorableSecp256k1_thenRestoredOk() {
+        val keyPairSecp256k1 =
+            Secp256k1KeyPair.generateKeyPair(Seed(Mnemonic.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val keyPairEd25519 = Ed25519KeyPair.generateKeyPair()
+        val privateKeySecp256k1 = keyPairSecp256k1.privateKey as Secp256k1PrivateKey
+        val privateKeyEd25519 = keyPairEd25519.privateKey as Ed25519PrivateKey
+        val storableKey = keyPairSecp256k1.privateKey as StorableKey
+        val restoredKey = apollo.restorePrivateKey(storableKey)
+        assertEquals(privateKeySecp256k1.raw, restoredKey.raw)
+        assertNotEquals(privateKeyEd25519.raw, restoredKey.raw)
+    }
+
+    @Test
+    fun testRestorePublicKey_whenStorableSecp256k1_thenRestoredOk() {
+        val keyPairSecp256k1 =
+            Secp256k1KeyPair.generateKeyPair(Seed(Mnemonic.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val keyPairEd25519 = Ed25519KeyPair.generateKeyPair()
+        val publicKeySecp256k1 = keyPairSecp256k1.publicKey as Secp256k1PublicKey
+        val publicKeyEd25519 = keyPairEd25519.publicKey as Ed25519PublicKey
+        val storableKey = keyPairSecp256k1.publicKey as StorableKey
+        val restoredKey = apollo.restorePublicKey(storableKey)
+        assertEquals(publicKeySecp256k1.raw, restoredKey.raw)
+        assertNotEquals(publicKeyEd25519.raw, restoredKey.raw)
     }
 }
