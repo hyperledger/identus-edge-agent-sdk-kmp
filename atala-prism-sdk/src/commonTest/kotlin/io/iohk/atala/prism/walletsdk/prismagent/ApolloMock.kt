@@ -9,6 +9,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.SeedWords
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 
 class ApolloMock : Apollo {
     var createRandomMnemonicsReturn: Array<String> = emptyArray()
@@ -32,5 +34,21 @@ class ApolloMock : Apollo {
 
     override fun createPrivateKey(properties: Map<String, Any>): PrivateKey {
         return createPrivateKey ?: Secp256k1PrivateKey(ByteArray(0))
+    }
+
+    override fun isPrivateKeyData(identifier: String, data: ByteArray): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun isPublicKeyData(identifier: String, data: ByteArray): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun restorePrivateKey(key: StorableKey): PrivateKey {
+        TODO("Not yet implemented")
+    }
+
+    override fun restorePublicKey(key: StorableKey): PublicKey {
+        TODO("Not yet implemented")
     }
 }

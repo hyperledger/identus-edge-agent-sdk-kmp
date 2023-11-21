@@ -43,7 +43,7 @@ data class PEMKey(val keyType: PEMKeyType, val keyData: ByteArray) {
     constructor(keyType: PEMKeyType, keyData: String) : this(keyType, keyData.base64UrlDecodedBytes)
 
     fun pemEncoded(): String {
-        val base64Data = keyData.base64PadEncoded
+        val base64Data = keyData.base64PadEncoded.chunked(64).joinToString("\n")
         val beginMarker = "-----BEGIN $keyType-----"
         val endMarker = "-----END $keyType-----"
 
