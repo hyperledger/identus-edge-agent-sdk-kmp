@@ -3,7 +3,6 @@ package io.iohk.atala.prism.sampleapp.ui.agent
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import io.iohk.atala.prism.sampleapp.SampleApp
 import io.iohk.atala.prism.sampleapp.Sdk
 import kotlinx.coroutines.launch
 
