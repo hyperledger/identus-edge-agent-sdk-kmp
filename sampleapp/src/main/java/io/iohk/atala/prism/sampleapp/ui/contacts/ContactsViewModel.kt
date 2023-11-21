@@ -21,8 +21,8 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
 
     init {
         viewModelScope.launch {
-            val pluto = Sdk.getInstance(getApplication<Application>()).pluto
-            pluto?.getAllDidPairs()?.collect {
+            val pluto = Sdk.getInstance().pluto
+            pluto.getAllDidPairs().collect {
                 contactsStream.postValue(it)
             }
         }
@@ -34,8 +34,7 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
 
     @Throws(PrismAgentError.UnknownInvitationTypeError::class, Exception::class)
     fun parseAndAcceptOOB(oobUrl: String) {
-        val agent = Sdk.getInstance(getApplication<Application>()).agent
-        agent?.let {
+        Sdk.getInstance().agent.let { agent ->
             viewModelScope.launch {
                 when (val invitation = agent.parseInvitation(oobUrl)) {
                     is OutOfBandInvitation -> {
@@ -51,7 +50,7 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
             }
-        } ?: throw Exception("Agent is null")
+        }
     }
 
     fun isValidURL(url: String): Boolean {

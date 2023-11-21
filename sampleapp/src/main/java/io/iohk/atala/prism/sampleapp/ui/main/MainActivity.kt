@@ -2,7 +2,6 @@ package io.iohk.atala.prism.sampleapp.ui.main
 
 import android.os.Bundle
 import android.view.View
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
@@ -14,7 +13,6 @@ import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: MainViewModel by viewModels()
     private lateinit var viewPager: ViewPager
     private lateinit var tabs: TabLayout
     private lateinit var sectionsPagerAdapter: SectionsPagerAdapter
@@ -28,9 +26,8 @@ class MainActivity : AppCompatActivity() {
         sectionsPagerAdapter = SectionsPagerAdapter(this, supportFragmentManager)
         viewPager = binding.viewPager
         tabs = binding.tabs
-        viewModel.agentStatusStream().observe(this) {
-            if (it == PrismAgent.State.RUNNING.name) {
-//                binding.agentStatus.text = String.format(getString(R.string.agent_status), it)
+        Sdk.getInstance().agentStatusStream().observe(this) {
+            if (it == PrismAgent.State.RUNNING) {
                 Snackbar.make(binding.root, "Agent state: $it", Snackbar.LENGTH_LONG).show()
                 agentStartedShowViews()
             }
@@ -46,6 +43,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        Sdk.getInstance(this).stopAgent()
+        Sdk.getInstance().stopAgent()
     }
 }

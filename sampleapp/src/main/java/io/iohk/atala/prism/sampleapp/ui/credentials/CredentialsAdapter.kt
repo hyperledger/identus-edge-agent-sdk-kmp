@@ -97,7 +97,7 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                 AnonCredential::class -> {
                     val anon = cred as AnonCredential
                     type.text = String.format(typeString, "Anoncred")
-                    issuanceDate.text = "Issuer: ${anon.credentialDefinitionID}"
+                    issuanceDate.text = String.format("Issuer: ${anon.credentialDefinitionID}")
                 }
             }
         }

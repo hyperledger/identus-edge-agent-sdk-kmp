@@ -447,7 +447,6 @@ class PrismAgent {
             store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto)
         )
         setupMediatorHandler(tmpMediatorHandler)
-        start()
     }
 
     /**

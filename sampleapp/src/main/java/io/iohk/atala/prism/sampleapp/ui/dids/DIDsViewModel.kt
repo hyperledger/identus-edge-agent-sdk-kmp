@@ -18,10 +18,10 @@ class DIDsViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         viewModelScope.launch {
-            val pluto = Sdk.getInstance(getApplication<Application>()).pluto
-            pluto?.getAllPeerDIDs()?.collect { peerDIDs ->
-                val dids = peerDIDs.map { it.did }
-                didsStream.postValue(dids)
+            val pluto = Sdk.getInstance().pluto
+            pluto.getAllPeerDIDs().collect { peerDIDs ->
+                val didList = peerDIDs.map { it.did }
+                didsStream.postValue(didList)
             }
         }
     }
@@ -32,19 +32,17 @@ class DIDsViewModel(application: Application) : AndroidViewModel(application) {
 
     fun createPeerDID() {
         viewModelScope.launch {
-            val sdk = Sdk.getInstance(getApplication())
-            sdk.agent?.let {
-                it.createNewPeerDID(
-                    arrayOf(
-                        DIDDocument.Service(
-                            DIDCOMM1,
-                            arrayOf(DIDCOMM_MESSAGING),
-                            DIDDocument.ServiceEndpoint(sdk.handler?.mediatorDID.toString())
-                        )
-                    ),
-                    true
-                )
-            }
+            val sdk = Sdk.getInstance()
+            sdk.agent.createNewPeerDID(
+                arrayOf(
+                    DIDDocument.Service(
+                        DIDCOMM1,
+                        arrayOf(DIDCOMM_MESSAGING),
+                        DIDDocument.ServiceEndpoint(sdk.handler.mediatorDID.toString())
+                    )
+                ),
+                true
+            )
         }
     }
 }

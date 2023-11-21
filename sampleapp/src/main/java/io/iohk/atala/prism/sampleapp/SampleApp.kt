@@ -6,6 +6,6 @@ class SampleApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Sdk.getInstance(this)
+        Sdk.getInstance()
     }
 }
