@@ -128,7 +128,11 @@ class ApolloImpl : Apollo {
 
                         val hdKey = HDKey(seedByteArray, 0, 0)
                         val derivedHdKey = hdKey.derive(derivationPath)
-                        return Secp256k1PrivateKey(derivedHdKey.getKMMSecp256k1PrivateKey().raw)
+                        val private = Secp256k1PrivateKey(derivedHdKey.getKMMSecp256k1PrivateKey().raw)
+                        private.keySpecification[SeedKey().property] = seed
+                        private.keySpecification[DerivationPathKey().property] = derivationPath
+                        private.keySpecification[IndexKey().property] = "0"
+                        return private
                     }
                 }
             }
