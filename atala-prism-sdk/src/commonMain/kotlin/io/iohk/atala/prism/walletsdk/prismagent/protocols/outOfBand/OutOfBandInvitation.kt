@@ -32,8 +32,10 @@ constructor(
     @Serializable
     data class Body(
         @SerialName(GOAL_CODE)
-        val goalCode: String? = "",
-        val goal: String? = "",
+        @EncodeDefault
+        val goalCode: String? = null,
+        @EncodeDefault
+        val goal: String? = null,
         val accept: List<String>?
     )
 }
