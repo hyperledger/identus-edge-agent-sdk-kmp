@@ -31,7 +31,6 @@ koverReport {
                 packages(
                     "io.iohk.atala.prism.protos",
                     "io.iohk.atala.prism.walletsdk.domain",
-                    "io.iohk.atala.prism.walletsdk.castor.antlrgrammar",
                     "ioiohkatalaprismwalletsdkpluto.data"
                 )
             }
@@ -56,15 +55,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonAntlr by creating {
-            kotlin.srcDir("build/generated-src/commonAntlr/kotlin")
-            dependencies {
-                api(kotlin("stdlib-common"))
-                api("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
-            }
-        }
         val commonMain by getting {
-            this.dependsOn(commonAntlr)
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
@@ -232,26 +223,6 @@ tasks.withType<DokkaTask>().configureEach {
     }
 }
 
-val antlrGenerationTask by tasks.register<com.strumenta.antlrkotlin.gradleplugin.AntlrKotlinTask>("generateKotlinCommonGrammarSource") {
-    // the classpath used to run antlr code generation
-    antlrClasspath = configurations.detachedConfiguration(
-        project.dependencies.create("com.github.piacenti:antlr-kotlin-runtime:0.0.14")
-    )
-    maxHeapSize = "64m"
-    packageName = "io.iohk.atala.prism.walletsdk.castor.antlrgrammar"
-    arguments = listOf("-long-messages", "-Dlanguage=JavaScript")
-    source = project.objects
-        .sourceDirectorySet("antlr", "antlr")
-        .srcDir("src/commonAntlr/antlr").apply {
-            include("*.g4")
-        }
-    // outputDirectory is required, put it into the build directory
-    // if you do not want to add the generated sources to version control
-    outputDirectory = File("build/generated-src/commonAntlr/kotlin")
-    // use this setting if you want to add the generated sources to version control
-    // outputDirectory = File("src/commonAntlr/kotlin")
-}
-
 val buildProtoLibsGen by tasks.creating {
     group = "build"
     this.dependsOn(":protosLib:generateProto")
@@ -265,17 +236,17 @@ afterEvaluate {
         this.enabled = false
     }
     tasks.getByName("runKtlintCheckOverCommonMainSourceSet") {
-        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+        dependsOn(buildProtoLibsGen)
     }
     tasks.getByName("build") {
-        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+        dependsOn(buildProtoLibsGen)
     }
 
     tasks.withType<KotlinCompile> {
-        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+        dependsOn(buildProtoLibsGen)
     }
 
     tasks.withType<ProcessResources> {
-        dependsOn(buildProtoLibsGen, antlrGenerationTask)
+        dependsOn(buildProtoLibsGen)
     }
 }
