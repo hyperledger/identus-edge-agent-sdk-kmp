@@ -67,14 +67,14 @@ class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
                             Curve.ED25519 -> {
                                 toJwk(
                                     keyBytes,
-                                    io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020
+                                    io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication.JsonWebKey2020
                                 )
                             }
 
                             Curve.X25519 -> {
                                 toJwk(
                                     keyBytes,
-                                    io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAgreement.JSON_WEB_KEY_2020
+                                    io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAgreement.JsonWebKey2020
                                 )
                             }
 

@@ -19,7 +19,6 @@ buildscript {
         classpath("com.android.tools.build:gradle:7.2.2") // 7.4.2 is still not supported
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
-        classpath("com.github.piacenti:antlr-kotlin-gradle-plugin:0.0.14")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.21.0")
     }
 }
@@ -103,15 +102,12 @@ subprojects {
                 "**/generated/**",
                 "**/generated-src/**",
                 "build/**",
-                "build/generated/**",
-                "**/antlrgrammar/**"
+                "build/generated/**"
             )
             exclude {
                 it.file.path.contains("generated-src") ||
                     it.file.toString().contains("generated") ||
-                    it.file.path.contains("generated") ||
-                    it.file.path.contains("antlrgrammar") ||
-                    it.file.toString().contains("antlrgrammar")
+                    it.file.path.contains("generated")
             }
         }
     }
