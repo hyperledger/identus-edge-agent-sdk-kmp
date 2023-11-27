@@ -1,6 +1,7 @@
 package io.iohk.atala.prism.walletsdk.apollo
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.apollo.derivation.DerivationPath
 import io.iohk.atala.prism.apollo.derivation.Mnemonic
 import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.apollo.utils.ECConfig
@@ -19,8 +20,12 @@ import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurveKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.SeedKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.TypeKey
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
@@ -98,6 +103,26 @@ class ApolloTests {
         assertTrue((keyPair.publicKey as Secp256k1PublicKey).verify(message.encodeToByteArray(), signature))
         assertTrue((keyPair.publicKey as Secp256k1PublicKey).isExportable())
         assertTrue((keyPair.privateKey as Secp256k1PrivateKey).isExportable())
+    }
+
+    @Test
+    fun testDerivePrivateKey_whenSecp256k1_thenWorksAsExpected() {
+        val path = "m/0'/0'/0'"
+
+        val seed = Seed(Mnemonic.createRandomSeed())
+
+        val properties: MutableMap<String, Any> = mutableMapOf()
+        properties[TypeKey().property] = KeyTypes.EC
+        properties[SeedKey().property] = BytesOps.bytesToHex(seed.value)
+        properties[CurveKey().property] = Curve.SECP256K1.value
+
+        val privateKey = apollo.createPrivateKey(properties) as Secp256k1PrivateKey
+        privateKey.derive(DerivationPath.fromPath(path))
+        assertTrue(privateKey.isDerivable())
+
+        val ed25519KeyPair = Ed25519KeyPair.generateKeyPair()
+        val ed25519PrivateKey = ed25519KeyPair.privateKey as Ed25519PrivateKey
+        assertFalse(ed25519PrivateKey.isDerivable())
     }
 
     @Test
