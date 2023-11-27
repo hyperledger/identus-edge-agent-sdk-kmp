@@ -29,9 +29,6 @@ on:
         required: false
         description: Authorization key
         default: 1gnp5fzLTwNBvLBXLk9THLgxe9SLoh+7
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
