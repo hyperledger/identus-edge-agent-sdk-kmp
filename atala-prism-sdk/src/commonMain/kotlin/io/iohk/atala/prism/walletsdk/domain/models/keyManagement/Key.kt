@@ -5,6 +5,9 @@ import io.iohk.atala.prism.walletsdk.domain.models.ApolloError
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 
+/**
+ * Abstraction defining the base of what a Key is.
+ */
 abstract class Key {
     abstract val type: KeyTypes
     abstract val keySpecification: MutableMap<String, String>
@@ -34,30 +37,51 @@ abstract class Key {
         return result
     }
 
+    /**
+     * Returns the encoded raw value into base 64 url
+     */
     fun getEncoded(): ByteArray {
         return raw.base64UrlEncoded.encodeToByteArray()
     }
 
+    /**
+     * Evaluates if this key implements ExportableKey
+     */
     fun isExportable(): Boolean {
         return this is ExportableKey
     }
 
+    /**
+     * Evaluates if this key implements ImportableKey
+     */
     fun isImportable(): Boolean {
         return this is ImportableKey
     }
 
+    /**
+     * Evaluates if this key implements SignableKey
+     */
     fun isSignable(): Boolean {
         return this is SignableKey
     }
 
+    /**
+     * Evaluates if this key implements DerivableKey
+     */
     fun isDerivable(): Boolean {
         return this is DerivableKey
     }
 
+    /**
+     * Evaluates if this key implements VerifiableKey
+     */
     fun canVerify(): Boolean {
         return this is VerifiableKey
     }
 
+    /**
+     * Searches the value based on the input key, if it exists
+     */
     fun getProperty(name: String): String {
         if (!keySpecification.containsKey(name)) {
             throw Exception("KeySpecification do not contain $name")
@@ -65,12 +89,18 @@ abstract class Key {
         return this.keySpecification[name].toString()
     }
 
+    /**
+     *  Evaluates if the input curve matches the actual curve this key has
+     */
     fun isCurve(curve: String): Boolean {
         val keyCurve = keySpecification[CurveKey().property]
         return keyCurve == curve
     }
 }
 
+/**
+ *  Method to get a KeyCurve instance based on a key String name.
+ */
 fun getKeyCurveByNameAndIndex(name: String, index: Int?): KeyCurve {
     return when (name) {
         Curve.X25519.value -> {
