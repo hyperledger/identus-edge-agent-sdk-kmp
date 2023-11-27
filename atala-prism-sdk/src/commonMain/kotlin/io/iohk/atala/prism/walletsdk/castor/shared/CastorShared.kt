@@ -229,13 +229,13 @@ internal class CastorShared {
             val didUrl = DIDUrlParser.parse(did)
             val controller = DIDParser.parse(verificationMethod.controller)
             val type = when (verificationMethod.verMaterial.type.value) {
-                VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2020.value,
-                VerificationMethodTypeAuthentication.ED25519_VERIFICATION_KEY_2018.value -> {
+                VerificationMethodTypeAuthentication.ED25519VerificationKey2020.value,
+                VerificationMethodTypeAuthentication.ED25519VerificationKey2018.value -> {
                     Curve.ED25519.value
                 }
 
-                VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2020.value,
-                VerificationMethodTypeAgreement.X25519_KEY_AGREEMENT_KEY_2019.value -> {
+                VerificationMethodTypeAgreement.X25519KeyAgreementKey2020.value,
+                VerificationMethodTypeAgreement.X25519KeyAgreementKey2019.value -> {
                     Curve.X25519.value
                 }
 
@@ -512,7 +512,7 @@ internal class CastorShared {
                             VerificationMaterialAgreement(
                                 format = VerificationMaterialFormatPeerDID.JWK,
                                 value = octetString,
-                                type = VerificationMethodTypeAgreement.JSON_WEB_KEY_2020
+                                type = VerificationMethodTypeAgreement.JsonWebKey2020
                             )
                         )
                     }
@@ -523,7 +523,7 @@ internal class CastorShared {
                             VerificationMaterialAuthentication(
                                 format = VerificationMaterialFormatPeerDID.JWK,
                                 value = octetString,
-                                type = VerificationMethodTypeAuthentication.JSON_WEB_KEY_2020
+                                type = VerificationMethodTypeAuthentication.JsonWebKey2020
                             )
                         )
                     }

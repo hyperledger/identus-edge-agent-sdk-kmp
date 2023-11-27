@@ -78,4 +78,16 @@ class DIDParserTest {
             }
         )
     }
+
+    @Test
+    fun test() {
+        val did =
+            "did:peer:2.Ez6LSmWXS6oahBFuVKi2HZ6bWe521uLdiDoPub9ExYM22ybj9.Vz6MkigNVs7sPs4i38uYqiBzbMJ5YKzfK3Re11e3mdL5YpqpV"
+        val parsedDID = DIDParser.parse(did)
+        assertEquals("peer", parsedDID.method)
+        assertEquals(
+            "2.Ez6LSmWXS6oahBFuVKi2HZ6bWe521uLdiDoPub9ExYM22ybj9.Vz6MkigNVs7sPs4i38uYqiBzbMJ5YKzfK3Re11e3mdL5YpqpV",
+            parsedDID.methodId
+        )
+    }
 }

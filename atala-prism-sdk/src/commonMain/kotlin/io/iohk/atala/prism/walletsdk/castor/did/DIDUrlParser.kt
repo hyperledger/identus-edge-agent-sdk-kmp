@@ -1,41 +1,40 @@
 package io.iohk.atala.prism.walletsdk.castor.did
 
-import io.iohk.atala.prism.walletsdk.castor.antlrgrammar.DIDUrlAbnfLexer
-import io.iohk.atala.prism.walletsdk.castor.antlrgrammar.DIDUrlAbnfParser
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
-import org.antlr.v4.kotlinruntime.CharStreams
-import org.antlr.v4.kotlinruntime.CommonTokenStream
-import org.antlr.v4.kotlinruntime.tree.ParseTree
-import org.antlr.v4.kotlinruntime.tree.ParseTreeWalker
-import kotlin.jvm.Throws
 
 object DIDUrlParser {
     @Throws(CastorError.InvalidDIDString::class)
     fun parse(didUrlString: String): DIDUrl {
-        val inputStream = CharStreams.fromString(didUrlString)
-        val lexer = DIDUrlAbnfLexer(inputStream)
-        val tokenStream = CommonTokenStream(lexer)
-        val parser = DIDUrlAbnfParser(tokenStream)
+        val regex =
+            """^did:(?<method>[a-z0-9]+)(?::(?<idstring>[^#?/]*))?(?<path>[^#?]*)?(?<query>\?[^#]*)?(?<fragment>#.*)?$""".toRegex(
+                RegexOption.IGNORE_CASE
+            )
+        val matchResult = regex.find(didUrlString)
 
-        parser.errorHandler = ErrorStrategy()
-
-        val context = parser.did_url()
-        val listener = DIDUrlParserListener()
-        ParseTreeWalker().walk(listener, context as ParseTree)
-
-        val scheme = listener.scheme ?: throw CastorError.InvalidDIDString("Invalid DID string, missing scheme")
-        val methodName = listener.methodName ?: throw CastorError.InvalidDIDString("Invalid DID string, missing method name")
-        val methodId = listener.methodId ?: throw CastorError.InvalidDIDString("Invalid DID string, missing method ID")
-
-        val did = DID(scheme, methodName, methodId)
-
-        return DIDUrl(
-            did,
-            listener.path ?: emptyArray(),
-            listener.query,
-            listener.fragment
-        )
+        matchResult?.let { it ->
+            val method = it.groups["method"]?.value
+                ?: throw CastorError.InvalidDIDString("Invalid DID string, missing method name")
+            val idString = it.groups["idstring"]?.value
+                ?: throw CastorError.InvalidDIDString("Invalid DID string, missing method ID")
+            val path =
+                it.groups["path"]?.value ?: throw CastorError.InvalidDIDString("Invalid DID string, missing path")
+            val query = it.groups["query"]?.value ?: ""
+            val fragment = it.groups["fragment"]?.value ?: ""
+            val attributes = if (query.isNotEmpty()) {
+                query.removePrefix("?").split("&")
+                    .associate {
+                        val (key, value) = it.split("=")
+                        key to (value ?: "")
+                    }
+            } else {
+                mapOf()
+            }
+            val paths = path.split("/").filter { it.isNotEmpty() }.toTypedArray()
+            val did = DID("did", method, idString)
+            val fragmentValue = if (fragment.isNotEmpty()) fragment.removePrefix("#") else null
+            return DIDUrl(did, paths, attributes, fragmentValue)
+        } ?: throw CastorError.InvalidDIDString("DID string does not match the expected structure.")
     }
 }
