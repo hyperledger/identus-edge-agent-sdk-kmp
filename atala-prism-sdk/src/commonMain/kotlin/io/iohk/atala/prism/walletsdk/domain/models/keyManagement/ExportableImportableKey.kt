@@ -4,21 +4,50 @@ import io.iohk.atala.prism.apollo.base64.base64PadEncoded
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import kotlinx.serialization.Serializable
 
+/**
+ * This interface defines what is required for a key to be exportable
+ */
 interface ExportableKey {
+    /**
+     * The key exported in PEM (Privacy-Enhanced Mail) format.
+     * @return PEM string
+     */
     fun getPem(): String
+
+    /**
+     * They key exported as a JWK (JSON Web Key)
+     * @return JWD instance
+     */
     fun getJwk(): JWK
 
+    /**
+     * Returns the key as a JWD with a specific kid (key identifier)
+     * @return JWK instnace
+     */
     fun jwkWithKid(kid: String): JWK
 }
 
+/**
+ * This interface defines what is required for a key to be importable
+ */
 interface ImportableKey {
+    /**
+     * Initializes key from PEM string
+     * @param pem string
+     */
     @Throws(Exception::class)
     fun initializeFromPem(pem: String)
 
+    /**
+     * Initializes key from JWK
+     */
     @Throws(Exception::class)
     fun initializeFromJwk(jwk: JWK)
 }
 
+/**
+ * Representation of a JWK (JSON Web Key)
+ */
 @Serializable
 data class JWK(
     val kty: String,
@@ -39,9 +68,16 @@ data class JWK(
     val k: String? = null
 )
 
+/**
+ * Representation of a cryptographic key in PEM format.
+ */
 data class PEMKey(val keyType: PEMKeyType, val keyData: ByteArray) {
     constructor(keyType: PEMKeyType, keyData: String) : this(keyType, keyData.base64UrlDecodedBytes)
 
+    /**
+     * Encodes the PEM into base 64
+     * @return pem encoded string
+     */
     fun pemEncoded(): String {
         val base64Data = keyData.base64PadEncoded.chunked(64).joinToString("\n")
         val beginMarker = "-----BEGIN $keyType-----"
@@ -76,6 +112,9 @@ data class PEMKey(val keyType: PEMKeyType, val keyData: ByteArray) {
     }
 }
 
+/**
+ * Definition of the PEM key types available
+ */
 enum class PEMKeyType(val value: Pair<String, String>) {
     EC_PRIVATE_KEY(Pair("-----BEGIN EC PRIVATE KEY-----", "-----END EC PRIVATE KEY-----")),
     EC_PUBLIC_KEY(Pair("-----BEGIN EC PUBLIC KEY-----", "-----END EC PUBLIC KEY-----"));
