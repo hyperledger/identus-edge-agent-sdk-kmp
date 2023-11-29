@@ -1,3 +1,20 @@
+# [2.6.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.5.0...v2.6.0) (2023-11-29)
+
+
+### Bug Fixes
+
+* ATL-5864 pr changes ([#109](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/109)) ([1e32bb7](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/1e32bb79c9ed1970cdd6797736830c3be60f8258))
+* fixes demo app fetching job ([#110](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/110)) ([8485b34](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/8485b34f24d7cb1e73692aceb752657bc4a7175c))
+* replace antlr with regex to solve did creation issues ([#114](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/114)) ([854fc70](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/854fc70b1c0271e1bf5f4b6a63433d41a9d35a1f))
+
+
+### Features
+
+* document the latest development ([#115](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/115)) ([d435148](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/d4351480a1ccbacea503e31edc7ebdc220653149))
+* implement derivableKey an include it into Secp256k1PrivateKey ([#112](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/112)) ([cecbbb1](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/cecbbb16be1d2423d5a33edad3b549be12c7ab91))
+* Importable/Exportable keys ([#107](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/107)) ([adc2b6a](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/adc2b6a37e107d8f4c09268886123c690ac0ebed))
+* KeyRestoration ([#111](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/111)) ([ccfb584](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/ccfb5840f5db9694abfcb097b779ce3257f1c9a6))
+
 # [2.5.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.4.0...v2.5.0) (2023-11-20)
 
 
