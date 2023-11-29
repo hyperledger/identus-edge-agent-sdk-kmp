@@ -1,5 +1,6 @@
 package io.iohk.atala.prism.configuration
 
+import io.cucumber.java.BeforeAll
 import io.iohk.atala.automation.utils.Logger
 import io.iohk.atala.automation.utils.Wait
 import io.iohk.atala.prism.models.*
@@ -180,7 +181,7 @@ object Environment {
             this.anoncredDefinitionId = definitionId!!
             return
         } catch (e: AssertionError) {
-            Notes.appendMessage("Schema definition not found for [${definitionId}]. Creating a new one.")
+            Notes.appendMessage("Anoncred Definition not found for [${definitionId}]. Creating a new one.")
         }
 
         val schemaName = "automation-anoncred-schema-" + UUID.randomUUID()

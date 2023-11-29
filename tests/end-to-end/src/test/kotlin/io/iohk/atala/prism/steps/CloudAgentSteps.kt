@@ -16,14 +16,17 @@ class CloudAgentSteps {
     @Inject
     private lateinit var edgeAgentWorkflow: EdgeAgentWorkflow
 
-    @Given("{actor} has a connection invitation")
-    fun `Cloud Agent has a connection invitation`(cloudAgent: Actor) {
-        cloudAgentWorkflow.createConnection(cloudAgent)
+    @Given("{actor} has a connection invitation with '{}', '{}' and '{}' parameters")
+    fun `Cloud Agent has a connection invitation`(cloudAgent: Actor, label: String, goalCode: String, goal: String) {
+        val mappedLabel = if (label == "null") { null } else { label }
+        val mappedGoalCode = if (goalCode == "null") { null } else { goalCode }
+        val mappedGoal = if (goal == "null") { null } else { goal }
+        cloudAgentWorkflow.createConnection(cloudAgent, mappedLabel, mappedGoalCode, mappedGoal)
     }
 
     @Given("{actor} is connected to {actor}")
     fun `Cloud Agent is connected to Edge Agent`(cloudAgent: Actor, edgeAgent: Actor) {
-        cloudAgentWorkflow.createConnection(cloudAgent)
+        cloudAgentWorkflow.createConnection(cloudAgent, "alice", "automation", "description")
         cloudAgentWorkflow.shareInvitation(cloudAgent, edgeAgent)
         edgeAgentWorkflow.connect(edgeAgent)
         cloudAgentWorkflow.waitForConnectionState(cloudAgent, "ConnectionResponseSent")
@@ -56,7 +59,7 @@ class CloudAgentSteps {
     }
 
     @Then("{actor} should have the connection status updated to '{}'")
-    fun `Cloud Agent should have the connection status updated to '{}'`(cloudAgent: Actor, expectedState: String) {
+    fun `Cloud Agent should have the connection status updated`(cloudAgent: Actor, expectedState: String) {
         cloudAgentWorkflow.waitForConnectionState(cloudAgent, expectedState)
     }
 

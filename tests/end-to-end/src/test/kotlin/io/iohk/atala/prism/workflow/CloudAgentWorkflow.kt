@@ -15,8 +15,25 @@ import org.apache.http.HttpStatus
 import java.util.*
 
 class CloudAgentWorkflow {
-    fun createConnection(cloudAgent: Actor) {
-        val createConnection = CreateConnectionRequest("Alice")
+    fun createConnection(cloudAgent: Actor, label: String?, goalCode: String?, goal: String?) {
+        val createConnection = CreateConnectionRequest(
+            label,
+            goalCode,
+            goal
+        )
+
+        cloudAgent.attemptsTo(
+            Post.to("/connections").body(createConnection),
+            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
+        )
+
+        cloudAgent.remember("invitation", lastResponse().get<String>("invitation.invitationUrl"))
+        cloudAgent.remember("connectionId", lastResponse().get<String>("connectionId"))
+    }
+
+    fun createConnectionWithoutOptionalArguments(cloudAgent: Actor) {
+        val createConnection = CreateConnectionRequest()
+
         cloudAgent.attemptsTo(
             Post.to("/connections").body(createConnection),
             Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
