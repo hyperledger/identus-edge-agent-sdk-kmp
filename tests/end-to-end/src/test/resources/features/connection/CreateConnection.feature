@@ -10,7 +10,7 @@ Feature: Create connection
       | label | goalCode   | goal                   |
       | alice | automation | automation description |
       |       |            |                        |
-#      | alice | null       | null                   |
-#      | null  | automation | null                   |
-#      | null  | null       | automation description |
-#      | null  | null       | null                   |
+      | alice | null       | null                   |
+      | null  | automation | null                   |
+      | null  | null       | automation description |
+      | null  | null       | null                   |

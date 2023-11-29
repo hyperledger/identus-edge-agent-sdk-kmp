@@ -207,6 +207,8 @@ object Environment {
             .post("/schema-registry/schemas")
             .thenReturn()
 
+        assertThat(schemaCreationResponse.statusCode).isEqualTo(HttpStatus.SC_CREATED)
+
         val newSchemaGuid = schemaCreationResponse.body.jsonPath().getString("guid")
 
         val definitionName = "automation-anoncred-definition-" + UUID.randomUUID()
