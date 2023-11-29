@@ -12,23 +12,23 @@ on:
       mediatorOobUrl:
         required: true
         description: Mediator out-of-band url
-        default: https://sit-prism-mediator.atalaprism.io/invitationOOB
+        default: https://beta-mediator.atalaprism.io/invitationOOB
       prismAgentUrl:
         required: true
         description: Prism-agent server url
-        default: https://sit-prism-agent-issuer.atalaprism.io/prism-agent
-      publishedDid:
-        required: false
-        description: Published DID
-        default:
-      schemaId:
-        required: false
-        description: Schema ID
-        default:
+        default: https://sit-prism-agent-issuer.atalaprism.io/prism-agent/
       apiKey:
         required: false
         description: Authorization key
-        default:
+      publishedDid:
+        required: false
+        description: Published DID
+      jwtSchemaGuid:
+        required: false
+        description: JWT schema GUID
+      anoncredDefinitionGuid:
+        required: false
+        description: Anoncred definition GUID
   push:
     branches:
       - main
@@ -38,12 +38,6 @@ on:
 env:
   ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
   ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-  MEDIATOR_OOB_URL: ${{ inputs.mediatorOobUrl || vars.MEDIATOR_OOB_URL }}
-  PRISM_AGENT_URL: ${{ inputs.prismAgentUrl || vars.PRISM_AGENT_URL }}
-  PUBLISHED_DID: ${{ inputs.publishedDid || vars.PUBLISHED_DID }}
-  SCHEMA_ID: ${{ inputs.schemaId || vars.SCHEMA_ID }}
-  APIKEY: ${{ inputs.apiKey || secrets.APIKEY }}
-  NODE_AUTH_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
 
 jobs:
   run-e2e-tests:
@@ -52,6 +46,8 @@ jobs:
 
     steps:
       - name: Mask apikey
+        env:
+          APIKEY: ${{ inputs.apiKey || secrets.APIKEY }}
         run: echo "::add-mask::${{env.APIKEY}}"
 
       - name: Install Java 11
@@ -76,6 +72,13 @@ jobs:
           ./gradlew publishToMavenLocal
 
       - name: Run tests
+        env:
+          MEDIATOR_OOB_URL: ${{ inputs.mediatorOobUrl || vars.MEDIATOR_OOB_URL }}
+          PRISM_AGENT_URL: ${{ inputs.prismAgentUrl || vars.PRISM_AGENT_URL }}
+          PUBLISHED_DID: ${{ inputs.publishedDid || vars.PUBLISHED_DID }}
+          JWT_SCHEMA_GUID: ${{ inputs.jwtSchemaGuid || vars.SCHEMA_ID }}
+          ANONCRED_DEFINITION_GUID: ${{ input.anoncredDefinitionGuid || vars.ANONCRED_DEFINITION_GUID }}
+          APIKEY: ${{ inputs.apiKey || secrets.APIKEY }}
         working-directory: tests/end-to-end
         run: |
           ./gradlew test --tests "TestSuite"
