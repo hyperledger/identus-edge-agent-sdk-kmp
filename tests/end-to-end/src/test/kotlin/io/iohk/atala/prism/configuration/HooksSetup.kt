@@ -1,12 +1,19 @@
 package io.iohk.atala.prism.configuration
 
 import io.cucumber.java.Before
+import io.cucumber.java.BeforeAll
 import io.cucumber.java.ParameterType
 import io.iohk.atala.prism.abilities.UseWalletSdk
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.actors.Cast
 import net.serenitybdd.screenplay.actors.OnStage
 import net.serenitybdd.screenplay.rest.abilities.CallAnApi
+
+// https://cucumber.io/docs/cucumber/api/?lang=kotlin
+@BeforeAll
+fun setupEnvironment() {
+    Environment.setup()
+}
 
 class HooksSetup {
     @Before
