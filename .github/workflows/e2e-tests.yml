@@ -77,7 +77,7 @@ jobs:
           PRISM_AGENT_URL: ${{ inputs.prismAgentUrl || vars.PRISM_AGENT_URL }}
           PUBLISHED_DID: ${{ inputs.publishedDid || vars.PUBLISHED_DID }}
           JWT_SCHEMA_GUID: ${{ inputs.jwtSchemaGuid || vars.SCHEMA_ID }}
-          ANONCRED_DEFINITION_GUID: ${{ input.anoncredDefinitionGuid || vars.ANONCRED_DEFINITION_GUID }}
+          ANONCRED_DEFINITION_GUID: ${{ inputs.anoncredDefinitionGuid || vars.ANONCRED_DEFINITION_GUID }}
           APIKEY: ${{ inputs.apiKey || secrets.APIKEY }}
         working-directory: tests/end-to-end
         run: |
