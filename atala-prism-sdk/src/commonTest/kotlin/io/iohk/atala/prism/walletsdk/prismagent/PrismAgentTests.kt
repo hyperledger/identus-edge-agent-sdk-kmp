@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.derivation.Mnemonic
+import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
@@ -72,7 +72,7 @@ class PrismAgentTests {
 
     @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val seed = Seed(Mnemonic.createRandomSeed())
+        val seed = Seed(MnemonicHelper.createRandomSeed())
         val validDID = DID("did", "test", "123")
         castorMock.createPrismDIDReturn = validDID
         val agent = PrismAgent(
@@ -270,7 +270,7 @@ class PrismAgentTests {
 
         val privateKeys = listOf(
             Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(Mnemonic.createRandomSeed()),
+                seed = Seed(MnemonicHelper.createRandomSeed()),
                 curve = KeyCurve(Curve.SECP256K1)
             ).privateKey
         )
