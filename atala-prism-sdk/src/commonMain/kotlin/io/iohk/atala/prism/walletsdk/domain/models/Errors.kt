@@ -12,7 +12,7 @@ abstract interface Error {
 }
 
 /**
- * A class representing an unknown error in a Prism.
+ * A class representing an unknown error in a PRISM.
  *
  * @see Error
  * @see Throwable
