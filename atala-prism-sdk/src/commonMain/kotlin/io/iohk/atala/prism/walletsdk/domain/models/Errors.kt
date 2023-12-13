@@ -547,7 +547,7 @@ constructor(
     }
 
     /**
-     * A class representing a DIDComm error in the Prism SDK.
+     * A class representing a DIDComm error in the PRISM SDK.
      *
      * @param customMessage The custom message associated with the error. Defaults to null.
      * @param customUnderlyingErrors The array of underlying errors associated with the error.
