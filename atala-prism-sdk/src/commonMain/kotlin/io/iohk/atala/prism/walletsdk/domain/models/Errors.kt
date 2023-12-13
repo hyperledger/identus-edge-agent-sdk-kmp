@@ -334,7 +334,7 @@ constructor(
     }
 
     /**
-     * Represents an error that occurs when the long form prism DID is invalid or changed.
+     * Represents an error that occurs when the long form PRISM DID is invalid or changed.
      *
      * @property code The error code associated with the InvalidLongFormDID error.
      *
