@@ -17,7 +17,7 @@ import kotlinx.serialization.json.Json
  */
 class ConnectionAccept {
     val type: String = ProtocolType.DidcommconnectionResponse.value
-    lateinit var id: String
+    var id: String = UUID.randomUUID4().toString()
     lateinit var from: DID
     lateinit var to: DID
     var thid: String? = null
@@ -37,7 +37,6 @@ class ConnectionAccept {
         thid: String? = null,
         body: Body
     ) {
-        id = UUID.randomUUID4().toString()
         this.from = from
         this.to = to
         this.thid = thid
@@ -75,6 +74,11 @@ class ConnectionAccept {
         )
     }
 
+    /**
+     * The `makeMessage` method creates a new `Message` object with the specified parameters.
+     *
+     * @return A new `Message` object.
+     */
     fun makeMessage(): Message {
         return Message(
             id = id,
@@ -105,6 +109,14 @@ class ConnectionAccept {
          */
         val accept: Array<String>? = null
     ) {
+        /**
+         * Checks if this [Body] object is equal to the specified [other] object.
+         *
+         * Two [Body] objects are considered equal if their [goalCode], [goal], and [accept] properties are equal.
+         *
+         * @param other The object to compare for equality. If the [other] object is not of type [Body], the method returns false.
+         * @return true if this [Body] object is equal to the specified [other] object, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -121,6 +133,16 @@ class ConnectionAccept {
             return true
         }
 
+        /**
+         * Returns a hash code value for the object.
+         *
+         * The hash code is calculated based on the `goalCode`, `goal`, and `accept` properties.
+         * If the `goalCode` is not null, its hash code value is added to the result.
+         * If the `goal` is not null, its hash code value is multiplied by 31 and added to the result.
+         * If the `accept` array is not null, its content hash code value is multiplied by 31 and added to the result.
+         *
+         * @return The hash code value for the object.
+         */
         override fun hashCode(): Int {
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (goal?.hashCode() ?: 0)

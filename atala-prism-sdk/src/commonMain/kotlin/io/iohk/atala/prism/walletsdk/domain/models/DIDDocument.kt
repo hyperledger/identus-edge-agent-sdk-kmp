@@ -27,6 +27,12 @@ data class DIDDocument(
             if (property is DIDDocument.Services) acc.plus(property.values) else acc
         }
 
+    /**
+     * Overrides the equals method to compare two instances of DIDDocument.
+     *
+     * @param other The object to compare with.
+     * @return true if the objects are equal, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -39,6 +45,13 @@ data class DIDDocument(
         return true
     }
 
+    /**
+     * Calculates the hash code for the DIDDocument object.
+     *
+     * The hash code is calculated based on the id field and the content hash code of the coreProperties array.
+     *
+     * @return The hash code of the DIDDocument object.
+     */
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + coreProperties.contentHashCode()
@@ -60,6 +73,13 @@ data class DIDDocument(
         val publicKeyMultibase: String? = null
     ) {
         companion object {
+            /**
+             * Returns the Curve value based on the given type.
+             *
+             * @param type The type of the curve.
+             * @return The Curve object corresponding to the given type.
+             * @throws CastorError.InvalidKeyError if the given type is not supported.
+             */
             @JvmStatic
             fun getCurveByType(type: String): Curve {
                 return when (type) {
@@ -94,6 +114,12 @@ data class DIDDocument(
         val type: Array<String>,
         val serviceEndpoint: ServiceEndpoint
     ) : DIDDocumentCoreProperty {
+        /**
+         * Determines whether the current object is equal to another object.
+         *
+         * @param other The object to compare with the current object.
+         * @return true if the current object is equal to the other object, otherwise false.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -107,6 +133,12 @@ data class DIDDocument(
             return true
         }
 
+        /**
+         * Calculates the hash code for the Service object.
+         * The hash code is calculated based on the id, type, and serviceEndpoint properties.
+         *
+         * @return The hash code of the Service object.
+         */
         override fun hashCode(): Int {
             var result = id.hashCode()
             result = 31 * result + (type.contentHashCode())
@@ -124,6 +156,12 @@ data class DIDDocument(
         val accept: Array<String>? = arrayOf(),
         val routingKeys: Array<String>? = arrayOf()
     ) {
+        /**
+         * Determines whether the current object is equal to another object.
+         *
+         * @param other The object to compare with the current object.
+         * @return true if the current object is equal to the other object, otherwise false.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -143,6 +181,12 @@ data class DIDDocument(
             return true
         }
 
+        /**
+         * Calculates the hash code for the ServiceEndpoint object.
+         * The hash code is calculated based on the uri, accept, and routingKeys properties.
+         *
+         * @return The hash code of the ServiceEndpoint object.
+         */
         override fun hashCode(): Int {
             var result = uri.hashCode()
             result = 31 * result + (accept?.contentHashCode() ?: 0)
@@ -160,17 +204,33 @@ data class DIDDocument(
     data class AlsoKnownAs(
         val values: Array<String>
     ) : DIDDocumentCoreProperty {
+        /**
+         * Checks if the current object is equal to the given object.
+         *
+         * The current object is considered equal to the given object if and only if:
+         *   - They refer to the same instance
+         *   - The given object is not null and belongs to the same class as the current object
+         *   - The values of the `values` property of both objects are equal
+         *
+         * @param other The object to compare with the current object
+         *
+         * @return `true` if the objects are equal, `false` otherwise
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
 
             other as AlsoKnownAs
 
-            if (!values.contentEquals(other.values)) return false
-
-            return true
+            return values.contentEquals(other.values)
         }
 
+        /**
+         * Generates the hash code value for the current object.
+         * The hash code is computed based on the values of the `values` property.
+         *
+         * @return The hash code value for the object
+         */
         override fun hashCode(): Int {
             return values.contentHashCode()
         }
@@ -183,17 +243,26 @@ data class DIDDocument(
      * to update or deactivate the DID or subject or object.
      */
     data class Controller(val values: Array<DID>) : DIDDocumentCoreProperty {
+        /**
+         * Compares this Controller object with the specified object for equality.
+         *
+         * @param other The object to compare for equality.
+         * @return true if the given object is equal to this Controller object, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
 
             other as Controller
 
-            if (!values.contentEquals(other.values)) return false
-
-            return true
+            return values.contentEquals(other.values)
         }
 
+        /**
+         * Calculates the hash code for the Controller object.
+         *
+         * @return The hash code value for the Controller object.
+         */
         override fun hashCode(): Int {
             return values.contentHashCode()
         }
@@ -206,17 +275,33 @@ data class DIDDocument(
      * identity of the DID or subject or object.
      */
     data class VerificationMethods(val values: Array<VerificationMethod>) : DIDDocumentCoreProperty {
+        /**
+         * Compares this `VerificationMethods` object with the specified object for equality.
+         *
+         * The comparison is based on the `values` property of the `VerificationMethods` object. If the specified object is
+         * `null`, or is not an instance of `VerificationMethods`, or the `values` arrays are not equal, then the method
+         * returns `false`. Otherwise, it returns `true`.
+         *
+         * @param other The object to compare for equality.
+         * @return `true` if this `VerificationMethods` object is equal to the specified object, `false` otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
 
             other as VerificationMethods
 
-            if (!values.contentEquals(other.values)) return false
-
-            return true
+            return values.contentEquals(other.values)
         }
 
+        /**
+         * Calculates the hash code for the VerificationMethods object.
+         *
+         * This method calculates the hash code based on the content of the values array in the VerificationMethods object.
+         * If two VerificationMethods objects have the same values array, their hash codes will be equal.
+         *
+         * @return The hash code for the VerificationMethods object.
+         */
         override fun hashCode(): Int {
             return values.contentHashCode()
         }
@@ -229,17 +314,27 @@ data class DIDDocument(
      * associated DID or subject or object.
      */
     data class Services(val values: Array<Service>) : DIDDocumentCoreProperty {
+        /**
+         * Determines whether the current object is equal to another object.
+         *
+         * @param other The object to compare with the current object.
+         * @return true if the current object is equal to the other object, otherwise false.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
 
             other as Services
 
-            if (!values.contentEquals(other.values)) return false
-
-            return true
+            return values.contentEquals(other.values)
         }
 
+        /**
+         * Calculates the hash code for the Services object.
+         * The hash code is calculated based on the content of the values array property.
+         *
+         * @return The hash code of the Services object.
+         */
         override fun hashCode(): Int {
             return values.contentHashCode()
         }
@@ -255,6 +350,12 @@ data class DIDDocument(
         val urls: Array<String>,
         val verificationMethods: Array<VerificationMethod>
     ) : DIDDocumentCoreProperty {
+        /**
+         * Checks if the current instance of [Authentication] is equal to the provided [other] object.
+         *
+         * @param other The object to compare with.
+         * @return `true` if the objects are equal, `false` otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -267,6 +368,9 @@ data class DIDDocument(
             return true
         }
 
+        /**
+         *
+         */
         override fun hashCode(): Int {
             var result = urls.contentHashCode()
             result = 31 * result + verificationMethods.contentHashCode()
@@ -284,6 +388,12 @@ data class DIDDocument(
         val urls: Array<String>,
         val verificationMethods: Array<VerificationMethod>
     ) : DIDDocumentCoreProperty {
+        /**
+         * Checks if the current AssertionMethod object is equal to the provided object.
+         *
+         * @param other The object to compare with the current AssertionMethod.
+         * @return true if the objects are equal, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -296,6 +406,11 @@ data class DIDDocument(
             return true
         }
 
+        /**
+         * Calculates the hash code for the AssertionMethod object.
+         *
+         * @return The hash code value for the AssertionMethod object.
+         */
         override fun hashCode(): Int {
             var result = urls.contentHashCode()
             result = 31 * result + verificationMethods.contentHashCode()
@@ -313,6 +428,12 @@ data class DIDDocument(
         val urls: Array<String>,
         val verificationMethods: Array<VerificationMethod>
     ) : DIDDocumentCoreProperty {
+        /**
+         * Checks whether the current instance is equal to the given object.
+         *
+         * @param other The object to compare with the current instance.
+         * @return Returns true if the current instance is equal to the given object, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -325,6 +446,11 @@ data class DIDDocument(
             return true
         }
 
+        /**
+         * Calculates the hash code for the `KeyAgreement` instance.
+         *
+         * @return The hash code value calculated based on the `urls` and `verificationMethods` properties.
+         */
         override fun hashCode(): Int {
             var result = urls.contentHashCode()
             result = 31 * result + verificationMethods.contentHashCode()
@@ -342,6 +468,13 @@ data class DIDDocument(
         val urls: Array<String>,
         val verificationMethods: Array<VerificationMethod>
     ) : DIDDocumentCoreProperty {
+        /**
+         * Compares this object with the specified object for equality.
+         * Returns true if the specified object is also a [CapabilityInvocation] and has the same values for the `urls` and `verificationMethods` properties.
+         *
+         * @param other The object to compare for equality.
+         * @return True if the objects are equal, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -354,6 +487,11 @@ data class DIDDocument(
             return true
         }
 
+        /**
+         * Calculates the hash code for a CapabilityInvocation object.
+         *
+         * @return The calculated hash code.
+         */
         override fun hashCode(): Int {
             var result = urls.contentHashCode()
             result = 31 * result + verificationMethods.contentHashCode()
@@ -371,6 +509,12 @@ data class DIDDocument(
         val urls: Array<String>,
         val verificationMethods: Array<VerificationMethod>
     ) : DIDDocumentCoreProperty {
+        /**
+         * Determines whether the current `CapabilityDelegation` object is equal to the provided object.
+         *
+         * @param other The object to compare with the current `CapabilityDelegation` object.
+         * @return `true` if the objects are equal, `false` otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -383,6 +527,15 @@ data class DIDDocument(
             return true
         }
 
+        /**
+         * Calculates the hash code value for the `CapabilityDelegation` object.
+         *
+         * The hash code is calculated based on the `urls` and `verificationMethods` properties of the `CapabilityDelegation`.
+         * Both properties are used to calculate the hash code by invoking the `contentHashCode()` method on the corresponding arrays.
+         * The resulting hash codes are combined using the formula: `result = 31 * result + secondHashCode`.
+         *
+         * @return The hash code value for the `CapabilityDelegation` object.
+         */
         override fun hashCode(): Int {
             var result = urls.contentHashCode()
             result = 31 * result + verificationMethods.contentHashCode()

@@ -86,7 +86,9 @@ class BasicMediatorHandler(
                 try {
                     val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
                     val message = mercury.sendMessageParseResponse(message = requestMessage)
-                        ?: throw UnknownError.SomethingWentWrongError()
+                        ?: throw UnknownError.SomethingWentWrongError(
+                            message = "BasicMediatorHandler => mercury.sendMessageParseResponse returned null"
+                        )
 
                     val grantedMessage = MediationGrant(message)
                     val routingDID = DID(grantedMessage.body.routingDid)

@@ -9,6 +9,16 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.util.Base64
 
+/**
+ * Represents a JSON Web Token (JWT) credential.
+ *
+ * This class provides a way to parse and extract information from a JWT string.
+ * It implements the Credential interface and provides implementations for all its properties and functions.
+ *
+ * @property data The original JWT string representation of the credential.
+ * @property jwtString The JWT string representation of the credential.
+ * @property jwtPayload The parsed JWT payload containing the credential information.
+ */
 data class JWTCredential(val data: String) : Credential {
     private var jwtString: String = data
     var jwtPayload: JWTPayload
@@ -67,6 +77,11 @@ data class JWTCredential(val data: String) : Credential {
             return properties.toMap()
         }
 
+    /**
+     * Converts the current instance of [JWTCredential] to a [StorableCredential].
+     *
+     * @return The converted [StorableCredential].
+     */
     fun toStorableCredential(): StorableCredential {
         val c = this
         return object : StorableCredential {
@@ -129,6 +144,11 @@ data class JWTCredential(val data: String) : Credential {
                     return properties.toMap()
                 }
 
+            /**
+             * Converts the current instance of [JWTCredential] to a [Credential].
+             *
+             * @return The converted [Credential].
+             */
             override fun fromStorableCredential(): Credential {
                 return c
             }

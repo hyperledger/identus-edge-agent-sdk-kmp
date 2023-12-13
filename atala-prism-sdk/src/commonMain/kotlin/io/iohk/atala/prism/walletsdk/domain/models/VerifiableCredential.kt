@@ -18,9 +18,9 @@ data class VerifiableCredentialTypeContainer(
 
 /**
  * Enum class representing different types of verifiable credentials.
- * The CredentialType is used to indicate the type of a verifiable credential.
+ * The CredentialType is used to indicate the type of verifiable credential.
  * The possible values of the enum are jwt, w3c, and unknown.
- * Note: The CredentialType enum is used to indicate the type of a verifiable credential.
+ * Note: The CredentialType enum is used to indicate the type of verifiable credential.
  */
 @Serializable
 enum class CredentialType(val type: String) {
@@ -54,6 +54,12 @@ sealed interface VerifiableCredential {
     val validUntil: VerifiableCredentialTypeContainer?
     val proof: JsonString?
     val aud: Array<String>
+
+    /**
+     * Converts the object to a JSON string representation.
+     *
+     * @return The JSON string representation of the object.
+     */
     fun toJsonString(): String {
         return Json.encodeToString(this)
     }

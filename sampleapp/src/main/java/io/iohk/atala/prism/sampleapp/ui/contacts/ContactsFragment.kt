@@ -86,6 +86,7 @@ class ContactsFragment : Fragment() {
     }
 
     companion object {
+        @JvmStatic
         fun newInstance(): ContactsFragment {
             return ContactsFragment()
         }

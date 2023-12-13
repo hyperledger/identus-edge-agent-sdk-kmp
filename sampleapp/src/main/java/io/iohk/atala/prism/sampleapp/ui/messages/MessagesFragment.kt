@@ -46,6 +46,7 @@ class MessagesFragment : Fragment() {
     }
 
     companion object {
+        @JvmStatic
         fun newInstance(): MessagesFragment {
             return MessagesFragment()
         }

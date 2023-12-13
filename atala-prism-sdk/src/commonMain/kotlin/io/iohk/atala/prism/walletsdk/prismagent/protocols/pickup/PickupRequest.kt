@@ -8,6 +8,16 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+/**
+ * A class representing a pickup request.
+ *
+ * @property id The unique identifier of the pickup request.
+ * @property from The sender's DID (Decentralized Identifier).
+ * @property to The receiver's DID (Decentralized Identifier).
+ * @property body The body of the pickup request.
+ * @property type The type of the pickup request.
+ * @constructor Creates a pickup request with the specified parameters.
+ */
 final class PickupRequest @JvmOverloads constructor(
     var id: String = UUID.randomUUID4().toString(),
     val from: DID,
@@ -16,6 +26,11 @@ final class PickupRequest @JvmOverloads constructor(
 ) {
     var type = ProtocolType.PickupRequest.value
 
+    /**
+     * Creates a [Message] object using the provided parameters.
+     *
+     * @return The created [Message] object.
+     */
     fun makeMessage(): Message {
         return Message(
             id = id,
@@ -35,6 +50,13 @@ final class PickupRequest @JvmOverloads constructor(
         )
     }
 
+    /**
+     * A class representing the body of a message.
+     *
+     * @property recipientKey The key of the message recipient.
+     * @property limit The maximum number of messages to pick up.
+     * @constructor Creates a Body object with the specified parameters.
+     */
     @Serializable
     data class Body(var recipientKey: String? = null, var limit: Int)
 }

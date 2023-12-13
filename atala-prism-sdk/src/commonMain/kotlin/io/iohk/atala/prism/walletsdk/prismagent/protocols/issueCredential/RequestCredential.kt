@@ -27,6 +27,11 @@ data class RequestCredential @JvmOverloads constructor(
 ) {
     val type: String = ProtocolType.DidcommRequestCredential.value
 
+    /**
+     * This method is used to create a [Message] object with the specified properties.
+     *
+     * @return The created [Message] object.
+     */
     fun makeMessage(): Message {
         return Message(
             id = id,
@@ -40,6 +45,13 @@ data class RequestCredential @JvmOverloads constructor(
     }
 
     companion object {
+        /**
+         * Converts a Message object to a RequestCredential object.
+         *
+         * @param fromMessage The Message object to convert.
+         * @return The converted RequestCredential object.
+         * @throws PrismAgentError.InvalidMessageType If the Message object does not represent the expected protocol or is missing the "from" and "to" fields.
+         */
         @JvmStatic
         @Throws(PrismAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): RequestCredential {
@@ -68,6 +80,12 @@ data class RequestCredential @JvmOverloads constructor(
             )
         }
 
+        /**
+         * Creates a [RequestCredential] object based on the provided [OfferCredential].
+         *
+         * @param offer The [OfferCredential] object containing the offer credential data.
+         * @return The [RequestCredential] object created with the data from the offer credential.
+         */
         @JvmStatic
         fun makeRequestFromOfferCredential(offer: OfferCredential): RequestCredential {
             return RequestCredential(
@@ -83,11 +101,27 @@ data class RequestCredential @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Represents the body of a request credential.
+     *
+     * @property goalCode The goal code.
+     * @property comment The comment.
+     */
     @Serializable
     data class Body @JvmOverloads constructor(
         val goalCode: String? = null,
         val comment: String? = null
     ) {
+        /**
+         * Checks if this [Body] object is equal to the specified [other] object.
+         *
+         * Two [Body] objects are considered equal if they have the same values for the following properties:
+         * - [goalCode] (the goal code)
+         * - [comment] (the comment)
+         *
+         * @param other The object to compare with this [Body] object.
+         * @return true if the specified [other] object is equal to this [Body] object, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -100,6 +134,15 @@ data class RequestCredential @JvmOverloads constructor(
             return true
         }
 
+        /**
+         * Calculates the hash code for the object.
+         *
+         * The hash code is calculated based on the values of the `goalCode` and `comment` properties.
+         * If `goalCode` is not null, its hash code is used as part of the calculation.
+         * If `comment` is not null, its hash code is used as part of the calculation.
+         *
+         * @return The hash code value for the object.
+         */
         override fun hashCode(): Int {
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)
@@ -107,6 +150,21 @@ data class RequestCredential @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Checks if this [RequestCredential] object is equal to the specified [other] object.
+     *
+     * Two [RequestCredential] objects are considered equal if they have the same values for the following properties:
+     * - [id] (the ID)
+     * - [body] (the body)
+     * - [attachments] (the attachments)
+     * - [thid] (the THID)
+     * - [from] (the sender)
+     * - [to] (the receiver)
+     * - [type] (the type)
+     *
+     * @param other The object to compare with this [RequestCredential] object.
+     * @return true if the specified [other] object is equal to this [RequestCredential] object, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -124,8 +182,22 @@ data class RequestCredential @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Calculates the hash code for the [RequestCredential] object.
+     *
+     * The hash code is calculated based on the values of the following properties:
+     * - [id] (the ID)
+     * - [body] (the body)
+     * - [attachments] (the attachments)
+     * - [thid] (the THID)
+     * - [from] (the sender)
+     * - [to] (the receiver)
+     * - [type] (the type)
+     *
+     * @return The hash code value for the [RequestCredential] object.
+     */
     override fun hashCode(): Int {
-        var result = id?.hashCode() ?: 0
+        var result = id.hashCode()
         result = 31 * result + body.hashCode()
         result = 31 * result + attachments.contentHashCode()
         result = 31 * result + (thid?.hashCode() ?: 0)
@@ -136,6 +208,15 @@ data class RequestCredential @JvmOverloads constructor(
     }
 }
 
+/**
+ * Builds a [RequestCredential] object using the provided parameters.
+ *
+ * @param fromDID The DID of the sender.
+ * @param toDID The DID of the receiver.
+ * @param thid The THID (thread ID).
+ * @param credentials The map of credential formats and corresponding payloads.
+ * @return The created [RequestCredential] object.
+ */
 @JvmOverloads
 inline fun <reified T : Serializable> RequestCredential.Companion.build(
     fromDID: DID,

@@ -6,8 +6,18 @@ import io.iohk.atala.prism.walletsdk.prismagent.OOB
 import io.ktor.http.URLBuilder
 import io.ktor.http.Url
 
+/**
+ * The OutOfBandParser class is responsible for parsing out-of-band messages.
+ */
 class OutOfBandParser {
 
+    /**
+     * Parses the message from the given URL.
+     *
+     * @param url The URL object representing the message.
+     * @return The parsed message.
+     * @throws CommonError.InvalidURLError If the URL is invalid.
+     */
     @Throws(CommonError.InvalidURLError::class)
     fun parseMessage(url: Url): String {
         val urlBuilder = URLBuilder(url)

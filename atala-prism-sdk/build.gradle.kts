@@ -223,7 +223,7 @@ tasks.withType<DokkaTask>().configureEach {
     }
 }
 
-val buildProtoLibsGen by tasks.creating {
+val buildProtoLibsGen: Task by tasks.creating {
     group = "build"
     this.dependsOn(":protosLib:generateProto")
 }

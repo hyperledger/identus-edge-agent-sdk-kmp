@@ -6,6 +6,9 @@ import com.squareup.sqldelight.db.SqlDriver
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 
+/**
+ * DbConnection class represents a connection to the database.
+ */
 actual class DbConnection actual constructor() {
     actual var driver: SqlDriver? = null
     actual suspend fun connectDb(context: Any?): PrismPlutoDb {
@@ -16,5 +19,14 @@ actual class DbConnection actual constructor() {
     }
 }
 
+/**
+ * Represents the connection status of an SQL driver.
+ */
 actual val SqlDriver.isConnected: Boolean
-    get() = true
+    get() {
+        try {
+            return this.executeQuery(null, "SELECT 1", 0).next()
+        } catch (ex: Exception) {
+            return false
+        }
+    }

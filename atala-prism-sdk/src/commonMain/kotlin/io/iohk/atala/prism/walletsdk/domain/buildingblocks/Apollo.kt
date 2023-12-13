@@ -39,5 +39,15 @@ interface Apollo : KeyRestoration {
      */
     fun createRandomSeed(passphrase: String? = ""): SeedWords
 
+    /**
+     * Creates a private key using the provided properties.
+     *
+     * @param properties A map containing the properties of the private key.
+     *                   The supported properties are:
+     *                   - "type": The type of the private key. Use KeyTypes.EC for elliptic curve keys.
+     *                   - "seed": The seed used for key generation. Must be a byte array.
+     *                   - "curve": The key curve. Use Curve.SECP256K1 for secp256k1 curve.
+     * @return A PrivateKey object representing the created private key.
+     */
     fun createPrivateKey(properties: Map<String, Any>): PrivateKey
 }

@@ -8,6 +8,14 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
+/**
+ * Represents an onboarding invitation for Prism.
+ *
+ * @param onboardEndpoint The endpoint for onboarding.
+ * @property fromString The string representation of the "from" field.
+ * @property from The DID object representing the "from" field.
+ * @property type The type of the invitation.
+ */
 @Serializable
 data class PrismOnboardingInvitation @JvmOverloads constructor(
     val onboardEndpoint: String,
@@ -24,6 +32,13 @@ data class PrismOnboardingInvitation @JvmOverloads constructor(
     }
 
     companion object {
+        /**
+         * Parses a JSON string into a PrismOnboardingInvitation object.
+         *
+         * @param string The JSON string to parse.
+         * @return A PrismOnboardingInvitation object parsed from the JSON string.
+         */
+        @JvmStatic
         fun fromJsonString(string: String): PrismOnboardingInvitation {
             return Json.decodeFromString(string)
         }

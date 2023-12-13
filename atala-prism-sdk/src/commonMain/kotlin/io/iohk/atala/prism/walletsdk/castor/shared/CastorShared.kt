@@ -56,9 +56,18 @@ import pbandk.encodeToByteArray
 import kotlin.jvm.Throws
 import io.iohk.atala.prism.didcomm.didpeer.resolvePeerDID as mercuryPeerDIDResolve
 
+/**
+ * The `CastorShared` class provides a set of logging methods for the Castor module.
+ */
 internal class CastorShared {
     companion object {
 
+        /**
+         * The logger property is a PrismLoggerImpl instance for logging purposes.
+         * It is used to log debug, info, warning, and error messages, along with the associated metadata.
+         *
+         * @property logger The logger instance.
+         */
         private val logger = PrismLoggerImpl(LogComponent.CASTOR)
 
         /**
@@ -150,11 +159,12 @@ internal class CastorShared {
             val peerDIDDocument = try {
                 DIDDocPeerDID.fromJson(mercuryPeerDIDResolve(didString))
             } catch (e: MalformedPeerDIDException) {
-                throw CastorError.InvalidPeerDIDError()
+                throw CastorError.InvalidPeerDIDError(e.message, e.cause)
             } catch (e: Throwable) {
                 throw CastorError.NotPossibleToResolveDID(
                     did = didString,
-                    reason = "Method or method id are invalid"
+                    reason = "Method or method id are invalid",
+                    e
                 )
             }
 
@@ -465,6 +475,7 @@ internal class CastorShared {
          * @param keyPair keyPair to be used in creating [OctetPublicKey].
          * @return [OctetPublicKey].
          */
+        @JvmStatic
         private fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
             val curve = when (keyPair::class) {
                 Secp256k1KeyPair::class -> {
