@@ -1,22 +1,31 @@
 package io.iohk.atala.prism.walletsdk.pollux
 
 import anoncreds_wrapper.CredentialDefinition
+import anoncreds_wrapper.CredentialDefinitionId
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequest
 import anoncreds_wrapper.CredentialRequestMetadata
+import anoncreds_wrapper.CredentialRequests
 import anoncreds_wrapper.LinkSecret
+import anoncreds_wrapper.Presentation
+import anoncreds_wrapper.PresentationRequest
 import anoncreds_wrapper.Prover
+import anoncreds_wrapper.RequestedAttribute
+import anoncreds_wrapper.Schema
+import anoncreds_wrapper.SchemaId
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Api
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
@@ -28,11 +37,13 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.bouncycastle.jce.ECNamedCurveTable
@@ -98,7 +109,7 @@ class PolluxImpl(
                     revocationRegistryJson = cred.getRevRegJson(),
                     witnessJson = cred.getWitnessJson() ?: "",
                     json = cred.getJson(),
-                    values = values
+                    values = values,
                 )
             }
 
@@ -164,6 +175,56 @@ class PolluxImpl(
         )
     }
 
+    override suspend fun createVerifiablePresentationAnoncred(
+        request: RequestPresentation,
+        credential: AnonCredential,
+        linkSecret: LinkSecret
+    ): Presentation {
+        if (request.attachments.isEmpty() || request.attachments[0].data !is AttachmentBase64) {
+            throw Error("")
+            // TODO: Custom pollux error
+        }
+        val attachmentBase64 = request.attachments[0].data as AttachmentBase64
+        val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
+        val cred = anoncreds_wrapper.Credential(credential.id)
+
+        val jsonElement = Json.parseToJsonElement(attachmentBase64.base64.base64UrlDecoded)
+        val attributes = (jsonElement as JsonObject)["requested_attributes"]
+        val attr = (attributes as JsonObject)["attribute_1"] as JsonObject
+        val name = attr["name"]?.jsonPrimitive?.content ?: throw Exception("")
+
+        val requestedAttributes = listOf(
+            RequestedAttribute(
+                referent = "name",
+                revealed = true
+            )
+        )
+
+        val credentialRequests = CredentialRequests(
+            credential = cred,
+            requestedAttribute = requestedAttributes,
+            requestedPredicate = emptyList()
+        )
+        val schema = getSchema(credential.schemaID)
+
+        val schemaId = credential.schemaID
+        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(schemaId, schema))
+
+        val credentialDefinition = getCredentialDefinition(credential.credentialDefinitionID)
+        val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
+            Pair(credential.credentialDefinitionID, credentialDefinition)
+        )
+
+        return Prover().createPresentation(
+            presentationRequest = presentationRequest,
+            credentials = listOf(credentialRequests),
+            selfAttested = null,
+            linkSecret = linkSecret,
+            schemas = schemaMap,
+            credentialDefinitions = credDefinition
+        )
+    }
+
     override fun credentialToStorableCredential(
         type: CredentialType,
         credential: Credential
@@ -192,7 +253,8 @@ class PolluxImpl(
             CredentialType.JWT.type,
             CredentialType.ANONCREDS_OFFER.type,
             CredentialType.ANONCREDS_REQUEST.type,
-            CredentialType.ANONCREDS_ISSUE.type
+            CredentialType.ANONCREDS_ISSUE.type,
+            CredentialType.ANONCREDS_PROOF_REQUEST.type
         )
         val foundFormat = formats.find { it.format in desiredFormats }
         return foundFormat?.format?.let { format ->
@@ -201,6 +263,7 @@ class PolluxImpl(
                 CredentialType.ANONCREDS_OFFER.type -> CredentialType.ANONCREDS_OFFER
                 CredentialType.ANONCREDS_REQUEST.type -> CredentialType.ANONCREDS_REQUEST
                 CredentialType.ANONCREDS_ISSUE.type -> CredentialType.ANONCREDS_ISSUE
+                CredentialType.ANONCREDS_PROOF_REQUEST.type -> CredentialType.ANONCREDS_PROOF_REQUEST
                 else -> throw Error("$format is not a valid credential type")
             }
         } ?: throw Error("Unknown credential type")
@@ -251,6 +314,45 @@ class PolluxImpl(
         )
         if (result.status == 200) {
             return CredentialDefinition(result.jsonString)
+        }
+        throw PolluxError.InvalidCredentialDefinitionError()
+    }
+
+    override suspend fun getSchema(schemId: String): Schema {
+        var schemaId = schemId
+        // TODO: Remove this before merge
+//            http://host.docker.internal:8000/prism-agent/schema-registry/schemas/39a47736-2ecc-3250-8e3c-588c154bb927
+        if (schemaId.contains("host.docker.internal")) {
+            schemaId = schemaId.replace("host.docker.internal", "192.168.68.103")
+        }
+        println("C: SchemaID: $schemaId")
+        val result = api.request(
+            HttpMethod.Get.value,
+            schemaId,
+            emptyArray(),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+            null
+        )
+
+        if (result.status == 200) {
+            val jsonElement = Json.parseToJsonElement(result.jsonString)
+            if (jsonElement is JsonObject) {
+                val schema = (jsonElement["schema"] as JsonObject)
+                if (schema.containsKey("attrNames") && schema.containsKey("issuerId")) {
+                    val name = jsonElement["name"]?.jsonPrimitive?.content
+                    val version = jsonElement["version"]?.jsonPrimitive?.content
+                    val attrs = schema["attrNames"]
+                    val attrNames = attrs?.jsonArray?.map { value -> value.jsonPrimitive.content }
+                    val issuerId =
+                        schema["issuerId"]?.jsonPrimitive?.content
+                    return Schema(
+                        name = name ?: throw PolluxError.InvalidCredentialError(),
+                        version = version ?: throw PolluxError.InvalidCredentialError(),
+                        attrNames = attrNames ?: throw PolluxError.InvalidCredentialError(),
+                        issuerId = issuerId ?: throw PolluxError.InvalidCredentialError()
+                    )
+                }
+            }
         }
         throw PolluxError.InvalidCredentialDefinitionError()
     }

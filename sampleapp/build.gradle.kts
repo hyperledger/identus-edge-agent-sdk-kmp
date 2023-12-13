@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    kotlin("kapt") version "1.9.10"
 }
 
 apply(plugin = "kotlinx-atomicfu")
@@ -72,6 +73,10 @@ dependencies {
     implementation(project(":atala-prism-sdk"))
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
+
+    // Room
+    implementation("androidx.room:room-runtime:2.4.2")
+    kapt("androidx.room:room-compiler:2.4.2")
 
     // Unit Tests
     testImplementation("junit:junit:4.13.2")

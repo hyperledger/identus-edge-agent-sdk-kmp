@@ -15,6 +15,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+@Serializable
 data class RequestPresentation(
     val id: String = UUID.randomUUID4().toString(),
     val body: Body,

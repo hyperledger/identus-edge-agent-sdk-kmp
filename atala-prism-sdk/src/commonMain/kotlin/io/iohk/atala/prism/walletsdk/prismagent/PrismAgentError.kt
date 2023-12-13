@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Error
 import io.iohk.atala.prism.walletsdk.domain.models.KnownPrismError
 
@@ -79,5 +81,23 @@ sealed class PrismAgentError : KnownPrismError() {
 
         override val message: String
             get() = "Failed to onboard.\nStatus code: $statusCode\nResponse: $response"
+    }
+
+    class InvalidCredentialError @JvmOverloads constructor(private val credential: Credential) :
+        PrismAgentError() {
+        override val code: Int
+            get() = 120
+
+        override val message: String
+            get() = "Invalid credential type, ${credential::class} is not supported"
+    }
+
+    class InvalidCredentialFormatError @JvmOverloads constructor(private val expectedFormat: CredentialType) :
+        PrismAgentError() {
+        override val code: Int
+            get() = 121
+
+        override val message: String
+            get() = "Invalid credential format, it must be ${expectedFormat.type}"
     }
 }
