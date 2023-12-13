@@ -32,6 +32,14 @@ data class OfferCredential @JvmOverloads constructor(
 ) {
     public val type: String = ProtocolType.DidcommOfferCredential.value
 
+    /**
+     * Creates a [Message] object with the provided data and returns it.
+     * The [Message] object includes information about the sender, recipient, message body,
+     * and other metadata. The [Message] object is typically used for secure, decentralized communication
+     * in the Atala PRISM architecture.
+     *
+     * @return The [Message] object with the provided data.
+     */
     fun makeMessage(): Message {
         return Message(
             id = id,
@@ -46,6 +54,12 @@ data class OfferCredential @JvmOverloads constructor(
 
     companion object {
 
+        /**
+         * Creates an [OfferCredential] object from the provided [ProposeCredential] data.
+         *
+         * @param proposed The [ProposeCredential] object containing the proposed credential data.
+         * @return The [OfferCredential] object created with the provided data.
+         */
         @JvmStatic
         fun makeOfferFromProposedCredential(proposed: ProposeCredential): OfferCredential {
             return OfferCredential(
@@ -61,6 +75,13 @@ data class OfferCredential @JvmOverloads constructor(
             )
         }
 
+        /**
+         * Converts a Message object to an OfferCredential object.
+         *
+         * @param fromMessage The Message object to convert.
+         * @return The converted OfferCredential object.
+         * @throws PrismAgentError.InvalidMessageType if the message type is invalid or the "from" and "to" fields are not present.
+         */
         @JvmStatic
         @Throws(PrismAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): OfferCredential {
@@ -77,9 +98,6 @@ data class OfferCredential @JvmOverloads constructor(
 
             val fromDID = fromMessage.from
             val toDID = fromMessage.to
-            val json = Json {
-                ignoreUnknownKeys = true
-            }
             val body = Json.decodeFromString<Body>(fromMessage.body)
             return OfferCredential(
                 id = fromMessage.id,
@@ -92,6 +110,12 @@ data class OfferCredential @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Checks if the current instance of `OfferCredential` is equal to the given object.
+     *
+     * @param other The object to compare with the current instance of `OfferCredential`.
+     * @return `true` if the objects are equal, `false` otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -109,8 +133,22 @@ data class OfferCredential @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Calculates the hash code for the current instance of the OfferCredential class.
+     *
+     * The hash code is computed by combining the hash codes of the following properties:
+     * - id
+     * - body
+     * - attachments
+     * - thid (if not null)
+     * - from
+     * - to
+     * - type
+     *
+     * @return The computed hash code for the current instance of the OfferCredential class.
+     */
     override fun hashCode(): Int {
-        var result = id?.hashCode() ?: 0
+        var result = id.hashCode()
         result = 31 * result + body.hashCode()
         result = 31 * result + attachments.contentHashCode()
         result = 31 * result + (thid?.hashCode() ?: 0)
@@ -120,6 +158,15 @@ data class OfferCredential @JvmOverloads constructor(
         return result
     }
 
+    /**
+     * Represents the body of an OfferCredential message.
+     *
+     * @property goalCode The goal code associated with the credential.
+     * @property comment Additional comments related to the credential.
+     * @property replacementId The ID of the credential being replaced, if applicable.
+     * @property multipleAvailable Indicates if multiple credentials of the same type are available for selection.
+     * @property credentialPreview The preview of the credential to be offered.
+     */
     @Serializable
     data class Body @JvmOverloads constructor(
         @SerialName(GOAL_CODE)
@@ -132,6 +179,12 @@ data class OfferCredential @JvmOverloads constructor(
         @SerialName(CREDENTIAL_PREVIEW)
         val credentialPreview: CredentialPreview
     ) {
+        /**
+         * Compares this [Body] object to the specified [other] object for equality.
+         *
+         * @param other The object to compare for equality.
+         * @return `true` if the objects are equal, `false` otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -147,6 +200,18 @@ data class OfferCredential @JvmOverloads constructor(
             return true
         }
 
+        /**
+         * Computes the hash code value for this object.
+         *
+         * The hash code is computed by combining the hash codes of the following properties:
+         * - goalCode
+         * - comment
+         * - replacementId
+         * - multipleAvailable
+         * - credentialPreview
+         *
+         * @return The hash code value for this object.
+         */
         override fun hashCode(): Int {
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)
@@ -158,6 +223,16 @@ data class OfferCredential @JvmOverloads constructor(
     }
 }
 
+/**
+ * Builds an OfferCredential object with the provided data.
+ *
+ * @param fromDID The DID of the sender.
+ * @param toDID The DID of the recipient.
+ * @param thid The thread ID.
+ * @param credentialPreview The preview of the credential.
+ * @param credentials The map of credentials. Default value is an empty map.
+ * @return The constructed OfferCredential object.
+ */
 @JvmOverloads
 inline fun <reified T : Serializable> OfferCredential.Companion.build(
     fromDID: DID,

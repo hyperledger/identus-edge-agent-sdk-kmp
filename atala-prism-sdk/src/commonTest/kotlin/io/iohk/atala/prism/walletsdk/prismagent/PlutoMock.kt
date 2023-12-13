@@ -11,8 +11,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
+import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
-import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 
 class PlutoMock : Pluto {
@@ -94,7 +94,7 @@ class PlutoMock : Pluto {
         wasStoreMessagesCalled = true
     }
 
-    override fun storePrivateKeys(privateKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
         wasStorePrivateKeysCalled = true
     }
 
@@ -102,7 +102,7 @@ class PlutoMock : Pluto {
         wasStoreMediatorCalled = true
     }
 
-    override fun storeCredential(credential: StorableCredential) {
+    override fun storeCredential(storableCredential: StorableCredential) {
         wasStoreCredentialCalled = true
     }
 

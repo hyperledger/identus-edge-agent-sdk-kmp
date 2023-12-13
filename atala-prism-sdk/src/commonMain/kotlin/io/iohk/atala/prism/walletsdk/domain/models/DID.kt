@@ -19,32 +19,59 @@ data class DID @JvmOverloads constructor(
     val method: String,
     val methodId: String
 ) {
-
-    // @JsName("fromString")
+    /**
+     * Constructor overload for creating a [DID] object based on a [String].
+     *
+     * @param string The input [String] from which the [DID] object will be created.
+     * The [String] should have the format "schema:method:methodId".
+     */
     constructor(
         string: String
     ) : this(getSchemaFromString(string), getMethodFromString(string), getMethodIdFromString(string))
 
+    /**
+     * Returns a string representation of the DID object.
+     *
+     * @return The string representation of the DID in the format "schema:method:methodId".
+     */
     override fun toString(): String {
         return "$schema:$method:$methodId"
     }
 
     companion object {
+        /**
+         * Extracts the schema from the given string representation of a DID.
+         *
+         * @param string The input string in the format "schema:method:methodId".
+         * @return The extracted schema from the input string.
+         */
         @JvmStatic
         fun getSchemaFromString(string: String): String {
             val split = string.split(DID_SEPARATOR)
             return split[0]
         }
 
+        /**
+         * Retrieves the method component from a given string representation of a DID.
+         *
+         * @param string The input string in the format "schema:method:methodId".
+         * @return The extracted method component from the input string.
+         */
         @JvmStatic
         fun getMethodFromString(string: String): String {
             val split = string.split(DID_SEPARATOR)
             return split[1]
         }
 
+        /**
+         * Retrieves the methodId component from a given string representation of a DID.
+         *
+         * @param string The input string in the format "schema:method:methodId".
+         * @return The extracted methodId component from the input string.
+         */
         @JvmStatic
         fun getMethodIdFromString(string: String): String {
-            var split = string.split(DID_SEPARATOR).toMutableList()
+            val split = string.split(DID_SEPARATOR).toMutableList()
             split.removeFirst()
             split.removeFirst()
             return split.joinToString(DID_SEPARATOR)

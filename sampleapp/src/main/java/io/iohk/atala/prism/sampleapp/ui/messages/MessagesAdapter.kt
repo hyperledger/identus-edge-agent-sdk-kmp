@@ -52,13 +52,8 @@ class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) 
     }
 
     inner class MessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val type: TextView
-        private val body: TextView
-
-        init {
-            type = itemView.findViewById(R.id.message_type)
-            body = itemView.findViewById(R.id.message)
-        }
+        private val type: TextView = itemView.findViewById(R.id.message_type)
+        private val body: TextView = itemView.findViewById(R.id.message)
 
         fun bind(message: Message) {
             type.text = message.piuri

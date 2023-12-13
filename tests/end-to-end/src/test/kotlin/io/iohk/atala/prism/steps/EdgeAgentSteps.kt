@@ -92,6 +92,11 @@ class EdgeAgentSteps {
         edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
     }
 
+    @Then("{actor} should receive the anonymous credential")
+    fun `Edge Agent should receive the anonymous credential`(edgeAgent: Actor) {
+        edgeAgentWorkflow.waitToReceiveAnonymousCredential(edgeAgent, 1)
+    }
+
     @Then("{actor} wait to receive {} issued credentials")
     fun `Edge Agent wait to receive issued credentials`(edgeAgent: Actor, expectedNumberOfCredentials: Int) {
         edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, expectedNumberOfCredentials)

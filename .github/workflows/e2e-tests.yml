@@ -12,54 +12,49 @@ on:
       mediatorOobUrl:
         required: true
         description: Mediator out-of-band url
-        default: https://sit-prism-mediator.atalaprism.io/invitationOOB
+        default: https://beta-mediator.atalaprism.io/invitationOOB
       prismAgentUrl:
         required: true
         description: Prism-agent server url
-        default: https://sit-prism-agent-issuer.atalaprism.io/prism-agent
-      publishedDid:
-        required: false
-        description: Published DID
-        default: did:prism:dac7505c41dd8e380b187544e8ae77e1ff8e39f62cd4d8d83310e23
-      schemaId:
-        required: false
-        description: Schema ID
-        default: 99647c77-5074-369f-85ed-067bfe062f77
+        default: https://sit-prism-agent-issuer.atalaprism.io/prism-agent/
       apiKey:
         required: false
         description: Authorization key
-        default: 1gnp5fzLTwNBvLBXLk9THLgxe9SLoh+7
+      publishedDid:
+        required: false
+        description: Published DID
+      jwtSchemaGuid:
+        required: false
+        description: JWT schema GUID
+      anoncredDefinitionGuid:
+        required: false
+        description: Anoncred definition GUID
   push:
     branches:
       - main
+      - prerelease
+      - release
 
 env:
-  JAVA_VERSION: 11
   ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
   ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-  GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
-  GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-  MEDIATOR_OOB_URL: ${{ inputs.mediatorOobUrl || vars.MEDIATOR_OOB_URL }}
-  PRISM_AGENT_URL: ${{ inputs.prismAgentUrl || vars.PRISM_AGENT_URL }}
-  PUBLISHED_DID: ${{ inputs.publishedDid || vars.PUBLISHED_DID }}
-  SCHEMA_ID: ${{ inputs.schemaId || vars.SCHEMA_ID }}
-  APIKEY: ${{ inputs.apiKey || secrets.APIKEY }}
-  NODE_AUTH_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
 
 jobs:
   run-e2e-tests:
-    name: "Run"
+    name: 'Run'
     runs-on: ubuntu-latest
 
     steps:
       - name: Mask apikey
+        env:
+          APIKEY: ${{ inputs.apiKey || secrets.APIKEY }}
         run: echo "::add-mask::${{env.APIKEY}}"
 
-      - name: Install Java ${{ env.JAVA_VERSION }}
+      - name: Install Java 11
         uses: actions/setup-java@v3
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: "adopt"
+          java-version: 11
+          distribution: 'adopt'
 
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -72,11 +67,18 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Publish to maven local
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'push' || github.event_name == 'schedule'
         run: |
           ./gradlew publishToMavenLocal
 
       - name: Run tests
+        env:
+          MEDIATOR_OOB_URL: ${{ inputs.mediatorOobUrl || vars.MEDIATOR_OOB_URL }}
+          PRISM_AGENT_URL: ${{ inputs.prismAgentUrl || vars.PRISM_AGENT_URL }}
+          PUBLISHED_DID: ${{ inputs.publishedDid || vars.PUBLISHED_DID }}
+          JWT_SCHEMA_GUID: ${{ inputs.jwtSchemaGuid || vars.SCHEMA_ID }}
+          ANONCRED_DEFINITION_GUID: ${{ inputs.anoncredDefinitionGuid || vars.ANONCRED_DEFINITION_GUID }}
+          APIKEY: ${{ inputs.apiKey || secrets.APIKEY }}
         working-directory: tests/end-to-end
         run: |
           ./gradlew test --tests "TestSuite"
@@ -91,4 +93,4 @@ jobs:
         with:
           name: atala-prism-sdk-kmm
           path: tests/end-to-end/target/site/serenity
-          if-no-files-found: error
+          if-no-files-found: 'error'

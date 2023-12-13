@@ -11,6 +11,13 @@ data class KeyCurve @JvmOverloads constructor(
     val index: Int? = 0
 )
 
+/**
+ * Enumeration representing supported key curves.
+ *
+ * @property value The string value of the curve.
+ *
+ * @constructor Creates a Curve object with the given value.
+ */
 @Serializable
 enum class Curve(val value: String) {
     X25519("X25519"),

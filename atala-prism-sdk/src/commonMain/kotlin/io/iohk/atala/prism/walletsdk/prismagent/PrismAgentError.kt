@@ -1,5 +1,7 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
+import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Error
 import io.iohk.atala.prism.walletsdk.domain.models.KnownPrismError
 
@@ -21,12 +23,12 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "The system could not parse the invitation, the message/json are invalid"
     }
 
-    class UnknownInvitationTypeError : PrismAgentError() {
+    class UnknownInvitationTypeError(private val type: String) : PrismAgentError() {
         override val code: Int
             get() = 113
 
         override val message: String
-            get() = "The type of the invitation is not supported."
+            get() = "The type of the invitation is not supported: $type"
     }
 
     class InvalidMessageType(private val type: String, private val shouldBe: String) : PrismAgentError() {
@@ -45,7 +47,8 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "There is no mediator.\nYou need to provide a mediation handler and start the prism agent before doing some operations."
     }
 
-    class MediationRequestFailedError(private val underlyingError: Array<Error>? = null) : PrismAgentError() {
+    class MediationRequestFailedError
+    @JvmOverloads constructor(private val underlyingError: Array<Error>? = null) : PrismAgentError() {
         override val code: Int
             get() = 116
 
@@ -79,5 +82,23 @@ sealed class PrismAgentError : KnownPrismError() {
 
         override val message: String
             get() = "Failed to onboard.\nStatus code: $statusCode\nResponse: $response"
+    }
+
+    class InvalidCredentialError @JvmOverloads constructor(private val credential: Credential) :
+        PrismAgentError() {
+        override val code: Int
+            get() = 120
+
+        override val message: String
+            get() = "Invalid credential type, ${credential::class} is not supported"
+    }
+
+    class InvalidCredentialFormatError @JvmOverloads constructor(private val expectedFormat: CredentialType) :
+        PrismAgentError() {
+        override val code: Int
+            get() = 121
+
+        override val message: String
+            get() = "Invalid credential format, it must be ${expectedFormat.type}"
     }
 }

@@ -1,17 +1,16 @@
 package io.iohk.atala.prism.walletsdk.pluto.data
 
-import com.squareup.sqldelight.db.SqlDriver
-import com.squareup.sqldelight.sqlite.driver.JdbcSqliteDriver
+import app.cash.sqldelight.db.SqlDriver
+import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 
 actual class DbConnection actual constructor() {
     actual var driver: SqlDriver? = null
-    actual suspend fun connectDb(context: Any?): PrismPlutoDb {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY).also { driver ->
-            PrismPlutoDb.Schema.create(driver)
-        }
+    actual suspend fun connectDb(context: Any?): SqlDriver {
+        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        PrismPlutoDb.Schema.create(driver)
         this.driver = driver
-        return PrismPlutoDb(driver)
+        return driver
     }
 }
 

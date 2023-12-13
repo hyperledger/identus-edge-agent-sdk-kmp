@@ -15,6 +15,17 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+@Serializable
+/**
+ * The `RequestPresentation` class represents a request for presentation of credentials or proofs in a DIDComm protocol.
+ *
+ * @property id The unique identifier of the request.
+ * @property body The content of the request.
+ * @property attachments The array of attachment descriptors associated with the request.
+ * @property thid The thread ID of the request message. Default value is `null`.
+ * @property from The DID of the sender of the request.
+ * @property to The DID of the recipient of the request.
+ */
 data class RequestPresentation(
     val id: String = UUID.randomUUID4().toString(),
     val body: Body,
@@ -26,6 +37,13 @@ data class RequestPresentation(
 
     val type = ProtocolType.DidcommRequestPresentation.value
 
+    /**
+     * Creates a new [Message] object based on the current state of the [RequestPresentation] instance.
+     * The [Message] object contains information about the sender, recipient, message body, and other metadata.
+     * This method is typically used to convert a [RequestPresentation] instance into a [Message] object for communication purposes.
+     *
+     * @return The newly created [Message] object.
+     */
     fun makeMessage(): Message {
         return Message(
             id = this.id,
@@ -38,6 +56,16 @@ data class RequestPresentation(
         )
     }
 
+    /**
+     * Checks if this [RequestPresentation] object is equal to the specified [other] object.
+     *
+     * Two [RequestPresentation] objects are considered equal if they meet the following conditions:
+     * - The two objects have the same class type.
+     * - The id, body, attachments, thid, from, to, and type properties of the two objects are also equal.
+     *
+     * @param other The object to compare with this [RequestPresentation] object.
+     * @return true if the specified [other] object is equal to this [RequestPresentation] object, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -53,6 +81,20 @@ data class RequestPresentation(
         return type == other.type
     }
 
+    /**
+     * Calculates the hash code for the [RequestPresentation] object.
+     *
+     * The hash code is calculated based on the following properties of the [RequestPresentation] object:
+     * - [id]
+     * - [body]
+     * - [attachments]
+     * - [thid]
+     * - [from]
+     * - [to]
+     * - [type]
+     *
+     * @return The hash code value for the [RequestPresentation] object.
+     */
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + body.hashCode()
@@ -65,6 +107,14 @@ data class RequestPresentation(
     }
 
     companion object {
+        /**
+         * Converts a given [Message] object to a [RequestPresentation] object.
+         *
+         * @param fromMessage The [Message] object to convert.
+         * @return The converted [RequestPresentation] object.
+         * @throws PrismAgentError.InvalidMessageType if the [Message] object does not represent the correct protocol
+         *         or if it is missing the "from" and "to" fields.
+         */
         @JvmStatic
         @Throws(PrismAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): RequestPresentation {
@@ -88,6 +138,13 @@ data class RequestPresentation(
             }
         }
 
+        /**
+         * Creates a [RequestPresentation] object based on the given [msg].
+         *
+         * @param msg The [Message] object representing a proposal.
+         * @return The newly created [RequestPresentation] object.
+         * @throws PrismAgentError.InvalidMessageType if the message type is invalid.
+         */
         @JvmStatic
         @Throws(PrismAgentError.InvalidMessageType::class)
         fun makeRequestFromProposal(msg: Message): RequestPresentation {
@@ -108,6 +165,14 @@ data class RequestPresentation(
         }
     }
 
+    /**
+     * Represents a class that encapsulates the body of a message.
+     *
+     * @property goalCode The goal code associated with the body.
+     * @property comment The comment associated with the body.
+     * @property willConfirm A boolean indicating whether confirmation is required.
+     * @property proofTypes An array of proof types.
+     */
     @Serializable
     data class Body @JvmOverloads constructor(
         @SerialName(GOAL_CODE)
@@ -118,6 +183,16 @@ data class RequestPresentation(
         @SerialName(PROOF_TYPES)
         val proofTypes: Array<ProofTypes>
     ) {
+        /**
+         * Checks if this [Body] object is equal to the specified [other] object.
+         *
+         * Two [Body] objects are considered equal if they meet the following conditions:
+         * - The two objects have the same class type.
+         * - The goalCode, comment, willConfirm, and proofTypes properties of the two objects are also equal.
+         *
+         * @param other The object to compare with this [Body] object.
+         * @return true if the specified [other] object is equal to this [Body] object, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -132,6 +207,17 @@ data class RequestPresentation(
             return true
         }
 
+        /**
+         * Calculates the hash code for the current object.
+         *
+         * The hash code is calculated based on the values of the following properties:
+         * - goalCode
+         * - comment
+         * - willConfirm
+         * - proofTypes
+         *
+         * @return The hash code value for the current object.
+         */
         override fun hashCode(): Int {
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (comment?.hashCode() ?: 0)

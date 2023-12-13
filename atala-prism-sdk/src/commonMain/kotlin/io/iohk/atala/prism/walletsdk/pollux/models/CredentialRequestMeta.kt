@@ -1,20 +1,29 @@
 package io.iohk.atala.prism.walletsdk.pollux.models
 
 import anoncreds_wrapper.CredentialRequestMetadata
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
 
+/**
+ * Represents the metadata for a credential request.
+ *
+ * @property linkSecretName The name of the link secret.
+ * @property json The json string from the wrapper credential request metadata.
+ */
 data class CredentialRequestMeta(
-    var linkSecretBlindingData: LinkSecretBlindingData,
     var linkSecretName: String,
-    var nonce: String
+    var json: String
 ) {
     companion object {
+        /**
+         * Converts a [CredentialRequestMetadata] object into a [CredentialRequestMeta] object.
+         *
+         * @param metadata The [CredentialRequestMetadata] object to convert.
+         * @return The converted [CredentialRequestMeta] object.
+         */
+        @JvmStatic
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
-                linkSecretName = metadata.linkSecretName,
-                linkSecretBlindingData = Json.decodeFromString(metadata.linkSecretBlindingData),
-                nonce = metadata.nonce.getValue()
+                linkSecretName = metadata.getLinkSecretName(),
+                json = metadata.getJson()
             )
         }
     }

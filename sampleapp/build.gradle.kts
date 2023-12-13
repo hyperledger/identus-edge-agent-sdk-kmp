@@ -1,18 +1,19 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("com.google.devtools.ksp") version("1.9.22-1.0.16")
 }
 
 apply(plugin = "kotlinx-atomicfu")
 
 android {
     namespace = "io.iohk.atala.prism.sampleapp"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "io.iohk.atala.prism.sampleapp"
         minSdk = 28
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -72,6 +73,10 @@ dependencies {
     implementation(project(":atala-prism-sdk"))
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
+
+    // Room
+    implementation("androidx.room:room-runtime:2.4.2")
+    ksp("androidx.room:room-compiler:2.4.2")
 
     // Unit Tests
     testImplementation("junit:junit:4.13.2")

@@ -74,6 +74,15 @@ class EdgeAgentWorkflow {
         )
     }
 
+    fun waitToReceiveAnonymousCredential(edgeAgent: Actor, numberOfCredentialOffer: Int) {
+        edgeAgent.attemptsTo(
+            PollingWait.until(
+                UseWalletSdk.credentialOfferStackSize(),
+                equalTo(numberOfCredentialOffer)
+            )
+        )
+    }
+
     fun waitToReceiveCredentialIssuance(edgeAgent: Actor, expectedNumberOfCredentials: Int) {
         edgeAgent.attemptsTo(
             PollingWait.until(

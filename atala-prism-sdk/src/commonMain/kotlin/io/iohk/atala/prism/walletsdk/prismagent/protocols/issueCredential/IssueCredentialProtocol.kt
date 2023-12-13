@@ -5,6 +5,15 @@ import io.iohk.atala.prism.walletsdk.domain.models.UnknownError
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import kotlinx.serialization.Serializable
 
+/**
+ * A class that represents the issue credential protocol in the DIDCommv2 format.
+ *
+ * @property stage The current stage of the protocol.
+ * @property propose The `ProposeCredential` object representing the propose message, or null if not applicable.
+ * @property offer The `OfferCredential` object representing the offer message, or null if not applicable.
+ * @property request The `RequestCredential` object representing the request message, or null if not applicable.
+ * @property connector The `DIDCommConnection` object representing the connection used to send and receive messages.
+ */
 @Serializable
 class IssueCredentialProtocol {
 
@@ -14,6 +23,16 @@ class IssueCredentialProtocol {
     var request: RequestCredential? = null
     val connector: DIDCommConnection
 
+    /**
+     * The IssueCredentialProtocol class represents a protocol for issuing credentials in the Atala PRISM architecture.
+     * It handles different stages of the protocol and communicates with a DIDComm connection to exchange messages.
+     *
+     * @param stage The current stage of the protocol.
+     * @param proposeMessage The propose message received in the protocol.
+     * @param offerMessage The offer message received in the protocol.
+     * @param requestMessage The request message received in the protocol.
+     * @param connector The DIDComm connection to communicate with.
+     */
     @JvmOverloads
     constructor(
         stage: Stage,
@@ -47,6 +66,16 @@ class IssueCredentialProtocol {
         }
     }
 
+    /**
+     * Constructs an instance of [IssueCredentialProtocol] class.
+     * This constructor initializes the object with the provided [message] and [connector].
+     * It determines the stage of the credential issuance process based on the message type in [message],
+     * and assigns the corresponding values to the [stage] and relevant property (propose, offer, or request).
+     *
+     * @param message The message object representing the received message.
+     * @param connector The DIDCommConnection instance used for message exchange.
+     * @throws [UnknownError.SomethingWentWrongError] if the message does not match any known message type.
+     */
     @Throws(UnknownError.SomethingWentWrongError::class)
     constructor(message: Message, connector: DIDCommConnection) {
         this.connector = connector
@@ -83,11 +112,44 @@ class IssueCredentialProtocol {
             }
 
             else -> throw UnknownError.SomethingWentWrongError(
-                customMessage = "Invalid step"
+                message = "Invalid step"
             )
         }
     }
 
+    /**
+     * Proceeds to the next stage of the credential issuance process.
+     *
+     * If the current stage is PROPOSE:
+     * - If `propose` is null, sets the stage to REFUSED and returns.
+     *
+     * If the current stage is OFFER:
+     * - If `offer` is null, sets the stage to REFUSED and returns.
+     *
+     * Based on the current stage, performs the following actions:
+     * - PROPOSE:
+     *   - Creates an OfferCredential from the proposed credential using the method `makeOfferFromProposedCredential()`.
+     *   - Sends the offer message over the connector's connection using `sendMessage()`.
+     *   - Sets the `messageId` to the ID of the sent message.
+     *
+     * - OFFER:
+     *   - Creates a RequestCredential from the offer credential using the method `makeRequestFromOfferCredential()`.
+     *   - Sends the request message over the connector's connection using `sendMessage()`.
+     *   - Sets the `messageId` to the ID of the sent message.
+     *
+     * Based on the value of `messageId`, performs the following actions:
+     * - If `messageId` is null, returns.
+     *
+     * - Otherwise, awaits a response message with the specified `messageId` using `awaitMessageResponse()`.
+     *   If no response message is received, returns.
+     *
+     * Based on the received response message, performs the following actions:
+     * - If the response is an IssueCredential message, sets the stage to COMPLETED.
+     * - If the response is an OfferCredential message, sets the stage to OFFER and assigns the received offer to `this.offer`.
+     * - If the response is a RequestCredential message, sets the stage to REQUEST and assigns the received request to `this.request`.
+     *
+     * @throws Throwable If there is an error in processing the messages.
+     */
     suspend fun nextStage() {
         if (this.stage == Stage.PROPOSE) {
             if (propose == null) {
@@ -154,6 +216,10 @@ class IssueCredentialProtocol {
         }
     }
 
+    /**
+     * Represents the different stages of the credential issuance process.
+     * The stages are PROPOSE, OFFER, REQUEST, COMPLETED, and REFUSED.
+     */
     enum class Stage {
         PROPOSE,
         OFFER,

@@ -3,6 +3,8 @@ package io.iohk.atala.prism.walletsdk.prismagent
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
+import anoncreds_wrapper.Presentation
+import anoncreds_wrapper.Schema
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
@@ -10,8 +12,10 @@ import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequest
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.serialization.json.JsonObject
 
 class PolluxMock : Pollux {
@@ -20,7 +24,7 @@ class PolluxMock : Pollux {
     var processCredentialRequestAnoncredsReturn: Pair<CredentialRequest, CredentialRequestMeta>? = null
 
     override suspend fun parseCredential(
-        data: String,
+        jsonData: String,
         type: CredentialType,
         linkSecret: LinkSecret?,
         credentialMetadata: CredentialRequestMetadata?
@@ -38,6 +42,14 @@ class PolluxMock : Pollux {
         credential: Credential,
         requestPresentationJson: JsonObject
     ): String {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun createVerifiablePresentationAnoncred(
+        request: RequestPresentation,
+        credential: AnonCredential,
+        linkSecret: LinkSecret
+    ): Presentation {
         TODO("Not yet implemented")
     }
 
@@ -64,6 +76,10 @@ class PolluxMock : Pollux {
     }
 
     override suspend fun getCredentialDefinition(id: String): anoncreds_wrapper.CredentialDefinition {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getSchema(schemaId: String): Schema {
         TODO("Not yet implemented")
     }
 }

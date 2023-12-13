@@ -15,8 +15,25 @@ import org.apache.http.HttpStatus
 import java.util.*
 
 class CloudAgentWorkflow {
-    fun createConnection(cloudAgent: Actor) {
-        val createConnection = CreateConnectionRequest("Alice")
+    fun createConnection(cloudAgent: Actor, label: String?, goalCode: String?, goal: String?) {
+        val createConnection = CreateConnectionRequest(
+            label,
+            goalCode,
+            goal
+        )
+
+        cloudAgent.attemptsTo(
+            Post.to("/connections").body(createConnection),
+            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
+        )
+
+        cloudAgent.remember("invitation", lastResponse().get<String>("invitation.invitationUrl"))
+        cloudAgent.remember("connectionId", lastResponse().get<String>("connectionId"))
+    }
+
+    fun createConnectionWithoutOptionalArguments(cloudAgent: Actor) {
+        val createConnection = CreateConnectionRequest()
+
         cloudAgent.attemptsTo(
             Post.to("/connections").body(createConnection),
             Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
@@ -46,8 +63,24 @@ class CloudAgentWorkflow {
         val credential = CreateIssueCredentialRecordRequest(
             claims = mapOf(Pair("automation-required", UUID.randomUUID())),
             issuingDID = Environment.publishedDid,
-            connectionId = connectionId,
-            schemaId = "${Environment.agentUrl}/schema-registry/schemas/${Environment.schemaId}"
+            connectionId = UUID.fromString(connectionId),
+            schemaId = "${Environment.agentUrl}/schema-registry/schemas/${Environment.jwtSchemaGuid}"
+        )
+        cloudAgent.attemptsTo(
+            Post.to("/issue-credentials/credential-offers").body(credential)
+        )
+        cloudAgent.remember("recordId", lastResponse().get<String>("recordId"))
+    }
+
+    fun offerAnonymousCredential(cloudAgent: Actor) {
+        val connectionId = cloudAgent.recall<String>("connectionId")
+        val credential = CreateIssueCredentialRecordRequest(
+            claims = mapOf(Pair("name", "automation"), Pair("age", "99")),
+            automaticIssuance = true,
+            issuingDID = Environment.publishedDid,
+            connectionId = UUID.fromString(connectionId),
+            credentialFormat = "AnonCreds",
+            credentialDefinitionId = UUID.fromString(Environment.anoncredDefinitionId)
         )
         cloudAgent.attemptsTo(
             Post.to("/issue-credentials/credential-offers").body(credential)
@@ -68,7 +101,7 @@ class CloudAgentWorkflow {
             trustIssuers = listOf("") // TODO: use publicated DID
         )
         val presentProofRequest = RequestPresentationInput(
-            connectionId = connectionId,
+            connectionId = UUID.fromString(connectionId),
             options = options,
             proofs = listOf(proofs)
         )

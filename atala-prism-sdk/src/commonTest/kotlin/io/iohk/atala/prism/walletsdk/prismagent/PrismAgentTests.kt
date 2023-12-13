@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.derivation.Mnemonic
+import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
@@ -21,7 +21,6 @@ import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
-import io.iohk.atala.prism.walletsdk.pollux.models.LinkSecretBlindingData
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
@@ -31,6 +30,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboard
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -72,7 +72,7 @@ class PrismAgentTests {
 
     @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val seed = Seed(Mnemonic.createRandomSeed())
+        val seed = Seed(MnemonicHelper.createRandomSeed())
         val validDID = DID("did", "test", "123")
         castorMock.createPrismDIDReturn = validDID
         val agent = PrismAgent(
@@ -225,7 +225,7 @@ class PrismAgentTests {
                 "from":"did:prism:b6c0c33d701ac1b9a262a14454d1bbde3d127d697a76950963c5fd930605:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VmsxEiECSTjyV7sUfCr_ArpN9rvCwR9fRMAhcsr_S7ZRiJk4p5k"
             }
         """
-        assertFailsWith<PrismAgentError.UnknownInvitationTypeError> {
+        assertFailsWith<io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError> {
             agent.parseInvitation(invitationString)
         }
     }
@@ -270,7 +270,7 @@ class PrismAgentTests {
 
         val privateKeys = listOf(
             Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(Mnemonic.createRandomSeed()),
+                seed = Seed(MnemonicHelper.createRandomSeed()),
                 curve = KeyCurve(Curve.SECP256K1)
             ).privateKey
         )
@@ -351,7 +351,7 @@ class PrismAgentTests {
             }
         """
 
-        assertFailsWith<PrismAgentError.UnknownInvitationTypeError> {
+        assertFailsWith<SerializationException> {
             agent.parseInvitation(invitationString.trim())
         }
     }
@@ -481,12 +481,8 @@ class PrismAgentTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
         val meta = CredentialRequestMeta(
-            linkSecretBlindingData = LinkSecretBlindingData(
-                vPrime = "25640768589781180388780947458530942508097609060195936083325202836425537796105863532996457182896416190370043209557677698887790935151362153536943154068082466343529339252470449056527102073900035205398743827912718037139005903291819127500631482122295491777147526837712271367909449810555177615439256541701422814752128559601153332207720895418174855363389532697304935246097129194680107532713993463598420823365761867328806906368762890406604820633668919158697683127114469035627228895027952792675790305070772499052052690434104276748788760647551842035459213572765697025729553350526825112536685989553872204362324245819081933885546131268965572563884162204",
-                vrPrime = null
-            ),
             linkSecretName = "1",
-            nonce = "519571990522308752875135"
+            json = "{\"link_secret_blinding_data\":{\"v_prime\":\"1234\",\"vr_prime\":\"1234\"},\"nonce\":\"411729288962137159046778\",\"link_secret_name\":\"link:secret:id\"}"
         )
         plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 

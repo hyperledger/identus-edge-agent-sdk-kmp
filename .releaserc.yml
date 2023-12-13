@@ -1,6 +1,7 @@
 branches:
   - name: "main"
-  - name: "beta"
+  - name: "release"
+  - name: "prerelease"
     prerelease: "snapshot"
 
 plugins:
