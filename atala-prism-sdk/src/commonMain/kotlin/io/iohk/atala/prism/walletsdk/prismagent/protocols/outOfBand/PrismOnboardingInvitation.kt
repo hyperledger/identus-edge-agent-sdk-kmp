@@ -9,7 +9,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 /**
- * Represents an onboarding invitation for Prism.
+ * Represents an onboarding invitation for PRISM.
  *
  * @param onboardEndpoint The endpoint for onboarding.
  * @property fromString The string representation of the "from" field.
