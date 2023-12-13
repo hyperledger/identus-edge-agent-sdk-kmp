@@ -34,7 +34,7 @@ constructor(
 }
 
 /**
- * A class representing a known error in a Prism.
+ * A class representing a known error in a PRISM.
  *
  * @see Error
  * @see Throwable
