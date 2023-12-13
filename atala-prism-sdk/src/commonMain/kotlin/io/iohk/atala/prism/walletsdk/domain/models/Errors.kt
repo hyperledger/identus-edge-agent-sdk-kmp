@@ -181,7 +181,7 @@ constructor(
     }
 
     /**
-     * A class representing an invalid JSON Web Key (JWK) error in the Prism SDK.
+     * A class representing an invalid JSON Web Key (JWK) error in the PRISM SDK.
      *
      * This error indicates that the JWK provided is not in a valid format.
      *
