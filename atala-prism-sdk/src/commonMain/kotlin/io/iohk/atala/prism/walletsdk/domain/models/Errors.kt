@@ -745,7 +745,7 @@ constructor(
     }
 
     /**
-     * A class representing an error when no domain or challenge is found as part of the offer json.
+     * A class representing an error when no domain or challenge is found as part of the offer JSON.
      *
      * @see PolluxError
      */
