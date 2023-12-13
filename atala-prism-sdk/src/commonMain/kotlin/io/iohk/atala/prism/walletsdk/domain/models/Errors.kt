@@ -144,7 +144,7 @@ constructor(
 
     /**
      * An implementation of the [ApolloError] class that represents an error caused by invalid mnemonic words.
-     * This error occurs when one or more mnemonic words are invalid in a Prism API response.
+     * This error occurs when one or more mnemonic words are invalid in a PRISM API response.
      *
      * @param invalidWords The array of invalid mnemonic words.
      * @property message The error message for this error, which is determined based on the presence of invalid words.
