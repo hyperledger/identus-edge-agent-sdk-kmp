@@ -88,7 +88,7 @@ constructor(
 }
 
 /**
- * A class representing a common error in a Prism.
+ * A class representing a common error in a PRISM.
  *
  * @see KnownPrismError
  */
