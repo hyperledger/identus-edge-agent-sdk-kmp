@@ -6,7 +6,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 /**
- * Represents an onboarding invitation in Prism.
+ * Represents an onboarding invitation in PRISM.
  *
  * This class is responsible for parsing and storing the information from a PRISM onboarding invitation.
  *
