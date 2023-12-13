@@ -698,7 +698,7 @@ constructor(
 ) : KnownPrismError(message, cause) {
 
     /**
-     * Represents an error that occurs when attempting to create a JWT presentation without providing a Prism DID.
+     * Represents an error that occurs when attempting to create a JWT presentation without providing a PRISM DID.
      *
      * @see PolluxError
      */
