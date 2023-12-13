@@ -389,7 +389,7 @@ constructor(
     }
 
     /**
-     * Represents an error that occurs when the initial state of a Prism DID changes,
+     * Represents an error that occurs when the initial state of a PRISM DID changes,
      * making it invalid.
      *
      * @see CastorError
