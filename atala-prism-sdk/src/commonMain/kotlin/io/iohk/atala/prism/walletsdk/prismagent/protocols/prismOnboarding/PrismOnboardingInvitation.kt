@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 /**
  * Represents an onboarding invitation in Prism.
  *
- * This class is responsible for parsing and storing the information from a Prism onboarding invitation.
+ * This class is responsible for parsing and storing the information from a PRISM onboarding invitation.
  *
  * @constructor Creates a PrismOnboardingInvitation object from a JSON string representation of the invitation.
  * @param jsonString The JSON string representation of the invitation.
