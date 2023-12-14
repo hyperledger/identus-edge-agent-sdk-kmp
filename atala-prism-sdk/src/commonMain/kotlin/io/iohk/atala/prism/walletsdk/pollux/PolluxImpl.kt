@@ -195,7 +195,7 @@ class PolluxImpl(
 
         val requestedAttributes = listOf(
             RequestedAttribute(
-                referent = "name",
+                referent = "attribute_1",
                 revealed = true
             )
         )

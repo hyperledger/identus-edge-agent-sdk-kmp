@@ -939,8 +939,8 @@ class PrismAgent {
                     throw PrismAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
                 }
                 val linkSecret = getLinkSecret()
-                pollux.createVerifiablePresentationAnoncred(request, credential as AnonCredential, linkSecret)
-                presentationString = ""
+                val presentation = pollux.createVerifiablePresentationAnoncred(request, credential as AnonCredential, linkSecret)
+                presentationString = presentation.getJson()
             }
 
             else -> {
