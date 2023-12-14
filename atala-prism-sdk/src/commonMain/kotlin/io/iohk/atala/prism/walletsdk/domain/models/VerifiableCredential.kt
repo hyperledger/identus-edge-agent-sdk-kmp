@@ -20,7 +20,11 @@ data class VerifiableCredentialTypeContainer(
  * Enum class representing different types of verifiable credentials.
  * The CredentialType is used to indicate the type of verifiable credential.
  * The possible values of the enum are jwt, w3c, and unknown.
- * Note: The CredentialType enum is used to indicate the type of verifiable credential.
+::: info
+
+ The CredentialType enum is used to indicate the type of verifiable credential.
+ 
+ :::
  */
 @Serializable
 enum class CredentialType(val type: String) {
