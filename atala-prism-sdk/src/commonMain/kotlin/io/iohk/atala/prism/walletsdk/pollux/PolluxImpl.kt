@@ -188,6 +188,7 @@ class PolluxImpl(
         val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
         val cred = anoncreds_wrapper.Credential(credential.id)
 
+        // TODO: Replace this piece of code with the new expose methods Ahmed provided on the newer version of anoncreds wrapper.
         val jsonElement = Json.parseToJsonElement(attachmentBase64.base64.base64UrlDecoded)
         val attributes = (jsonElement as JsonObject)["requested_attributes"]
         val attr = (attributes as JsonObject)["attribute_1"] as JsonObject
@@ -199,6 +200,7 @@ class PolluxImpl(
                 revealed = true
             )
         )
+        // TODO: Until here
 
         val credentialRequests = CredentialRequests(
             credential = cred,
