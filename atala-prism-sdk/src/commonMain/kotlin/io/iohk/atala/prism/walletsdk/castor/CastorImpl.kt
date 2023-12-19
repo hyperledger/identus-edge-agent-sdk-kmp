@@ -28,17 +28,11 @@ import kotlin.jvm.Throws
  * or a more traditional system requiring secure and private identity management, Castor provides the tools and features
  * you need to easily create, manage, and resolve DIDs.
  */
-class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)) : Castor {
-    val apollo: Apollo
-    var resolvers: Array<DIDResolver>
-
-    init {
-        this.apollo = apollo
-        this.resolvers = arrayOf(
-            PeerDIDResolver(),
-            LongFormPrismDIDResolver(this.apollo)
-        )
-    }
+class CastorImpl(val apollo: Apollo, private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)) : Castor {
+    var resolvers: Array<DIDResolver> = arrayOf(
+        PeerDIDResolver(),
+        LongFormPrismDIDResolver(this.apollo)
+    )
 
     /**
      * Parses a string representation of a Decentralized Identifier (DID) into a DID object.
@@ -127,7 +121,7 @@ class CastorImpl(apollo: Apollo, private val logger: PrismLogger = PrismLoggerIm
             CastorShared.getKeyPairFromCoreProperties(document.coreProperties)
 
         if (keyPairs.isEmpty()) {
-            throw CastorError.InvalidKeyError()
+            throw CastorError.InvalidKeyError("KeyPairs is empty")
         }
 
         for (keyPair in keyPairs) {

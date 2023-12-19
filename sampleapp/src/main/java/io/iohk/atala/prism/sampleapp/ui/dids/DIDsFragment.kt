@@ -46,6 +46,7 @@ class DIDsFragment : Fragment() {
     }
 
     companion object {
+        @JvmStatic
         fun newInstance(): DIDsFragment {
             return DIDsFragment()
         }

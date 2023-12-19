@@ -46,15 +46,29 @@ import org.didcommx.didcomm.utils.fromJsonToMap
 import java.time.Instant.now
 import kotlin.jvm.Throws
 
+/**
+ * Wrapper class for the DIDComm functionality.
+ *
+ * @param castor The instance of Castor used for DID resolution.
+ * @param pluto The instance of Pluto used for secrets resolution.
+ * @param apollo The instance of Apollo used for secrets resolution.
+ */
 class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProtocol {
     private val didDocResolver = DIDCommDIDResolver(castor)
     private val secretsResolver = DIDCommSecretsResolver(pluto, apollo)
     private val didComm = DIDComm(didDocResolver, secretsResolver)
     private val logger = PrismLoggerImpl(LogComponent.MERCURY)
 
+    /**
+     * Converts a JSON element to a map.
+     *
+     * @param element The JSON element to convert.
+     * @return The resulting map.
+     */
     private fun jsonObjectToMap(element: JsonElement): Map<String, Any?> {
-        var bodyMap = mutableMapOf<String, Any?>()
-        if (element is JsonPrimitive) {
+        val bodyMap = mutableMapOf<String, Any?>()
+        return if (element is JsonPrimitive) {
+            bodyMap
         } else {
             val keys = element.jsonObject.keys
             keys.forEach { key ->
@@ -64,7 +78,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
                     }
 
                     is JsonArray -> {
-                        var array = mutableListOf<Any>()
+                        val array = mutableListOf<Any>()
                         value.forEach {
                             when (it) {
                                 is JsonObject -> {
@@ -116,10 +130,16 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
                     }
                 }
             }
+            bodyMap
         }
-        return bodyMap
     }
 
+    /**
+     * Packs a [Message] object into an encrypted string message.
+     *
+     * @param message The [Message] object to be packed.
+     * @return The packed message as a string.
+     */
     override fun packEncrypted(message: Message): String {
         val toString = message.to.toString()
 
@@ -158,6 +178,12 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         return result.packedMessage
     }
 
+    /**
+     * Parses an array of AttachmentDescriptors and converts them into a list of Attachments.
+     *
+     * @param attachments The array of AttachmentDescriptors to be parsed.
+     * @return The list of parsed Attachments.
+     */
     private fun parseAttachments(attachments: Array<AttachmentDescriptor>): List<Attachment> {
         return attachments.fold(mutableListOf()) { acc, attachment ->
             acc.add(
@@ -177,6 +203,13 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         }
     }
 
+    /**
+     * Parse the given [AttachmentData] and return an instance of [Attachment.Data].
+     *
+     * @throws MercuryError.UnknownAttachmentDataError if an unknown [AttachmentData] type is found
+     * @param data The [AttachmentData] to parse
+     * @return The parsed [Attachment.Data]
+     */
     @Throws(MercuryError.UnknownAttachmentDataError::class)
     private fun parseAttachmentData(data: AttachmentData): Attachment.Data {
         if (data is AttachmentBase64) {
@@ -194,6 +227,12 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         throw MercuryError.UnknownAttachmentDataError()
     }
 
+    /**
+     * Unpacks a packed message into a domain-specific [Message] object.
+     *
+     * @param message The packed message to unpack.
+     * @return The unpacked [Message] object.
+     */
     override fun unpack(message: String): Message {
         val result = didComm.unpack(
             UnpackParams(
@@ -224,6 +263,13 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         return domainMsg
     }
 
+    /**
+     * Parses a list of attachments into an array of AttachmentDescriptors.
+     *
+     * @param attachments The list of attachments to be parsed. Can be null.
+     * @return An array of parsed AttachmentDescriptors.
+     * @throws MercuryError.MessageAttachmentWithoutIDError if a message attachment is found without an "id".
+     */
     @Throws(MercuryError.MessageAttachmentWithoutIDError::class)
     private fun parseAttachmentsToDomain(attachments: List<Attachment>?): Array<AttachmentDescriptor> {
         return (attachments ?: emptyList()).fold(arrayOf()) { acc, attachment ->
@@ -250,6 +296,16 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         }
     }
 
+    /**
+     * Parses the given [Attachment.Data] and converts it into an instance of [AttachmentData].
+     * If the [Attachment.Data] represents base64-encoded data, it creates an instance of [AttachmentBase64].
+     * If the [Attachment.Data] represents JSON data, it creates an instance of [AttachmentJsonData].
+     * If the [Attachment.Data] represents a link to external data, it creates an instance of [AttachmentLinkData].
+     *
+     * @throws MercuryError.UnknownAttachmentDataError if an unknown [Attachment.Data] type is found
+     * @param data The [Attachment.Data] to parse
+     * @return The parsed [AttachmentData]
+     */
     @Throws(MercuryError.UnknownAttachmentDataError::class)
     private fun parseAttachmentDataToDomain(data: Attachment.Data): AttachmentData {
         val jsonObj = data.toJSONObject()

@@ -37,6 +37,7 @@ enum class ProtocolType(val value: String) {
     None("");
 
     companion object {
+        @JvmStatic
         fun findProtocolType(type: String, default: ProtocolType): ProtocolType {
             return ProtocolType.values().find { it.value == type } ?: default
         }
@@ -59,6 +60,13 @@ object ProtocolTypeSerializer : KSerializer<ProtocolType> {
     }
 }
 
+/**
+ * Finds the ProtocolType based on the given string value.
+ *
+ * @param string The string value to match with the ProtocolType's value.
+ * @return The matched ProtocolType.
+ * @throws PrismAgentError.UnknownInvitationTypeError If the type of the invitation is not supported.
+ */
 @Throws(PrismAgentError.UnknownInvitationTypeError::class)
 fun findProtocolTypeByValue(string: String): ProtocolType {
     val it = ProtocolType.values().iterator()
@@ -68,5 +76,5 @@ fun findProtocolTypeByValue(string: String): ProtocolType {
             return internalType
         }
     }
-    throw PrismAgentError.UnknownInvitationTypeError()
+    throw PrismAgentError.UnknownInvitationTypeError(string)
 }

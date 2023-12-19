@@ -11,12 +11,28 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import pbandk.ByteArr
 import kotlin.jvm.Throws
 
+/**
+ * Represents a public key for the Atala PRISM system.
+ *
+ * @property apollo The instance of [Apollo] used for cryptographic operations.
+ * @property id The ID of the public key.
+ * @property usage The intended usage of the public key.
+ * @property keyData The actual public key data.
+ */
 class PrismDIDPublicKey {
     private val apollo: Apollo
     val id: String
     val usage: Usage
     val keyData: PublicKey
 
+    /**
+     * Represents a PrismDIDPublicKey.
+     *
+     * @param apollo The cryptography suite representation.
+     * @param id The ID of the public key.
+     * @param usage The usage of the public key.
+     * @param keyData The actual public key data.
+     */
     constructor(apollo: Apollo, id: String, usage: Usage, keyData: PublicKey) {
         this.apollo = apollo
         this.id = id
@@ -24,6 +40,13 @@ class PrismDIDPublicKey {
         this.keyData = keyData
     }
 
+    /**
+     * Constructs a PrismDIDPublicKey object.
+     *
+     * @param apollo The Apollo object used for cryptographic operations in the Atala PRISM.
+     * @param proto The protobuf representation of the public key.
+     * @throws CastorError.InvalidPublicKeyEncoding if the encoding of the key is invalid.
+     */
     @Throws(CastorError.InvalidPublicKeyEncoding::class)
     constructor(apollo: Apollo, proto: io.iohk.atala.prism.protos.PublicKey) {
         this.apollo = apollo
@@ -40,6 +63,11 @@ class PrismDIDPublicKey {
         }
     }
 
+    /**
+     * Converts the PublicKey object to a Protobuf PublicKey object.
+     *
+     * @return the converted Protobuf PublicKey object
+     */
     fun toProto(): io.iohk.atala.prism.protos.PublicKey {
         val compressedPublicKey = Secp256k1PublicKey(Secp256k1Lib().compressPublicKey(keyData.getValue()))
         return io.iohk.atala.prism.protos.PublicKey(
@@ -51,6 +79,12 @@ class PrismDIDPublicKey {
         )
     }
 
+    /**
+     * Enumeration representing the possible usages of a public key.
+     *
+     * @property value The string representation of the usage.
+     * @constructor Creates an instance of the Usage enum with the given value.
+     */
     enum class Usage(val value: String) {
         MASTER_KEY("masterKey"),
         ISSUING_KEY("issuingKey"),
@@ -63,6 +97,11 @@ class PrismDIDPublicKey {
     }
 }
 
+/**
+ * Converts a `KeyUsage` object to a `PrismDIDPublicKey.Usage` object.
+ *
+ * @return The corresponding `PrismDIDPublicKey.Usage` object.
+ */
 fun KeyUsage.fromProto(): PrismDIDPublicKey.Usage {
     return when (this) {
         is KeyUsage.MASTER_KEY -> PrismDIDPublicKey.Usage.MASTER_KEY
@@ -77,6 +116,11 @@ fun KeyUsage.fromProto(): PrismDIDPublicKey.Usage {
     }
 }
 
+/**
+ * Converts a Secp256k1PublicKey object to a CompressedECKeyData object.
+ *
+ * @return the converted CompressedECKeyData object.
+ */
 fun Secp256k1PublicKey.toProto(): CompressedECKeyData {
     return CompressedECKeyData(
         curve = Curve.SECP256K1.value,
@@ -84,6 +128,12 @@ fun Secp256k1PublicKey.toProto(): CompressedECKeyData {
     )
 }
 
+/**
+ * Generates the identifier for a PrismDIDPublicKey.Usage based on the given index.
+ *
+ * @param index The index used to generate the identifier.
+ * @return The generated identifier.
+ */
 fun PrismDIDPublicKey.Usage.id(index: Int): String {
     return when (this) {
         PrismDIDPublicKey.Usage.MASTER_KEY -> "master$index"
@@ -97,6 +147,11 @@ fun PrismDIDPublicKey.Usage.id(index: Int): String {
     }
 }
 
+/**
+ * Converts the Usage value of a PrismDIDPublicKey to the corresponding KeyUsage enum value.
+ *
+ * @return The KeyUsage enum value corresponding to the Usage value of the PrismDIDPublicKey.
+ */
 fun PrismDIDPublicKey.Usage.toProto(): KeyUsage {
     return when (this) {
         PrismDIDPublicKey.Usage.MASTER_KEY -> KeyUsage.MASTER_KEY
@@ -110,6 +165,12 @@ fun PrismDIDPublicKey.Usage.toProto(): KeyUsage {
     }
 }
 
+/**
+ * Returns the default ID for the current usage of the PrismDIDPublicKey.
+ * This method generates an ID based on the usage enum value.
+ *
+ * @return The default ID for the current usage.
+ */
 fun PrismDIDPublicKey.Usage.defaultId(): String {
     return this.id(0)
 }

@@ -14,22 +14,49 @@ data class DIDUrl @JvmOverloads constructor(
     val fragment: String? = null
 ) {
 
+    /**
+     * Returns a string representation of the DID URL.
+     *
+     * @return The string representation of the DID URL.
+     */
     fun string(): String {
         return "${did}${fragmentString()}"
     }
 
+    /**
+     * Returns the path portion of a DID URL as a string.
+     * If the path is null, an empty string is returned.
+     *
+     * @return The path portion of a DID URL.
+     */
     fun pathString(): String {
         return "/${path?.joinToString(DID_URL_SEPARATOR)}"
     }
 
+    /**
+     * Generates a query string based on the provided parameters.
+     *
+     * @return The query string in the format "?key1=value1&key2=value2&..."
+     */
     fun queryString(): String {
         return "?${parameters?.map { "${it.key}=${it.value}" }?.joinToString("&")}"
     }
 
+    /**
+     * Returns the fragment portion of a DID URL as a string.
+     *
+     * @return The fragment portion of a DID URL.
+     */
     fun fragmentString(): String {
         return "#$fragment"
     }
 
+    /**
+     * Checks if the current [DIDUrl] instance is equal to the specified [other] object.
+     *
+     * @param other The object to compare with the current [DIDUrl].
+     * @return `true` if the objects are equal, `false` otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -47,6 +74,11 @@ data class DIDUrl @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Calculates the hash code for the current [DIDUrl] instance.
+     *
+     * @return The hash code value for the [DIDUrl] object.
+     */
     override fun hashCode(): Int {
         var result = did.hashCode()
         result = 31 * result + (path?.contentHashCode() ?: 0)
@@ -55,6 +87,11 @@ data class DIDUrl @JvmOverloads constructor(
         return result
     }
 
+    /**
+     * Returns a string representation of the current [DIDUrl] instance.
+     *
+     * @return The string representation of the DID URL.
+     */
     override fun toString(): String {
         return string()
     }

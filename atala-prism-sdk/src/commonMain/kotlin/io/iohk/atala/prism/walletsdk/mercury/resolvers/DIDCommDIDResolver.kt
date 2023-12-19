@@ -24,7 +24,20 @@ import org.didcommx.didcomm.diddoc.DIDDocResolver
 import org.didcommx.didcomm.diddoc.VerificationMethod
 import java.util.Optional
 
+/**
+ * A resolver that resolves a Decentralized Identifier (DID) to its corresponding DID Document.
+ *
+ * @param castor The instance of Castor used to resolve DIDs.
+ */
 class DIDCommDIDResolver(val castor: Castor) : DIDDocResolver {
+    /**
+     * Resolves a DID to its corresponding DID Document.
+     *
+     * @param did The DID to resolve.
+     * @return An optional containing the DID Document associated with the DID, or an empty optional if the document cannot be retrieved.
+     * @throws [CastorError.InvalidJWKKeysError] if the JWK keys are not in a valid format.
+     */
+    @Throws(CastorError.InvalidJWKKeysError::class)
     override fun resolve(did: String): Optional<DIDDoc> {
         return runBlocking {
             val doc = castor.resolveDID(did)
