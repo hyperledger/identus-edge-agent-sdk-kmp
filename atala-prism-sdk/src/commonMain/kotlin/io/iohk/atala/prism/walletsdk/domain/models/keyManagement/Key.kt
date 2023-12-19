@@ -14,6 +14,17 @@ abstract class Key {
     abstract val size: Int
     abstract val raw: ByteArray
 
+    /**
+     * Checks if the current Key object is equal to the provided object.
+     * Two Key objects are considered equal if the following conditions are met:
+     * - The objects are references to the same memory location (this === other).
+     * - The other object is not null and is of the same class as Key.
+     * - The raw byte arrays of the keys are equal (raw.contentEquals(other.raw)).
+     * - The keySpecification map contains the CurveKey property and its value is equal to the value of the other key's CurveKey property.
+     *
+     * @param other The object to compare with the current Key.
+     * @return True if the objects are equal, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -31,6 +42,13 @@ abstract class Key {
         return true
     }
 
+    /**
+     * Computes the hash code of the Key object.
+     * The hash code is calculated based on the properties of the keySpecification map and the raw byte array.
+     * Two Key objects with the same keySpecification map and the raw byte array are guaranteed to have the same hash code.
+     *
+     * @return The hash code of the Key object.
+     */
     override fun hashCode(): Int {
         var result = keySpecification[CurveKey().property].hashCode()
         result = 31 * result + raw.contentHashCode()
@@ -116,7 +134,7 @@ fun getKeyCurveByNameAndIndex(name: String, index: Int?): KeyCurve {
         }
 
         else -> {
-            throw ApolloError.InvalidKeyCurve(name, Curve.values().map { it.value }.toTypedArray())
+            throw ApolloError.InvalidKeyCurve(name)
         }
     }
 }

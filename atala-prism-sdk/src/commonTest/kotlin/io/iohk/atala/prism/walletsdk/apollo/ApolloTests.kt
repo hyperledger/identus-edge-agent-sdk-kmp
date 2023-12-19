@@ -199,7 +199,7 @@ class ApolloTests {
     fun testSignAndVerify_whenSignatureIsIncorrect_thenVerifyFails() {
         val keyPair = Ed25519KeyPair.generateKeyPair()
         val message = "This is a test message"
-        var signature = (keyPair.privateKey as Ed25519PrivateKey).sign(message.toByteArray())
+        val signature = (keyPair.privateKey as Ed25519PrivateKey).sign(message.toByteArray())
         signature[0] = 1
         assertFalse((keyPair.publicKey as Ed25519PublicKey).verify(message.toByteArray(), signature))
     }

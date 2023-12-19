@@ -20,9 +20,26 @@ import io.ktor.http.HttpMethod
 import org.didcommx.didcomm.common.Typ
 import org.didcommx.didcomm.utils.isDID
 
+/**
+ * The DIDCommProtocol interface provides methods for packing and unpacking DIDComm messages.
+ */
 interface DIDCommProtocol {
+    /**
+     * Packs a given message object into a string representation.
+     *
+     * @param message The message object to pack.
+     * @return The string representation of the packed message.
+     * @throws [MercuryError.NoDIDReceiverSetError] if DIDReceiver is invalid.
+     * @throws [MercuryError.NoDIDSenderSetError] if DIDSender is invalid.
+     */
     fun packEncrypted(message: Message): String
 
+    /**
+     * Unpacks a given string representation of a message into a [Message] object.
+     *
+     * @param message The string representation of the message to unpack.
+     * @return The unpacked [Message] object.
+     */
     fun unpack(message: String): Message
 }
 
@@ -171,6 +188,14 @@ class MercuryImpl(
         return null
     }
 
+    /**
+     * Prepares a [ForwardMessage] object to forward a message.
+     *
+     * @param message The original message to be forwarded.
+     * @param encrypted The encrypted representation of the message.
+     * @param mediatorDid The DID of the mediator.
+     * @return The [ForwardMessage] object with the necessary information for forwarding the message.
+     */
     private fun prepareForwardMessage(message: Message, encrypted: String, mediatorDid: DID): ForwardMessage {
         return ForwardMessage(
             body = ForwardMessage.ForwardBody(message.to.toString()),
@@ -180,6 +205,14 @@ class MercuryImpl(
         )
     }
 
+    /**
+     * Makes a request to the specified service.
+     *
+     * @param service The service to make the request to
+     * @param message The message to send in the request
+     * @return The response data as a byte array
+     * @throws MercuryError.NoValidServiceFoundError if no valid service is found for the given service
+     */
     @Throws(MercuryError.NoValidServiceFoundError::class)
     private suspend fun makeRequest(service: DIDDocument.Service?, message: String): ByteArray? {
         if (service !is DIDDocument.Service) {
@@ -208,6 +241,14 @@ class MercuryImpl(
         return result.jsonString.toByteArray()
     }
 
+    /**
+     * Makes a request to the specified URI.
+     *
+     * @param uri The URI of the service to make the request to
+     * @param message The message to send in the request
+     * @return The response data as a byte array, or null if the request fails
+     * @throws MercuryError.NoValidServiceFoundError if no valid service is found for the given service
+     */
     @Throws(MercuryError.NoValidServiceFoundError::class)
     private suspend fun makeRequest(uri: String?, message: String): ByteArray? {
         if (uri !is String) {
@@ -234,6 +275,12 @@ class MercuryImpl(
         return result.jsonString.toByteArray()
     }
 
+    /**
+     * Retrieves the Mediator DID (Decentralized Identifier) from the given service.
+     *
+     * @param service The service for which to retrieve the Mediator DID.
+     * @return The Mediator DID, or null if it could not be found or is invalid.
+     */
     private fun getMediatorDID(service: DIDDocument.Service?): DID? {
         return service?.serviceEndpoint?.uri?.let { uri ->
             if (isDID(uri)) {

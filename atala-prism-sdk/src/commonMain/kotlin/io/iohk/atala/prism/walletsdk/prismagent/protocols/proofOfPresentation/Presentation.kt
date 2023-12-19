@@ -11,12 +11,25 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+/**
+ * Data class representing proof types.
+ *
+ * @property schema The schema of the proof.
+ * @property requiredFields An optional array of required fields for the proof.
+ * @property trustIssuers An optional array of trusted issuers for the proof.
+ */
 @Serializable
 data class ProofTypes(
     val schema: String,
     val requiredFields: Array<String>?,
     val trustIssuers: Array<String>?
 ) {
+    /**
+     * Overrides the equals method from the Any class to compare two ProofTypes objects for equality.
+     *
+     * @param other The object to compare for equality.
+     * @return true if the objects are equal, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -36,6 +49,11 @@ data class ProofTypes(
         return true
     }
 
+    /**
+     * Overrides the hashCode method from the Any class to generate a hash code for the ProofTypes object.
+     *
+     * @return The hash code value for the ProofTypes object.
+     */
     override fun hashCode(): Int {
         var result = schema.hashCode()
         result = 31 * result + (requiredFields?.contentHashCode() ?: 0)
@@ -44,6 +62,18 @@ data class ProofTypes(
     }
 }
 
+/**
+ * The Presentation class represents a presentation message in the PrismAgent software.
+ * It contains the necessary information for constructing a presentation message.
+ *
+ * @property type The type of the presentation message.
+ * @property id The unique identifier for the presentation message.
+ * @property body The body of the presentation message, including goal code and comment.
+ * @property attachments An array of AttachmentDescriptor objects representing the attachments in the message.
+ * @property thid The thread ID of the presentation message.
+ * @property from The sender's DID.
+ * @property to The recipient's DID.
+ */
 class Presentation {
     val type = ProtocolType.DidcommPresentation.value
     lateinit var id: String
@@ -53,6 +83,17 @@ class Presentation {
     lateinit var from: DID
     lateinit var to: DID
 
+    /**
+     * The Presentation class represents a presentation message in the PrismAgent software.
+     * It contains the necessary information for constructing a presentation message.
+     *
+     * @param id The unique identifier for the presentation message.
+     * @param body The body of the presentation message, including goal code and comment.
+     * @param attachments An array of AttachmentDescriptor objects representing the attachments in the message.
+     * @param thid The thread ID of the presentation message.
+     * @param from The sender's DID.
+     * @param to The recipient's DID.
+     */
     @JvmOverloads
     constructor(
         id: String? = null,
@@ -70,6 +111,12 @@ class Presentation {
         this.to = to
     }
 
+    /**
+     * Constructor for creating a Presentation object from a Message object.
+     *
+     * @param fromMessage The Message object to create Presentation from.
+     * @throws PrismAgentError.InvalidMessageType if the message type does not represent the protocol "didcomm.presentation" or if the message does not have "from" and "to" fields.
+     */
     @Throws(PrismAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (
@@ -94,6 +141,11 @@ class Presentation {
         }
     }
 
+    /**
+     * Creates a new [Message] object based on the provided parameters.
+     *
+     * @return The newly created [Message] object.
+     */
     fun makeMessage(): Message {
         return Message(
             id = id,
@@ -106,6 +158,13 @@ class Presentation {
         )
     }
 
+    /**
+     * Converts a message into a Presentation object.
+     *
+     * @param msg The input message to convert.
+     * @return The converted Presentation object.
+     * @throws PrismAgentError.InvalidMessageType If the message type is invalid.
+     */
     @Throws(PrismAgentError.InvalidMessageType::class)
     fun makePresentationFromRequest(msg: Message): Presentation {
         val requestPresentation = RequestPresentation.fromMessage(msg)
@@ -121,6 +180,12 @@ class Presentation {
         )
     }
 
+    /**
+     * Compares this Presentation object with the specified object for equality.
+     *
+     * @param other The object to compare with this Presentation object.
+     * @return `true` if the specified object is equal to this Presentation object, `false` otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (other == null) return false
         if (other::class != this::class) return false
@@ -134,6 +199,20 @@ class Presentation {
             otherPresentation.to == this.to
     }
 
+    /**
+     * Calculates the hash code value for the Presentation object.
+     *
+     * The hash code is calculated based on the values of the following properties:
+     * - type
+     * - id
+     * - body
+     * - attachments
+     * - thid (nullable)
+     * - from
+     * - to
+     *
+     * @return The hash code value for the Presentation object.
+     */
     override fun hashCode(): Int {
         var result = type.hashCode()
         result = 31 * result + id.hashCode()
@@ -145,6 +224,12 @@ class Presentation {
         return result
     }
 
+    /**
+     * Represents the body of a Presentation object.
+     *
+     * @param goalCode The goal code of the presentation body.
+     * @param comment The comment associated with the presentation body.
+     */
     @Serializable
     data class Body @JvmOverloads constructor(
         val goalCode: String? = null,

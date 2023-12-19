@@ -4,7 +4,17 @@ import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
 
+/**
+ * Class responsible for parsing a DID URL string and returning a parsed [DIDUrl] object.
+ */
 object DIDUrlParser {
+    /**
+     * Parses a DID URL string and returns a `DIDUrl` object.
+     *
+     * @param didUrlString The input DID URL string to parse.
+     * @return A `DIDUrl` object representing the parsed DID URL.
+     * @throws CastorError.InvalidDIDString if the input DID string does not match the expected structure.
+     */
     @Throws(CastorError.InvalidDIDString::class)
     fun parse(didUrlString: String): DIDUrl {
         val regex =
@@ -26,7 +36,7 @@ object DIDUrlParser {
                 query.removePrefix("?").split("&")
                     .associate {
                         val (key, value) = it.split("=")
-                        key to (value ?: "")
+                        key to value
                     }
             } else {
                 mapOf()

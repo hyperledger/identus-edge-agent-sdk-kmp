@@ -86,7 +86,47 @@ data class PEMKey(val keyType: PEMKeyType, val keyData: ByteArray) {
         return "$beginMarker\n$base64Data\n$endMarker"
     }
 
+    /**
+     * Overrides the `equals` method of the `Any` class.
+     *
+     * This method checks if the current `PEMKey` object is equal to the specified `other` object.
+     * Two `PEMKey` objects are considered equal if they have the same `keyType` and `keyData`.
+     *
+     * @param other The object to compare for equality.
+     * @return `true` if the `other` object is equal to the current `PEMKey` object, `false` otherwise.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as PEMKey
+
+        if (keyType != other.keyType) return false
+        if (!keyData.contentEquals(other.keyData)) return false
+
+        return true
+    }
+
+    /**
+     * Calculates the hash code for the PEMKey instance.
+     * The hash code is calculated based on the keyType and keyData properties of the PEMKey.
+     *
+     * @return The hash code value for the PEMKey.
+     */
+    override fun hashCode(): Int {
+        var result = keyType.hashCode()
+        result = 31 * result + keyData.contentHashCode()
+        return result
+    }
+
     companion object {
+        /**
+         * Decodes a PEM-encoded string into a PEMKey object.
+         *
+         * @param pemString The PEM-encoded string to decode.
+         * @return A PEMKey object if the decoding was successful, or null otherwise.
+         */
+        @JvmStatic
         fun fromPemEncoded(pemString: String): PEMKey? {
             val lines = pemString.split("\n")
             if (lines.size < 3) {
@@ -120,6 +160,13 @@ enum class PEMKeyType(val value: Pair<String, String>) {
     EC_PUBLIC_KEY(Pair("-----BEGIN EC PUBLIC KEY-----", "-----END EC PUBLIC KEY-----"));
 
     companion object {
+        /**
+         * Converts a string value to the corresponding PEMKeyType enum value.
+         *
+         * @param value The string value to convert.
+         * @return The PEMKeyType enum value if the conversion was successful, or null otherwise.
+         */
+        @JvmStatic
         fun fromString(value: String): PEMKeyType? {
             return values().firstOrNull { it.value.first == value || it.value.second == value }
         }

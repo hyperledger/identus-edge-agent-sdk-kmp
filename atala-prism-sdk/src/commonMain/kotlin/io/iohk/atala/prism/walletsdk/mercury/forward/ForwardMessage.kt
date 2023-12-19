@@ -6,11 +6,24 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.ktor.http.ContentType
 import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
 
+/**
+ * The ForwardMessage class represents a message for forwarding data using the DIDComm protocol.
+ * It contains the necessary information for creating a forward message, including the message body,
+ * sender and recipient DIDs, encrypted message, and an optional ID.
+ *
+ * @param body The body of the forward message.
+ * @param from The sender DID of the forward message.
+ * @param to The recipient DID of the forward message.
+ * @param encryptedMessage The encrypted message to be forwarded.
+ * @param id The optional ID of the forward message. If not provided, a random UUID will be generated.
+ */
+@OptIn(ExperimentalSerializationApi::class)
 class ForwardMessage @JvmOverloads constructor(
     val body: ForwardBody,
     val from: DID,
@@ -19,14 +32,20 @@ class ForwardMessage @JvmOverloads constructor(
     @EncodeDefault
     val id: String = UUID.randomUUID().toString()
 ) {
+    /**
+     * Creates a [Message] object with the provided data.
+     *
+     * @return The created [Message] object.
+     */
     fun makeMessage(): Message {
         val forwardBody = Json.encodeToString(body)
         val attachmentData = AttachmentJsonData(encryptedMessage)
-        val attachment = AttachmentDescriptor(UUID.randomUUID().toString(), ContentType.Application.Json.toString(), attachmentData)
+        val attachment =
+            AttachmentDescriptor(UUID.randomUUID().toString(), ContentType.Application.Json.toString(), attachmentData)
 
         val message = Message(
             id = id,
-            piuri = type,
+            piuri = TYPE,
             from = from,
             to = to,
             body = forwardBody,
@@ -36,10 +55,21 @@ class ForwardMessage @JvmOverloads constructor(
         return message
     }
 
+    /**
+     * Represents the body of a forward message.
+     *
+     * @property next The next message recipient's DID.
+     */
     @Serializable
     data class ForwardBody(val next: String)
 
     companion object {
-        const val type = "https://didcomm.org/routing/2.0/forward"
+        /**
+         * The constant variable `TYPE` represents the URL of the type of forward message.
+         *
+         * @see ForwardMessage
+         * @see ForwardMessage.makeMessage
+         */
+        const val TYPE = "https://didcomm.org/routing/2.0/forward"
     }
 }

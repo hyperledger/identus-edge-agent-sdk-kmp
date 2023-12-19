@@ -39,14 +39,31 @@ import ioiohkatalaprismwalletsdkpluto.data.Message as MessageDB
 import ioiohkatalaprismwalletsdkpluto.data.PrivateKey as PrivateKeyDB
 import ioiohkatalaprismwalletsdkpluto.data.StorableCredential as StorableCredentialDB
 
+/**
+ * `PlutoImpl` is a class that provides an implementation of the Pluto interface for interacting with the database.
+ *
+ * @property db The instance of `PrismPlutoDb` representing the connection to the database.
+ * @property isConnected A flag to indicate whether the database connection is established or not.
+ */
 class PlutoImpl(private val connection: DbConnection) : Pluto {
     private var db: PrismPlutoDb? = null
 
+    /**
+     * isConnected indicates whether the connection to the database is currently established or not.
+     *
+     * @return true if the connection is established, false otherwise
+     */
     val isConnected: Boolean
         get() {
             return this.connection.driver?.isConnected ?: false
         }
 
+    /**
+     * Starts the database service.
+     *
+     * @param context The context data required for establishing the connection. This can be null in some cases.
+     * @throws PlutoError.DatabaseServiceAlreadyRunning if the database service is already running.
+     */
     @Throws(PlutoError.DatabaseServiceAlreadyRunning::class)
     @JvmOverloads
     public suspend fun start(context: Any? = null) {
@@ -56,6 +73,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         this.db = this.connection.connectDb(context)
     }
 
+    /**
+     * Closes the connection to the database.
+     *
+     * @throws PlutoError.DatabaseConnectionError if there is an error with the database connection
+     */
     @Throws(PlutoError.DatabaseConnectionError::class)
     public fun stop() {
         val driver = this.connection.driver ?: throw PlutoError.DatabaseConnectionError()
@@ -63,11 +85,26 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         driver.close()
     }
 
+    /**
+     * Retrieves an instance of the PrismPlutoDb object.
+     * Throws DatabaseConnectionError if the database connection is not established.
+     *
+     * @throws PlutoError.DatabaseConnectionError if the database connection is not established
+     * @return the PrismPlutoDb instance
+     */
     @Throws(PlutoError.DatabaseConnectionError::class)
     private fun getInstance(): PrismPlutoDb {
         return this.db ?: throw PlutoError.DatabaseConnectionError()
     }
 
+    /**
+     * Stores the Prism DID, key path index, alias, and private keys.
+     *
+     * @param did The Prism DID to store.
+     * @param keyPathIndex The key path index.
+     * @param alias The optional alias for the Prism DID.
+     * @param privateKeys The list of private keys to store.
+     */
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
         keyPathIndex: Int,
@@ -88,6 +125,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         }
     }
 
+    /**
+     * Stores the PeerDID in the system.
+     *
+     * @param did The PeerDID to store.
+     */
     override fun storePeerDID(did: DID) {
         getInstance().dIDQueries.insert(
             DIDDB(
@@ -100,6 +142,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
+    /**
+     * Stores a pair of Distributed Identifier (DID) and a receiver DID with a given name.
+     *
+     * @param host The host DID to store.
+     * @param receiver The receiver DID to store.
+     * @param name The name of the stored pair.
+     */
     override fun storeDIDPair(host: DID, receiver: DID, name: String) {
         getInstance().dIDPairQueries.insert(
             DIDPairDB(
@@ -111,6 +160,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
+    /**
+     * Stores a message in the system.
+     *
+     * @param message The message to store.
+     */
     override fun storeMessage(message: Message) {
         getInstance().messageQueries.insert(
             MessageDB(
@@ -126,6 +180,14 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
+    /**
+     * Stores the private key along with additional information.
+     *
+     * @param privateKey The private key to store. Must implement the [StorableKey] interface.
+     * @param did The DID associated with the private key.
+     * @param keyPathIndex The key path index.
+     * @param metaId The optional metadata ID.
+     */
     override fun storePrivateKeys(
         storableKey: StorableKey,
         did: DID,
@@ -160,12 +222,24 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         }
     }
 
+    /**
+     * Stores a list of messages in the system.
+     *
+     * @param messages The list of messages to store.
+     */
     override fun storeMessages(messages: List<Message>) {
         messages.map { message ->
             storeMessage(message)
         }
     }
 
+    /**
+     * Stores a mediator in the system.
+     *
+     * @param mediator The mediator DID to store.
+     * @param host The host DID associated with the mediator.
+     * @param routing The routing DID for the mediator.
+     */
     override fun storeMediator(mediator: DID, host: DID, routing: DID) {
         val instance = getInstance()
         instance.dIDQueries.insert(
@@ -196,6 +270,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
+    /**
+     * Stores a credential in the system.
+     *
+     * @param credential The credential to store. It must implement the [StorableCredential] interface.
+     */
     override fun storeCredential(storableCredential: StorableCredential) {
         getInstance().storableCredentialQueries.insert(
             StorableCredentialDB(
@@ -218,11 +297,21 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         }
     }
 
+    /**
+     * Stores a link secret in the system.
+     *
+     * @param linkSecret The link secret to store.
+     */
     override fun storeLinkSecret(linkSecret: String) {
         getInstance().linkSecretQueries
             .insert(LinkSecretDB(linkSecret))
     }
 
+    /**
+     * Stores the metadata associated with a credential request.
+     *
+     * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     */
     override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
         getInstance().credentialMetadataQueries.insert(
             id = UUID.randomUUID4().toString(),
@@ -232,6 +321,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
     }
 
+    /**
+     * Retrieves all PrismDIDs and their associated information.
+     *
+     * @return A flow of lists of [PrismDIDInfo] objects representing the PrismDIDs and their information.
+     */
     override fun getAllPrismDIDs(): Flow<List<PrismDIDInfo>> {
         return getInstance().dIDQueries
             .fetchAllPrismDID()
@@ -244,6 +338,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the [PrismDIDInfo] associated with a given [DID].
+     *
+     * @param did The [DID] for which to retrieve the [PrismDIDInfo].
+     * @return A [Flow] that emits a nullable [PrismDIDInfo] object representing the [PrismDIDInfo] associated
+     *         with the specified [DID]. If no [PrismDIDInfo] is found, null is emitted.
+     */
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> {
         return getInstance().dIDQueries
@@ -259,6 +360,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the [PrismDIDInfo] objects associated with a given alias.
+     *
+     * @param alias The alias for which to retrieve the [PrismDIDInfo] objects.
+     * @return A [Flow] that emits a list of [PrismDIDInfo] objects representing the
+     *         [PrismDIDInfo] associated with the specified alias.
+     */
     override fun getDIDInfoByAlias(alias: String): Flow<List<PrismDIDInfo>> {
         return getInstance().dIDQueries
             .fetchDIDInfoByAlias(alias)
@@ -271,6 +379,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves a list of private keys associated with a given DID.
+     *
+     * @param did The DID for which to retrieve private keys.
+     * @return A flow that emits a list of nullable [PrivateKey] objects. In case a private key is not found, null is emitted.
+     */
     override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
         return getInstance().privateKeyQueries
             .fetchPrivateKeyByDID(did.toString())
@@ -299,11 +413,18 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the private key associated with a given ID.
+     *
+     * @param id The ID of the private key.
+     * @return A [Flow] that emits the private key as a nullable [PrivateKey] object. If no private key is found,
+     * null is emitted.
+     */
     override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
         return getInstance().privateKeyQueries
             .fetchPrivateKeyByID(id)
             .asFlow()
-            .map { it ->
+            .map {
                 it.executeAsList().firstOrNull()?.let { storableKey ->
                     when (storableKey.restorationIdentifier) {
                         "secp256k1+priv" -> {
@@ -326,6 +447,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the key path index associated with a given Prism DID.
+     *
+     * @param did The Prism DID for which to retrieve the key path index.
+     * @return A [Flow] that emits a nullable [Int] representing the key path index associated with the specified Prism DID.
+     *         If no key path index is found, null is emitted.
+     */
     override fun getPrismDIDKeyPathIndex(did: DID): Flow<Int?> {
         return getInstance().privateKeyQueries.fetchKeyPathIndexByDID(did.toString())
             .asFlow()
@@ -338,6 +466,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the last key path index associated with the Prism DID.
+     *
+     * @return A [Flow] that emits an [Int] representing the last key path index associated with the Prism DID.
+     */
     override fun getPrismLastKeyPathIndex(): Flow<Int> {
         return getInstance().privateKeyQueries.fetchLastkeyPathIndex()
             .asFlow()
@@ -346,6 +479,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all PeerDIDs.
+     *
+     * @return A flow of lists of PeerDIDs.
+     */
     override fun getAllPeerDIDs(): Flow<List<PeerDID>> {
         return getInstance().dIDQueries.fetchAllPeerDID()
             .asFlow()
@@ -353,8 +491,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 allDIDs.executeAsList()
                     .groupBy { allPeerDid -> allPeerDid.did }
                     .map {
-                        println("Restoration ID: ${it.value.get(0).restorationIdentifier}")
-                        val privateKeyList: Array<PrivateKey> = it.value.mapNotNull { allPeerDID ->
+                        println("Restoration ID: ${it.value[0].restorationIdentifier}")
+                        val privateKeyList: Array<PrivateKey> = it.value.map { allPeerDID ->
                             when (allPeerDID.restorationIdentifier) {
                                 "secp256k1+priv" -> {
                                     Secp256k1PrivateKey(allPeerDID.data_.base64UrlDecodedBytes)
@@ -378,6 +516,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all the pairs of DIDs stored in the system.
+     *
+     * @return a [Flow] emitting a list of [DIDPair] objects representing the pairs of DIDs.
+     */
     override fun getAllDidPairs(): Flow<List<DIDPair>> {
         return getInstance().dIDPairQueries.fetchAllDIDPairs()
             .asFlow()
@@ -387,6 +530,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves a DIDPair object using the provided DID.
+     *
+     * @param did The DID to search for.
+     * @return A Flow of DIDPair objects. If a match is found, the flow emits the matching DIDPair.
+     * If no match is found, the flow emits null.
+     */
     override fun getPairByDID(did: DID): Flow<DIDPair?> {
         return getInstance().dIDPairQueries.fetchDIDPairByDID(did.toString())
             .asFlow()
@@ -400,6 +550,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieve a [DIDPair] from a flow by its name.
+     *
+     * @param name The name of the [DIDPair] to retrieve.
+     * @return A [Flow] emitting the [DIDPair] object that matches the given name,
+     *         or `null` if no matching [DIDPair] is found.
+     */
     override fun getPairByName(name: String): Flow<DIDPair?> {
         return getInstance().dIDPairQueries.fetchDIDPairByName(name)
             .asFlow()
@@ -413,6 +570,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all the messages.
+     *
+     * @return a Flow of List of Message objects representing all the messages.
+     */
     override fun getAllMessages(): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessages()
             .asFlow()
@@ -439,10 +601,23 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all messages based on the provided DID.
+     *
+     * @param did The DID (Direct Inward Dialing) to filter messages by.
+     * @return A flow of list of messages.
+     */
     override fun getAllMessages(did: DID): Flow<List<Message>> {
         return getAllMessages(did, did)
     }
 
+    /**
+     * Retrieves all messages exchanged between the specified 'from' and 'to' DIDs.
+     *
+     * @param from the sender DID
+     * @param to the receiver DID
+     * @return a Flow emitting a list of messages exchanged between the 'from' and 'to' DIDs
+     */
     override fun getAllMessages(from: DID, to: DID): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesFromTo(from.toString(), to.toString())
             .asFlow()
@@ -469,6 +644,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all the messages that have been sent.
+     *
+     * @return A [Flow] of type [List] containing the sent messages.
+     */
     override fun getAllMessagesSent(): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllSentMessages()
             .asFlow()
@@ -495,6 +675,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all messages received by the user.
+     *
+     * @return A [Flow] emitting a list of [Message] objects representing all the messages received.
+     */
     override fun getAllMessagesReceived(): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllReceivedMessages()
             .asFlow()
@@ -521,6 +706,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all messages sent to the specified DID.
+     *
+     * @param did the destination DID to filter the messages by
+     * @return a [Flow] of [List] of [Message] objects containing all the messages sent to the specified DID
+     */
     override fun getAllMessagesSentTo(did: DID): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesSentTo(did.toString())
             .asFlow()
@@ -547,6 +738,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Returns a Flow of lists of all messages received from the specified DID.
+     *
+     * @param did the DID (Decentralized Identifier) to get the received messages from
+     * @return a Flow of lists of messages received from the specified DID
+     */
     override fun getAllMessagesReceivedFrom(did: DID): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesReceivedFrom(did.toString())
             .asFlow()
@@ -573,6 +770,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all messages of a specific type that are related to a given DID.
+     *
+     * @param type The type of the messages to retrieve.
+     * @param relatedWithDID The optional DID to which the messages are related.
+     * @return A [Flow] emitting a list of [Message] objects that match the given type and are related to the specified DID.
+     */
     override fun getAllMessagesOfType(type: String, relatedWithDID: DID?): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesOfType(
             type,
@@ -602,6 +806,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the message with the specified ID.
+     *
+     * @param id The unique ID of the message.
+     * @return A [Flow] that emits the message with the specified ID, or null if no such message exists.
+     *         The [Flow] completes when the message is successfully retrieved, or when an error occurs.
+     */
     override fun getMessage(id: String): Flow<Message?> {
         return getInstance().messageQueries.fetchMessageById(id)
             .asFlow()
@@ -630,11 +841,16 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Returns a Flow of lists of [Mediator] objects representing all the available mediators.
+     *
+     * @return a Flow of lists of [Mediator] objects.
+     */
     override fun getAllMediators(): Flow<List<Mediator>> {
         return getInstance().mediatorQueries.fetchAllMediators()
             .asFlow()
-            .map {
-                val fetchAllMediators = it.executeAsList()
+            .map { query ->
+                val fetchAllMediators = query.executeAsList()
                 fetchAllMediators.map {
                     Mediator(
                         it.id,
@@ -646,6 +862,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all credentials for credential recovery.
+     *
+     * @return A flow of a list of [CredentialRecovery] objects representing the credentials for recovery.
+     */
     override fun getAllCredentials(): Flow<List<CredentialRecovery>> {
         return getInstance().storableCredentialQueries.fetchAllCredentials()
             .asFlow()
@@ -659,10 +880,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Inserts an available claim for a specific credential.
+     *
+     * @param credentialId The ID of the credential.
+     * @param claim The claim to insert.
+     */
     override fun insertAvailableClaim(credentialId: String, claim: String) {
         getInstance().availableClaimsQueries.insert(credentialId, claim)
     }
 
+    /**
+     * Inserts the available claims for a given credential ID.
+     *
+     * @param credentialId the ID of the credential
+     * @param claims an array of available claims to be inserted
+     */
     override fun insertAvailableClaims(credentialId: String, claims: Array<String>) {
         getInstance().availableClaimsQueries.transaction {
             claims.forEach {
@@ -671,6 +904,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         }
     }
 
+    /**
+     * Retrieves the available claims for a given credential ID.
+     *
+     * @param credentialId The ID of the credential.
+     * @return A flow that emits an array of AvailableClaims.
+     */
     override fun getAvailableClaimsByCredentialId(credentialId: String): Flow<Array<AvailableClaimsDB>> {
         return getInstance().availableClaimsQueries.fetchAvailableClaimsByCredentialId(credentialId)
             .asFlow()
@@ -679,6 +918,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the available claims for a given claim.
+     *
+     * @param claim The claim for which the available claims are to be retrieved.
+     * @return A flow of arrays of AvailableClaims representing the available claims for the given claim.
+     */
     override fun getAvailableClaimsByClaim(claim: String): Flow<Array<AvailableClaimsDB>> {
         return getInstance().availableClaimsQueries.fetchAvailableClaimsByClaim(claim)
             .asFlow()
@@ -687,6 +932,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the secret link associated with the current instance.
+     *
+     * @return A [Flow] emitting the secret link as a nullable [String].
+     */
     override fun getLinkSecret(): Flow<String?> {
         return getInstance().linkSecretQueries.fetchLinkSecret()
             .asFlow()
@@ -700,6 +950,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves the metadata associated with a credential request.
+     *
+     * @param linkSecretName The name of the link secret used for the credential request.
+     * @return A [Flow] emitting the [CredentialRequestMeta] object for the specified link secret name,
+     * or null if no metadata is found.
+     */
     override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {
         return getInstance().credentialMetadataQueries.fetchCredentialMetadata(linkSecretName = linkSecretName)
             .asFlow()

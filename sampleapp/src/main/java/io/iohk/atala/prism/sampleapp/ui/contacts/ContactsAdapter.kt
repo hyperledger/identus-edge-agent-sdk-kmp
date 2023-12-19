@@ -53,13 +53,8 @@ class ContactsAdapter(private var data: MutableList<DIDPair> = mutableListOf()) 
     }
 
     inner class ContactsHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val host: TextView
-        private val receiver: TextView
-
-        init {
-            host = itemView.findViewById(R.id.contact_host)
-            receiver = itemView.findViewById(R.id.contact_receiver)
-        }
+        private val host: TextView = itemView.findViewById(R.id.contact_host)
+        private val receiver: TextView = itemView.findViewById(R.id.contact_receiver)
 
         fun bind(contact: DIDPair) {
             host.text = contact.host.toString()

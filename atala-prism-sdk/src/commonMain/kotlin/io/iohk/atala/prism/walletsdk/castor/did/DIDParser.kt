@@ -4,8 +4,18 @@ import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import kotlin.jvm.Throws
 
+/**
+ * The DIDParser class provides methods for parsing a string representation of a Decentralized Identifier (DID) into a DID object.
+ */
 object DIDParser {
 
+    /**
+     * Parses a string representation of a Decentralized Identifier (DID) into a DID object.
+     *
+     * @param didString The string representation of the DID.
+     * @return The [DID] object.
+     * @throws [CastorError.InvalidDIDString] if the string is not a valid DID.
+     */
     @Throws(CastorError.InvalidDIDString::class)
     fun parse(didString: String): DID {
         val regex =

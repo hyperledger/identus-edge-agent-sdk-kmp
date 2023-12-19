@@ -46,7 +46,7 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
                     }
 
                     else -> {
-                        throw PrismAgentError.UnknownInvitationTypeError()
+                        throw PrismAgentError.UnknownInvitationTypeError(invitation.toString())
                     }
                 }
             }

@@ -20,7 +20,7 @@ class PolluxMock : Pollux {
     var processCredentialRequestAnoncredsReturn: Pair<CredentialRequest, CredentialRequestMeta>? = null
 
     override suspend fun parseCredential(
-        data: String,
+        jsonData: String,
         type: CredentialType,
         linkSecret: LinkSecret?,
         credentialMetadata: CredentialRequestMetadata?
