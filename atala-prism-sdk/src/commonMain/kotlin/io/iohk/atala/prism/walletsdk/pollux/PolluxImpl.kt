@@ -127,7 +127,7 @@ class PolluxImpl(
                     revocationRegistryJson = cred.getRevRegJson(),
                     witnessJson = cred.getWitnessJson() ?: "",
                     json = cred.getJson(),
-                    values = values,
+                    values = values
                 )
             }
 
