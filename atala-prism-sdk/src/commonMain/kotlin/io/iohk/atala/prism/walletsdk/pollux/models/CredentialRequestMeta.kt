@@ -25,9 +25,9 @@ data class CredentialRequestMeta(
         @JvmStatic
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
-                linkSecretName = metadata.linkSecretName,
-                linkSecretBlindingData = Json.decodeFromString(metadata.linkSecretBlindingData),
-                nonce = metadata.nonce.getValue()
+                linkSecretName = metadata.getLinkSecretName(),
+                linkSecretBlindingData = Json.decodeFromString(metadata.getLinkSecretBlindingData()),
+                nonce = metadata.getNonce().getValue()
             )
         }
     }
