@@ -11,6 +11,7 @@ import anoncreds_wrapper.Presentation
 import anoncreds_wrapper.PresentationRequest
 import anoncreds_wrapper.Prover
 import anoncreds_wrapper.RequestedAttribute
+import anoncreds_wrapper.RequestedPredicate
 import anoncreds_wrapper.Schema
 import anoncreds_wrapper.SchemaId
 import com.nimbusds.jose.JWSAlgorithm
@@ -218,6 +219,32 @@ class PolluxImpl(
         )
     }
 
+    /**
+     * Converts the map of [anoncreds_wrapper.AttributeInfoValue] values to a list of [RequestedAttribute].
+     *
+     * @return The list of [RequestedAttribute].
+     */
+    private fun Map<String, anoncreds_wrapper.AttributeInfoValue>.toListRequestedAttribute(): List<RequestedAttribute> {
+        return this.values.toList().map {
+            RequestedAttribute(
+                referent = it.getName(),
+                revealed = true
+            )
+        }
+    }
+
+    /**
+     * Converts the map of [anoncreds_wrapper.PredicateInfoValue] values to a list of [RequestedPredicate].
+     *
+     * @receiver The map of [anoncreds_wrapper.PredicateInfoValue] values.
+     * @return The list of [RequestedPredicate].
+     */
+    private fun Map<String, anoncreds_wrapper.PredicateInfoValue>.toListRequestedPredicate(): List<RequestedPredicate> {
+        return this.values.toList().map {
+            RequestedPredicate(it.getName())
+        }
+    }
+
     override suspend fun createVerifiablePresentationAnoncred(
         request: RequestPresentation,
         credential: AnonCredential,
@@ -231,19 +258,11 @@ class PolluxImpl(
         val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
         val cred = anoncreds_wrapper.Credential(credential.id)
 
-        // TODO: Replace this piece of code with the new expose methods Ahmed provided on the newer version of anoncreds wrapper.
-        val jsonElement = Json.parseToJsonElement(attachmentBase64.base64.base64UrlDecoded)
-        val attributes = (jsonElement as JsonObject)["requested_attributes"]
-        val attr = (attributes as JsonObject)["attribute_1"] as JsonObject
-        val name = attr["name"]?.jsonPrimitive?.content ?: throw Exception("")
+        val requestedAttributes = presentationRequest.getRequestedAttributes().toListRequestedAttribute()
+        val requestedPredicate = presentationRequest.getRequestedPredicates().toListRequestedPredicate()
 
-        val requestedAttributes = listOf(
-            RequestedAttribute(
-                referent = "attribute_1",
-                revealed = true
-            )
-        )
-        // TODO: Until here
+        // TODO: which to put in the [CredentialRequests], requestedAttributes or requestedPredicate
+        // TODO: What is the logic to send one of them or the both of them
 
         val credentialRequests = CredentialRequests(
             credential = cred,

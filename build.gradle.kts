@@ -56,13 +56,6 @@ allprojects {
                 this.password = System.getenv("ATALA_GITHUB_TOKEN")
             }
         }
-        maven {
-            this.url = uri("https://github.com/input-output-hk/anoncreds-rs/")
-            credentials {
-                this.username = System.getenv("ATALA_GITHUB_ACTOR")
-                this.password = System.getenv("ATALA_GITHUB_TOKEN")
-            }
-        }
     }
 
     configurations.all {
