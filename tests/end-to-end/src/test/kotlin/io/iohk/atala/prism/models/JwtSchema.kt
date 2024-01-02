@@ -2,7 +2,7 @@ package io.iohk.atala.prism.models
 
 import com.google.gson.annotations.SerializedName
 
-data class Schema (
+data class JwtSchema (
     @SerializedName("\$id")
     var id: String = "",
 
@@ -16,5 +16,5 @@ data class Schema (
     var type: String = "",
 
     @SerializedName("properties")
-    val properties: MutableMap<String, SchemaProperty> = mutableMapOf()
+    val properties: MutableMap<String, JwtSchemaProperty> = mutableMapOf()
 )

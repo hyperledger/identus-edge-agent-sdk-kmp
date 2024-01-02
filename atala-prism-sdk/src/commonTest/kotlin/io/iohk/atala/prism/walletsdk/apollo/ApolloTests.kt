@@ -2,7 +2,6 @@ package io.iohk.atala.prism.walletsdk.apollo
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.derivation.DerivationPath
-import io.iohk.atala.prism.apollo.derivation.Mnemonic
 import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.apollo.utils.ECConfig
 import io.iohk.atala.prism.walletsdk.apollo.derivation.bip39Vectors
@@ -87,7 +86,7 @@ class ApolloTests {
 
     @Test
     fun testKeyPairGeneration() {
-        keyPair = Secp256k1KeyPair.generateKeyPair(Seed(Mnemonic.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        keyPair = Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         assertEquals(keyPair.publicKey.raw.size, ECConfig.PUBLIC_KEY_BYTE_SIZE)
         assertEquals(keyPair.privateKey.raw.size, ECConfig.PRIVATE_KEY_BYTE_SIZE)
     }
@@ -95,7 +94,7 @@ class ApolloTests {
     @Test
     fun testSignAndVerifyTest() {
         val message = "The quick brown fox jumps over the lazy dog"
-        keyPair = Secp256k1KeyPair.generateKeyPair(Seed(Mnemonic.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        keyPair = Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val signature = (keyPair.privateKey as Secp256k1PrivateKey).sign(message.toByteArray())
 
         assertEquals(signature.size <= ECConfig.SIGNATURE_MAX_BYTE_SIZE, true)
@@ -109,7 +108,7 @@ class ApolloTests {
     fun testDerivePrivateKey_whenSecp256k1_thenWorksAsExpected() {
         val path = "m/0'/0'/0'"
 
-        val seed = Seed(Mnemonic.createRandomSeed())
+        val seed = Seed(MnemonicHelper.createRandomSeed())
 
         val properties: MutableMap<String, Any> = mutableMapOf()
         properties[TypeKey().property] = KeyTypes.EC
@@ -175,7 +174,7 @@ class ApolloTests {
             "return",
             "height"
         )
-        val seed = Seed(Mnemonic.createSeed(mnemonics = mnemonics, passphrase = "mnemonic"))
+        val seed = Seed(MnemonicHelper.createSeed(mnemonics = mnemonics, passphrase = "mnemonic"))
 
         val expectedPrivateKeyBase64Url = "xURclKhT6as1Tb9vg4AJRRLPAMWb9dYTTthDvXEKjMc"
 
@@ -200,7 +199,7 @@ class ApolloTests {
     fun testSignAndVerify_whenSignatureIsIncorrect_thenVerifyFails() {
         val keyPair = Ed25519KeyPair.generateKeyPair()
         val message = "This is a test message"
-        var signature = (keyPair.privateKey as Ed25519PrivateKey).sign(message.toByteArray())
+        val signature = (keyPair.privateKey as Ed25519PrivateKey).sign(message.toByteArray())
         signature[0] = 1
         assertFalse((keyPair.publicKey as Ed25519PublicKey).verify(message.toByteArray(), signature))
     }
@@ -208,7 +207,7 @@ class ApolloTests {
     @Test
     fun testRestorePrivateKey_whenStorableSecp256k1_thenRestoredOk() {
         val keyPairSecp256k1 =
-            Secp256k1KeyPair.generateKeyPair(Seed(Mnemonic.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val keyPairEd25519 = Ed25519KeyPair.generateKeyPair()
         val privateKeySecp256k1 = keyPairSecp256k1.privateKey as Secp256k1PrivateKey
         val privateKeyEd25519 = keyPairEd25519.privateKey as Ed25519PrivateKey
@@ -221,7 +220,7 @@ class ApolloTests {
     @Test
     fun testRestorePublicKey_whenStorableSecp256k1_thenRestoredOk() {
         val keyPairSecp256k1 =
-            Secp256k1KeyPair.generateKeyPair(Seed(Mnemonic.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val keyPairEd25519 = Ed25519KeyPair.generateKeyPair()
         val publicKeySecp256k1 = keyPairSecp256k1.publicKey as Secp256k1PublicKey
         val publicKeyEd25519 = keyPairEd25519.publicKey as Ed25519PublicKey

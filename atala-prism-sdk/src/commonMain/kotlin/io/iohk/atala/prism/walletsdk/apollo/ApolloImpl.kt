@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.apollo
 
 import io.iohk.atala.prism.apollo.derivation.HDKey
-import io.iohk.atala.prism.apollo.derivation.Mnemonic
+import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
 import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
@@ -39,7 +39,7 @@ class ApolloImpl : Apollo {
      * @return An array of mnemonic phrases.
      */
     override fun createRandomMnemonics(): Array<String> {
-        return Mnemonic.createRandomMnemonics().toTypedArray()
+        return MnemonicHelper.createRandomMnemonics().toTypedArray()
     }
 
     /**
@@ -52,7 +52,7 @@ class ApolloImpl : Apollo {
      */
     @Throws(MnemonicLengthException::class)
     override fun createSeed(mnemonics: Array<String>, passphrase: String): Seed {
-        return Seed(Mnemonic.createSeed(mnemonics.asList(), passphrase))
+        return Seed(MnemonicHelper.createSeed(mnemonics.asList(), passphrase))
     }
 
     /**
@@ -66,7 +66,7 @@ class ApolloImpl : Apollo {
         return SeedWords(
             mnemonics,
             Seed(
-                value = Mnemonic.createSeed(
+                value = MnemonicHelper.createSeed(
                     mnemonics = mnemonics.asList(),
                     passphrase = passphrase ?: ""
                 )
@@ -74,12 +74,32 @@ class ApolloImpl : Apollo {
         )
     }
 
+    /**
+     * Creates a private key based on the provided properties.
+     *
+     * @param properties A map of properties used to create the private key. The map should contain the following keys:
+     *     - "type" (String): The type of the key ("EC" or "Curve25519").
+     *     - "curve" (String): The curve of the key.
+     *     - "rawKey" (ByteArray): The raw key data (optional).
+     *     - "index" (Int): The index for the key (only applicable for EC keys with curve "secp256k1").
+     *     - "derivationPath" (String): The derivation path for the key (only applicable for EC keys with curve "secp256k1").
+     *     - "seed" (String): The seed for the key (only applicable for EC keys with curve "secp256k1").
+     *
+     * @return The created private key.
+     *
+     * @throws ApolloError.InvalidKeyType If the provided key type is invalid.
+     * @throws ApolloError.InvalidKeyCurve If the provided key curve is invalid.
+     * @throws ApolloError.InvalidRawData If the provided raw key data is invalid.
+     * @throws ApolloError.InvalidIndex If the provided index is invalid.
+     * @throws ApolloError.InvalidDerivationPath If the provided derivation path is invalid.
+     * @throws ApolloError.InvalidSeed If the provided seed is invalid.
+     */
     override fun createPrivateKey(properties: Map<String, Any>): PrivateKey {
         if (!properties.containsKey(TypeKey().property)) {
-            throw ApolloError.InvalidKeyType(TypeKey().property, KeyTypes.values().map { it.type }.toTypedArray())
+            throw ApolloError.InvalidKeyType(TypeKey().property)
         }
         if (!properties.containsKey(CurveKey().property)) {
-            throw ApolloError.InvalidKeyCurve(CurveKey().property, Curve.values().map { it.value }.toTypedArray())
+            throw ApolloError.InvalidKeyCurve(CurveKey().property)
         }
 
         val keyType = properties[TypeKey().property]
@@ -148,17 +168,38 @@ class ApolloImpl : Apollo {
                 return keyPair.privateKey
             }
         }
-        throw ApolloError.InvalidKeyType(TypeKey().property, KeyTypes.values().map { it.type }.toTypedArray())
+        throw ApolloError.InvalidKeyType(TypeKey().property)
     }
 
+    /**
+     * Checks if the provided data is associated with a private key identified by the given identifier.
+     *
+     * @param identifier The identifier for the private key.
+     * @param data The data to check.
+     * @return True if the data is associated with a private key, false otherwise.
+     */
     override fun isPrivateKeyData(identifier: String, data: ByteArray): Boolean {
         return identifier.endsWith("priv")
     }
 
+    /**
+     * Checks if the provided data is associated with a public key identified by the given identifier.
+     *
+     * @param identifier The identifier for the public key.
+     * @param data The data to check.
+     * @return True if the data is associated with a public key, false otherwise.
+     */
     override fun isPublicKeyData(identifier: String, data: ByteArray): Boolean {
         return identifier.endsWith("pub")
     }
 
+    /**
+     * Restores a private key based on the provided storable key.
+     *
+     * @param key The storable key to restore the private key from.
+     * @return The restored private key.
+     * @throws ApolloError.RestorationFailedNoIdentifierOrInvalid If the restoration identifier is missing or invalid.
+     */
     override fun restorePrivateKey(key: StorableKey): PrivateKey {
         return when (key.restorationIdentifier) {
             "secp256k1+priv" -> {
@@ -179,6 +220,13 @@ class ApolloImpl : Apollo {
         }
     }
 
+    /**
+     * Restores a public key based on the provided storable key.
+     *
+     * @param key The storable key to restore the public key from.
+     * @return The restored public key.
+     * @throws ApolloError.RestorationFailedNoIdentifierOrInvalid If the restoration identifier is missing or invalid.
+     */
     override fun restorePublicKey(key: StorableKey): PublicKey {
         return when (key.restorationIdentifier) {
             "secp256k1+pub" -> {

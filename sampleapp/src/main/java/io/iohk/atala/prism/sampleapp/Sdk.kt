@@ -144,6 +144,7 @@ class Sdk {
     companion object {
         private lateinit var instance: Sdk
 
+        @JvmStatic
         fun getInstance(): Sdk {
             if (!this::instance.isInitialized) {
                 instance = Sdk()

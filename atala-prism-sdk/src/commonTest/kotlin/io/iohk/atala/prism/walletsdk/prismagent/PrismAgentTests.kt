@@ -2,7 +2,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 
 /* ktlint-disable import-ordering */
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.derivation.Mnemonic
+import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
@@ -31,6 +31,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.PrismOnboard
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -72,7 +73,7 @@ class PrismAgentTests {
 
     @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val seed = Seed(Mnemonic.createRandomSeed())
+        val seed = Seed(MnemonicHelper.createRandomSeed())
         val validDID = DID("did", "test", "123")
         castorMock.createPrismDIDReturn = validDID
         val agent = PrismAgent(
@@ -225,7 +226,7 @@ class PrismAgentTests {
                 "from":"did:prism:b6c0c33d701ac1b9a262a14454d1bbde3d127d697a76950963c5fd930605:Cj8KPRI7CgdtYXN0ZXIwEAFKLgoJc2VmsxEiECSTjyV7sUfCr_ArpN9rvCwR9fRMAhcsr_S7ZRiJk4p5k"
             }
         """
-        assertFailsWith<PrismAgentError.UnknownInvitationTypeError> {
+        assertFailsWith<io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError> {
             agent.parseInvitation(invitationString)
         }
     }
@@ -270,7 +271,7 @@ class PrismAgentTests {
 
         val privateKeys = listOf(
             Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(Mnemonic.createRandomSeed()),
+                seed = Seed(MnemonicHelper.createRandomSeed()),
                 curve = KeyCurve(Curve.SECP256K1)
             ).privateKey
         )
@@ -351,7 +352,7 @@ class PrismAgentTests {
             }
         """
 
-        assertFailsWith<PrismAgentError.UnknownInvitationTypeError> {
+        assertFailsWith<SerializationException> {
             agent.parseInvitation(invitationString.trim())
         }
     }

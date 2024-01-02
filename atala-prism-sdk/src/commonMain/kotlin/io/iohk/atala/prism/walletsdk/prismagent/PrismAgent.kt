@@ -127,6 +127,20 @@ class PrismAgent {
     private var connectionManager: ConnectionManager
     private var logger: PrismLogger
 
+    /**
+     * Initializes the PrismAgent with the given dependencies.
+     *
+     * @param apollo The Apollo instance used by the PrismAgent.
+     * @param castor The Castor instance used by the PrismAgent.
+     * @param pluto The Pluto instance used by the PrismAgent.
+     * @param mercury The Mercury instance used by the PrismAgent.
+     * @param pollux The Pollux instance used by the PrismAgent.
+     * @param connectionManager The ConnectionManager instance used by the PrismAgent.
+     * @param seed An optional Seed instance used by the Apollo if provided, otherwise a random seed will be used.
+     * @param api An optional Api instance used by the PrismAgent if provided, otherwise a default ApiImpl will be used.
+     * @param logger An optional PrismLogger instance used by the PrismAgent if provided, otherwise a PrismLoggerImpl with
+     *               LogComponent.PRISM_AGENT will be used.
+     */
     @JvmOverloads
     constructor(
         apollo: Apollo,
@@ -165,6 +179,19 @@ class PrismAgent {
         this.logger = logger
     }
 
+    /**
+     * Initializes the PrismAgent constructor.
+     *
+     * @param apollo The instance of Apollo.
+     * @param castor The instance of Castor.
+     * @param pluto The instance of Pluto.
+     * @param mercury The instance of Mercury.
+     * @param pollux The instance of Pollux.
+     * @param seed The seed value for random generation. Default is null.
+     * @param api The instance of the API. Default is null.
+     * @param mediatorHandler The mediator handler.
+     * @param logger The logger for PrismAgent. Default is PrismLoggerImpl with LogComponent.PRISM_AGENT.
+     */
     @JvmOverloads
     constructor(
         apollo: Apollo,
@@ -210,7 +237,8 @@ class PrismAgent {
             if (flowState.subscriptionCount.value <= 0) {
                 state = State.STOPPED
             } else {
-                throw Exception("Agent state only accepts one subscription.")
+                throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Agent state only accepts one subscription.")
+                // throw Exception("Agent state only accepts one subscription.")
             }
         }
     }
@@ -369,9 +397,10 @@ class PrismAgent {
     /**
      * Registers a peer DID with the specified DID and private keys.
      *
-     * @param did The DID to register.
-     * @param privateKeys The list of private keys associated with the peer DID.
-     * @param updateMediator Determines whether to update the mediator with the specified DID.
+     * @param did The DID (Decentralized Identifier) to register.
+     * @param keyAgreementKeyPair The key pair used for key agreement.
+     * @param authenticationKeyPair The key pair used for authentication.
+     * @param updateMediator Whether to update the mediator with the DID.
      */
     suspend fun registerPeerDID(
         did: DID,
@@ -387,7 +416,7 @@ class PrismAgent {
         // to get the secret(private key) that is pair of the public key within the DIDPeer Document
         // to this end the library will give you the id of the public key that is `did:{method}:{methodId}#ecnumbasis`.
         // So the code below after the did is created, it will retrieve the document and
-        // and store the private keys with the corresponding `id` of the one created on the document.
+        // store the private keys with the corresponding `id` of the one created on the document.
         // So when the secret resolver asks for the secret we can identify it.
         val document = castor.resolveDID(did.toString())
 
@@ -498,7 +527,7 @@ class PrismAgent {
      * @return The message sent if successful, null otherwise
      */
     suspend fun sendMessage(message: Message): Message? {
-        return connectionManager?.sendMessage(message)
+        return connectionManager.sendMessage(message)
     }
 
     // Credentials related actions
@@ -515,20 +544,19 @@ class PrismAgent {
         val privateKey =
             pluto.getDIDPrivateKeysByDID(did).first().first()
                 ?: throw PrismAgentError.CannotFindDIDPrivateKey(did.toString())
-        var returnByteArray: ByteArray
-        when (privateKey.getCurve()) {
+        val returnByteArray: ByteArray = when (privateKey.getCurve()) {
             Curve.ED25519.value -> {
                 val ed = privateKey as Ed25519PrivateKey
-                returnByteArray = ed.sign(message)
+                ed.sign(message)
             }
 
             Curve.SECP256K1.value -> {
                 val secp = privateKey as Secp256k1PrivateKey
-                returnByteArray = secp.sign(message)
+                secp.sign(message)
             }
 
             else -> {
-                throw ApolloError.InvalidKeyCurve(
+                throw ApolloError.InvalidSpecificKeyCurve(
                     privateKey.getCurve(),
                     arrayOf(Curve.SECP256K1.value, Curve.ED25519.value)
                 )
@@ -543,17 +571,18 @@ class PrismAgent {
      * @param offer Received offer credential.
      * @return Created request credential.
      * @throws [PolluxError.InvalidPrismDID] if there is a problem creating the request credential.
+     * @throws [io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError] if credential type is not supported
      **/
-    @Throws(PolluxError.InvalidPrismDID::class)
+    @Throws(PolluxError.InvalidPrismDID::class, io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
     suspend fun prepareRequestCredentialWithIssuer(
         did: DID,
         offer: OfferCredential
     ): RequestCredential {
         if (did.method != "prism") {
-            throw PolluxError.InvalidPrismDID()
+            throw PolluxError.InvalidPrismDID("DID method is not \"prism\" ")
         }
 
-        return when (pollux.extractCredentialFormatFromMessage(offer.attachments)) {
+        return when (val type = pollux.extractCredentialFormatFromMessage(offer.attachments)) {
             CredentialType.JWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
 
@@ -561,12 +590,12 @@ class PrismAgent {
                     seed,
                     KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                 )
-                val offerDataString = offer.attachments.mapNotNull {
+                val offerDataString = offer.attachments.firstNotNullOf {
                     when (it.data) {
                         is AttachmentJsonData -> it.data.data
                         else -> null
                     }
-                }.first()
+                }
                 val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
                 val jwtString =
                     pollux.processCredentialRequestJWT(did, keyPair.privateKey, offerJsonObject)
@@ -589,12 +618,12 @@ class PrismAgent {
 
             CredentialType.ANONCREDS_OFFER -> {
                 val linkSecret = getLinkSecret()
-                val offerDataString = offer.attachments.mapNotNull {
+                val offerDataString = offer.attachments.firstNotNullOf {
                     when (it.data) {
                         is AttachmentBase64 -> it.data.base64
                         else -> null
                     }
-                }.first()
+                }
 
                 val anonOffer = CredentialOffer(offerDataString.base64UrlDecoded)
                 val pair = pollux.processCredentialRequestAnoncreds(
@@ -634,7 +663,8 @@ class PrismAgent {
 
             else -> {
                 // TODO: Create new prism agent error message
-                throw Error("Not supported credential type")
+                throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Not supported credential type: $type")
+                // throw Error("Not supported credential type: $type")
             }
         }
     }
@@ -643,8 +673,9 @@ class PrismAgent {
      * This function parses an issued credential message, stores, and returns the verifiable credential.
      * @param message Issue credential Message.
      * @return The parsed verifiable credential.
-     * @throws PrismAgentError if there is a problem parsing the credential.
+     * @throws io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError if there is a problem parsing the credential.
      */
+    @Throws(io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
     suspend fun processIssuedCredentialMessage(message: IssueCredential): Credential {
         val credentialType = pollux.extractCredentialFormatFromMessage(message.attachments)
         val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
@@ -663,7 +694,7 @@ class PrismAgent {
                 val metadata = if (credentialType == CredentialType.ANONCREDS_ISSUE) {
                     val plutoMetadata =
                         pluto.getCredentialMetadata(message.thid).first()
-                            ?: throw Exception("Invalid credential metadata")
+                            ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Invalid credential metadata")
                     CredentialRequestMetadata(
                         linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
                         linkSecretName = plutoMetadata.linkSecretName,
@@ -675,7 +706,7 @@ class PrismAgent {
 
                 val credential =
                     pollux.parseCredential(
-                        data = credentialData,
+                        jsonData = credentialData,
                         type = credentialType,
                         linkSecret = linkSecret,
                         credentialMetadata = metadata
@@ -688,8 +719,8 @@ class PrismAgent {
                     )
                 pluto.storeCredential(storableCredential)
                 return credential
-            } ?: throw UnknownError("Thid should not be null")
-        } ?: throw UnknownError("Cannot find attachment base64 in message")
+            } ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Thid should not be null")
+        } ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Cannot find attachment base64 in message")
     }
 
 // Message Events
@@ -758,8 +789,9 @@ class PrismAgent {
      * @param str The string to parse
      * @return The parsed invitation [InvitationType]
      * @throws [PrismAgentError.UnknownInvitationTypeError] if the invitation is not a valid Prism or OOB type
+     * @throws [SerializationException] if Serialization failed
      */
-    @Throws(PrismAgentError.UnknownInvitationTypeError::class)
+    @Throws(PrismAgentError.UnknownInvitationTypeError::class, SerializationException::class)
     suspend fun parseInvitation(str: String): InvitationType {
         Url.parse(str)?.let {
             return parseOOBInvitation(it)
@@ -772,16 +804,16 @@ class PrismAgent {
                     ""
                 }
 
-                val invite: InvitationType = when (findProtocolTypeByValue(typeString)) {
+                val invite: InvitationType = when (val type = findProtocolTypeByValue(typeString)) {
                     ProtocolType.PrismOnboarding -> parsePrismInvitation(str)
                     ProtocolType.Didcomminvitation -> parseOOBInvitation(str)
                     else ->
-                        throw PrismAgentError.UnknownInvitationTypeError()
+                        throw PrismAgentError.UnknownInvitationTypeError(type.toString())
                 }
 
                 return invite
             } catch (e: SerializationException) {
-                throw PrismAgentError.UnknownInvitationTypeError()
+                throw e
             }
         }
     }
@@ -790,9 +822,9 @@ class PrismAgent {
      * Parses the given string as a Prism Onboarding invitation
      * @param str The string to parse
      * @return The parsed Prism Onboarding invitation
-     * @throws [PrismAgentError.UnknownInvitationTypeError] if the string is not a valid Prism Onboarding invitation
+     * @throws [io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError] if the string is not a valid Prism Onboarding invitation
      */
-    @Throws(PrismAgentError.UnknownInvitationTypeError::class)
+    @Throws(io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
         try {
             val prismOnboarding = PrismOnboardingInvitation.fromJsonString(str)
@@ -814,7 +846,7 @@ class PrismAgent {
             prismOnboarding.from = did
             return prismOnboarding
         } catch (e: Exception) {
-            throw PrismAgentError.UnknownInvitationTypeError()
+            throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(e.message, e.cause)
         }
     }
 
@@ -822,14 +854,14 @@ class PrismAgent {
      * Parses the given string as an Out-of-Band invitation
      * @param str The string to parse
      * @returns The parsed Out-of-Band invitation
-     * @throws [PrismAgentError.UnknownInvitationTypeError] if the string is not a valid URL
+     * @throws [SerializationException] if Serialization failed
      */
-    @Throws(PrismAgentError.UnknownInvitationTypeError::class)
+    @Throws(SerializationException::class)
     private suspend fun parseOOBInvitation(str: String): OutOfBandInvitation {
         return try {
             Json.decodeFromString(str)
         } catch (ex: SerializationException) {
-            throw PrismAgentError.UnknownInvitationTypeError()
+            throw ex
         }
     }
 
@@ -947,7 +979,6 @@ class PrismAgent {
                 throw PrismAgentError.InvalidCredentialError(credential)
             }
         }
-
         val attachmentDescriptor =
             AttachmentDescriptor(
                 mediaType = mediaType,
@@ -962,6 +993,16 @@ class PrismAgent {
         )
     }
 
+    /**
+     * This method retrieves the link secret from Pluto.
+     *
+     * The method first retrieves the link secret using the `pluto.getLinkSecret()` function. If the link secret is not
+     * found, a new `LinkSecret` object is created and stored in Pluto using the `pluto.storeLinkSecret()` function. The
+     * newly created link secret object is then returned. If a link secret is found, a new `LinkSecret` object is created
+     * using the existing link secret value and returned.
+     *
+     * @return The retrieved or newly created link secret object.
+     */
     private suspend fun getLinkSecret(): LinkSecret {
         val linkSecret = pluto.getLinkSecret().firstOrNull()
         return if (linkSecret == null) {

@@ -43,6 +43,7 @@ class CredentialsFragment : Fragment() {
     }
 
     companion object {
+        @JvmStatic
         fun newInstance(): CredentialsFragment {
             return CredentialsFragment()
         }

@@ -25,6 +25,14 @@ class ConnectionRequest {
     var thid: String? = null
     lateinit var body: Body
 
+    /**
+     * Represents a connection request message in the messaging protocol.
+     *
+     * @param from The sender's DID.
+     * @param to The recipient's DID.
+     * @param thid The thread ID.
+     * @param body The body of the connection request message.
+     */
     constructor(
         from: DID,
         to: DID,
@@ -94,6 +102,11 @@ class ConnectionRequest {
         }
     }
 
+    /**
+     * Creates a [Message] object based on the current state of the [ConnectionRequest] instance.
+     *
+     * @return The created [Message] object.
+     */
     fun makeMessage(): Message {
         return Message(
             id = this.id,
@@ -124,6 +137,12 @@ class ConnectionRequest {
          */
         val accept: Array<String>? = null
     ) {
+        /**
+         * Checks if the current object is equal to the specified object.
+         *
+         * @param other The other object to compare.
+         * @return true if the objects are equal, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -140,6 +159,11 @@ class ConnectionRequest {
             return true
         }
 
+        /**
+         * Generates a hash code for the object based on its properties.
+         *
+         * @return The hash code value.
+         */
         override fun hashCode(): Int {
             var result = goalCode?.hashCode() ?: 0
             result = 31 * result + (goal?.hashCode() ?: 0)

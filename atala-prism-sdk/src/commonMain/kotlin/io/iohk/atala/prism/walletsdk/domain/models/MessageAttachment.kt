@@ -54,6 +54,14 @@ data class AttachmentLinkData(
     val links: Array<String>,
     val hash: String
 ) : AttachmentData {
+    /**
+     * Overrides the equals method of the [Any] class.
+     *
+     * Two [AttachmentLinkData] instances are considered equal if all of their properties have the same values.
+     *
+     * @param other the object to compare for equality
+     * @return true if the objects are equal, false otherwise
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -66,6 +74,14 @@ data class AttachmentLinkData(
         return true
     }
 
+    /**
+     * Calculates the hash code for the [AttachmentLinkData] instance.
+     *
+     * The hash code is calculated by combining the hash codes of the `links` array and the `hash` property using the formula:
+     * `result = 31 * result + hash.hashCode()`.
+     *
+     * @return the hash code value for the [AttachmentLinkData] instance
+     */
     override fun hashCode(): Int {
         var result = links.contentHashCode()
         result = 31 * result + hash.hashCode()
@@ -96,6 +112,22 @@ data class AttachmentDescriptor @JvmOverloads constructor(
     val description: String? = null
 ) : AttachmentData {
 
+    /**
+     * Checks if this [AttachmentDescriptor] object is equal to the specified [other] object.
+     *
+     * Two [AttachmentDescriptor] objects are considered equal if they have the same values for the following properties:
+     * - [id] (unique identifier)
+     * - [mediaType] (media type of the attachment)
+     * - [data] (attachment data)
+     * - [filename] (array of filenames associated with the attachment)
+     * - [format] (format of the attachment)
+     * - [lastModTime] (last modification time of the attachment)
+     * - [byteCount] (byte count of the attachment)
+     * - [description] (description of the attachment)
+     *
+     * @param other The object to compare with this [AttachmentDescriptor] object.
+     * @return true if the specified [other] object is equal to this [AttachmentDescriptor] object, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
@@ -114,6 +146,11 @@ data class AttachmentDescriptor @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Calculates the hash code for the AttachmentDescriptor object.
+     *
+     * @return The hash code value for the AttachmentDescriptor object.
+     */
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + (mediaType?.hashCode() ?: 0)

@@ -52,11 +52,7 @@ class DIDsAdapter(private var data: MutableList<DID> = mutableListOf()) :
     }
 
     inner class DIDHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val did: TextView
-
-        init {
-            did = itemView.findViewById(R.id.did)
-        }
+        private val did: TextView = itemView.findViewById(R.id.did)
 
         fun bind(did: DID) {
             this.did.text = did.toString()

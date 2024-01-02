@@ -10,7 +10,7 @@ plugins {
 
 // Mock configuration which derives compile only.
 // Needed to resolve jar files of the dependency
-val jarPathConf by configurations.creating {
+val jarPathConf: Configuration by configurations.creating {
     extendsFrom(configurations.compileOnly.get())
 }
 

@@ -59,21 +59,12 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
     }
 
     inner class CredentialHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val type: TextView
-        private val issuanceDate: TextView
-        private val expDate: TextView
-        private val typeString: String
-        private val issuanceString: String
-        private val expirationString: String
-
-        init {
-            type = itemView.findViewById(R.id.credential_id)
-            issuanceDate = itemView.findViewById(R.id.credential_issuance_date)
-            expDate = itemView.findViewById(R.id.credential_expiration_date)
-            typeString = itemView.context.getString(R.string.credential_type)
-            issuanceString = itemView.context.getString(R.string.credential_issuance)
-            expirationString = itemView.context.getString(R.string.credential_expiration)
-        }
+        private val type: TextView = itemView.findViewById(R.id.credential_id)
+        private val issuanceDate: TextView = itemView.findViewById(R.id.credential_issuance_date)
+        private val expDate: TextView = itemView.findViewById(R.id.credential_expiration_date)
+        private val typeString: String = itemView.context.getString(R.string.credential_type)
+        private val issuanceString: String = itemView.context.getString(R.string.credential_issuance)
+        private val expirationString: String = itemView.context.getString(R.string.credential_expiration)
 
         fun bind(cred: Credential) {
             when (cred::class) {

@@ -16,13 +16,32 @@ import org.didcommx.didcomm.secret.Secret
 import org.didcommx.didcomm.secret.SecretResolver
 import java.util.Optional
 
+/**
+ * DIDCommSecretsResolver is a class that implements the SecretResolver interface.
+ * It is responsible for resolving secrets using the Pluto and Apollo components.
+ *
+ * @property pluto The Pluto component used to get DID private keys.
+ * @property apollo The Apollo component used for some other functionality.
+ */
 class DIDCommSecretsResolver(val pluto: Pluto, val apollo: Apollo) : SecretResolver {
+    /**
+     * Finds the keys associated with the provided list of kid values.
+     *
+     * @param kids The list of kid values to search for.
+     * @return A set of keys that match the provided kid values.
+     */
     override fun findKeys(kids: List<String>): Set<String> {
         return runBlocking {
             kids.filter { pluto.getDIDPrivateKeyByID(it).firstOrNull() != null }.toSet()
         }
     }
 
+    /**
+     * Finds a key associated with the provided kid value and returns it as an Optional.
+     *
+     * @param kid The kid value to search for.
+     * @return An Optional containing the key as a Secret object, or an empty Optional if no key is found.
+     */
     override fun findKey(kid: String): Optional<Secret> {
         return runBlocking {
             pluto.getDIDPrivateKeyByID(kid)

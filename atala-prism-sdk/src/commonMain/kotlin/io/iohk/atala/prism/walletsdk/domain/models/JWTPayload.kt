@@ -14,7 +14,7 @@ import kotlinx.serialization.json.jsonPrimitive
  * A data class representing a JWT credential payload.
  * This payload includes the issuer (`iss`), subject (`sub`), and the verifiable credential (`verifiableCredential`).
  *
- *Note: This data class conforms to the JSON Web Token (JWT) format. For more information, see https://jwt.io/introduction/.
+ * Note: This data class conforms to the JSON Web Token (JWT) format. For more information, see https://jwt.io/introduction/.
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
@@ -49,6 +49,12 @@ data class JWTPayload
         val evidence: VerifiableCredentialTypeContainer? = null,
         val termsOfUse: VerifiableCredentialTypeContainer? = null
     ) {
+        /**
+         * Checks if this JWTVerifiableCredential object is equal to the specified object.
+         *
+         * @param other The object to compare this JWTVerifiableCredential object against.
+         * @return true if the objects are equal, false otherwise.
+         */
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
             if (other == null || this::class != other::class) return false
@@ -67,6 +73,12 @@ data class JWTPayload
             return true
         }
 
+        /**
+         * Calculates the hash code value for the current object. The hash code is computed
+         * based on the values of the object's properties.
+         *
+         * @return The hash code value for the object.
+         */
         override fun hashCode(): Int {
             var result = context.contentHashCode()
             result = 31 * result + type.contentHashCode()
@@ -80,6 +92,12 @@ data class JWTPayload
         }
     }
 
+    /**
+     * Checks if this JWTPayload object is equal to the specified object.
+     *
+     * @param other The object to compare this JWTPayload object against.
+     * @return true if the objects are equal, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -101,6 +119,12 @@ data class JWTPayload
         return true
     }
 
+    /**
+     * Calculates the hash code value for the current `JWTPayload` object.
+     * The hash code is computed based on the values of the object's properties.
+     *
+     * @return The hash code value for the object.
+     */
     override fun hashCode(): Int {
         var result = iss.hashCode()
         result = 31 * result + (sub?.hashCode() ?: 0)
@@ -114,6 +138,14 @@ data class JWTPayload
     }
 }
 
+/**
+ * Retrieves the value of the specified credential field from a JsonObject.
+ *
+ * @param name The name of the credential field.
+ * @param isOptional Indicates whether the field is optional. If set to false and the field is not found, a [PolluxError.InvalidJWTString] error is thrown.
+ * @return The value of the credential field. The return type is inferred based on the actual type of the field in the JsonObject.
+ * @throws PolluxError.InvalidJWTString if the field is not found and isOptional is set to false.
+ */
 inline fun <reified T> JsonObject.getCredentialField(name: String, isOptional: Boolean = false): T {
     if (!isOptional && this[name] == null) throw PolluxError.InvalidJWTString()
     return when (val field = this[name]) {

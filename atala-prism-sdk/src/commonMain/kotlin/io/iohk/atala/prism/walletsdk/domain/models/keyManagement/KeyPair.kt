@@ -10,6 +10,11 @@ abstract class KeyPair {
     abstract var privateKey: PrivateKey
     abstract var publicKey: PublicKey
 
+    /**
+     * Returns the value of the key curve for this key pair.
+     *
+     * @return The value of the key curve.
+     */
     fun getCurve(): String {
         return this.privateKey.getProperty(CurveKey().property)
     }

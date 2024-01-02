@@ -43,6 +43,7 @@ class AgentFragment : Fragment() {
     }
 
     companion object {
+        @JvmStatic
         fun newInstance(): AgentFragment {
             return AgentFragment()
         }
