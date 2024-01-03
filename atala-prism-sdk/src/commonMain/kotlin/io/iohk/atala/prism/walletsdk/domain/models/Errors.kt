@@ -649,7 +649,7 @@ constructor(
      *
      * @see PlutoError
      */
-    class DatabaseConnectionError : PlutoError("Database connection error") {
+    class DatabaseConnectionError(message: String? = "Database connection error") : PlutoError(message) {
         override val code: Int
             get() = 46
     }

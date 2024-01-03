@@ -695,11 +695,13 @@ class PrismAgent {
                     val plutoMetadata =
                         pluto.getCredentialMetadata(message.thid).first()
                             ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Invalid credential metadata")
-                    CredentialRequestMetadata(
-                        linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
-                        linkSecretName = plutoMetadata.linkSecretName,
-                        nonce = Nonce.newFromValue(plutoMetadata.nonce)
-                    )
+                    // TODO: Handle this before PR
+                    CredentialRequestMetadata("")
+//                    CredentialRequestMetadata(
+//                        linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
+//                        linkSecretName = plutoMetadata.linkSecretName,
+//                        nonce = Nonce.newFromValue(plutoMetadata.nonce)
+//                    )
                 } else {
                     null
                 }

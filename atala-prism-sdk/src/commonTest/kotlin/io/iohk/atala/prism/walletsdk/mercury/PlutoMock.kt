@@ -13,7 +13,7 @@ import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
-import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims
+import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 /* ktlint-disable import-ordering */
