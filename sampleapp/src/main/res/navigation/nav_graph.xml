@@ -5,16 +5,16 @@
     android:id="@+id/nav_graph2"
     app:startDestination="@id/FirstFragment">
 
-    <fragment
-        android:id="@+id/FirstFragment"
-        android:name="io.iohk.atala.prism.sampleapp.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
+<!--    <fragment-->
+<!--        android:id="@+id/FirstFragment"-->
+<!--        android:name="io.iohk.atala.prism.sampleapp.FirstFragment"-->
+<!--        android:label="@string/first_fragment_label"-->
+<!--        tools:layout="@layout/fragment_first">-->
 
-        <action
-            android:id="@+id/action_First2Fragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
+<!--        <action-->
+<!--            android:id="@+id/action_First2Fragment_to_SecondFragment"-->
+<!--            app:destination="@id/SecondFragment" />-->
+<!--    </fragment>-->
     <fragment
         android:id="@+id/SecondFragment"
         android:name="io.iohk.atala.prism.sampleapp.ui.agent.AgentFragment"

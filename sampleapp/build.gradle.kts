@@ -1,7 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    kotlin("kapt") version "1.9.10"
+    id("com.google.devtools.ksp") version("1.9.22-1.0.16")
 }
 
 apply(plugin = "kotlinx-atomicfu")
@@ -76,7 +76,7 @@ dependencies {
 
     // Room
     implementation("androidx.room:room-runtime:2.4.2")
-    kapt("androidx.room:room-compiler:2.4.2")
+    ksp("androidx.room:room-compiler:2.4.2")
 
     // Unit Tests
     testImplementation("junit:junit:4.13.2")

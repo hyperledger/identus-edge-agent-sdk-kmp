@@ -933,7 +933,7 @@ class PrismAgent {
         credential: Credential
     ): Presentation {
         var mediaType: String? = null
-        var presentationString: String? = null
+        var presentationString: String?
         when (credential::class) {
             JWTCredential::class -> {
                 val subjectDID = credential.subject?.let {

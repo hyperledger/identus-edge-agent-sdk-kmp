@@ -67,12 +67,12 @@ interface Pluto {
     /**
      * Stores the private key along with additional information.
      *
-     * @param privateKey The private key to store. Must implement the [StorableKey] interface.
+     * @param storableKey The private key to store. Must implement the [StorableKey] interface.
      * @param did The DID associated with the private key.
      * @param keyPathIndex The key path index.
      * @param metaId The optional metadata ID.
      */
-    fun storePrivateKeys(privateKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String? = null)
+    fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String? = null)
 
     /**
      * Stores a mediator in the system.
@@ -86,9 +86,9 @@ interface Pluto {
     /**
      * Stores a credential in the system.
      *
-     * @param credential The credential to store. It must implement the [StorableCredential] interface.
+     * @param storableCredential The credential to store. It must implement the [StorableCredential] interface.
      */
-    fun storeCredential(credential: StorableCredential)
+    fun storeCredential(storableCredential: StorableCredential)
 
     /**
      * Stores a link secret in the system.

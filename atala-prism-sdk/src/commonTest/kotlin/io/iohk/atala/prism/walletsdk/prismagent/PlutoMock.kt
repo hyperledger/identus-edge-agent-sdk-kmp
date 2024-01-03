@@ -94,7 +94,7 @@ class PlutoMock : Pluto {
         wasStoreMessagesCalled = true
     }
 
-    override fun storePrivateKeys(privateKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
         wasStorePrivateKeysCalled = true
     }
 
@@ -102,7 +102,7 @@ class PlutoMock : Pluto {
         wasStoreMediatorCalled = true
     }
 
-    override fun storeCredential(credential: StorableCredential) {
+    override fun storeCredential(storableCredential: StorableCredential) {
         wasStoreCredentialCalled = true
     }
 

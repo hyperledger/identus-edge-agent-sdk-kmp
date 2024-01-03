@@ -13,7 +13,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Agent status:"
+                android:text="@string/agent_status_label"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
@@ -35,8 +35,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintBottom_toTopOf="@id/mediator_did"
                 android:layout_marginStart="16dp"
-                android:text="Mediator DID:"
-        />
+                android:text="@string/mediator_did" />
 
         <EditText
                 android:id="@+id/mediator_did"
@@ -45,10 +44,13 @@
                 android:layout_marginBottom="16dp"
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
-                android:text="did:peer:2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjoiaHR0cDovLzE5Mi4xNjguNjguMTAzOjgwODAiLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19"
+                android:text="@string/mediator_did_value"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintBottom_toTopOf="@id/start_agent"/>
+                app:layout_constraintBottom_toTopOf="@id/start_agent"
+                android:autofillHints="string"
+                android:inputType="text"
+                tools:ignore="LabelFor"/>
 
         <Button
                 android:id="@+id/start_agent"
@@ -57,7 +59,7 @@
                 android:layout_marginStart="16dp"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
-                android:text="Start agent"
+                android:text="@string/start_agent"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"/>

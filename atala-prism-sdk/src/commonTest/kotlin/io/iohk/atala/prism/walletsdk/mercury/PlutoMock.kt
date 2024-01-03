@@ -54,7 +54,7 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storePrivateKeys(privateKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
         TODO("Not yet implemented")
     }
 
@@ -62,7 +62,7 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storeCredential(credential: StorableCredential) {
+    override fun storeCredential(storableCredential: StorableCredential) {
         TODO("Not yet implemented")
     }
 
