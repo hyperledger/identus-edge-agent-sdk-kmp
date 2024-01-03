@@ -204,9 +204,7 @@ constructor(
     class InvalidKeyCurve(
         invalidCurve: String
     ) : ApolloError(
-        "Invalid key curve $invalidCurve. Valid options are: ${
-        Curve.values().map { it.value }.toTypedArray().joinToString(", ")
-        }"
+        message = "Invalid key curve $invalidCurve. Valid options are: ${Curve.entries.map { it.value }.toTypedArray().joinToString(", ")}"
     ) {
         override val code: Int
             get() = 14
@@ -240,9 +238,7 @@ constructor(
     class InvalidKeyType(
         invalidType: String
     ) : ApolloError(
-        "Invalid key type $invalidType. Valid options are: ${
-        KeyTypes.values().map { it.type }.toTypedArray().joinToString(", ")
-        }"
+        message = "Invalid key type $invalidType. Valid options are: ${KeyTypes.values().map { it.type }.toTypedArray().joinToString(", ")}"
     ) {
         override val code: Int
             get() = 15
@@ -560,7 +556,7 @@ constructor(
         customMessage: String? = null,
         customUnderlyingErrors: Array<Error>
     ) : MercuryError(
-        "DIDComm error has occurred with message: $customMessage\nErrors: ${
+        message = "DIDComm error has occurred with message: $customMessage\nErrors: ${
         customUnderlyingErrors.joinToString(
             separator = "\n"
         ) { it.errorDescription ?: "" }

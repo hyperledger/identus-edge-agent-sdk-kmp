@@ -25,13 +25,11 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
-import io.iohk.atala.prism.walletsdk.pollux.models.LinkSecretBlindingData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import io.iohk.atala.prism.walletsdk.pluto.data.DID as DIDDB
@@ -367,15 +365,13 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      *
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
      */
+    // TODO: Update docs
     override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
-        // TODO: Handle before PR
-        getInstance().credentialMetadataQueries.insert("", "", "")
-//        getInstance().credentialMetadataQueries.insert(
-//            id = UUID.randomUUID4().toString(),
-//            nonce = metadata.nonce,
-//            linkSecretName = metadata.linkSecretName,
-//            linkSecretBlindingData = Json.encodeToString(metadata.linkSecretBlindingData)
-//        )
+        getInstance().credentialMetadataQueries.insert(
+            id = UUID.randomUUID4().toString(),
+            linkSecretName = metadata.linkSecretName,
+            json = metadata.json
+        )
     }
 
     /**
@@ -1014,18 +1010,16 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * @return A [Flow] emitting the [CredentialRequestMeta] object for the specified link secret name,
      * or null if no metadata is found.
      */
+    // TODO: Update docs
     override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {
         return getInstance().credentialMetadataQueries.fetchCredentialMetadata(linkSecretName = linkSecretName)
             .asFlow()
             .map {
                 val metadata = it.executeAsOne()
-                // TODO: Handle before PR
-                CredentialRequestMeta(LinkSecretBlindingData(""), "", "")
-//                CredentialRequestMeta(
-//                    nonce = metadata.nonce,
-//                    linkSecretName = metadata.linkSecretName,
-//                    linkSecretBlindingData = LinkSecretBlindingData(metadata.linkSecretBlindingData)
-//                )
+                CredentialRequestMeta(
+                    linkSecretName = metadata.linkSecretName,
+                    json = metadata.json
+                )
             }
     }
 }

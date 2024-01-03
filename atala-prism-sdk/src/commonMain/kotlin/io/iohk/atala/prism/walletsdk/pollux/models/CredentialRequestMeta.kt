@@ -1,19 +1,16 @@
 package io.iohk.atala.prism.walletsdk.pollux.models
 
 import anoncreds_wrapper.CredentialRequestMetadata
-import kotlinx.serialization.json.Json
 
 /**
  * Represents the metadata for a credential request.
  *
- * @property linkSecretBlindingData The blinding data used in the Link-Secret protocol.
  * @property linkSecretName The name of the link secret.
- * @property nonce The nonce value.
+ * @property json The json string from the wrapper credential request metadata.
  */
 data class CredentialRequestMeta(
-    var linkSecretBlindingData: LinkSecretBlindingData,
     var linkSecretName: String,
-    var nonce: String
+    var json: String
 ) {
     companion object {
         /**
@@ -26,8 +23,7 @@ data class CredentialRequestMeta(
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
                 linkSecretName = metadata.getLinkSecretName(),
-                linkSecretBlindingData = Json.decodeFromString(metadata.getLinkSecretBlindingData()),
-                nonce = metadata.getNonce().getValue()
+                json = metadata.getJson()
             )
         }
     }

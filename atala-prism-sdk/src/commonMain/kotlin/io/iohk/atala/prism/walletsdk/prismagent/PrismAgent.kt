@@ -4,7 +4,6 @@ package io.iohk.atala.prism.walletsdk.prismagent
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
-import anoncreds_wrapper.Nonce
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
@@ -81,7 +80,6 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -695,13 +693,10 @@ class PrismAgent {
                     val plutoMetadata =
                         pluto.getCredentialMetadata(message.thid).first()
                             ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Invalid credential metadata")
-                    // TODO: Handle this before PR
-                    CredentialRequestMetadata("")
-//                    CredentialRequestMetadata(
-//                        linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
-//                        linkSecretName = plutoMetadata.linkSecretName,
-//                        nonce = Nonce.newFromValue(plutoMetadata.nonce)
-//                    )
+
+                    CredentialRequestMetadata(
+                        plutoMetadata.json
+                    )
                 } else {
                     null
                 }

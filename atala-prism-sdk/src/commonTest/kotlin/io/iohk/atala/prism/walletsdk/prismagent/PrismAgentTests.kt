@@ -21,7 +21,6 @@ import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
-import io.iohk.atala.prism.walletsdk.pollux.models.LinkSecretBlindingData
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
@@ -482,12 +481,8 @@ class PrismAgentTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
         val meta = CredentialRequestMeta(
-            linkSecretBlindingData = LinkSecretBlindingData(
-                vPrime = "25640768589781180388780947458530942508097609060195936083325202836425537796105863532996457182896416190370043209557677698887790935151362153536943154068082466343529339252470449056527102073900035205398743827912718037139005903291819127500631482122295491777147526837712271367909449810555177615439256541701422814752128559601153332207720895418174855363389532697304935246097129194680107532713993463598420823365761867328806906368762890406604820633668919158697683127114469035627228895027952792675790305070772499052052690434104276748788760647551842035459213572765697025729553350526825112536685989553872204362324245819081933885546131268965572563884162204",
-                vrPrime = null
-            ),
             linkSecretName = "1",
-            nonce = "519571990522308752875135"
+            json = "{\"link_secret_blinding_data\":{\"v_prime\":\"1234\",\"vr_prime\":\"1234\"},\"nonce\":\"411729288962137159046778\",\"link_secret_name\":\"link:secret:id\"}"
         )
         plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 
