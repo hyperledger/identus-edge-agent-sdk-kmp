@@ -48,6 +48,17 @@ jobs:
         run: |
           ./gradlew :atala-prism-sdk:dokkaHtml
 
+      - name: Dokka Documentation Generation (.md)
+        run: |
+          ./gradlew :atala-prism-sdk:dokkaJekyll
+
+      - name: Move dokka documentation to docs/sdk
+        run: | 
+          mkdir atala-prism-sdk/docs/sdk
+          mv atala-prism-sdk/build/dokka/jekyll/ atala-prism-sdk/docs/sdk
+
+      # TODO: Commit to docs repo
+
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
