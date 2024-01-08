@@ -44,26 +44,15 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "zulu"
 
-      - name: Dokka Documentation Generation
-        run: |
-          ./gradlew :atala-prism-sdk:dokkaHtml
-
       - name: Dokka Documentation Generation (.md)
         run: |
           ./gradlew :atala-prism-sdk:dokkaJekyll
-
-      - name: Move dokka documentation to docs/sdk
-        run: | 
-          mkdir atala-prism-sdk/docs/sdk
-          mv atala-prism-sdk/build/dokka/jekyll/ atala-prism-sdk/docs/sdk
-
-      # TODO: Commit to docs repo
 
       - name: Push
         uses: s0/git-publish-subdir-action@develop
         env:
           REPO: self
           BRANCH: gh-pages # The branch name where you want to push the assets
-          FOLDER: "atala-prism-sdk/build/dokka/html/" # The directory where your assets are generated
+          FOLDER: "atala-prism-sdk/build/dokka/jekyll/" # The directory where your assets are generated
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub will automatically add this - you don't need to bother getting a token
           MESSAGE: "feat(docs): ({sha}) {msg}" # The commit message

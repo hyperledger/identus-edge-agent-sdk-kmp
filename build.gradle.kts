@@ -113,7 +113,3 @@ subprojects {
         }
     }
 }
-
-tasks.dokkaGfmMultiModule.configure {
-    outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
-}
