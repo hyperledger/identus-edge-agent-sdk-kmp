@@ -22,7 +22,8 @@ data class CredentialRequestMeta(
         @JvmStatic
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
-                linkSecretName = metadata.getLinkSecretName(),
+                // TODO: Remove the `replace` when anoncreds-kmp 0.4.3 is published. 0.4.2 has an issue where getLinkSecretName returns a string with double quotation.
+                linkSecretName = metadata.getLinkSecretName().replace("\"", ""),
                 json = metadata.getJson()
             )
         }

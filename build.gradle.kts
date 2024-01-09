@@ -1,6 +1,6 @@
 plugins {
-    id("org.jetbrains.kotlin.android") version "1.8.20" apply false
-    kotlin("jvm") version "1.8.20"
+    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+    kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.8.20"
     id("maven-publish")
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
@@ -16,7 +16,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.20")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
         classpath("com.android.tools.build:gradle:7.2.2") // 7.4.2 is still not supported
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")

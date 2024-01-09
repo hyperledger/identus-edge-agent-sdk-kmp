@@ -225,9 +225,9 @@ class PolluxImpl(
      * @return The list of [RequestedAttribute].
      */
     private fun Map<String, anoncreds_wrapper.AttributeInfoValue>.toListRequestedAttribute(): List<RequestedAttribute> {
-        return this.values.toList().map {
+        return this.keys.toList().map {
             RequestedAttribute(
-                referent = it.getName(),
+                referent = it,
                 revealed = true
             )
         }
@@ -240,8 +240,8 @@ class PolluxImpl(
      * @return The list of [RequestedPredicate].
      */
     private fun Map<String, anoncreds_wrapper.PredicateInfoValue>.toListRequestedPredicate(): List<RequestedPredicate> {
-        return this.values.toList().map {
-            RequestedPredicate(it.getName())
+        return this.keys.toList().map {
+            RequestedPredicate(it)
         }
     }
 
@@ -261,13 +261,10 @@ class PolluxImpl(
         val requestedAttributes = presentationRequest.getRequestedAttributes().toListRequestedAttribute()
         val requestedPredicate = presentationRequest.getRequestedPredicates().toListRequestedPredicate()
 
-        // TODO: which to put in the [CredentialRequests], requestedAttributes or requestedPredicate
-        // TODO: What is the logic to send one of them or the both of them
-
         val credentialRequests = CredentialRequests(
             credential = cred,
             requestedAttribute = requestedAttributes,
-            requestedPredicate = emptyList()
+            requestedPredicate = requestedPredicate
         )
         val schema = getSchema(credential.schemaID)
 
