@@ -693,7 +693,6 @@ class PrismAgent {
                     val plutoMetadata =
                         pluto.getCredentialMetadata(message.thid).first()
                             ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Invalid credential metadata")
-
                     CredentialRequestMetadata(
                         plutoMetadata.json
                     )

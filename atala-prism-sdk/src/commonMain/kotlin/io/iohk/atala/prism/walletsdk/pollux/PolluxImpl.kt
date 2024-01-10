@@ -287,6 +287,8 @@ class PolluxImpl(
     }
 
     /**
+=======
+>>>>>>> main
      * Converts a [Credential] object to a [StorableCredential] object of the specified [CredentialType].
      *
      * @param type The type of the [StorableCredential].
