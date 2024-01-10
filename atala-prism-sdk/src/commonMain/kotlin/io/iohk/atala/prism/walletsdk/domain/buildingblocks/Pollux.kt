@@ -5,12 +5,16 @@ import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequest
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
+import anoncreds_wrapper.Presentation
+import anoncreds_wrapper.Schema
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.serialization.json.JsonObject
 
 /**
@@ -80,6 +84,12 @@ interface Pollux {
         requestPresentationJson: JsonObject
     ): String
 
+    suspend fun createVerifiablePresentationAnoncred(
+        request: RequestPresentation,
+        credential: AnonCredential,
+        linkSecret: LinkSecret
+    ): Presentation
+
     /**
      * Restores a credential using the provided restoration identifier and credential data.
      *
@@ -113,4 +123,6 @@ interface Pollux {
      * @return The credential definition.
      */
     suspend fun getCredentialDefinition(id: String): CredentialDefinition
+
+    suspend fun getSchema(schemaId: String): Schema
 }

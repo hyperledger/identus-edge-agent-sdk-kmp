@@ -30,6 +30,5 @@ actual object Platform {
      *
      * @see PlatformType
      */
-    actual val type: PlatformType
-        get() = PlatformType.ANDROID
+    actual val type: PlatformType = PlatformType.ANDROID
 }

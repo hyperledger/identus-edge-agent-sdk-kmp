@@ -4,7 +4,6 @@ package io.iohk.atala.prism.walletsdk.prismagent
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
-import anoncreds_wrapper.Nonce
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
@@ -44,7 +43,9 @@ import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
+import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -79,7 +80,6 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
@@ -694,9 +694,7 @@ class PrismAgent {
                         pluto.getCredentialMetadata(message.thid).first()
                             ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Invalid credential metadata")
                     CredentialRequestMetadata(
-                        linkSecretBlindingData = Json.encodeToString(plutoMetadata.linkSecretBlindingData.toString()),
-                        linkSecretName = plutoMetadata.linkSecretName,
-                        nonce = Nonce.newFromValue(plutoMetadata.nonce)
+                        plutoMetadata.json
                     )
                 } else {
                     null
@@ -933,33 +931,55 @@ class PrismAgent {
         request: RequestPresentation,
         credential: Credential
     ): Presentation {
-        val subjectDID = credential.subject?.let {
-            DID(it)
-        } ?: DID("")
-        if (subjectDID.method != PRISM) {
-            throw PolluxError.InvalidPrismDID("DID method is not \"prism\"")
-        }
+        var mediaType: String? = null
+        var presentationString: String?
+        when (credential::class) {
+            JWTCredential::class -> {
+                val subjectDID = credential.subject?.let {
+                    DID(it)
+                } ?: DID("")
+                if (subjectDID.method != PRISM) {
+                    throw PolluxError.InvalidPrismDID()
+                }
 
-        val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
-        val keyPair =
-            Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
-        val requestData = request.attachments.firstNotNullOf {
-            when (it.data) {
-                is AttachmentJsonData -> it.data.data
-                else -> null
+                val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
+                val keyPair =
+                    Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
+                val requestData = request.attachments.mapNotNull {
+                    when (it.data) {
+                        is AttachmentJsonData -> it.data.data
+                        else -> null
+                    }
+                }.first()
+                val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
+                presentationString = pollux.createVerifiablePresentationJWT(
+                    subjectDID,
+                    keyPair.privateKey,
+                    credential,
+                    requestJsonObject
+                )
+                mediaType = JWT_MEDIA_TYPE
+            }
+
+            AnonCredential::class -> {
+                val format = pollux.extractCredentialFormatFromMessage(request.attachments)
+                if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
+                    throw PrismAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
+                }
+                val linkSecret = getLinkSecret()
+                val presentation = pollux.createVerifiablePresentationAnoncred(request, credential as AnonCredential, linkSecret)
+                presentationString = presentation.getJson()
+            }
+
+            else -> {
+                throw PrismAgentError.InvalidCredentialError(credential)
             }
         }
-        val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
-        val jwtString = pollux.createVerifiablePresentationJWT(
-            subjectDID,
-            keyPair.privateKey,
-            credential,
-            requestJsonObject
-        )
+
         val attachmentDescriptor =
             AttachmentDescriptor(
-                mediaType = JWT_MEDIA_TYPE,
-                data = AttachmentBase64(jwtString.base64UrlEncoded)
+                mediaType = mediaType,
+                data = AttachmentBase64(presentationString.base64UrlEncoded)
             )
         return Presentation(
             from = request.to,

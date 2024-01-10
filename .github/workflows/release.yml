@@ -27,7 +27,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: adopt
-          java-version: 11
+          java-version: 17
 
       - uses: crazy-max/ghaction-import-gpg@v5
         id: import_gpg
