@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.walletsdk.pluto.data
 
-import com.squareup.sqldelight.db.SqlDriver
-import io.iohk.atala.prism.walletsdk.PrismPlutoDb
+import app.cash.sqldelight.db.SqlDriver
 
 /**
  * DbConnection class represents a connection to the database.
@@ -16,7 +15,7 @@ expect class DbConnection() {
      *
      * @return The PrismPlutoDb instance representing the connection to the database.
      */
-    suspend fun connectDb(context: Any?): PrismPlutoDb
+    suspend fun connectDb(context: Any?): SqlDriver
 }
 
 /**

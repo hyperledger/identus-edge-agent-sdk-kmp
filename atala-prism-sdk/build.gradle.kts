@@ -9,7 +9,7 @@ val apolloVersion = project.property("apollo_version")
 val didpeerVersion = project.property("didpeer_version")
 
 plugins {
-    id("com.squareup.sqldelight")
+    id("app.cash.sqldelight") version "2.0.1"
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.android.library")
@@ -39,7 +39,7 @@ koverReport {
 }
 
 kotlin {
-    android {
+    androidTarget {
         publishAllLibraryVariants()
     }
 
@@ -84,11 +84,11 @@ kotlin {
                     exclude("com.google.protobuf")
                 }
 
-                implementation("com.squareup.sqldelight:coroutines-extensions:1.5.5")
+                implementation("app.cash.sqldelight:coroutines-extensions:2.0.1")
 
                 api("org.lighthousegames:logging:1.1.2")
 
-                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.3.4")
+                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.2")
                 implementation("com.ionspin.kotlin:bignum:0.3.8")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
             }
@@ -104,7 +104,7 @@ kotlin {
         val jvmMain by getting {
             dependencies {
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("com.squareup.sqldelight:sqlite-driver:1.5.5")
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
             }
         }
         val jvmTest by getting
@@ -112,7 +112,7 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
-                implementation("com.squareup.sqldelight:android-driver:1.5.5")
+                implementation("app.cash.sqldelight:android-driver:2.0.1")
             }
         }
         val androidInstrumentedTest by getting {
@@ -139,11 +139,11 @@ kotlin {
 }
 
 android {
-    compileSdk = 32
+    compileSdk = 33
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     defaultConfig {
         minSdk = 21
-        targetSdk = 32
+        targetSdk = 33
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -173,9 +173,11 @@ android {
 }
 
 sqldelight {
-    database("PrismPlutoDb") {
-        packageName = "io.iohk.atala.prism.walletsdk"
-        sourceFolders = listOf("sqldelight")
+    databases {
+        create("PrismPlutoDb") {
+            packageName.set("io.iohk.atala.prism.walletsdk")
+            srcDirs.setFrom("src/commonMain/sqldelight")
+        }
     }
 }
 

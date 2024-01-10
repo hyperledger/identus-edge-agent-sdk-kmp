@@ -1,7 +1,9 @@
 package io.iohk.atala.prism.walletsdk.pluto
 
-import com.squareup.sqldelight.runtime.coroutines.asFlow
-import com.squareup.sqldelight.runtime.coroutines.mapToList
+import app.cash.sqldelight.ColumnAdapter
+import app.cash.sqldelight.coroutines.asFlow
+import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.db.AfterVersion
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.apollo.uuid.UUID
@@ -23,21 +25,20 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
-import io.iohk.atala.prism.walletsdk.pollux.models.LinkSecretBlindingData
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import ioiohkatalaprismwalletsdkpluto.data.AvailableClaims as AvailableClaimsDB
-import ioiohkatalaprismwalletsdkpluto.data.DID as DIDDB
-import ioiohkatalaprismwalletsdkpluto.data.DIDPair as DIDPairDB
-import ioiohkatalaprismwalletsdkpluto.data.LinkSecret as LinkSecretDB
-import ioiohkatalaprismwalletsdkpluto.data.Mediator as MediatorDB
-import ioiohkatalaprismwalletsdkpluto.data.Message as MessageDB
-import ioiohkatalaprismwalletsdkpluto.data.PrivateKey as PrivateKeyDB
-import ioiohkatalaprismwalletsdkpluto.data.StorableCredential as StorableCredentialDB
+import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
+import io.iohk.atala.prism.walletsdk.pluto.data.DID as DIDDB
+import io.iohk.atala.prism.walletsdk.pluto.data.DIDPair as DIDPairDB
+import io.iohk.atala.prism.walletsdk.pluto.data.LinkSecret as LinkSecretDB
+import io.iohk.atala.prism.walletsdk.pluto.data.Mediator as MediatorDB
+import io.iohk.atala.prism.walletsdk.pluto.data.Message as MessageDB
+import io.iohk.atala.prism.walletsdk.pluto.data.PrivateKey as PrivateKeyDB
+import io.iohk.atala.prism.walletsdk.pluto.data.StorableCredential as StorableCredentialDB
 
 /**
  * `PlutoImpl` is a class that provides an implementation of the Pluto interface for interacting with the database.
@@ -47,6 +48,23 @@ import ioiohkatalaprismwalletsdkpluto.data.StorableCredential as StorableCredent
  */
 class PlutoImpl(private val connection: DbConnection) : Pluto {
     private var db: PrismPlutoDb? = null
+
+    init {
+        this.connection.driver?.let { driver ->
+            PrismPlutoDb.Schema.migrate(
+                driver,
+                1,
+                PrismPlutoDb.Schema.version,
+                AfterVersion(1) {
+                    it.execute(null, "ALTER TABLE CredentialMetadata DROB COLUMN nonce;", 0)
+                    it.execute(null, "ALTER TABLE CredentialMetadata DROB COLUMN linkSecretBlindingData;", 0)
+                    it.execute(null, "ALTER TABLE CredentialMetadata ADD COLUMN json TEXT;", 0)
+                }
+            )
+        } ?: {
+            throw PlutoError.DatabaseConnectionError("Database migration failed to: ${PrismPlutoDb.Schema.version}")
+        }
+    }
 
     /**
      * isConnected indicates whether the connection to the database is currently established or not.
@@ -70,7 +88,42 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         if (this.db != null) {
             throw PlutoError.DatabaseServiceAlreadyRunning()
         }
-        this.db = this.connection.connectDb(context)
+        this.db = PrismPlutoDb(
+            this.connection.connectDb(context),
+            io.iohk.atala.prism.walletsdk.pluto.data.Message.Adapter(
+                isReceivedAdapter = object : ColumnAdapter<Int, Long> {
+                    override fun decode(databaseValue: Long): Int {
+                        return databaseValue.toInt()
+                    }
+
+                    override fun encode(value: Int): Long {
+                        return value.toLong()
+                    }
+                }
+            ),
+            io.iohk.atala.prism.walletsdk.pluto.data.PrivateKey.Adapter(
+                keyPathIndexAdapter = object : ColumnAdapter<Int, Long> {
+                    override fun decode(databaseValue: Long): Int {
+                        return databaseValue.toInt()
+                    }
+
+                    override fun encode(value: Int): Long {
+                        return value.toLong()
+                    }
+                }
+            ),
+            io.iohk.atala.prism.walletsdk.pluto.data.StorableCredential.Adapter(
+                revokedAdapter = object : ColumnAdapter<Int, Long> {
+                    override fun decode(databaseValue: Long): Int {
+                        return databaseValue.toInt()
+                    }
+
+                    override fun encode(value: Int): Long {
+                        return value.toLong()
+                    }
+                }
+            )
+        )
     }
 
     /**
@@ -183,7 +236,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     /**
      * Stores the private key along with additional information.
      *
-     * @param privateKey The private key to store. Must implement the [StorableKey] interface.
+     * @param storableKey The private key to store. Must implement the [StorableKey] interface.
      * @param did The DID associated with the private key.
      * @param keyPathIndex The key path index.
      * @param metaId The optional metadata ID.
@@ -273,7 +326,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     /**
      * Stores a credential in the system.
      *
-     * @param credential The credential to store. It must implement the [StorableCredential] interface.
+     * @param storableCredential The credential to store. It must implement the [StorableCredential] interface.
      */
     override fun storeCredential(storableCredential: StorableCredential) {
         getInstance().storableCredentialQueries.insert(
@@ -315,9 +368,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
         getInstance().credentialMetadataQueries.insert(
             id = UUID.randomUUID4().toString(),
-            nonce = metadata.nonce,
             linkSecretName = metadata.linkSecretName,
-            linkSecretBlindingData = Json.encodeToString(metadata.linkSecretBlindingData)
+            json = metadata.json
         )
     }
 
@@ -330,7 +382,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         return getInstance().dIDQueries
             .fetchAllPrismDID()
             .asFlow()
-            .mapToList()
+            .mapToList(Dispatchers.Default)
             .map { list ->
                 list.map {
                     PrismDIDInfo(DID(it.did), it.keyPathIndex, it.alias)
@@ -963,9 +1015,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             .map {
                 val metadata = it.executeAsOne()
                 CredentialRequestMeta(
-                    nonce = metadata.nonce,
                     linkSecretName = metadata.linkSecretName,
-                    linkSecretBlindingData = LinkSecretBlindingData(metadata.linkSecretBlindingData)
+                    json = metadata.json
                 )
             }
     }

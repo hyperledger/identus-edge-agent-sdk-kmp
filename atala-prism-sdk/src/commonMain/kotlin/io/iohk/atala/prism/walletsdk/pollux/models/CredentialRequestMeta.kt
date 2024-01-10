@@ -1,19 +1,16 @@
 package io.iohk.atala.prism.walletsdk.pollux.models
 
 import anoncreds_wrapper.CredentialRequestMetadata
-import kotlinx.serialization.json.Json
 
 /**
  * Represents the metadata for a credential request.
  *
- * @property linkSecretBlindingData The blinding data used in the Link-Secret protocol.
  * @property linkSecretName The name of the link secret.
- * @property nonce The nonce value.
+ * @property json The json string from the wrapper credential request metadata.
  */
 data class CredentialRequestMeta(
-    var linkSecretBlindingData: LinkSecretBlindingData,
     var linkSecretName: String,
-    var nonce: String
+    var json: String
 ) {
     companion object {
         /**
@@ -25,9 +22,9 @@ data class CredentialRequestMeta(
         @JvmStatic
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
-                linkSecretName = metadata.linkSecretName,
-                linkSecretBlindingData = Json.decodeFromString(metadata.linkSecretBlindingData),
-                nonce = metadata.nonce.getValue()
+                // TODO: Remove the `replace` when anoncreds-kmp 0.4.3 is published. 0.4.2 has an issue where getLinkSecretName returns a string with double quotation.
+                linkSecretName = metadata.getLinkSecretName().replace("\"", ""),
+                json = metadata.getJson()
             )
         }
     }

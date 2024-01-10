@@ -15,6 +15,7 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
+@Serializable
 /**
  * The `RequestPresentation` class represents a request for presentation of credentials or proofs in a DIDComm protocol.
  *
