@@ -287,8 +287,6 @@ class PolluxImpl(
     }
 
     /**
-=======
->>>>>>> main
      * Converts a [Credential] object to a [StorableCredential] object of the specified [CredentialType].
      *
      * @param type The type of the [StorableCredential].
@@ -419,14 +417,7 @@ class PolluxImpl(
         throw PolluxError.InvalidCredentialDefinitionError()
     }
 
-    override suspend fun getSchema(schemId: String): Schema {
-        var schemaId = schemId
-        // TODO: Remove this before merge
-//            http://host.docker.internal:8000/prism-agent/schema-registry/schemas/39a47736-2ecc-3250-8e3c-588c154bb927
-        if (schemaId.contains("host.docker.internal")) {
-            schemaId = schemaId.replace("host.docker.internal", "192.168.68.103")
-        }
-        println("C: SchemaID: $schemaId")
+    override suspend fun getSchema(schemaId: String): Schema {
         val result = api.request(
             HttpMethod.Get.value,
             schemaId,
@@ -436,23 +427,20 @@ class PolluxImpl(
         )
 
         if (result.status == 200) {
-            val jsonElement = Json.parseToJsonElement(result.jsonString)
-            if (jsonElement is JsonObject) {
-                val schema = (jsonElement["schema"] as JsonObject)
-                if (schema.containsKey("attrNames") && schema.containsKey("issuerId")) {
-                    val name = jsonElement["name"]?.jsonPrimitive?.content
-                    val version = jsonElement["version"]?.jsonPrimitive?.content
-                    val attrs = schema["attrNames"]
-                    val attrNames = attrs?.jsonArray?.map { value -> value.jsonPrimitive.content }
-                    val issuerId =
-                        schema["issuerId"]?.jsonPrimitive?.content
-                    return Schema(
-                        name = name ?: throw PolluxError.InvalidCredentialError(),
-                        version = version ?: throw PolluxError.InvalidCredentialError(),
-                        attrNames = attrNames ?: throw PolluxError.InvalidCredentialError(),
-                        issuerId = issuerId ?: throw PolluxError.InvalidCredentialError()
-                    )
-                }
+            val schema = (Json.parseToJsonElement(result.jsonString) as JsonObject)
+            if (schema.containsKey("attrNames") && schema.containsKey("issuerId")) {
+                val name = schema["name"]?.jsonPrimitive?.content
+                val version = schema["version"]?.jsonPrimitive?.content
+                val attrs = schema["attrNames"]
+                val attrNames = attrs?.jsonArray?.map { value -> value.jsonPrimitive.content }
+                val issuerId =
+                    schema["issuerId"]?.jsonPrimitive?.content
+                return Schema(
+                    name = name ?: throw PolluxError.InvalidCredentialError(),
+                    version = version ?: throw PolluxError.InvalidCredentialError(),
+                    attrNames = attrNames ?: throw PolluxError.InvalidCredentialError(),
+                    issuerId = issuerId ?: throw PolluxError.InvalidCredentialError()
+                )
             }
         }
         throw PolluxError.InvalidCredentialDefinitionError()
