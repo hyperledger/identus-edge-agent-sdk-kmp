@@ -28,7 +28,12 @@ import kotlin.jvm.Throws
  * or a more traditional system requiring secure and private identity management, Castor provides the tools and features
  * you need to easily create, manage, and resolve DIDs.
  */
-class CastorImpl(val apollo: Apollo, private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)) : Castor {
+class CastorImpl
+@JvmOverloads
+constructor(
+    val apollo: Apollo,
+    private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)
+) : Castor {
     var resolvers: Array<DIDResolver> = arrayOf(
         PeerDIDResolver(),
         LongFormPrismDIDResolver(this.apollo)
