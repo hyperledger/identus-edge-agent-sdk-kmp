@@ -318,7 +318,7 @@ internal class CastorShared {
                         )
                     )
                 )
-                throw CastorError.InitialStateOfDIDChanged()
+                throw CastorError.InitialStateOfDIDChanged(e.message)
             }
 
             val servicesProperty = DIDDocument.Services(services.toTypedArray())
