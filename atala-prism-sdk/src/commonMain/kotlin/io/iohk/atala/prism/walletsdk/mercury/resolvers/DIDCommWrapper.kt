@@ -143,8 +143,12 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
     override fun packEncrypted(message: Message): String {
         val toString = message.to.toString()
 
-        val element = Json.parseToJsonElement(message.body)
-        val map = jsonObjectToMap(element)
+        val element: JsonElement = if (message.body.isBlank() || message.body.isEmpty()) {
+            Json.parseToJsonElement("{}")
+        } else {
+            Json.parseToJsonElement(message.body)
+        }
+        val map: Map<String, Any?> = jsonObjectToMap(element)
 
         val didCommMsg = org.didcommx.didcomm.message.Message(
             id = message.id,

@@ -49,7 +49,9 @@ interface DIDCommProtocol {
  * decentralized system requiring trusted peer-to-peer connections, Mercury provides the tools and features you need to
  * establish, manage, and secure your communications easily.
  */
-class MercuryImpl(
+class MercuryImpl
+@JvmOverloads
+constructor(
     private val castor: Castor,
     private val protocol: DIDCommProtocol,
     private val api: Api,

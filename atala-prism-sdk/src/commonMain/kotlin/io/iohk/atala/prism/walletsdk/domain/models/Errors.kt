@@ -390,8 +390,8 @@ constructor(
      *
      * @see CastorError
      */
-    class InitialStateOfDIDChanged : CastorError(
-        "While trying to resolve Prism DID state changed making it invalid"
+    class InitialStateOfDIDChanged(message: String? = null) : CastorError(
+        "While trying to resolve Prism DID state changed making it invalid. $message"
     ) {
         override val code: Int
             get() = 26
