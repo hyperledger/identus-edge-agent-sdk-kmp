@@ -1,3 +1,15 @@
+# [2.7.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.6.0...v2.7.0) (2024-01-31)
+
+
+### Bug Fixes
+
+* **DIDCommWrapper:** Crash when body is empty string ([#124](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/124)) ([ed537f6](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/ed537f6a3a165f06b1fe3c0b919213ddbaa8e9fb))
+
+
+### Features
+
+* receive and process presentation request ([#120](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/120)) ([1194d11](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/1194d11b36cab08e5bfa080a60fd2611b6c0ea39))
+
 # [2.6.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.5.0...v2.6.0) (2023-11-29)
 
 
