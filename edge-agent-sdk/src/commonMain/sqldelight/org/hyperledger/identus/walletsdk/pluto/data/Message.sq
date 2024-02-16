@@ -56,3 +56,10 @@ fetchMessageById:
 SELECT *
 FROM Message
 WHERE id = ?;
+
+fetchMessageByThidAndPiuri:
+SELECT *
+FROM Message
+WHERE `thid` = :thid
+AND `type` = :piuri;
+

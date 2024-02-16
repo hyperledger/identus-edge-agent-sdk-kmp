@@ -433,12 +433,9 @@ internal class CastorShared {
          */
         @JvmStatic
         @Throws(CastorError.NotPossibleToResolveDID::class)
-        internal fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): DIDResolver {
+        internal fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): List<DIDResolver> {
             val parsedDID = parseDID(did)
-            return resolvers.find { it.method == parsedDID.method } ?: throw CastorError.NotPossibleToResolveDID(
-                did,
-                "Method or method id are invalid"
-            )
+            return resolvers.filter { it.method == parsedDID.method }
         }
 
         /**
@@ -452,23 +449,56 @@ internal class CastorShared {
             return coreProperties
                 .filterIsInstance<DIDDocument.Authentication>()
                 .flatMap { it.verificationMethods.toList() }
-                .mapNotNull {
-                    it.publicKeyMultibase?.let { publicKey ->
-                        when (DIDDocument.VerificationMethod.getCurveByType(it.type)) {
-                            Curve.SECP256K1 -> {
-                                Secp256k1PublicKey(publicKey.encodeToByteArray())
-                            }
-
-                            Curve.ED25519 -> {
-                                Ed25519PublicKey(publicKey.encodeToByteArray())
-                            }
-
-                            Curve.X25519 -> {
-                                X25519PublicKey(publicKey.encodeToByteArray())
-                            }
+                .mapNotNull { verificationMethod ->
+                    when {
+                        verificationMethod.publicKeyJwk != null -> {
+                            extractPublicKeyFromJwk(verificationMethod.publicKeyJwk)
                         }
+
+                        verificationMethod.publicKeyMultibase != null -> {
+                            extractPublicKeyFromMultibase(verificationMethod.publicKeyMultibase, verificationMethod.type)
+                        }
+
+                        else -> null
                     }
                 }
+        }
+
+        private fun extractPublicKeyFromJwk(jwk: Map<String, String>): PublicKey? {
+            if (jwk.containsKey("x") && jwk.containsKey("crv")) {
+                val x = jwk["x"]
+                val crv = jwk["crv"]
+                return when (DIDDocument.VerificationMethod.getCurveByType(crv!!)) {
+                    Curve.SECP256K1 -> {
+                        Secp256k1PublicKey(x!!.encodeToByteArray())
+                    }
+
+                    Curve.ED25519 -> {
+                        Ed25519PublicKey(x!!.encodeToByteArray())
+                    }
+
+                    Curve.X25519 -> {
+                        X25519PublicKey(x!!.encodeToByteArray())
+                    }
+                }
+            }
+            return null
+        }
+
+        private fun extractPublicKeyFromMultibase(publicKey: String, type: String): PublicKey {
+            return when (DIDDocument.VerificationMethod.getCurveByType(type)) {
+                Curve.SECP256K1 -> {
+                    Secp256k1PublicKey(publicKey.encodeToByteArray())
+                }
+
+                Curve.ED25519 -> {
+                    Ed25519PublicKey(publicKey.encodeToByteArray())
+                }
+
+                Curve.X25519 -> {
+                    X25519PublicKey(publicKey.encodeToByteArray())
+                }
+            }
         }
 
         /**

@@ -84,13 +84,20 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "Failed to onboard.\nStatus code: $statusCode\nResponse: $response"
     }
 
-    class InvalidCredentialError constructor(private val credential: Credential) :
+    class InvalidCredentialError constructor(
+        private val credential: Credential? = null,
+        private val type: CredentialType? = null
+    ) :
         PrismAgentError() {
         override val code: Int
             get() = 120
 
         override val message: String
-            get() = "Invalid credential type, ${credential::class} is not supported"
+            get() = when {
+                credential != null -> "Invalid credential, ${credential::class.simpleName} is not supported."
+                type != null -> "Invalid credential type, ${type.name} is not supported."
+                else -> "Invalid credential. No further information is available."
+            }
     }
 
     class InvalidCredentialFormatError constructor(private val expectedFormat: CredentialType) :
@@ -100,5 +107,50 @@ sealed class PrismAgentError : KnownPrismError() {
 
         override val message: String
             get() = "Invalid credential format, it must be ${expectedFormat.type}"
+    }
+
+    class AttachmentTypeNotSupported @JvmOverloads constructor() :
+        PrismAgentError() {
+        override val code: Int
+            get() = 122
+
+        override val message: String
+            get() = "Attachment type not supported, expecting base 64 attachment."
+    }
+
+    class PresentationSubmissionDoesNotContainChallenge @JvmOverloads constructor() :
+        PrismAgentError() {
+        override val code: Int
+            get() = 123
+
+        override val message: String
+            get() = "Presentation submission must contain a challenge."
+    }
+
+    class PrismAgentStateAcceptOnlyOneObserver @JvmOverloads constructor() :
+        PrismAgentError() {
+        override val code: Int
+            get() = 124
+
+        override val message: String
+            get() = "Agent state only accepts one subscription."
+    }
+
+    class InvalidCredentialMetadata @JvmOverloads constructor() :
+        PrismAgentError() {
+        override val code: Int
+            get() = 125
+
+        override val message: String
+            get() = "Invalid or null credential metadata"
+    }
+
+    class MissingOrNullFieldError constructor(private val field: String, private val parent: String) :
+        PrismAgentError() {
+        override val code: Int
+            get() = 126
+
+        override val message: String = ""
+            get() = "$field from $parent is missing or null, and is mandatory"
     }
 }

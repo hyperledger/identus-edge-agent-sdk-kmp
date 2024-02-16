@@ -28,6 +28,24 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.jvm.Throws
 
+interface ConnectionManager : ConnectionsManager, DIDCommConnection {
+
+    val mediationHandler: MediationHandler
+
+    suspend fun startMediator()
+    suspend fun registerMediator(host: DID)
+
+    override suspend fun addConnection(paired: DIDPair)
+
+    override suspend fun removeConnection(pair: DIDPair): DIDPair?
+
+    override suspend fun awaitMessages(): Flow<Array<Pair<String, Message>>>
+
+    override suspend fun awaitMessageResponse(id: String): Message?
+
+    override suspend fun sendMessage(message: Message): Message?
+}
+
 /**
  * ConnectionManager is responsible for managing connections and communication between entities.
  *
@@ -38,7 +56,7 @@ import kotlin.jvm.Throws
  * @property experimentLiveModeOptIn Flag to opt in or out of the experimental feature mediator live mode, using websockets.
  * @property pairings The mutable list of DIDPair representing the connections managed by the ConnectionManager.
  */
-class ConnectionManager @JvmOverloads constructor(
+class ConnectionManagerImpl(
     private val mercury: Mercury,
     private val castor: Castor,
     private val pluto: Pluto,
@@ -119,7 +137,7 @@ class ConnectionManager @JvmOverloads constructor(
      *
      * @throws PrismAgentError.NoMediatorAvailableError if no mediator is available.
      */
-    suspend fun startMediator() {
+    override suspend fun startMediator() {
         mediationHandler.bootRegisteredMediator() ?: throw PrismAgentError.NoMediatorAvailableError()
     }
 
@@ -128,7 +146,7 @@ class ConnectionManager @JvmOverloads constructor(
      *
      * @param host The DID of the entity to mediate with.
      */
-    suspend fun registerMediator(host: DID) {
+    override suspend fun registerMediator(host: DID) {
         mediationHandler.achieveMediation(host).collect {
             println("Achieve mediation")
         }

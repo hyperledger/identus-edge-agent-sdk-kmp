@@ -17,13 +17,25 @@ import anoncreds_wrapper.SchemaId
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
+import com.nimbusds.jose.crypto.ECDSAVerifier
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
+import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.ktor.util.date.getTimeMillis
+import java.math.BigInteger
+import java.security.KeyFactory
+import java.security.interfaces.ECPrivateKey
+import java.security.interfaces.ECPublicKey
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPrivateKeySpec
+import java.security.spec.ECPublicKeySpec
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -467,6 +479,16 @@ class PolluxImpl(
         return keyFactory.generatePrivate(privateKeySpec) as ECPrivateKey
     }
 
+    private fun parsePublicKey(publicKey: PublicKey): ECPublicKey {
+        val curveName = KMMEllipticCurve.SECP256k1.value
+        val sp = ECNamedCurveTable.getParameterSpec(curveName)
+        val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
+
+        val publicKeySpec = ECPublicKeySpec(params.generator, params)
+        val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
+        return keyFactory.generatePublic(publicKeySpec) as ECPublicKey
+    }
+
     /**
      * Returns the domain from the given JsonObject.
      *
@@ -572,5 +594,133 @@ class PolluxImpl(
 
         // Serialize the JWS object to a string
         return jwsObject.serialize()
+    }
+
+    override suspend fun createPresentationDefinitionRequest(
+        type: CredentialType,
+        proofs: Array<ProofTypes>,
+        options: PresentationOptions
+    ): PresentationDefinitionRequest {
+        if (type != CredentialType.JWT) {
+            throw PolluxError.CredentialTypeNotSupportedError()
+        }
+        val jwt = options.jwtAlg
+        val jwtVc = options.jwtVcAlg
+        val jwtVp = options.jwtVpAlg
+        if (jwt == null && jwtVc == null && jwtVp == null) {
+            throw PolluxError.InvalidJWTPresentationDefinitionError("Presentation option must contain at least one valid JWT alg.")
+        }
+
+        val path = proofs
+            .flatMap { proofType ->
+                (proofType.requiredFields?.toList() ?: emptyList()) + (proofType.trustIssuers?.toList() ?: emptyList())
+            }
+
+        val constraints =
+            InputDescriptor.Constraints(
+                fields = arrayOf(
+                    InputDescriptor.Constraints.Fields(
+                        path = path.toTypedArray()
+                    )
+                )
+            )
+
+        val inputDescriptor = InputDescriptor(
+            name = options.name,
+            purpose = options.purpose,
+            constraints = constraints
+        )
+
+        val format =
+            InputDescriptor.PresentationFormat(
+                jwtVc = jwtVc?.let {
+                    InputDescriptor.JwtVcFormat(
+                        jwtVc.toList()
+                    )
+                },
+                jwtVp = jwtVp?.let {
+                    InputDescriptor.JwtVpFormat(
+                        jwtVp.toList()
+                    )
+                }
+            )
+
+        return PresentationDefinitionRequest(
+            PresentationDefinitionRequest.PresentationDefinitionBody(
+                inputDescriptors = arrayOf(inputDescriptor),
+                format = format
+            ),
+            challenge = options.challenge,
+            domain = options.domain
+        )
+    }
+
+    override suspend fun createPresentationSubmission(
+        presentationDefinitionRequest: PresentationDefinitionRequest,
+        credential: Credential,
+        did: DID,
+        privateKey: PrivateKey
+    ): PresentationSubmission {
+        if (credential::class != JWTCredential::class) {
+            throw PolluxError.CredentialTypeNotSupportedError()
+        }
+        if (privateKey::class != Secp256k1PrivateKey::class) {
+            throw PolluxError.PrivateKeyTypeNotSupportedError()
+        }
+        privateKey as Secp256k1PrivateKey
+        val descriptorItems =
+            presentationDefinitionRequest.presentationDefinitionBody.inputDescriptors.map { inputDescriptor ->
+                PresentationSubmission.Submission.DescriptorItem(
+                    id = inputDescriptor.id,
+                    format = "jwt_vp",
+                    path = "$.verifiableCredential[0]"
+                )
+            }.toTypedArray()
+
+        val dateFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm:ss", Locale.getDefault())
+
+        val jws = credential.id
+        credential.subject?.let { subject ->
+            presentationDefinitionRequest.challenge?.let { challenge ->
+
+                val didDoc = castor.resolveDID(subject)
+                val authenticationProperty = didDoc.coreProperties.find { property ->
+                    property::class == DIDDocument.Authentication::class
+                } as DIDDocument.Authentication
+
+                val proof = Proof(
+                    type = "EcdsaSecp256k1Signature2019",
+                    created = dateFormat.format(getTimeMillis() * 1000L),
+                    proofPurpose = Proof.Purpose.AUTHENTICATION.value,
+                    verificationMethod = authenticationProperty.verificationMethods.first().id.string(),
+                    challenge = privateKey.sign(challenge.encodeToByteArray())
+                        .toHexString(),
+                    domain = presentationDefinitionRequest.domain,
+                    jws = jws
+                )
+
+                return PresentationSubmission(
+                    presentationSubmission = PresentationSubmission.Submission(
+                        definitionId = presentationDefinitionRequest.presentationDefinitionBody.id
+                            ?: UUID.randomUUID().toString(),
+                        descriptorMap = descriptorItems
+                    ),
+                    verifiableCredential = arrayOf(
+                        W3cCredentialSubmission(vc = (credential as JWTCredential).jwtPayload.verifiableCredential)
+                    ),
+                    proof = proof
+                )
+            } ?: throw PolluxError.NoDomainOrChallengeFound()
+        } ?: throw PolluxError.RequestMissingField("subject")
+    }
+
+    override suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean {
+        val ecPublicKey = parsePublicKey(publicKey)
+        val jwtParts = jwt.split(".")
+        val jwsObject = SignedJWT(Base64URL(jwtParts[0]), Base64URL(jwtParts[1]), Base64URL(jwtParts[2]))
+
+        val verifiers = ECDSAVerifier(ecPublicKey)
+
+        return jwsObject.verify(verifiers)
     }
 }

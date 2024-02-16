@@ -7,6 +7,9 @@ import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
 import anoncreds_wrapper.Presentation
 import anoncreds_wrapper.Schema
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -14,6 +17,8 @@ import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.ProofTypes
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 
@@ -125,4 +130,19 @@ interface Pollux {
     suspend fun getCredentialDefinition(id: String): CredentialDefinition
 
     suspend fun getSchema(schemaId: String): Schema
+
+    suspend fun createPresentationDefinitionRequest(
+        type: CredentialType,
+        proofs: Array<ProofTypes>,
+        options: PresentationOptions = PresentationOptions()
+    ): PresentationDefinitionRequest
+
+    suspend fun createPresentationSubmission(
+        presentationDefinitionRequest: PresentationDefinitionRequest,
+        credential: Credential,
+        did: DID,
+        privateKey: PrivateKey
+    ): PresentationSubmission
+
+    suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean
 }

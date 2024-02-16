@@ -252,4 +252,27 @@ class Presentation {
         val goalCode: String? = null,
         val comment: String? = null
     )
+
+    companion object {
+        fun fromMessage(fromMessage: Message): Presentation {
+            if (fromMessage.piuri == ProtocolType.DidcommPresentation.value &&
+                fromMessage.from != null &&
+                fromMessage.to != null
+            ) {
+                return Presentation(
+                    id = fromMessage.id,
+                    body = Json.decodeFromString(fromMessage.body) ?: Body(),
+                    attachments = fromMessage.attachments,
+                    thid = fromMessage.thid,
+                    from = fromMessage.from,
+                    to = fromMessage.to
+                )
+            } else {
+                throw PrismAgentError.InvalidMessageType(
+                    type = fromMessage.piuri,
+                    shouldBe = ProtocolType.DidcommPresentation.value
+                )
+            }
+        }
+    }
 }

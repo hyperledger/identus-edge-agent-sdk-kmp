@@ -33,9 +33,13 @@ constructor(
     private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)
 ) : Castor {
     var resolvers: Array<DIDResolver> = arrayOf(
-        PeerDIDResolver(),
-        LongFormPrismDIDResolver(this.apollo)
+        LongFormPrismDIDResolver(this.apollo),
+        PeerDIDResolver()
     )
+
+    fun addResolver(resolver: DIDResolver) {
+        resolvers = resolvers.plus(resolver)
+    }
 
     /**
      * Parses a string representation of a Decentralized Identifier (DID) into a DID object.
@@ -108,8 +112,15 @@ constructor(
                 )
             )
         )
-        val resolver = CastorShared.getDIDResolver(did, resolvers)
-        return resolver.resolve(did)
+        val resolvers = CastorShared.getDIDResolver(did, resolvers)
+        resolvers.forEach { resolver ->
+            try {
+                val resolved = resolver.resolve(did)
+                return resolved
+            } catch (_: CastorError) {
+            }
+        }
+        throw Exception("No resolver could resolve the provided DID.")
     }
 
     /**

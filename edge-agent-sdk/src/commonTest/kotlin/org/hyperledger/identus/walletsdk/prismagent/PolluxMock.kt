@@ -82,4 +82,25 @@ class PolluxMock : Pollux {
     override suspend fun getSchema(schemaId: String): Schema {
         TODO("Not yet implemented")
     }
+
+    override suspend fun createPresentationDefinitionRequest(
+        type: CredentialType,
+        proofs: Array<ProofTypes>,
+        options: PresentationOptions
+    ): PresentationDefinitionRequest {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun createPresentationSubmission(
+        presentationDefinitionRequest: PresentationDefinitionRequest,
+        credential: Credential,
+        did: DID,
+        privateKey: PrivateKey
+    ): PresentationSubmission {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean {
+        TODO("Not yet implemented")
+    }
 }
