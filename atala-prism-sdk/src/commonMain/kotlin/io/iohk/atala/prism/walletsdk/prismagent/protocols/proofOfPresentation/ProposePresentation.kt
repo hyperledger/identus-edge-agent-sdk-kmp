@@ -7,6 +7,8 @@ import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.PROOF_TYPES
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -187,12 +189,15 @@ class ProposePresentation {
      * @property proofTypes An array of proof types.
      */
     @Serializable
-    data class Body @JvmOverloads constructor(
+    @OptIn(ExperimentalSerializationApi::class)
+    data class Body
+    @JvmOverloads constructor(
         @SerialName(GOAL_CODE)
         val goalCode: String? = null,
         val comment: String? = null,
+        @EncodeDefault
         @SerialName(PROOF_TYPES)
-        val proofTypes: Array<ProofTypes>
+        val proofTypes: Array<ProofTypes>? = emptyArray()
     ) {
         /**
          * Compares this [Body] object with the specified object for equality.

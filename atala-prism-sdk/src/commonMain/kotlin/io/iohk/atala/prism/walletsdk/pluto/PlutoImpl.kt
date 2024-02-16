@@ -897,6 +897,34 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    override fun getMessageByThidAndPiuri(thid: String, piuri: String): Flow<Message?> {
+        return getInstance().messageQueries.fetchMessageByThidAndPiuri(thid, piuri)
+            .asFlow()
+            .map {
+                try {
+                    val messageDb = Json.decodeFromString<Message>(it.executeAsOne().dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction
+                    )
+                } catch (e: NullPointerException) {
+                    null
+                }
+            }
+    }
+
     /**
      * Returns a Flow of lists of [Mediator] objects representing all the available mediators.
      *

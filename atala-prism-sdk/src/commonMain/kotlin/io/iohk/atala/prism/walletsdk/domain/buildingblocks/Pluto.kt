@@ -267,6 +267,16 @@ interface Pluto {
     fun getMessage(id: String): Flow<Message?>
 
     /**
+     * Retrieves the message with the specified thid.
+     *
+     * @param thid The unique ID of a request.
+     * @param piuri The type of message.
+     * @return A [Flow] that emits the message with the specified ID, or null if no such message exists.
+     *         The [Flow] completes when the message is successfully retrieved, or when an error occurs.
+     */
+    fun getMessageByThidAndPiuri(thid: String, piuri: String): Flow<Message?>
+
+    /**
      * Returns a Flow of lists of [Mediator] objects representing all the available mediators.
      *
      * @return a Flow of lists of [Mediator] objects.

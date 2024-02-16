@@ -1,6 +1,9 @@
 package io.iohk.atala.prism.walletsdk.logger
 
 class PrismLoggerMock : PrismLogger {
+
+    private var logLevel: LogLevel = LogLevel.NONE
+
     override fun debug(message: String, metadata: Array<Metadata>) {
         val metaString = metadata.joinToString { "${it.getValue(LogLevel.DEBUG)}\n" }
         println("debug: [io.prism.kmm.sdk.Test] $message Metadata: $metaString")

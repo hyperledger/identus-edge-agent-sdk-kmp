@@ -13,7 +13,12 @@ import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.ProofTypes
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.serialization.json.JsonObject
 
@@ -125,4 +130,19 @@ interface Pollux {
     suspend fun getCredentialDefinition(id: String): CredentialDefinition
 
     suspend fun getSchema(schemaId: String): Schema
+
+    suspend fun createPresentationDefinitionRequest(
+        type: CredentialType,
+        proofs: Array<ProofTypes>,
+        options: PresentationOptions = PresentationOptions()
+    ): PresentationDefinitionRequest
+
+    suspend fun createPresentationSubmission(
+        presentationDefinitionRequest: PresentationDefinitionRequest,
+        credential: Credential,
+        did: DID,
+        privateKey: PrivateKey
+    ): PresentationSubmission
+
+    suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean
 }
