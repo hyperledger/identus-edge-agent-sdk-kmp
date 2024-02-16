@@ -17,23 +17,42 @@ plugins {
     id("org.jetbrains.kotlinx.kover") version "0.7.3"
 }
 
+kover {
+    useJacoco("0.8.11")
+    excludeJavaCode()
+    excludeInstrumentation {
+        packages("androidx.test.espresso", "androidx.test.ext")
+    }
+}
+
 koverReport {
-    defaults {
-        // adds the contents of the reports of `release` Android build variant to default reports
-        mergeWith("release")
-        html {
-            title = "$currentModuleName - Test Coverage"
-            setReportDir(layout.buildDirectory.dir("kover/atala-prism-sdk/xml"))
+    filters {
+        excludes {
+            packages(
+                "io.iohk.atala.prism.protos",
+                "io.iohk.atala.prism.walletsdk.domain",
+                "ioiohkatalaprismwalletsdkpluto.data"
+            )
         }
-        xml {}
-        filters {
-            excludes {
-                packages(
-                    "io.iohk.atala.prism.protos",
-                    "io.iohk.atala.prism.walletsdk.domain",
-                    "ioiohkatalaprismwalletsdkpluto.data"
-                )
-            }
+    }
+
+    defaults {
+        xml {
+            setReportFile(layout.buildDirectory.file("reports/jvm/result.xml"))
+        }
+        html {
+            title = "Wallet SDK - JVM"
+            setReportDir(layout.buildDirectory.dir("reports/jvm/html"))
+        }
+    }
+
+    androidReports("release") {
+        xml {
+            setReportFile(layout.buildDirectory.file("reports/android/result.xml"))
+        }
+        html {
+            title = "Wallet SDK - Android"
+            setReportDir(layout.buildDirectory.dir("reports/android/html"))
         }
     }
 }
@@ -53,6 +72,8 @@ kotlin {
             useJUnitPlatform()
         }
     }
+    applyDefaultHierarchyTemplate()
+
     applyDefaultHierarchyTemplate()
 
     sourceSets {
@@ -117,7 +138,6 @@ kotlin {
             }
         }
         val androidInstrumentedTest by getting {
-            dependsOn(commonTest)
             dependencies {
                 implementation("androidx.test.espresso:espresso-core:3.5.1")
                 implementation("androidx.test.ext:junit:1.1.5")
