@@ -1,14 +1,24 @@
 package io.iohk.atala.prism.walletsdk.castor
 
+import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
+import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
+import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
+import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurveKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyTypes
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.RawKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.SeedKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.TypeKey
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -37,6 +47,49 @@ class DIDCreateTest {
         val did = castor.createPeerDID(keyPairs, emptyArray())
         val validPeerDID = "did:peer:2.Ez6LSsqHXypzFPGA7RdCu2NHUf2cK8dAW1AdHa5JDCRnXQ2yk.Vz6Mkw9W7jaqZ7hF5bSKeSpnqNxhFTiVMy3aBZjyEhrMxUQAF"
         assertEquals(validPeerDID, did.toString())
+    }
+
+    @Test
+    fun testNewPeerDID() = runTest {
+        val apollo = ApolloImpl()
+
+        val properties: MutableMap<String, Any> = mutableMapOf()
+        properties[TypeKey().property] = KeyTypes.Curve25519
+        properties[RawKey().property] = "COd9Xhr-amD7fuswWId2706JBUY_tmjp9eiNEieJeEE".base64UrlDecodedBytes
+        properties[CurveKey().property] = Curve.X25519.value
+        val keyAgreementPrivateKey = apollo.createPrivateKey(properties)
+        val keyAgreementKeyPair = X25519KeyPair(
+            privateKey = keyAgreementPrivateKey,
+            publicKey = keyAgreementPrivateKey.publicKey()
+        )
+
+        val properties2: MutableMap<String, Any> = mutableMapOf()
+        properties2[TypeKey().property] = KeyTypes.EC
+        properties2[RawKey().property] = "JLIJQ5jlkyqtGmtOth6yggJLLC0zuRhUPiBhd1-rGPs".base64UrlDecodedBytes
+        properties2[CurveKey().property] = Curve.ED25519.value
+        val authenticationPrivateKey = apollo.createPrivateKey(properties2)
+        val authenticationKeyPair = Ed25519KeyPair(
+            privateKey = authenticationPrivateKey,
+            publicKey = authenticationPrivateKey.publicKey()
+        )
+
+        val keyPairs: Array<KeyPair> = arrayOf(keyAgreementKeyPair, authenticationKeyPair)
+
+        val service = DIDDocument.Service(
+            id = "didcomm",
+            type = arrayOf(DIDCOMM_MESSAGING),
+            serviceEndpoint = DIDDocument.ServiceEndpoint(
+                uri = "https://example.com/endpoint",
+                accept = arrayOf(DIDCOMM_MESSAGING),
+                routingKeys = arrayOf("did:example:somemediator#somekey")
+            )
+        )
+
+        val castor = CastorImpl(apollo)
+        val did = castor.createPeerDID(keyPairs, arrayOf(service))
+        val validPeerDID = "did:peer:2.Ez6LSoHkfN1Y4nK9RCjx7vopWsLrMGNFNgTNZgoCNQrTzmb1n.Vz6MknRZmapV7uYZQuZez9n9N3tQotjRN18UGS68Vcfo6gR4h.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vZW5kcG9pbnQiLCJyIjpbImRpZDpleGFtcGxlOnNvbWVtZWRpYXRvciNzb21la2V5Il0sImEiOltdfX0"
+        assertEquals(validPeerDID, did.toString())
+
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
