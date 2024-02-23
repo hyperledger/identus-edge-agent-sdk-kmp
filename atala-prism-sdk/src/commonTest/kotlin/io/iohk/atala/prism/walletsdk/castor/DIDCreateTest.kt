@@ -50,7 +50,7 @@ class DIDCreateTest {
     }
 
     @Test
-    fun testNewPeerDID() = runTest {
+    fun testPeerDIDCreation_whenServicesProvided_thenCreatedCorrectly() = runTest {
         val apollo = ApolloImpl()
 
         val properties: MutableMap<String, Any> = mutableMapOf()
@@ -80,16 +80,15 @@ class DIDCreateTest {
             type = arrayOf(DIDCOMM_MESSAGING),
             serviceEndpoint = DIDDocument.ServiceEndpoint(
                 uri = "https://example.com/endpoint",
-                accept = arrayOf(DIDCOMM_MESSAGING),
+                accept = emptyArray(),
                 routingKeys = arrayOf("did:example:somemediator#somekey")
             )
         )
 
         val castor = CastorImpl(apollo)
         val did = castor.createPeerDID(keyPairs, arrayOf(service))
-        val validPeerDID = "did:peer:2.Ez6LSoHkfN1Y4nK9RCjx7vopWsLrMGNFNgTNZgoCNQrTzmb1n.Vz6MknRZmapV7uYZQuZez9n9N3tQotjRN18UGS68Vcfo6gR4h.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vZW5kcG9pbnQiLCJyIjpbImRpZDpleGFtcGxlOnNvbWVtZWRpYXRvciNzb21la2V5Il0sImEiOltdfX0"
-        assertEquals(validPeerDID, did.toString())
-
+        val expectedPeerDID = "did:peer:2.Ez6LSoHkfN1Y4nK9RCjx7vopWsLrMGNFNgTNZgoCNQrTzmb1n.Vz6MknRZmapV7uYZQuZez9n9N3tQotjRN18UGS68Vcfo6gR4h.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHBzOi8vZXhhbXBsZS5jb20vZW5kcG9pbnQiLCJyIjpbImRpZDpleGFtcGxlOnNvbWVtZWRpYXRvciNzb21la2V5Il0sImEiOltdfX0"
+        assertEquals(expectedPeerDID, did.toString())
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)
