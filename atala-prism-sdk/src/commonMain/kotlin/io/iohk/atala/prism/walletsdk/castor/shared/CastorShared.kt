@@ -8,6 +8,7 @@ import io.iohk.atala.prism.apollo.hashing.internal.toHexString
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
 import io.iohk.atala.prism.didcomm.didpeer.DIDDocPeerDID
 import io.iohk.atala.prism.didcomm.didpeer.MalformedPeerDIDException
+import io.iohk.atala.prism.didcomm.didpeer.ServiceEndpoint
 import io.iohk.atala.prism.didcomm.didpeer.VerificationMaterialAgreement
 import io.iohk.atala.prism.didcomm.didpeer.VerificationMaterialAuthentication
 import io.iohk.atala.prism.didcomm.didpeer.VerificationMaterialFormatPeerDID
@@ -198,9 +199,9 @@ internal class CastorShared {
                                 id = service.id,
                                 type = arrayOf(service.type),
                                 serviceEndpoint = DIDDocument.ServiceEndpoint(
-                                    uri = service.serviceEndpoint,
-                                    accept = service.accept.toTypedArray(),
-                                    routingKeys = service.routingKeys.toTypedArray()
+                                    uri = service.serviceEndpoint.uri,
+                                    accept = service.serviceEndpoint.accept.toTypedArray(),
+                                    routingKeys = service.serviceEndpoint.routingKeys.toTypedArray()
                                 )
                             )
                         )
@@ -553,13 +554,17 @@ internal class CastorShared {
                 encryptionKeys = encryptionKeys,
                 signingKeys = signingKeys,
                 service = services.map {
+                    val serviceEndpoint = ServiceEndpoint(
+                        uri = it.serviceEndpoint.uri,
+                        routingKeys = it.serviceEndpoint.routingKeys?.toList() ?: listOf(),
+                        accept = it.serviceEndpoint.accept?.asList() ?: listOf()
+                    )
+
                     Json.encodeToString(
                         DIDCommServicePeerDID(
                             id = it.id,
                             type = it.type[0],
-                            serviceEndpoint = it.serviceEndpoint.uri,
-                            routingKeys = it.serviceEndpoint.routingKeys?.toList() ?: listOf(),
-                            accept = it.serviceEndpoint.accept?.asList() ?: listOf()
+                            serviceEndpoint = serviceEndpoint
                         ).toDict().toJsonElement()
                     )
                 }.firstOrNull()
