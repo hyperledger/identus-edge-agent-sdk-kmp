@@ -217,7 +217,7 @@ object Environment {
             version = "1.0.0",
             tag = "automation-test",
             author = publishedDid,
-            schemaId = "${agentUrl}/schema-registry/schemas/${newSchemaGuid}",
+            schemaId = "${agentUrl}/schema-registry/schemas/${newSchemaGuid}/schema",
             signatureType = "CL",
             supportRevocation = true,
             description = "Test Automation Auto-Generated"
