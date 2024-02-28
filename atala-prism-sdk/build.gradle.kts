@@ -53,6 +53,7 @@ kotlin {
             useJUnitPlatform()
         }
     }
+    applyDefaultHierarchyTemplate()
 
     sourceSets {
         val commonMain by getting {
@@ -141,6 +142,7 @@ kotlin {
 android {
     compileSdk = 33
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    namespace = "io.iohk.atala.prism.walletsdk"
     defaultConfig {
         minSdk = 21
         targetSdk = 33
@@ -189,7 +191,7 @@ tasks.withType<DokkaTask>().configureEach {
     dokkaSourceSets {
         configureEach {
             jdkVersion.set(11)
-            languageVersion.set("1.7.20")
+            languageVersion.set("1.9.22")
             apiVersion.set("2.0")
             includes.from(
                 "docs/AtalaPrismSDK.md",
