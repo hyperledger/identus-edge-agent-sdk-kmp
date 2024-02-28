@@ -184,20 +184,24 @@ subprojects {
                             url.set("https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm")
                         }
                     }
-                    signing {
-                        val base64EncodedAsciiArmoredSigningKey: String =
-                            System.getenv("BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN") ?: ""
-                        val signingKeyPassword: String =
-                            System.getenv("SIGNING_KEY_PASSWORD") ?: ""
-                        useInMemoryPgpKeys(
-                            String(
-                                Base64.getDecoder().decode(
-                                    base64EncodedAsciiArmoredSigningKey.toByteArray()
+                    if (System.getenv("BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN") != null) {
+                        if (System.getenv("BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN").isNotBlank()) {
+                            signing {
+                                val base64EncodedAsciiArmoredSigningKey: String =
+                                    System.getenv("BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN") ?: ""
+                                val signingKeyPassword: String =
+                                    System.getenv("SIGNING_KEY_PASSWORD") ?: ""
+                                useInMemoryPgpKeys(
+                                    String(
+                                        Base64.getDecoder().decode(
+                                            base64EncodedAsciiArmoredSigningKey.toByteArray()
+                                        )
+                                    ),
+                                    signingKeyPassword
                                 )
-                            ),
-                            signingKeyPassword
-                        )
-                        sign(this@withType)
+                                sign(this@withType)
+                            }
+                        }
                     }
                 }
             }
