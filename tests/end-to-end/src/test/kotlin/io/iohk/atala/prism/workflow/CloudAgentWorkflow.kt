@@ -12,7 +12,7 @@ import net.serenitybdd.rest.SerenityRest.lastResponse
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.rest.interactions.Post
 import org.apache.http.HttpStatus
-import java.util.*
+import java.util.UUID
 
 class CloudAgentWorkflow {
     fun createConnection(cloudAgent: Actor, label: String?, goalCode: String?, goal: String?) {
@@ -21,18 +21,6 @@ class CloudAgentWorkflow {
             goalCode,
             goal
         )
-
-        cloudAgent.attemptsTo(
-            Post.to("/connections").body(createConnection),
-            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
-        )
-
-        cloudAgent.remember("invitation", lastResponse().get<String>("invitation.invitationUrl"))
-        cloudAgent.remember("connectionId", lastResponse().get<String>("connectionId"))
-    }
-
-    fun createConnectionWithoutOptionalArguments(cloudAgent: Actor) {
-        val createConnection = CreateConnectionRequest()
 
         cloudAgent.attemptsTo(
             Post.to("/connections").body(createConnection),
@@ -67,7 +55,8 @@ class CloudAgentWorkflow {
             schemaId = "${Environment.agentUrl}/schema-registry/schemas/${Environment.jwtSchemaGuid}"
         )
         cloudAgent.attemptsTo(
-            Post.to("/issue-credentials/credential-offers").body(credential)
+            Post.to("/issue-credentials/credential-offers").body(credential),
+            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
         )
         cloudAgent.remember("recordId", lastResponse().get<String>("recordId"))
     }
@@ -83,7 +72,8 @@ class CloudAgentWorkflow {
             credentialDefinitionId = UUID.fromString(Environment.anoncredDefinitionId)
         )
         cloudAgent.attemptsTo(
-            Post.to("/issue-credentials/credential-offers").body(credential)
+            Post.to("/issue-credentials/credential-offers").body(credential),
+            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
         )
         cloudAgent.remember("recordId", lastResponse().get<String>("recordId"))
     }
@@ -107,7 +97,8 @@ class CloudAgentWorkflow {
         )
 
         cloudAgent.attemptsTo(
-            Post.to("/present-proof/presentations").body(presentProofRequest)
+            Post.to("/present-proof/presentations").body(presentProofRequest),
+            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
         )
         cloudAgent.remember("presentationId", lastResponse().get<String>("presentationId"))
     }
