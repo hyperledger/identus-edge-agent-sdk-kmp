@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Mega-Linter
-        uses: megalinter/megalinter@v7
+        uses: oxsecurity/megalinter@v7
 
       - name: Archive production artifacts
         if: success() || failure()
