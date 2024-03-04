@@ -31,7 +31,7 @@ koverReport {
             packages(
                 "io.iohk.atala.prism.protos",
                 "io.iohk.atala.prism.walletsdk.domain",
-                "ioiohkatalaprismwalletsdkpluto.data"
+                "io.iohk.atala.prism.walletsdk.pluto.data"
             )
         }
     }
