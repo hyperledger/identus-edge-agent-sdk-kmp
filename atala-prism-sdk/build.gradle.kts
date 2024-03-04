@@ -74,8 +74,6 @@ kotlin {
     }
     applyDefaultHierarchyTemplate()
 
-    applyDefaultHierarchyTemplate()
-
     sourceSets {
         val commonMain by getting {
             kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
