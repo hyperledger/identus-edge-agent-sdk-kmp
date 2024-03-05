@@ -2,6 +2,7 @@
 
 ![badge-platform-android]
 ![badge-platform-jvm]
+[![Coverage Status](https://coveralls.io/repos/github/input-output-hk/atala-prism-wallet-sdk-kmm/badge.svg?branch=main)](https://coveralls.io/github/input-output-hk/atala-prism-wallet-sdk-kmm?branch=main)
 
 ![Atala Prism Logo](Logo.png)
 
