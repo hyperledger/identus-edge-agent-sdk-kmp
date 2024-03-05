@@ -1,39 +1,23 @@
 ---
-name: Linter
-
-# Default shell is `sh`
-# which is old, use bourne-again version instead
-defaults:
-  run:
-    shell: bash
+name: MegaLinter
 
 on:
   pull_request:
 
 jobs:
   lint:
-    name: Lint changes
+    name: Lint project
     runs-on: ubuntu-latest
-    env:
-      APPLY_FIXES: none
-      DISABLE: COPYPASTE,SPELL
-      GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-      DISABLE_LINTERS: REPOSITORY_GITLEAKS
-      DISABLE_ERRORS_LINTERS: PROTOBUF_PROTOLINT
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.ATALA_GITHUB_TOKEN }}
-          fetch-depth: 0
-#      - name: Mega-Linter
-#        id: ml
-#        uses: megalinter/megalinter@v6
+        uses: actions/checkout@v4
+
+      - name: Mega-Linter
+        uses: oxsecurity/megalinter@v7
+
       - name: Archive production artifacts
         if: success() || failure()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Mega-Linter reports
-          path: |
-            megalinter-reports
-            mega-linter.log
+          path: megalinter-reports
