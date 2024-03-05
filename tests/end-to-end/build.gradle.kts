@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.8.21"
+    kotlin("jvm") version "1.9.21"
     idea
     java
     id("com.github.ben-manes.versions") version "0.47.0"
@@ -31,10 +31,15 @@ repositories {
 dependencies {
     testImplementation("io.iohk.atala.prism.walletsdk:atala-prism-sdk:2.6.0")
     testImplementation("io.iohk.atala.prism:prism-kotlin-client:1.28.0")
-    testImplementation("io.iohk.atala:atala-automation:0.3.0")
+    testImplementation("io.iohk.atala:atala-automation:0.3.2")
+}
+
+tasks.register<Delete>("cleanTarget") {
+    delete("target")
 }
 
 tasks.test {
+    dependsOn("cleanTarget")
     testLogging.showStandardStreams = true
     systemProperty("cucumber.filter.tags", System.getProperty("cucumber.filter.tags"))
 }

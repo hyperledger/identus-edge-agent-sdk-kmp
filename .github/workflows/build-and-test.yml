@@ -42,24 +42,13 @@ jobs:
         run: echo ${{ runner.os }}
 
       - name: Build for JS, Android, JVM
-        run: |
-          ./gradlew build test koverXmlReport koverHtmlReport --stacktrace
+        run: ./gradlew build allTests koverXmlReportRelease koverHtmlReportRelease --stacktrace
 
-      - name: Coverage Report
-        uses: mi-kas/kover-report@v1
+      - name: Coveralls
+        uses: coverallsapp/github-action@v2
         with:
-          path: ${{ github.workspace }}/atala-prism-sdk/build/reports/kover/report.xml
-          token: ${{ env.ATALA_GITHUB_TOKEN }}
-          title: Code Coverage
-          update-comment: true
-
-#      - name: Publish test results
-#        if: always()
-#        uses: EnricoMi/publish-unit-test-result-action@v2
-#        with:
-#          files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
-#          comment_title: "Unit Test Results"
-#          check_name: "Unit Test Results"
+          file: "${{ github.workspace }}/atala-prism-sdk/build/reports/android/result.xml"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish test results
         if: always()
@@ -70,13 +59,11 @@ jobs:
           check_name: "Unit Test Results"
 
       - name: Upload Tests Reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: kover-html
+          name: coverage-results
           path: |
-            atala-prism-sdk/build/kover/atala-prism-sdk/xml
-            atala-prism-sdk/build/reports/tests/**/*.html
-            atala-prism-sdk/build/reports/tests/jvmTest/index.html
-
+            atala-prism-sdk/build/reports/jvm
+            atala-prism-sdk/build/reports/android
           if-no-files-found: error
