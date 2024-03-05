@@ -1,3 +1,18 @@
+# [3.0.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.6.0...v3.0.0) (2024-03-05)
+
+
+### Bug Fixes
+
+* adds env var for maven central publication ([#134](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/134)) ([d049f35](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/d049f35663b1a92cb31857ceea4b882611d0a5db))
+* release pipeline variable ([#135](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/135)) ([bbc8a38](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/bbc8a3833c49d029a9440763b43c1d8957279e3e))
+* chore!: update did peer library version  (#128) ([ea08251](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/commit/ea082513a801e6eb4ac9384b35c074cf34082dbc)), closes [#128](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues/128)
+
+
+### BREAKING CHANGES
+
+* Support OEA 1.26+ due to updates on the PeerDID Specs changes.
+  Signed-off-by: Ahmed Moussa <ahmed.moussa@iohk.io>
+
 # [2.7.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.6.0...v2.7.0) (2024-01-31)
 
 
