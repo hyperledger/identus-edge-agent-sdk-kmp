@@ -3,7 +3,7 @@ import java.util.Base64
 val publishedMavenId = "io.iohk.atala.prism.walletsdk"
 
 plugins {
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+    id("com.android.library") version "8.1.4" apply false
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.8.20"
     id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
@@ -23,10 +23,9 @@ buildscript {
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-        classpath("com.android.tools.build:gradle:7.2.2") // 7.4.2 is still not supported
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.21.0")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.23.1")
     }
 }
 
@@ -217,10 +216,6 @@ subprojects {
             }
         }
     }
-}
-
-tasks.dokkaGfmMultiModule.configure {
-    outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
 }
 
 nexusPublishing {
