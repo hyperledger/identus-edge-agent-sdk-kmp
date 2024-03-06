@@ -31,9 +31,8 @@ on:
         description: Anoncred definition GUID
   push:
     branches:
-      - main
-      - prerelease
-      - release
+      - 'main'
+      - 'release/**'
 
 env:
   ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
