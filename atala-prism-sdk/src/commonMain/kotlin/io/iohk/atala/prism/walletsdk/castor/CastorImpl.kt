@@ -1,8 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor
 
-import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
-import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.resolvers.PeerDIDResolver
@@ -102,7 +100,13 @@ constructor(
     override suspend fun resolveDID(did: String): DIDDocument {
         logger.debug(
             message = "Trying to resolve DID",
-            metadata = arrayOf(Metadata.MaskedMetadataByLevel(key = "DID", value = did, level = LogLevel.DEBUG))
+            metadata = arrayOf(
+                Metadata.MaskedMetadataByLevel(
+                    key = "DID",
+                    value = did,
+                    level = LogLevel.DEBUG
+                )
+            )
         )
         val resolver = CastorShared.getDIDResolver(did, resolvers)
         return resolver.resolve(did)
@@ -120,25 +124,27 @@ constructor(
      * @throws [CastorError.InvalidKeyError] if the DID or signature data are invalid.
      */
     @Throws(CastorError.InvalidKeyError::class)
-    override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
+    override suspend fun verifySignature(
+        did: DID,
+        challenge: ByteArray,
+        signature: ByteArray
+    ): Boolean {
         val document = resolveDID(did.toString())
-        val keyPairs: List<PublicKey> =
+        val publicKeys: List<PublicKey> =
             CastorShared.getKeyPairFromCoreProperties(document.coreProperties)
 
-        if (keyPairs.isEmpty()) {
+        if (publicKeys.isEmpty()) {
             throw CastorError.InvalidKeyError("KeyPairs is empty")
         }
 
-        for (keyPair in keyPairs) {
-            when (keyPair.getCurve()) {
+        for (publicKey in publicKeys) {
+            when (publicKey.getCurve()) {
                 Curve.SECP256K1.value -> {
-                    val secp = keyPair as Secp256k1KeyPair
-                    return (secp.publicKey as Secp256k1PublicKey).verify(challenge, signature)
+                    return (publicKey as Secp256k1PublicKey).verify(challenge, signature)
                 }
 
                 Curve.ED25519.value -> {
-                    val ed = keyPair as Ed25519KeyPair
-                    return (ed.publicKey as Ed25519PublicKey).verify(challenge, signature)
+                    return (publicKey as Ed25519PublicKey).verify(challenge, signature)
                 }
             }
         }
