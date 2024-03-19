@@ -1,2 +1,9 @@
-@goncalo-frade-iohk @yshyn-iohk @elribonazo @hamada147 @cristianIOHK @amagyar-iohk
+@goncalo-frade-iohk @yshyn-iohk @elribonazo @hamada147 @cristianIOHK 
+
+# Test related:
+/sampleapp/ @amagyar-iohk @todorkoleviohk @hamada147 @cristianIOHK
+/tests/ @amagyar-iohk @todorkoleviohk @hamada147 @cristianIOHK
+
+# Docs:
+*.md @petevielhaber
 
