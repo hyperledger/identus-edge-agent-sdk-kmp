@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
  * @property entropy The entropy for the credential request.
  * @property nonce The nonce for the credential request.
  */
+@Suppress("ktlint:standard:property-naming")
 interface CredentialRequest {
     val cred_def_id: String
     val blinded_ms: CredentialRequestBlindedMS
@@ -38,6 +39,7 @@ interface CredentialRequestBlindedMS {
  * @property v_dash_cap The value used in the proof calculation.
  * @property m_caps The map of attribute names to their corresponding blinded value commitments.
  */
+@Suppress("ktlint:standard:property-naming")
 interface CredentialRequestBlindedMSCorrectnessProof {
     val c: String
     val v_dash_cap: String

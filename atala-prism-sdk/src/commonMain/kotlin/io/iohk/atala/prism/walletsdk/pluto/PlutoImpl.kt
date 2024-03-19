@@ -6,7 +6,6 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.AfterVersion
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.PrismPlutoDb
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
@@ -31,6 +30,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
+import java.util.UUID
 import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import io.iohk.atala.prism.walletsdk.pluto.data.DID as DIDDB
 import io.iohk.atala.prism.walletsdk.pluto.data.DIDPair as DIDPairDB
@@ -265,7 +265,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         } ?: run {
             getInstance().privateKeyQueries.insert(
                 PrivateKeyDB(
-                    UUID.randomUUID4().toString(),
+                    UUID.randomUUID().toString(),
                     storableKey.restorationIdentifier,
                     storableKey.storableData.base64UrlEncoded,
                     keyPathIndex,
@@ -315,7 +315,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         )
         instance.mediatorQueries.insert(
             MediatorDB(
-                UUID.randomUUID4().toString(),
+                UUID.randomUUID().toString(),
                 mediator.methodId,
                 host.methodId,
                 routing.methodId
@@ -367,7 +367,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      */
     override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
         getInstance().credentialMetadataQueries.insert(
-            id = UUID.randomUUID4().toString(),
+            id = UUID.randomUUID().toString(),
             linkSecretName = metadata.linkSecretName,
             json = metadata.json
         )

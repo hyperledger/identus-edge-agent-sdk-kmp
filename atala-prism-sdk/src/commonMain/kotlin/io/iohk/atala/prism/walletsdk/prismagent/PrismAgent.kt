@@ -1,6 +1,7 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent
 
-/* ktlint-disable import-ordering */
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
@@ -83,8 +84,6 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-
-/* ktlint-disable import-ordering */
 
 /**
  * Check if the passed URL is valid or not.
@@ -1015,6 +1014,9 @@ class PrismAgent {
      * Enumeration representing the current state of the agent.
      */
     enum class State {
-        STOPPED, STARTING, RUNNING, STOPPING
+        STOPPED,
+        STARTING,
+        RUNNING,
+        STOPPING
     }
 }

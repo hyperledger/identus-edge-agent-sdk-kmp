@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import kotlinx.datetime.Clock
 import kotlinx.serialization.EncodeDefault
@@ -8,6 +7,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 import kotlin.jvm.JvmOverloads
 import kotlin.time.Duration.Companion.days
 
@@ -22,7 +22,7 @@ data class Message
 @JvmOverloads
 constructor(
     @EncodeDefault
-    val id: String = UUID.randomUUID4().toString(),
+    val id: String = UUID.randomUUID().toString(),
     val piuri: String,
     @EncodeDefault val from: DID? = null,
     @EncodeDefault val to: DID? = null,

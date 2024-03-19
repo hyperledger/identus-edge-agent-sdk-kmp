@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.logger
 
-import io.iohk.atala.prism.apollo.hashing.SHA256
-import io.iohk.atala.prism.apollo.uuid.UUID
+import org.kotlincrypto.hash.sha2.SHA256
 import org.lighthousegames.logging.logging
+import java.util.UUID
 
 /**
  * Constant value used to represent the privacy of metadata.
@@ -19,9 +19,9 @@ private const val METADATA_PRIVACY_STR = "------"
  * Property representing the unique identifier for the hashing log.
  * The value is generated as a random UUID string.
  *
- * @see UUID.randomUUID4
+ * @see UUID.randomUUID
  */
-private val hashingLog = UUID.randomUUID4().toString()
+private val hashingLog = UUID.randomUUID().toString()
 
 /**
  * PrismLogger is an interface that defines methods for logging messages

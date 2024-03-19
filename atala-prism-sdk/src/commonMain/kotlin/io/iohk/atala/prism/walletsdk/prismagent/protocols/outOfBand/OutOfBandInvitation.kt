@@ -1,12 +1,12 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 /**
  * Represents an out-of-band invitation message in the DIDComm protocol. The [OutOfBandInvitation] class represents an
@@ -17,7 +17,7 @@ class OutOfBandInvitation
 @OptIn(ExperimentalSerializationApi::class)
 @JvmOverloads
 constructor(
-    val id: String = UUID.randomUUID4().toString(),
+    val id: String = UUID.randomUUID().toString(),
     val body: Body,
     val from: String,
     @EncodeDefault
@@ -29,8 +29,9 @@ constructor(
     /**
      * Represents the body of the out-of-band invitation message.
      */
+    @OptIn(ExperimentalSerializationApi::class)
     @Serializable
-    data class Body(
+    data class Body constructor(
         @SerialName(GOAL_CODE)
         @EncodeDefault
         val goalCode: String? = null,

@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.ADD
@@ -13,6 +12,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * MediationKeysUpdateList is a serializable class representing the list of keys updated in a mediation process.
@@ -42,7 +42,7 @@ final class MediationKeysUpdateList {
      */
     @JvmOverloads
     constructor(
-        id: String = UUID.randomUUID4().toString(),
+        id: String = UUID.randomUUID().toString(),
         from: DID,
         to: DID,
         recipientDids: Array<DID>

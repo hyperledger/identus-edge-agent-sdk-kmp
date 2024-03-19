@@ -3,8 +3,6 @@ package io.iohk.atala.prism.walletsdk.castor.shared
 import io.iohk.atala.prism.apollo.base64.base64Encoded
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.hashing.SHA256
-import io.iohk.atala.prism.apollo.hashing.internal.toHexString
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
 import io.iohk.atala.prism.didcomm.didpeer.DIDDocPeerDID
 import io.iohk.atala.prism.didcomm.didpeer.MalformedPeerDIDException
@@ -52,6 +50,7 @@ import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.kotlincrypto.hash.sha2.SHA256
 import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray
 import kotlin.jvm.Throws

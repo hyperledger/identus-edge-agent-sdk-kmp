@@ -1,4 +1,6 @@
-import com.google.protobuf.gradle.* // ktlint-disable no-wildcard-imports
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
+import com.google.protobuf.gradle.*
 import org.gradle.internal.os.OperatingSystem
 
 val os: OperatingSystem = OperatingSystem.current()
@@ -16,7 +18,7 @@ val jarPathConf: Configuration by configurations.creating {
 
 dependencies {
     // This is needed for includes, ref: https://github.com/google/protobuf-gradle-plugin/issues/41#issuecomment-143884188
-    compileOnly("com.google.protobuf:protobuf-java:3.12.0")
+    compileOnly("com.google.protobuf:protobuf-java:3.14.0")
 }
 
 sourceSets {

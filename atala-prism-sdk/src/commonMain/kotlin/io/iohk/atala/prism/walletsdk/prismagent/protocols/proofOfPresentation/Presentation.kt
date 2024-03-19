@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * Data class representing proof types.
@@ -31,20 +30,38 @@ data class ProofTypes(
      * @return true if the objects are equal, false otherwise.
      */
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+        if (this === other) {
+            return true
+        }
+        if (other == null || this::class != other::class) {
+            return false
+        }
 
         other as ProofTypes
 
-        if (schema != other.schema) return false
+        if (schema != other.schema) {
+            return false
+        }
         if (requiredFields != null) {
-            if (other.requiredFields == null) return false
-            if (!requiredFields.contentEquals(other.requiredFields)) return false
-        } else if (other.requiredFields != null) return false
+            if (other.requiredFields == null) {
+                return false
+            }
+            if (!requiredFields.contentEquals(other.requiredFields)) {
+                return false
+            }
+        } else if (other.requiredFields != null) {
+            return false
+        }
         if (trustIssuers != null) {
-            if (other.trustIssuers == null) return false
-            if (!trustIssuers.contentEquals(other.trustIssuers)) return false
-        } else if (other.trustIssuers != null) return false
+            if (other.trustIssuers == null) {
+                return false
+            }
+            if (!trustIssuers.contentEquals(other.trustIssuers)) {
+                return false
+            }
+        } else if (other.trustIssuers != null) {
+            return false
+        }
 
         return true
     }
@@ -103,7 +120,7 @@ class Presentation {
         from: DID,
         to: DID
     ) {
-        this.id = id ?: UUID.randomUUID4().toString()
+        this.id = id ?: UUID.randomUUID().toString()
         this.body = body
         this.attachments = attachments
         this.thid = thid

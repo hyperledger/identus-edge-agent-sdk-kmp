@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.connection
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
@@ -10,6 +9,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * A class representing a connection acceptance message in the DIDComm protocol. The [ConnectionAccept] class defines
@@ -17,7 +17,7 @@ import kotlinx.serialization.json.Json
  */
 class ConnectionAccept {
     val type: String = ProtocolType.DidcommconnectionResponse.value
-    var id: String = UUID.randomUUID4().toString()
+    var id: String = UUID.randomUUID().toString()
     lateinit var from: DID
     lateinit var to: DID
     var thid: String? = null
@@ -118,17 +118,31 @@ class ConnectionAccept {
          * @return true if this [Body] object is equal to the specified [other] object, false otherwise.
          */
         override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
+            if (this === other) {
+                return true
+            }
+            if (other == null || this::class != other::class) {
+                return false
+            }
 
             other as Body
 
-            if (goalCode != other.goalCode) return false
-            if (goal != other.goal) return false
+            if (goalCode != other.goalCode) {
+                return false
+            }
+            if (goal != other.goal) {
+                return false
+            }
             if (accept != null) {
-                if (other.accept == null) return false
-                if (!accept.contentEquals(other.accept)) return false
-            } else if (other.accept != null) return false
+                if (other.accept == null) {
+                    return false
+                }
+                if (!accept.contentEquals(other.accept)) {
+                    return false
+                }
+            } else if (other.accept != null) {
+                return false
+            }
 
             return true
         }

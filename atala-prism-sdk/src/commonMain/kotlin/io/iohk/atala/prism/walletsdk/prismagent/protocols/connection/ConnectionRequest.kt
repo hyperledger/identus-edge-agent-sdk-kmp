@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.connection
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.GOAL_CODE
@@ -9,9 +8,9 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * A class representing a connection request message in the DIDComm protocol. The [ConnectionRequest] class defines
@@ -19,7 +18,7 @@ import kotlinx.serialization.json.Json
  */
 class ConnectionRequest {
     val type: String = ProtocolType.DidcommconnectionRequest.value
-    var id: String = UUID.randomUUID4().toString()
+    var id: String = UUID.randomUUID().toString()
     lateinit var from: DID
     lateinit var to: DID
     var thid: String? = null
@@ -144,17 +143,31 @@ class ConnectionRequest {
          * @return true if the objects are equal, false otherwise.
          */
         override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
+            if (this === other) {
+                return true
+            }
+            if (other == null || this::class != other::class) {
+                return false
+            }
 
             other as Body
 
-            if (goalCode != other.goalCode) return false
-            if (goal != other.goal) return false
+            if (goalCode != other.goalCode) {
+                return false
+            }
+            if (goal != other.goal) {
+                return false
+            }
             if (accept != null) {
-                if (other.accept == null) return false
-                if (!accept.contentEquals(other.accept)) return false
-            } else if (other.accept != null) return false
+                if (other.accept == null) {
+                    return false
+                }
+                if (!accept.contentEquals(other.accept)) {
+                    return false
+                }
+            } else if (other.accept != null) {
+                return false
+            }
 
             return true
         }

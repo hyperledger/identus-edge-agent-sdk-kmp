@@ -1,12 +1,14 @@
+import org.gradle.internal.os.OperatingSystem
 import java.util.Base64
 
 val publishedMavenId = "io.iohk.atala.prism.walletsdk"
+val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
-    id("org.jetbrains.kotlin.android") version "1.9.22" apply false
+    id("com.android.library") version "8.1.4" apply false
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.8.20"
-    id("org.jlleitschuh.gradle.ktlint") version "11.5.1"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("org.jetbrains.dokka") version "1.9.0"
     id("org.jetbrains.kotlin.kapt") version "1.9.10"
     id("maven-publish")
@@ -23,10 +25,9 @@ buildscript {
     }
     dependencies {
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
-        classpath("com.android.tools.build:gradle:7.2.2") // 7.4.2 is still not supported
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.21.0")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.23.1")
     }
 }
 
@@ -48,20 +49,6 @@ allprojects {
         maven {
             url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
         }
-        maven {
-            this.url = uri("https://maven.pkg.github.com/input-output-hk/atala-prism-apollo")
-            credentials {
-                this.username = System.getenv("ATALA_GITHUB_ACTOR")
-                this.password = System.getenv("ATALA_GITHUB_TOKEN")
-            }
-        }
-        maven {
-            this.url = uri("https://github.com/input-output-hk/anoncreds-rs/")
-            credentials {
-                this.username = System.getenv("ATALA_GITHUB_ACTOR")
-                this.password = System.getenv("ATALA_GITHUB_TOKEN")
-            }
-        }
     }
 
     configurations.all {
@@ -76,6 +63,11 @@ allprojects {
                 } else if (requested.group == "com.nimbusds") {
                     // Making sure we are using the latest version of `nimbus-jose-jwt` instead if 9.25.6
                     useTarget("com.nimbusds:nimbus-jose-jwt:9.31")
+                } else if (requested.group == "com.google.protobuf") {
+                    // Because of Duplicate Classes issue happening on the sampleapp module
+                    if (requested.name == "protobuf-javalite" || requested.name == "protobuf-java") {
+                        useTarget("com.google.protobuf:protobuf-java:3.14.0")
+                    }
                 }
             }
         }
@@ -217,10 +209,6 @@ subprojects {
             }
         }
     }
-}
-
-tasks.dokkaGfmMultiModule.configure {
-    outputDirectory.set(buildDir.resolve("dokkaCustomMultiModuleOutput"))
 }
 
 nexusPublishing {

@@ -1,12 +1,12 @@
 package io.iohk.atala.prism.walletsdk.prismagent
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.util.UUID
 
 class MediationHandlerMock(
     override var mediator: Mediator? = null,
@@ -21,7 +21,7 @@ class MediationHandlerMock(
     override suspend fun bootRegisteredMediator(): Mediator? {
         val hostDID = DID("did", "test", "123")
         val routingDID = DID("did", "test", "123")
-        bootMediatorResponse = Mediator(UUID.randomUUID4().toString(), mediatorDID, hostDID, routingDID)
+        bootMediatorResponse = Mediator(UUID.randomUUID().toString(), mediatorDID, hostDID, routingDID)
         mediator = bootMediatorResponse
         return bootMediatorResponse
     }

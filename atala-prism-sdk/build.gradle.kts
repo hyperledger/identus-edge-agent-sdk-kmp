@@ -14,7 +14,7 @@ plugins {
     kotlin("plugin.serialization")
     id("com.android.library")
     id("org.jetbrains.dokka")
-    id("org.jetbrains.kotlinx.kover") version "0.7.3"
+    id("org.jetbrains.kotlinx.kover") version "0.7.6"
 }
 
 kover {
@@ -75,7 +75,7 @@ kotlin {
     jvm {
         compilations.all {
             kotlinOptions {
-                jvmTarget = "11"
+                jvmTarget = "17"
             }
         }
         testRuns["test"].executionTask.configure {
@@ -93,25 +93,22 @@ kotlin {
 
     sourceSets {
         val commonMain by getting {
-            kotlin.srcDir("${project(":protosLib").buildDir}/generated/source/proto/main/kotlin")
+            kotlin.srcDir("${project(":protosLib").layout.buildDirectory.asFile.get()}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
 
                 implementation("io.ktor:ktor-client-core:2.3.4")
                 implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
                 implementation("io.ktor:ktor-client-logging:2.3.4")
 
-                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion") {
-                    exclude("io.iohk.atala.prism.apollo")
-                }
+                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
                 implementation("io.iohk.atala.prism.apollo:apollo:$apolloVersion")
-
-                // implementation("com.nimbusds:nimbus-jose-jwt:9.31") // We are going to use the `nimbus-jose-jwt` that resides in `didcomm` lib
+                implementation("org.kotlincrypto.hash:sha2:0.4.0")
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 
@@ -125,15 +122,15 @@ kotlin {
 
                 api("org.lighthousegames:logging:1.1.2")
 
-                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.2")
-                implementation("com.ionspin.kotlin:bignum:0.3.8")
+                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.6")
+                implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
                 implementation("io.ktor:ktor-client-mock:2.3.4")
                 implementation("junit:junit:4.13.2")
             }
@@ -147,7 +144,7 @@ kotlin {
         val jvmTest by getting
         val androidMain by getting {
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
                 implementation("app.cash.sqldelight:android-driver:2.0.1")
             }
@@ -175,18 +172,16 @@ kotlin {
 }
 
 android {
-    compileSdk = 33
+    compileSdk = 34
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     namespace = "io.iohk.atala.prism.walletsdk"
     defaultConfig {
         minSdk = 21
-        targetSdk = 33
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     /**
      * Because Software Components will not be created automatically for Maven publishing from
@@ -202,7 +197,7 @@ android {
         }
     }
 
-    packagingOptions {
+    packaging {
         resources {
             merges += "**/**.proto"
         }
@@ -225,7 +220,7 @@ tasks.withType<DokkaTask>().configureEach {
     description = "This is a Kotlin Multiplatform implementation of AtalaPrismSDK"
     dokkaSourceSets {
         configureEach {
-            jdkVersion.set(11)
+            jdkVersion.set(17)
             languageVersion.set("1.9.22")
             apiVersion.set("2.0")
             includes.from(
@@ -268,12 +263,6 @@ val buildProtoLibsGen: Task by tasks.creating {
 }
 
 afterEvaluate {
-    tasks.named("lintAnalyzeDebug") {
-        this.enabled = false
-    }
-    tasks.named("lintAnalyzeRelease") {
-        this.enabled = false
-    }
     tasks.getByName("runKtlintCheckOverCommonMainSourceSet") {
         dependsOn(buildProtoLibsGen)
     }
