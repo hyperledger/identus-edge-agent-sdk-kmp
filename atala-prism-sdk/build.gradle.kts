@@ -1,3 +1,5 @@
+import com.android.build.gradle.tasks.PackageAndroidArtifact
+import com.android.build.gradle.tasks.SourceJarTask
 import org.gradle.internal.os.OperatingSystem
 import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -269,12 +271,37 @@ afterEvaluate {
     tasks.getByName("build") {
         dependsOn(buildProtoLibsGen)
     }
-
     tasks.withType<KotlinCompile> {
         dependsOn(buildProtoLibsGen)
     }
-
     tasks.withType<ProcessResources> {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.withType<SourceJarTask> {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.withType<org.gradle.jvm.tasks.Jar> {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.withType<PackageAndroidArtifact> {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.named("packageDebugResources") {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.named("packageReleaseResources") {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.named("androidReleaseSourcesJar") {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.named("androidDebugSourcesJar") {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.named("jvmSourcesJar") {
+        dependsOn(buildProtoLibsGen)
+    }
+    tasks.named("sourcesJar") {
         dependsOn(buildProtoLibsGen)
     }
 }
