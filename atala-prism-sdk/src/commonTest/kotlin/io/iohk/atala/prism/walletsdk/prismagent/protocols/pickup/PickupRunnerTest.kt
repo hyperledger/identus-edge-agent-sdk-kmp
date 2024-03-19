@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData
 import io.iohk.atala.prism.walletsdk.domain.models.Message
@@ -11,6 +10,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
+import java.util.UUID
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
@@ -45,7 +45,7 @@ class PickupRunnerTest {
     @Test
     fun testPickupRun_whenMessageIsDelivery_thenArrayOfMessages() = runTest {
         val attachmentData = AttachmentJsonData("{\"key\":\"value\"")
-        val attachmentId = UUID.randomUUID4().toString()
+        val attachmentId = UUID.randomUUID().toString()
         val message = Message(
             piuri = ProtocolType.PickupDelivery.value,
             body = "",

@@ -5,13 +5,13 @@ import androidx.room.Room
 
 object DatabaseClient {
     @Volatile
-    private var INSTANCE: AppDatabase? = null
+    private var instance: AppDatabase? = null
 
     fun initializeInstance(context: Context) {
-        if (INSTANCE == null) {
+        if (instance == null) {
             synchronized(AppDatabase::class.java) {
-                if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(
+                if (instance == null) {
+                    instance = Room.databaseBuilder(
                         context.applicationContext,
                         AppDatabase::class.java,
                         "database-name"
@@ -22,6 +22,6 @@ object DatabaseClient {
     }
 
     fun getInstance(): AppDatabase {
-        return INSTANCE ?: throw IllegalStateException("Database has not been initialized.")
+        return instance ?: throw IllegalStateException("Database has not been initialized.")
     }
 }

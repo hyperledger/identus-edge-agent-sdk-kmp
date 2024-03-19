@@ -1,8 +1,8 @@
 package io.iohk.atala.prism.walletsdk.mercury.resolvers
 
-import io.iohk.atala.prism.apollo.multibase.MultiBase
 import io.iohk.atala.prism.didcomm.didpeer.core.fromMulticodec
 import io.iohk.atala.prism.didcomm.didpeer.core.toJwk
+import io.iohk.atala.prism.didcomm.didpeer.multibase.MultiBase
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.Curve

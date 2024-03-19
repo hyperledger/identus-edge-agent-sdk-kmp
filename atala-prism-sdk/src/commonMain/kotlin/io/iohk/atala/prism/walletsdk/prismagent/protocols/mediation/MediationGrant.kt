@@ -1,13 +1,12 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.ROUTING_DID
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 import kotlin.jvm.Throws
 
 /**
@@ -53,7 +52,7 @@ class MediationGrant {
      * @throws MediationProtocolError.InvalidMediationGrantError if the provided message is not a valid mediation grant.
      */
     constructor(
-        id: String = UUID.randomUUID4().toString(),
+        id: String = UUID.randomUUID().toString(),
         body: Body
     ) {
         this.id = id

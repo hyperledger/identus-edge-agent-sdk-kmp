@@ -1,10 +1,10 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.EMPTY_BODY
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import java.util.UUID
 
 /**
  * The `MediationRequest` class represents a mediation request in the application.
@@ -40,7 +40,7 @@ final class MediationRequest @JvmOverloads constructor(
         from: DID,
         to: DID
     ) : this(
-        id = UUID.randomUUID4().toString(),
+        id = UUID.randomUUID().toString(),
         from = from,
         to = to
     )

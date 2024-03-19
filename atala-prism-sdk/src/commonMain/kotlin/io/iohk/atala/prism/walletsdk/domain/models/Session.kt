@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-import io.iohk.atala.prism.apollo.uuid.UUID
+import java.util.UUID
 import kotlin.jvm.JvmOverloads
 
 /**
@@ -11,6 +11,6 @@ import kotlin.jvm.JvmOverloads
  * @constructor Creates a Session object with the specified [uuid] and [seed].
  */
 data class Session @JvmOverloads constructor(
-    val uuid: UUID = UUID.randomUUID4(),
+    val uuid: UUID = UUID.randomUUID(),
     val seed: Seed
 )

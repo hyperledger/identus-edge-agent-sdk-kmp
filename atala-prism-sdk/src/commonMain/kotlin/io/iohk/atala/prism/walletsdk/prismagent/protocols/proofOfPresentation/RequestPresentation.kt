@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
@@ -11,9 +10,9 @@ import io.iohk.atala.prism.walletsdk.prismagent.WILL_CONFIRM
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 @Serializable
 /**
@@ -27,7 +26,7 @@ import kotlinx.serialization.json.Json
  * @property to The DID of the recipient of the request.
  */
 data class RequestPresentation(
-    val id: String = UUID.randomUUID4().toString(),
+    val id: String = UUID.randomUUID().toString(),
     val body: Body,
     val attachments: Array<AttachmentDescriptor>,
     val thid: String? = null,

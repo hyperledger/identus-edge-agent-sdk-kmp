@@ -59,7 +59,8 @@ class MercuryTests {
     fun testSendMessage_shouldThrowError_whenServiceAbsent() = runTest {
         val idDid = DID("did", "prism", "123")
         val allAuthentication = DIDDocument.Authentication(arrayOf(), arrayOf())
-        val resolveDIDReturn = DIDDocument(idDid, arrayOf(/*service,*/ allAuthentication))
+        // val resolveDIDReturn = DIDDocument(idDid, arrayOf(/*service,*/ allAuthentication))
+        val resolveDIDReturn = DIDDocument(idDid, arrayOf(allAuthentication))
         castorMock.resolveDIDReturn = resolveDIDReturn
         val msg = Message(piuri = "", body = "", from = DID("test", "method", "id"), to = DID("test", "method", "id"))
         assertFailsWith<MercuryError.NoValidServiceFoundError> { sut.sendMessage(msg) }
