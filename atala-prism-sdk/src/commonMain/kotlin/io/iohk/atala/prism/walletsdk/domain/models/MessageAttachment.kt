@@ -107,7 +107,8 @@ data class AttachmentDescriptor @JvmOverloads constructor(
     val data: AttachmentData,
     val filename: Array<String>? = null,
     val format: String? = null,
-    val lastModTime: String? = null, // TODO(Date format)
+    // TODO(Date format)
+    val lastModTime: String? = null,
     val byteCount: Int? = null,
     val description: String? = null
 ) : AttachmentData {

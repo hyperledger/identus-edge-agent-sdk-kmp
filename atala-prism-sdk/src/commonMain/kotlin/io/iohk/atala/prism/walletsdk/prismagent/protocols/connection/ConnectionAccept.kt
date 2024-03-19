@@ -118,17 +118,31 @@ class ConnectionAccept {
          * @return true if this [Body] object is equal to the specified [other] object, false otherwise.
          */
         override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
+            if (this === other) {
+                return true
+            }
+            if (other == null || this::class != other::class) {
+                return false
+            }
 
             other as Body
 
-            if (goalCode != other.goalCode) return false
-            if (goal != other.goal) return false
+            if (goalCode != other.goalCode) {
+                return false
+            }
+            if (goal != other.goal) {
+                return false
+            }
             if (accept != null) {
-                if (other.accept == null) return false
-                if (!accept.contentEquals(other.accept)) return false
-            } else if (other.accept != null) return false
+                if (other.accept == null) {
+                    return false
+                }
+                if (!accept.contentEquals(other.accept)) {
+                    return false
+                }
+            } else if (other.accept != null) {
+                return false
+            }
 
             return true
         }

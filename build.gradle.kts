@@ -1,6 +1,8 @@
+import org.gradle.internal.os.OperatingSystem
 import java.util.Base64
 
 val publishedMavenId = "io.iohk.atala.prism.walletsdk"
+val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
     id("com.android.library") version "8.1.4" apply false
@@ -61,6 +63,11 @@ allprojects {
                 } else if (requested.group == "com.nimbusds") {
                     // Making sure we are using the latest version of `nimbus-jose-jwt` instead if 9.25.6
                     useTarget("com.nimbusds:nimbus-jose-jwt:9.31")
+                } else if (requested.group == "com.google.protobuf") {
+                    // Because of Duplicate Classes issue happening on the sampleapp module
+                    if (requested.name == "protobuf-javalite" || requested.name == "protobuf-java") {
+                        useTarget("com.google.protobuf:protobuf-java:3.14.0")
+                    }
                 }
             }
         }

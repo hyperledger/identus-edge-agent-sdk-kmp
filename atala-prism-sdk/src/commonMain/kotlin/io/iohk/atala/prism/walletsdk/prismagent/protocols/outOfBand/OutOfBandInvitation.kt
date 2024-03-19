@@ -29,8 +29,9 @@ constructor(
     /**
      * Represents the body of the out-of-band invitation message.
      */
+    @OptIn(ExperimentalSerializationApi::class)
     @Serializable
-    data class Body(
+    data class Body constructor(
         @SerialName(GOAL_CODE)
         @EncodeDefault
         val goalCode: String? = null,

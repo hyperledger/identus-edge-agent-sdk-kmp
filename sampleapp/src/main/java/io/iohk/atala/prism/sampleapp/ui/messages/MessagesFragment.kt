@@ -52,7 +52,7 @@ class MessagesFragment : Fragment() {
 
         // Set up the spinner with the options
         context?.let {
-            val adapter = CustomArrayAdapter(it, R.layout.support_simple_spinner_dropdown_item, credentials)
+            val adapter = CustomArrayAdapter(it, android.R.layout.simple_spinner_dropdown_item, credentials)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             dialogBinding.spinner.adapter = adapter
 

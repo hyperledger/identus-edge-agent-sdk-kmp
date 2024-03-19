@@ -84,7 +84,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "Failed to onboard.\nStatus code: $statusCode\nResponse: $response"
     }
 
-    class InvalidCredentialError @JvmOverloads constructor(private val credential: Credential) :
+    class InvalidCredentialError constructor(private val credential: Credential) :
         PrismAgentError() {
         override val code: Int
             get() = 120
@@ -93,7 +93,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "Invalid credential type, ${credential::class} is not supported"
     }
 
-    class InvalidCredentialFormatError @JvmOverloads constructor(private val expectedFormat: CredentialType) :
+    class InvalidCredentialFormatError constructor(private val expectedFormat: CredentialType) :
         PrismAgentError() {
         override val code: Int
             get() = 121

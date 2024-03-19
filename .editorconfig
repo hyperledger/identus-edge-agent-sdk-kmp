@@ -1,7 +1,10 @@
 root = true
 
 [*.{kt,kts}]
+ktlint_experimental = disabled
 ktlint_code_style = intellij_idea
 ktlint_standard_no_semi = disabled
 ktlint_standard_trailing-comma-on-call-site = disabled
 ktlint_standard_trailing-comma-on-declaration-site = disabled
+ktlint_standard_no-empty-file = disabled
+ktlint_standard_backing-property-naming = disabled
