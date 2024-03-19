@@ -74,7 +74,8 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             )
             val time = LocalDateTime.now()
             val message = Message(
-                piuri = "https://didcomm.org/basicmessage/2.0/message", // TODO: This should be on ProtocolTypes as an enum
+                // TODO: This should be on ProtocolTypes as an enum
+                piuri = "https://didcomm.org/basicmessage/2.0/message",
                 from = did,
                 to = did,
                 body = "{\"msg\":\"This is a new test message ${time}\"}"

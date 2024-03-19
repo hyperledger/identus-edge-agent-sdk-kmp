@@ -1,6 +1,7 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.mercury
 
-/* ktlint-disable import-ordering */
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
@@ -16,8 +17,6 @@ import io.iohk.atala.prism.walletsdk.pluto.CredentialRecovery
 import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-/* ktlint-disable import-ordering */
-
 class PlutoMock : Pluto {
     var privateKeys = mutableListOf<PrivateKey>()
 

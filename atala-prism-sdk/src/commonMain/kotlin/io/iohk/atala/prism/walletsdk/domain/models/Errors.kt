@@ -557,9 +557,9 @@ constructor(
         customUnderlyingErrors: Array<Error>
     ) : MercuryError(
         message = "DIDComm error has occurred with message: $customMessage\nErrors: ${
-        customUnderlyingErrors.joinToString(
-            separator = "\n"
-        ) { it.errorDescription ?: "" }
+            customUnderlyingErrors.joinToString(
+                separator = "\n"
+            ) { it.errorDescription ?: "" }
         }"
     ) {
         override val code: Int

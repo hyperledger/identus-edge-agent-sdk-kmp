@@ -1,6 +1,7 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent
 
-/* ktlint-disable import-ordering */
 import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
@@ -38,8 +39,6 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
-
-/* ktlint-disable import-ordering */
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class PrismAgentTests {

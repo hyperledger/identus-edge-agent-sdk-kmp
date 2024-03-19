@@ -1,4 +1,6 @@
-import com.google.protobuf.gradle.* // ktlint-disable no-wildcard-imports
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
+import com.google.protobuf.gradle.*
 import org.gradle.internal.os.OperatingSystem
 
 val os: OperatingSystem = OperatingSystem.current()
