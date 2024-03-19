@@ -1,7 +1,7 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import kotlinx.serialization.Serializable
+import java.util.UUID
 import kotlin.jvm.JvmOverloads
 
 /**
@@ -102,7 +102,7 @@ data class AttachmentJsonData(
  */
 @Serializable
 data class AttachmentDescriptor @JvmOverloads constructor(
-    val id: String = UUID.randomUUID4().toString(),
+    val id: String = UUID.randomUUID().toString(),
     val mediaType: String? = null,
     val data: AttachmentData,
     val filename: Array<String>? = null,

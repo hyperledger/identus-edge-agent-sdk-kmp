@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.mediation
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
 import io.iohk.atala.prism.walletsdk.domain.models.DID
@@ -17,6 +16,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupRunner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import java.util.UUID
 
 /**
  * A class that provides an implementation of [MediationHandler] using a Pluto instance and a Mercury instance. It can
@@ -93,7 +93,7 @@ class BasicMediatorHandler(
                     val grantedMessage = MediationGrant(message)
                     val routingDID = DID(grantedMessage.body.routingDid)
                     val tmpMediator = Mediator(
-                        id = UUID.randomUUID4().toString(),
+                        id = UUID.randomUUID().toString(),
                         mediatorDID = mediatorDID,
                         hostDID = host,
                         routingDID = routingDID

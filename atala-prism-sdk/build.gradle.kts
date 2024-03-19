@@ -105,13 +105,10 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
                 implementation("io.ktor:ktor-client-logging:2.3.4")
 
-                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion") {
-                    exclude("io.iohk.atala.prism.apollo")
-                }
+                implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
                 implementation("io.iohk.atala.prism.apollo:apollo:$apolloVersion")
-
-                // implementation("com.nimbusds:nimbus-jose-jwt:9.31") // We are going to use the `nimbus-jose-jwt` that resides in `didcomm` lib
+                implementation("org.kotlincrypto.hash:sha2:0.4.0")
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 
@@ -125,7 +122,7 @@ kotlin {
 
                 api("org.lighthousegames:logging:1.1.2")
 
-                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.2")
+                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.6")
                 implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
             }

@@ -1,12 +1,12 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * A class representing a pickup request.
@@ -19,7 +19,7 @@ import kotlinx.serialization.json.Json
  * @constructor Creates a pickup request with the specified parameters.
  */
 final class PickupRequest @JvmOverloads constructor(
-    var id: String = UUID.randomUUID4().toString(),
+    var id: String = UUID.randomUUID().toString(),
     val from: DID,
     val to: DID,
     var body: Body

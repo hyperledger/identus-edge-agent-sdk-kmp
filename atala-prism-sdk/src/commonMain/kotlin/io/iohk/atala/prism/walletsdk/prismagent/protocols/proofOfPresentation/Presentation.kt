@@ -1,15 +1,14 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * Data class representing proof types.
@@ -103,7 +102,7 @@ class Presentation {
         from: DID,
         to: DID
     ) {
-        this.id = id ?: UUID.randomUUID4().toString()
+        this.id = id ?: UUID.randomUUID().toString()
         this.body = body
         this.attachments = attachments
         this.thid = thid

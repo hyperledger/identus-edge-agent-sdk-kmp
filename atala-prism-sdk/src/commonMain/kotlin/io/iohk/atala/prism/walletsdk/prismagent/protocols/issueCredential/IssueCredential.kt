@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
@@ -14,16 +13,16 @@ import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * The IssueCredential class represents a credential issuance in the context of DIDComm messaging.
  */
 @Serializable
 data class IssueCredential(
-    val id: String = UUID.randomUUID4().toString(),
+    val id: String = UUID.randomUUID().toString(),
     val body: Body,
     val attachments: Array<AttachmentDescriptor>,
     val thid: String?,
@@ -37,7 +36,7 @@ data class IssueCredential(
      * This function is used to generate a [Message] object based on the current state of an [IssueCredential] object.
      *
      * @return A [Message] object with the following properties:
-     *   - id: A unique identifier generated using [UUID.randomUUID4].
+     *   - id: A unique identifier generated using [UUID.randomUUID].
      *   - piuri: The type of the message.
      *   - from: The sender's DID (Decentralized Identifier).
      *   - to: The recipient's DID.

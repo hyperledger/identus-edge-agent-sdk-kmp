@@ -1,6 +1,5 @@
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential
 
-import io.iohk.atala.prism.apollo.uuid.UUID
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
@@ -8,9 +7,9 @@ import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.build
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.UUID
 
 /**
  * ALL parameters are DIDCOMMV2 format and naming conventions and follows the protocol
@@ -18,7 +17,7 @@ import kotlinx.serialization.json.Json
  */
 @Serializable
 data class RequestCredential @JvmOverloads constructor(
-    val id: String = UUID.randomUUID4().toString(),
+    val id: String = UUID.randomUUID().toString(),
     val body: Body,
     val attachments: Array<AttachmentDescriptor>,
     val thid: String?,
