@@ -656,9 +656,7 @@ class PolluxImpl(
             PresentationDefinitionRequest.PresentationDefinitionBody(
                 inputDescriptors = arrayOf(inputDescriptor),
                 format = format
-            ),
-            challenge = options.challenge,
-            domain = options.domain
+            )
         )
     }
 
@@ -666,7 +664,9 @@ class PolluxImpl(
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
         did: DID,
-        privateKey: PrivateKey
+        privateKey: PrivateKey,
+        challenge: String,
+        domain: String?
     ): PresentationSubmission {
         if (credential::class != JWTCredential::class) {
             throw PolluxError.CredentialTypeNotSupportedError()
@@ -688,36 +688,33 @@ class PolluxImpl(
 
         val jws = credential.id
         credential.subject?.let { subject ->
-            presentationDefinitionRequest.challenge?.let { challenge ->
+            val didDoc = castor.resolveDID(subject)
+            val authenticationProperty = didDoc.coreProperties.find { property ->
+                property::class == DIDDocument.Authentication::class
+            } as DIDDocument.Authentication
 
-                val didDoc = castor.resolveDID(subject)
-                val authenticationProperty = didDoc.coreProperties.find { property ->
-                    property::class == DIDDocument.Authentication::class
-                } as DIDDocument.Authentication
+            val proof = Proof(
+                type = "EcdsaSecp256k1Signature2019",
+                created = dateFormat.format(getTimeMillis() * 1000L),
+                proofPurpose = Proof.Purpose.AUTHENTICATION.value,
+                verificationMethod = authenticationProperty.verificationMethods.first().id.string(),
+                challenge = privateKey.sign(challenge.encodeToByteArray())
+                    .toHexString(),
+                domain = domain,
+                jws = jws
+            )
 
-                val proof = Proof(
-                    type = "EcdsaSecp256k1Signature2019",
-                    created = dateFormat.format(getTimeMillis() * 1000L),
-                    proofPurpose = Proof.Purpose.AUTHENTICATION.value,
-                    verificationMethod = authenticationProperty.verificationMethods.first().id.string(),
-                    challenge = privateKey.sign(challenge.encodeToByteArray())
-                        .toHexString(),
-                    domain = presentationDefinitionRequest.domain,
-                    jws = jws
-                )
-
-                return PresentationSubmission(
-                    presentationSubmission = PresentationSubmission.Submission(
-                        definitionId = presentationDefinitionRequest.presentationDefinitionBody.id
-                            ?: UUID.randomUUID().toString(),
-                        descriptorMap = descriptorItems
-                    ),
-                    verifiableCredential = arrayOf(
-                        W3cCredentialSubmission(vc = (credential as JWTCredential).jwtPayload.verifiableCredential)
-                    ),
-                    proof = proof
-                )
-            } ?: throw PolluxError.NoDomainOrChallengeFound()
+            return PresentationSubmission(
+                presentationSubmission = PresentationSubmission.Submission(
+                    definitionId = presentationDefinitionRequest.presentationDefinitionBody.id
+                        ?: UUID.randomUUID().toString(),
+                    descriptorMap = descriptorItems
+                ),
+                verifiableCredential = arrayOf(
+                    W3cCredentialSubmission(vc = (credential as JWTCredential).jwtPayload.verifiableCredential)
+                ),
+                proof = proof
+            )
         } ?: throw PolluxError.RequestMissingField("subject")
     }
 

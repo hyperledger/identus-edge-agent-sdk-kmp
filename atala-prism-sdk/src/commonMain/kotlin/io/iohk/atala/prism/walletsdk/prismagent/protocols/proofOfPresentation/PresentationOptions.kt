@@ -2,11 +2,11 @@
 
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
 
+import java.util.UUID
+
 data class PresentationOptions(
     val name: String? = "Presentation",
     val purpose: String = "Presentation definition",
-    val challenge: String? = null,
-    val domain: String? = null,
     val jwtAlg: Array<String>? = null,
     val jwtVcAlg: Array<String>? = null,
     val jwtVpAlg: Array<String>? = null
@@ -19,8 +19,6 @@ data class PresentationOptions(
 
         if (name != other.name) return false
         if (purpose != other.purpose) return false
-        if (challenge != other.challenge) return false
-        if (domain != other.domain) return false
         if (jwtAlg != null) {
             if (other.jwtAlg == null) return false
             if (!jwtAlg.contentEquals(other.jwtAlg)) return false
@@ -40,8 +38,6 @@ data class PresentationOptions(
     override fun hashCode(): Int {
         var result = name?.hashCode() ?: 0
         result = 31 * result + purpose.hashCode()
-        result = 31 * result + (challenge?.hashCode() ?: 0)
-        result = 31 * result + (domain?.hashCode() ?: 0)
         result = 31 * result + (jwtAlg?.contentHashCode() ?: 0)
         result = 31 * result + (jwtVcAlg?.contentHashCode() ?: 0)
         result = 31 * result + (jwtVpAlg?.contentHashCode() ?: 0)

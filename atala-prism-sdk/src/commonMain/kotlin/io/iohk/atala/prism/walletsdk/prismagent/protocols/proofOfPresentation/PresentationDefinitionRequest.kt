@@ -9,9 +9,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PresentationDefinitionRequest(
     @SerialName("presentation_definition")
-    val presentationDefinitionBody: PresentationDefinitionBody,
-    val challenge: String? = null,
-    val domain: String? = null
+    val presentationDefinitionBody: PresentationDefinitionBody
 ) {
 
     @Serializable
