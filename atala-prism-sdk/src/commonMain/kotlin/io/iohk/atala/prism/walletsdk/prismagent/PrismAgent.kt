@@ -1009,7 +1009,7 @@ class PrismAgent {
 
         val attachmentDescriptor = AttachmentDescriptor(
             mediaType = "application/json",
-            format = CredentialType.PRESENTATION_EXCHANGE.type,
+            format = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
             data = AttachmentBase64(Json.encodeToString(presentationDefinitionRequest).base64UrlEncoded)
         )
 
@@ -1054,7 +1054,7 @@ class PrismAgent {
 
         val attachmentDescriptor = AttachmentDescriptor(
             mediaType = "application/json",
-            format = CredentialType.PRESENTATION_EXCHANGE.type,
+            format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
             data = AttachmentBase64(Json.encodeToString(presentationSubmissionProof).base64UrlEncoded)
         )
         val presentationSubmission = Presentation(
