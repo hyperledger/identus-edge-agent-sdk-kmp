@@ -141,7 +141,9 @@ interface Pollux {
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
         did: DID,
-        privateKey: PrivateKey
+        privateKey: PrivateKey,
+        challenge: String,
+        domain: String? = "N/A"
     ): PresentationSubmission
 
     suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean

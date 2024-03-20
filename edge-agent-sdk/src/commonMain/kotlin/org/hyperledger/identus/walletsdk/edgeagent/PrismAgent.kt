@@ -921,71 +921,81 @@ class PrismAgent {
         request: RequestPresentation,
         credential: Credential
     ): Presentation {
-        var mediaType: String? = null
-        var presentationString: String?
-        when (credential::class) {
-            JWTCredential::class -> {
-                val subjectDID = credential.subject?.let {
-                    DID(it)
-                } ?: DID("")
-                if (subjectDID.method != PRISM) {
-                    throw PolluxError.InvalidPrismDID()
-                }
-
-                val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
-                val keyPair =
-                    Secp256k1KeyPair.generateKeyPair(
-                        seed,
-                        KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
-                    )
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
+        val msgAttachmentDescriptor =
+            request.attachments.find { it.data::class == AttachmentBase64::class }
+                ?: throw PrismAgentError.AttachmentTypeNotSupported()
+        val attachmentFormat = msgAttachmentDescriptor.format ?: CredentialType.Unknown.type
+        if (attachmentFormat == CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type) {
+            // Presentation Exchange
+            return handlePresentationDefinitionRequest(request, credential)
+        } else {
+            // Presentation request from agent
+            var mediaType: String? = null
+            var presentationString: String?
+            when (credential::class) {
+                JWTCredential::class -> {
+                    val subjectDID = credential.subject?.let {
+                        DID(it)
+                    } ?: DID("")
+                    if (subjectDID.method != PRISM) {
+                        throw PolluxError.InvalidPrismDID()
                     }
-                }.first()
-                val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
-                presentationString = pollux.createVerifiablePresentationJWT(
-                    subjectDID,
-                    keyPair.privateKey,
-                    credential,
-                    requestJsonObject
-                )
-                mediaType = JWT_MEDIA_TYPE
-            }
 
-            AnonCredential::class -> {
-                val format = pollux.extractCredentialFormatFromMessage(request.attachments)
-                if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
-                    throw PrismAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
-                }
-                val linkSecret = getLinkSecret()
-                val presentation =
-                    pollux.createVerifiablePresentationAnoncred(
-                        request,
-                        credential as AnonCredential,
-                        linkSecret
+                    val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
+                    val keyPair =
+                        Secp256k1KeyPair.generateKeyPair(
+                            seed,
+                            KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
+                        )
+                    val requestData = request.attachments.mapNotNull {
+                        when (it.data) {
+                            is AttachmentJsonData -> it.data.data
+                            else -> null
+                        }
+                    }.first()
+                    val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
+                    presentationString = pollux.createVerifiablePresentationJWT(
+                        subjectDID,
+                        keyPair.privateKey,
+                        credential,
+                        requestJsonObject
                     )
-                presentationString = presentation.getJson()
+                    mediaType = JWT_MEDIA_TYPE
+                }
+
+                AnonCredential::class -> {
+                    val format = pollux.extractCredentialFormatFromMessage(request.attachments)
+                    if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
+                        throw PrismAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
+                    }
+                    val linkSecret = getLinkSecret()
+                    val presentation =
+                        pollux.createVerifiablePresentationAnoncred(
+                            request,
+                            credential as AnonCredential,
+                            linkSecret
+                        )
+                    presentationString = presentation.getJson()
+                }
+
+                else -> {
+                    throw PrismAgentError.InvalidCredentialError(credential)
+                }
             }
 
-            else -> {
-                throw PrismAgentError.InvalidCredentialError(credential)
-            }
-        }
-
-        val attachmentDescriptor =
-            AttachmentDescriptor(
-                mediaType = mediaType,
-                data = AttachmentBase64(presentationString.base64UrlEncoded)
+            val attachmentDescriptor =
+                AttachmentDescriptor(
+                    mediaType = mediaType,
+                    data = AttachmentBase64(presentationString.base64UrlEncoded)
+                )
+            return Presentation(
+                from = request.to,
+                to = request.from,
+                thid = request.thid,
+                body = Presentation.Body(request.body.goalCode, request.body.comment),
+                attachments = arrayOf(attachmentDescriptor)
             )
-        return Presentation(
-            from = request.to,
-            to = request.from,
-            thid = request.thid,
-            body = Presentation.Body(request.body.goalCode, request.body.comment),
-            attachments = arrayOf(attachmentDescriptor)
-        )
+        }
     }
 
     suspend fun initiatePresentationRequest(
@@ -1008,8 +1018,10 @@ class PrismAgent {
             data = AttachmentBase64(Json.encodeToString(presentationDefinitionRequest).base64UrlEncoded)
         )
 
+        val challenge: String = UUID.randomUUID().toString() // TODO: TBD
+
         val presentationRequest = RequestPresentation(
-            body = RequestPresentation.Body(proofTypes = emptyArray()),
+            body = RequestPresentation.Body(goalCode = challenge, proofTypes = emptyArray()),
             attachments = arrayOf(attachmentDescriptor),
             thid = UUID.randomUUID().toString(),
             from = newPeerDID,
@@ -1019,12 +1031,14 @@ class PrismAgent {
         connectionManager.sendMessage(presentationRequest.makeMessage())
     }
 
-    suspend fun handlePresentationDefinitionRequest(msg: Message, credential: Credential) {
+    private suspend fun handlePresentationDefinitionRequest(
+        requestPresentation: RequestPresentation,
+        credential: Credential
+    ): Presentation {
         if (credential::class != JWTCredential::class) {
             throw PrismAgentError.InvalidCredentialError(credential)
         }
 
-        val requestPresentation = RequestPresentation.fromMessage(msg)
         val msgAttachmentDescriptor =
             requestPresentation.attachments.find { it.data::class == AttachmentBase64::class }
                 ?: throw PrismAgentError.AttachmentTypeNotSupported()
@@ -1044,7 +1058,8 @@ class PrismAgent {
             presentationDefinitionRequest = presentationDefinitionRequest,
             credential = credential,
             did = DID(didString),
-            privateKey = privateKey
+            privateKey = privateKey,
+            challenge = requestPresentation.body.goalCode ?: UUID.randomUUID().toString()
         )
 
         val attachmentDescriptor = AttachmentDescriptor(
@@ -1052,20 +1067,20 @@ class PrismAgent {
             format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
             data = AttachmentBase64(Json.encodeToString(presentationSubmissionProof).base64UrlEncoded)
         )
-        val presentationSubmission = Presentation(
+        return Presentation(
             body = Presentation.Body(),
             attachments = arrayOf(attachmentDescriptor),
             thid = requestPresentation.thid,
             from = requestPresentation.to,
             to = requestPresentation.from
         )
-        connectionManager.sendMessage(presentationSubmission.makeMessage())
     }
 
     suspend fun handlePresentationSubmission(msg: Message): Boolean {
         val presentation = Presentation.fromMessage(msg)
         val fromDID = presentation.from
         val didDoc = this.castor.resolveDID(fromDID.toString())
+        val publicKeys = CastorShared.getKeyPairFromCoreProperties(didDoc.coreProperties)
 
         val msgAttachmentDescriptor =
             presentation.attachments.find { it.data::class == AttachmentBase64::class }
@@ -1077,7 +1092,6 @@ class PrismAgent {
 
         val proof = presentationSubmission.proof
 
-        val publicKeys = CastorShared.getKeyPairFromCoreProperties(didDoc.coreProperties)
         if (proof.challenge == null) {
             throw PrismAgentError.PresentationSubmissionDoesNotContainChallenge()
         }
@@ -1086,14 +1100,11 @@ class PrismAgent {
             pluto.getMessageByThidAndPiuri(thid, presentation.type).firstOrNull()
                 ?.let { message ->
                     val requestPresentation = RequestPresentation.fromMessage(message)
-                    val attachmentDescriptor = requestPresentation.attachments.first()
-                    val base64 = (attachmentDescriptor.data as AttachmentBase64).base64
-                    val presentationDefinitionRequest =
-                        Json.decodeFromString<PresentationDefinitionRequest>(base64.base64UrlDecoded)
-                    presentationDefinitionRequest.challenge?.let { challenge ->
+                    val challenge = requestPresentation.body.goalCode
+                    challenge?.let { nonNullChallenge ->
                         castor.verifySignature(
                             fromDID,
-                            challenge.encodeToByteArray(),
+                            nonNullChallenge.encodeToByteArray(),
                             proof.challenge.encodeToByteArray()
                         )
                     }
