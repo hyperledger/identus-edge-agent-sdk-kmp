@@ -3,11 +3,6 @@ package org.hyperledger.identus.walletsdk.sampleapp
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-<<<<<<< HEAD:sampleapp/src/main/java/org/hyperledger/identus/walletsdk/sampleapp/Sdk.kt
-=======
-import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
-
->>>>>>> 989438e0e (chore: update sample app to showcase sdk verification):sampleapp/src/main/java/io/iohk/atala/prism/sampleapp/Sdk.kt
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -87,8 +82,8 @@ class Sdk {
 
     private fun createCastor(): Castor {
         val castor = CastorImpl(apollo)
-        val prismDIDApiResolver = PrismDIDApiResolver(this.apollo, "http://192.168.68.103:8000/prism-agent")
-        castor.addResolver(prismDIDApiResolver)
+//        val prismDIDApiResolver = PrismDIDApiResolver(this.apollo, "http://192.168.68.103:8000/prism-agent")
+//        castor.addResolver(prismDIDApiResolver)
         return castor
     }
 

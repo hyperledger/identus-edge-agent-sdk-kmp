@@ -24,20 +24,12 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Proof
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.W3cCredentialSubmission
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.util.date.getTimeMillis
-import java.math.BigInteger
-import java.security.KeyFactory
-import java.security.interfaces.ECPrivateKey
-import java.security.interfaces.ECPublicKey
-import java.security.spec.ECParameterSpec
-import java.security.spec.ECPrivateKeySpec
-import java.security.spec.ECPublicKeySpec
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
@@ -61,12 +53,25 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.ProofTypes
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
+import java.math.BigInteger
+import java.security.KeyFactory
+import java.security.interfaces.ECPrivateKey
+import java.security.interfaces.ECPublicKey
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPrivateKeySpec
+import java.security.spec.ECPublicKeySpec
+import java.text.SimpleDateFormat
+import java.util.*
+import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -618,27 +623,27 @@ class PolluxImpl(
         val constraints =
             PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.Constraints(
                 fields = arrayOf(
-                    InputDescriptor.Constraints.Fields(
+                    PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.Constraints.Fields(
                         path = path.toTypedArray()
                     )
                 )
             )
 
-        val inputDescriptor = InputDescriptor(
+        val inputDescriptor = PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor(
             name = options.name,
             purpose = options.purpose,
             constraints = constraints
         )
 
         val format =
-            InputDescriptor.PresentationFormat(
+            PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.PresentationFormat(
                 jwtVc = jwtVc?.let {
-                    InputDescriptor.JwtVcFormat(
+                    PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.JwtVcFormat(
                         jwtVc.toList()
                     )
                 },
                 jwtVp = jwtVp?.let {
-                    InputDescriptor.JwtVpFormat(
+                    PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.JwtVpFormat(
                         jwtVp.toList()
                     )
                 }
@@ -684,7 +689,6 @@ class PolluxImpl(
             val authenticationProperty = didDoc.coreProperties.find { property ->
                 property::class == DIDDocument.Authentication::class
             } as DIDDocument.Authentication
-
 
             val proof = Proof(
                 type = "EcdsaSecp256k1Signature2019",
