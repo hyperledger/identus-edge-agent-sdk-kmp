@@ -26,7 +26,11 @@ import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
+import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Api
@@ -692,6 +696,7 @@ class PolluxImpl(
             val authenticationProperty = didDoc.coreProperties.find { property ->
                 property::class == DIDDocument.Authentication::class
             } as DIDDocument.Authentication
+
 
             val proof = Proof(
                 type = "EcdsaSecp256k1Signature2019",

@@ -1030,7 +1030,8 @@ class PrismAgent {
             attachments = arrayOf(attachmentDescriptor),
             thid = UUID.randomUUID().toString(),
             from = newPeerDID,
-            to = toDID
+            to = toDID,
+            direction = Message.Direction.SENT
         )
 
         connectionManager.sendMessage(presentationRequest.makeMessage())
@@ -1084,8 +1085,6 @@ class PrismAgent {
     suspend fun handlePresentationSubmission(msg: Message): Boolean {
         val presentation = Presentation.fromMessage(msg)
         val fromDID = presentation.from
-        val didDoc = this.castor.resolveDID(fromDID.toString())
-        val publicKeys = CastorShared.getKeyPairFromCoreProperties(didDoc.coreProperties)
 
         val msgAttachmentDescriptor =
             presentation.attachments.find { it.data::class == AttachmentBase64::class }
@@ -1102,7 +1101,7 @@ class PrismAgent {
         }
 
         val isProofVerified = presentation.thid?.let { thid ->
-            pluto.getMessageByThidAndPiuri(thid, presentation.type).firstOrNull()
+            pluto.getMessageByThidAndPiuri(thid, ProtocolType.DidcommRequestPresentation.value).firstOrNull()
                 ?.let { message ->
                     val requestPresentation = RequestPresentation.fromMessage(message)
                     val challenge = requestPresentation.body.goalCode
@@ -1115,9 +1114,13 @@ class PrismAgent {
                     }
                 }
         } ?: false
+
         val isJWTVerified = proof.jws?.let { jws ->
+            val jwt = JWTCredential(proof.jws)
+            val diddoc = castor.resolveDID(jwt.jwtPayload.iss)
+            val publicKeysIssuer = CastorShared.getKeyPairFromCoreProperties(diddoc.coreProperties)
             // In this first version we expect only one public key
-            val publicKey = publicKeys.first()
+            val publicKey = publicKeysIssuer.first()
             pollux.verifyPresentationSubmissionJWT(jws, publicKey)
         } ?: false
         return isProofVerified && isJWTVerified

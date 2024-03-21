@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
+import io.iohk.atala.prism.walletsdk.castor.resolvers.PrismDIDApiResolver
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
@@ -81,7 +82,10 @@ class Sdk {
     }
 
     private fun createCastor(): Castor {
-        return CastorImpl(apollo)
+        val castor = CastorImpl(apollo)
+        val prismDIDApiResolver = PrismDIDApiResolver(this.apollo, "http://192.168.68.103:8000/prism-agent")
+        castor.addResolver(prismDIDApiResolver)
+        return castor
     }
 
     private fun createMercury(): MercuryImpl {

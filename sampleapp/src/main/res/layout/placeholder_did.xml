@@ -10,12 +10,13 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/cardview_dark_background"
+        android:background="#B9B7B7"
         android:orientation="vertical"
         android:padding="8dp">
 
         <TextView
             android:id="@+id/did"
+            android:textIsSelectable="true"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 

@@ -9,6 +9,8 @@ import io.iohk.atala.prism.sampleapp.Sdk
 import io.iohk.atala.prism.sampleapp.db.AppDatabase
 import io.iohk.atala.prism.sampleapp.db.DatabaseClient
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
+import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM1
@@ -16,6 +18,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.ProofTypes
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +31,6 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     private var messages: MutableLiveData<List<Message>> = MutableLiveData()
     private var proofRequestToProcess: MutableLiveData<Pair<Message, List<Credential>>> =
         MutableLiveData()
-    private var presentationDone = false
     private val issuedCredentials: ArrayList<String> = arrayListOf()
     private val processedOffers: ArrayList<String> = arrayListOf()
     private val db: AppDatabase = DatabaseClient.getInstance()
@@ -61,7 +63,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         return messages
     }
 
-    fun sendMessage() {
+    fun sendMessage(toDID: DID? = null) {
         CoroutineScope(Dispatchers.Default).launch {
             val sdk = Sdk.getInstance()
             val did = sdk.agent.createNewPeerDID(
@@ -79,10 +81,27 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 // TODO: This should be on ProtocolTypes as an enum
                 piuri = "https://didcomm.org/basicmessage/2.0/message",
                 from = did,
-                to = did,
+                to = toDID ?: did,
                 body = "{\"msg\":\"This is a new test message ${time}\"}"
             )
             sdk.mercury.sendMessage(message)
+        }
+    }
+
+    fun sendVerificationRequest(toDID: String) {
+        CoroutineScope(Dispatchers.Default).launch {
+            val sdk = Sdk.getInstance()
+            sdk.agent.initiatePresentationRequest(
+                type = CredentialType.JWT,
+                toDID = DID(toDID),
+                proofTypes = arrayOf(
+                    ProofTypes(
+                        schema = "",
+                        requiredFields = emptyArray(),
+                        trustIssuers = emptyArray()
+                    )
+                )
+            )
         }
     }
 
@@ -173,23 +192,17 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                 }
                             }
 
-                            if (message.piuri == ProtocolType.DidcommRequestPresentation.value && !presentationDone) {
+                            if (message.piuri == ProtocolType.DidcommRequestPresentation.value && message.direction == Message.Direction.RECEIVED) {
                                 viewModelScope.launch {
                                     agent.getAllCredentials().collect {
                                         proofRequestToProcess.postValue(Pair(message, it))
-//                                    // TODO: Show dialog and wait for the selected credential to prepare the presentation proof
-//                                    val credential = it.first()
-//                                    val presentation = agent.preparePresentationForRequestProof(
-//                                        RequestPresentation.fromMessage(message),
-//                                        credential
-//                                    )
-//                                    mercury.sendMessage(presentation.makeMessage())
                                     }
                                 }
                             }
-                            db.messageDao()
-                                .updateMessage(MessageEntity(messageId = message.id, isRead = true))
                         }
+
+                        db.messageDao()
+                            .updateMessage(MessageEntity(messageId = message.id, isRead = true))
                     }
                 }
             }
