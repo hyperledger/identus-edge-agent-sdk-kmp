@@ -4,6 +4,7 @@ import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.resolvers.PeerDIDResolver
+import io.iohk.atala.prism.walletsdk.castor.resolvers.PrismDIDApiResolver
 import io.iohk.atala.prism.walletsdk.castor.shared.CastorShared
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor

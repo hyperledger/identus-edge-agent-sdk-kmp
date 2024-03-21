@@ -83,8 +83,8 @@ class Sdk {
 
     private fun createCastor(): Castor {
         val castor = CastorImpl(apollo)
-        val prismDIDApiResolver = PrismDIDApiResolver(this.apollo, "http://192.168.68.103:8000/prism-agent")
-        castor.addResolver(prismDIDApiResolver)
+//        val prismDIDApiResolver = PrismDIDApiResolver(this.apollo, "http://192.168.68.103:8000/prism-agent")
+//        castor.addResolver(prismDIDApiResolver)
         return castor
     }
 

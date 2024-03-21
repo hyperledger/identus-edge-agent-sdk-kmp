@@ -48,7 +48,11 @@ class PrismDIDApiResolver(
             HttpMethod.Get.value,
             "${this.cloudAgentUrl}/dids/$didString",
             emptyArray(),
-            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ), KeyValue(HttpHeaders.Accept, "*/*")),
+            arrayOf(
+                KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ),
+                KeyValue(HttpHeaders.Accept, "*/*"),
+                KeyValue("APIKEY", "2l52tYGpCaRbly5yDiiF1ImRv0sIrSHF")
+            ),
             null
         )
 
@@ -176,9 +180,15 @@ private fun getVerificationMethods(jsonObject: JsonObject): Array<DIDDocument.Ve
                 }
                 jwkMap
             }
-            val didId = verificationMethod["id"]?.jsonPrimitive?.content ?: throw CastorError.NullOrMissingRequiredField("id", "verificationMethod")
-            val controller = verificationMethod["controller"]?.jsonPrimitive?.content ?: throw CastorError.NullOrMissingRequiredField("controller", "verificationMethod")
-            val type = verificationMethod["type"]?.jsonPrimitive?.content ?: throw CastorError.NullOrMissingRequiredField("type", "verificationMethod")
+            val didId =
+                verificationMethod["id"]?.jsonPrimitive?.content ?: throw CastorError.NullOrMissingRequiredField(
+                    "id",
+                    "verificationMethod"
+                )
+            val controller = verificationMethod["controller"]?.jsonPrimitive?.content
+                ?: throw CastorError.NullOrMissingRequiredField("controller", "verificationMethod")
+            val type = verificationMethod["type"]?.jsonPrimitive?.content
+                ?: throw CastorError.NullOrMissingRequiredField("type", "verificationMethod")
             val method = DIDDocument.VerificationMethod(
                 id = DIDUrlParser.parse(didId),
                 controller = DID(controller),

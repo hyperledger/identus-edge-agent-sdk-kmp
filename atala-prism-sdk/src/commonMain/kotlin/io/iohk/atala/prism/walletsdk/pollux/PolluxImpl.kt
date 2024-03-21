@@ -28,9 +28,6 @@ import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
-import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
-import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PrivateKey
-import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
 import io.iohk.atala.prism.walletsdk.domain.models.Api
@@ -44,6 +41,8 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurvePointXKey
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.CurvePointYKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
@@ -66,6 +65,7 @@ import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECParameterSpec
+import java.security.spec.ECPoint
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
 import java.text.SimpleDateFormat

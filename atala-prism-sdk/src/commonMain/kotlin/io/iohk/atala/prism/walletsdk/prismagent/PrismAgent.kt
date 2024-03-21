@@ -7,11 +7,13 @@ import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
+import io.iohk.atala.prism.walletsdk.castor.resolvers.PrismDIDApiResolver
 import io.iohk.atala.prism.walletsdk.castor.shared.CastorShared
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
@@ -45,6 +47,7 @@ import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
+import io.iohk.atala.prism.walletsdk.pollux.EC
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
@@ -72,7 +75,13 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import java.math.BigInteger
 import java.net.UnknownHostException
+import java.security.KeyFactory
+import java.security.interfaces.ECPublicKey
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPoint
+import java.security.spec.ECPublicKeySpec
 import java.time.Duration
 import java.util.*
 import kotlinx.coroutines.CoroutineScope
@@ -90,6 +99,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 
 /**
  * Check if the passed URL is valid or not.
@@ -1117,11 +1129,29 @@ class PrismAgent {
 
         val isJWTVerified = proof.jws?.let { jws ->
             val jwt = JWTCredential(proof.jws)
-            val diddoc = castor.resolveDID(jwt.jwtPayload.iss)
-            val publicKeysIssuer = CastorShared.getKeyPairFromCoreProperties(diddoc.coreProperties)
-            // In this first version we expect only one public key
-            val publicKey = publicKeysIssuer.first()
-            pollux.verifyPresentationSubmissionJWT(jws, publicKey)
+            val resolver = PrismDIDApiResolver(this.apollo, "https://sit-prism-agent-issuer.atalaprism.io/prism-agent")
+            val diddoc = resolver.resolve(jwt.jwtPayload.iss)
+
+            val assertionMethod = diddoc.coreProperties.find { it::class == DIDDocument.AssertionMethod::class }
+            (assertionMethod as DIDDocument.AssertionMethod).verificationMethods.first().publicKeyJwk?.let { jwk ->
+
+                if (jwk.containsKey("x") && jwk.containsKey("y")) {
+                    val x = jwk["x"]!!.base64UrlDecoded
+                    val y = jwk["y"]!!.base64UrlDecoded
+                    val ecPoint = ECPoint(BigInteger(x), BigInteger(y))
+                    val curveName = KMMEllipticCurve.SECP256k1.value
+                    val sp = ECNamedCurveTable.getParameterSpec(curveName)
+                    val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
+
+                    val publicKeySpec = ECPublicKeySpec(ecPoint, params)
+                    val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
+                    val ecPublicKey = keyFactory.generatePublic(publicKeySpec) as ECPublicKey
+
+                    pollux.verifyPresentationSubmissionJWT(jws, ecPublicKey)
+                } else {
+                    false
+                }
+            } ?: false
         } ?: false
         return isProofVerified && isJWTVerified
     }
