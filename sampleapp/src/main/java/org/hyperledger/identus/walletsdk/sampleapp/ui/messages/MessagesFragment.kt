@@ -9,9 +9,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import org.hyperledger.identus.walletsdk.domain.models.Credential
-import org.hyperledger.identus.walletsdk.sampleapp.R
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.CredentialDialogBinding
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentMessagesBinding
+import org.hyperledger.identus.walletsdk.sampleapp.ui.messages.MessagesViewModel
 
 class MessagesFragment : Fragment() {
 
@@ -35,6 +35,12 @@ class MessagesFragment : Fragment() {
         binding.list.adapter = adapter
         binding.sendMessage.setOnClickListener {
             viewModel.sendMessage()
+        }
+        binding.sendVerification.setOnClickListener {
+            InitiateVerificationDialogFragment(viewModel).show(
+                parentFragmentManager,
+                "InitiateVerificationDialogFragment"
+            )
         }
         setupStreamObservers()
     }

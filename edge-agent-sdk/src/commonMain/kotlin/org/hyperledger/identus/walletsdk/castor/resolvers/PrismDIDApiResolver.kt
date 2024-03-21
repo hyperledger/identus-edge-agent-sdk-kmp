@@ -1,17 +1,5 @@
-package io.iohk.atala.prism.walletsdk.castor.resolvers
+package org.hyperledger.identus.walletsdk.castor.resolvers
 
-import io.iohk.atala.prism.walletsdk.castor.PRISM
-import io.iohk.atala.prism.walletsdk.castor.did.DIDUrlParser
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
-import io.iohk.atala.prism.walletsdk.domain.models.Api
-import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
-import io.iohk.atala.prism.walletsdk.domain.models.CastorError
-import io.iohk.atala.prism.walletsdk.domain.models.DID
-import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
-import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
-import io.iohk.atala.prism.walletsdk.domain.models.httpClient
-import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -23,6 +11,18 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.walletsdk.castor.PRISM
+import org.hyperledger.identus.walletsdk.castor.did.DIDUrlParser
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
+import org.hyperledger.identus.walletsdk.domain.models.CastorError
+import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
+import org.hyperledger.identus.walletsdk.domain.models.DIDResolver
+import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 
 class PrismDIDApiResolver(
     private val apollo: Apollo,

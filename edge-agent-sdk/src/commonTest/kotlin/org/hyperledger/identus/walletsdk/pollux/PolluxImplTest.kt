@@ -1,7 +1,7 @@
 package org.hyperledger.identus.walletsdk.pollux
 
 import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.W3cCredentialSubmission
 import io.ktor.http.HttpStatusCode

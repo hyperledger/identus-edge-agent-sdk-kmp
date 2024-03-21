@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.ui.messages
+package org.hyperledger.identus.walletsdk.sampleapp.ui.messages
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -21,6 +21,9 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.ProofTypes
 import org.hyperledger.identus.walletsdk.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,7 +31,6 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     private var messages: MutableLiveData<List<Message>> = MutableLiveData()
     private var proofRequestToProcess: MutableLiveData<Pair<Message, List<Credential>>> =
         MutableLiveData()
-    private var presentationDone = false
     private val issuedCredentials: ArrayList<String> = arrayListOf()
     private val processedOffers: ArrayList<String> = arrayListOf()
     private val db: AppDatabase = DatabaseClient.getInstance()
@@ -61,7 +63,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         return messages
     }
 
-    fun sendMessage() {
+    fun sendMessage(toDID: DID? = null) {
         CoroutineScope(Dispatchers.Default).launch {
             val sdk = Sdk.getInstance()
             val did = sdk.agent.createNewPeerDID(
@@ -79,10 +81,27 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 // TODO: This should be on ProtocolTypes as an enum
                 piuri = "https://didcomm.org/basicmessage/2.0/message",
                 from = did,
-                to = did,
+                to = toDID ?: did,
                 body = "{\"msg\":\"This is a new test message ${time}\"}"
             )
             sdk.mercury.sendMessage(message)
+        }
+    }
+
+    fun sendVerificationRequest(toDID: String) {
+        CoroutineScope(Dispatchers.Default).launch {
+            val sdk = Sdk.getInstance()
+            sdk.agent.initiatePresentationRequest(
+                type = CredentialType.JWT,
+                toDID = DID(toDID),
+                proofTypes = arrayOf(
+                    ProofTypes(
+                        schema = "",
+                        requiredFields = emptyArray(),
+                        trustIssuers = emptyArray()
+                    )
+                )
+            )
         }
     }
 
@@ -173,23 +192,17 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                 }
                             }
 
-                            if (message.piuri == ProtocolType.DidcommRequestPresentation.value && !presentationDone) {
+                            if (message.piuri == ProtocolType.DidcommRequestPresentation.value && message.direction == Message.Direction.RECEIVED) {
                                 viewModelScope.launch {
                                     agent.getAllCredentials().collect {
                                         proofRequestToProcess.postValue(Pair(message, it))
-//                                    // TODO: Show dialog and wait for the selected credential to prepare the presentation proof
-//                                    val credential = it.first()
-//                                    val presentation = agent.preparePresentationForRequestProof(
-//                                        RequestPresentation.fromMessage(message),
-//                                        credential
-//                                    )
-//                                    mercury.sendMessage(presentation.makeMessage())
                                     }
                                 }
                             }
-                            db.messageDao()
-                                .updateMessage(MessageEntity(messageId = message.id, isRead = true))
                         }
+
+                        db.messageDao()
+                            .updateMessage(MessageEntity(messageId = message.id, isRead = true))
                     }
                 }
             }

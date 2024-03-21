@@ -12,6 +12,8 @@ import org.hyperledger.identus.walletsdk.edgeagent.PROOF_TYPES
 import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 
 /**
  * Class representing a proposal for a presentation.

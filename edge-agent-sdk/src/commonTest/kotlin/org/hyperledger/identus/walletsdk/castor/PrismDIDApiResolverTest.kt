@@ -1,6 +1,6 @@
 package io.iohk.atala.prism.walletsdk.castor
 
-import io.iohk.atala.prism.walletsdk.castor.resolvers.PrismDIDApiResolver
+import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.models.Api
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument

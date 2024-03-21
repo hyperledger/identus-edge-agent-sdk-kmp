@@ -1,7 +1,9 @@
 @file:Suppress("ktlint:standard:import-ordering")
 
-package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
+package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Proof
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.W3cCredentialSubmission
 import java.util.UUID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -6,8 +6,17 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
+import io.ktor.util.decodeBase64String
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.sampleapp.R
+import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 
 class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) :
     RecyclerView.Adapter<MessagesAdapter.MessageHolder>() {
@@ -55,9 +64,28 @@ class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) 
         private val type: TextView = itemView.findViewById(R.id.message_type)
         private val body: TextView = itemView.findViewById(R.id.message)
 
+        @OptIn(DelicateCoroutinesApi::class)
         fun bind(message: Message) {
             type.text = message.piuri
-            this.body.text = message.body
+            if (message.piuri == ProtocolType.DidcommPresentation.value) {
+                GlobalScope.launch {
+                    val sdk = Sdk.getInstance()
+                    if (sdk.agent.handlePresentationSubmission(message)) {
+                        val attachmentData = message.attachments.first().data
+                        if (attachmentData::class == AttachmentBase64::class) {
+                            attachmentData as AttachmentBase64
+                            val decoded = attachmentData.base64.decodeBase64String()
+                            val presentationSubmission = Json.decodeFromString<PresentationSubmission>(decoded)
+                            presentationSubmission.verifiableCredential.forEach {
+                                println("stop")
+                            }
+                        }
+                    } else {
+                        // TODO: Change UI body to say invalid presentation
+                    }
+                }
+                this.body.text = message.body
+            }
         }
     }
 }
