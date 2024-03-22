@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
+package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
 import kotlinx.serialization.Serializable
 
@@ -8,9 +8,7 @@ data class Proof(
     val created: String,
     val proofPurpose: String,
     val verificationMethod: String,
-    val jws: String? = null,
-    val challenge: String? = null,
-    val domain: String? = null
+    val jws: String? = null
 ) {
     enum class Purpose(val value: String) {
         AUTHENTICATION("authentication")

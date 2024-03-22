@@ -33,6 +33,7 @@ interface ConnectionManager : ConnectionsManager, DIDCommConnection {
     val mediationHandler: MediationHandler
 
     suspend fun startMediator()
+
     suspend fun registerMediator(host: DID)
 
     override suspend fun addConnection(paired: DIDPair)
@@ -44,6 +45,8 @@ interface ConnectionManager : ConnectionsManager, DIDCommConnection {
     override suspend fun awaitMessageResponse(id: String): Message?
 
     override suspend fun sendMessage(message: Message): Message?
+
+    fun startFetchingMessages(requestInterval: Int = 5)
 }
 
 /**
@@ -60,12 +63,12 @@ class ConnectionManagerImpl(
     private val mercury: Mercury,
     private val castor: Castor,
     private val pluto: Pluto,
-    internal val mediationHandler: MediationHandler,
+    override val mediationHandler: MediationHandler,
     private var pairings: MutableList<DIDPair>,
     private val pollux: Pollux,
     private val experimentLiveModeOptIn: Boolean = false,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
-) : ConnectionsManager, DIDCommConnection {
+) : ConnectionManager, ConnectionsManager, DIDCommConnection {
 
     var fetchingMessagesJob: Job? = null
 
@@ -76,7 +79,7 @@ class ConnectionManagerImpl(
      *                        Defaults to 5 seconds if not specified.
      */
     @JvmOverloads
-    fun startFetchingMessages(requestInterval: Int = 5) {
+    override fun startFetchingMessages(requestInterval: Int) {
         // Check if the job for fetching messages is already running
         if (fetchingMessagesJob == null) {
             // Launch a coroutine in the provided scope
@@ -127,7 +130,7 @@ class ConnectionManagerImpl(
         }
     }
 
-    fun stopConnection() {
+    override fun stopConnection() {
         fetchingMessagesJob?.cancel()
     }
 

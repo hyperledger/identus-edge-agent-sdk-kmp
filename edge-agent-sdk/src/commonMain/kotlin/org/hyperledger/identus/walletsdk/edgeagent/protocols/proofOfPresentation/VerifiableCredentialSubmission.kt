@@ -1,6 +1,6 @@
-package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
+package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
-import io.iohk.atala.prism.walletsdk.domain.models.JWTPayload
+import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import kotlinx.serialization.Serializable
 
 @Serializable

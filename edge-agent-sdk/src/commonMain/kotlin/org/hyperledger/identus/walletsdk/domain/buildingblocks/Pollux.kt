@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
 import anoncreds_wrapper.CredentialDefinition
@@ -8,17 +10,19 @@ import anoncreds_wrapper.LinkSecret
 import anoncreds_wrapper.Presentation
 import anoncreds_wrapper.Schema
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
+import java.security.interfaces.ECPublicKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.ProofTypes
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 
@@ -111,7 +115,10 @@ interface Pollux {
      * @param credential The [Credential] object to be converted.
      * @return The converted [StorableCredential].
      */
-    fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential
+    fun credentialToStorableCredential(
+        type: CredentialType,
+        credential: Credential
+    ): StorableCredential
 
     /**
      * Extracts the credential format from the given array of attachment descriptors.
@@ -133,18 +140,20 @@ interface Pollux {
 
     suspend fun createPresentationDefinitionRequest(
         type: CredentialType,
-        proofs: Array<ProofTypes>,
-        options: PresentationOptions = PresentationOptions()
+        presentationClaims: PresentationClaims,
+        options: PresentationOptions
     ): PresentationDefinitionRequest
 
     suspend fun createPresentationSubmission(
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
-        did: DID,
-        privateKey: PrivateKey,
-        challenge: String,
-        domain: String? = "N/A"
+        privateKey: PrivateKey
     ): PresentationSubmission
 
-    suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean
+    suspend fun verifyPresentationSubmission(
+        presentationSubmission: PresentationSubmission,
+        options: PresentationSubmissionOptions
+    ): Boolean
+
+    suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey>
 }

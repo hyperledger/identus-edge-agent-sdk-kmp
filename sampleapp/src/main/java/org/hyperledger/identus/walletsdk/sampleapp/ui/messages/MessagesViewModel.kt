@@ -23,6 +23,9 @@ import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.StringPredicate
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.ProofTypes
 import org.hyperledger.identus.walletsdk.db.Message as MessageEntity
 
@@ -94,13 +97,16 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             sdk.agent.initiatePresentationRequest(
                 type = CredentialType.JWT,
                 toDID = DID(toDID),
-                proofTypes = arrayOf(
-                    ProofTypes(
-                        schema = "",
-                        requiredFields = emptyArray(),
-                        trustIssuers = emptyArray()
+                presentationClaims = PresentationClaims(
+                    claims = mapOf("$.issuer" to InputFieldFilter(
+                        type = "string",
+                        value = StringPredicate("did:prism:b0bde43c0f749705c34e1c1e1b70647068a80a861de14f73b73b03cd1fa472ca:CnoKeBI5CgVrZXktMRACSi4KCXNlY3AyNTZrMRIhA_HT0IOH-l7M5PdHtYXtEMs80xSnwZ8vnGwtSCvBTZYYEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMxGlCcLnODDcnw9W2949Y5yDyMr2KxPqiKnN1-khXQwQ")
                     )
-                )
+                    ),
+                    issuer = "did:prism:b0bde43c0f749705c34e1c1e1b70647068a80a861de14f73b73b03cd1fa472ca:CnoKeBI5CgVrZXktMRACSi4KCXNlY3AyNTZrMRIhA_HT0IOH-l7M5PdHtYXtEMs80xSnwZ8vnGwtSCvBTZYYEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMxGlCcLnODDcnw9W2949Y5yDyMr2KxPqiKnN1-khXQwQ"
+                ),
+                domain = "domain",
+                challenge = "challenge"
             )
         }
     }

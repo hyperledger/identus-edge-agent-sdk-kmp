@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering", "ktlint:standard:wrapping")
+
 package org.hyperledger.identus.walletsdk.pollux
 
 import anoncreds_wrapper.CredentialDefinition
@@ -23,15 +25,18 @@ import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Proof
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.W3cCredentialSubmission
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.Proof
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.util.date.getTimeMillis
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -54,7 +59,6 @@ import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.ProofTypes
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
@@ -65,12 +69,16 @@ import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECParameterSpec
+import java.security.spec.ECPoint
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
 import java.text.SimpleDateFormat
 import java.util.*
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 
 /**
@@ -78,6 +86,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
  *
  * @property castor An API object for interacting with the Castor system.
  */
+@Suppress("LABEL_NAME_CLASH")
 class PolluxImpl(
     val castor: Castor,
     private val api: Api = ApiImpl(httpClient())
@@ -90,7 +99,7 @@ class PolluxImpl(
     @Throws(PolluxError.InvalidCredentialError::class)
     fun parseVerifiableCredential(data: String): Credential {
         return try {
-            JWTCredential(data)
+            JWTCredential.fromJwtString(data)
         } catch (e: Exception) {
             try {
                 Json.decodeFromString<W3CCredential>(data)
@@ -117,7 +126,7 @@ class PolluxImpl(
     ): Credential {
         return when (type) {
             CredentialType.JWT -> {
-                JWTCredential(jsonData)
+                JWTCredential.fromJwtString(jsonData)
             }
 
             CredentialType.ANONCREDS_ISSUE -> {
@@ -169,7 +178,7 @@ class PolluxImpl(
         val cred: Credential
         when (restorationIdentifier) {
             "jwt+credential" -> {
-                cred = JWTCredential(credentialData.decodeToString())
+                cred = JWTCredential.fromJwtString(credentialData.decodeToString())
             }
 
             "anon+credential" -> {
@@ -270,9 +279,11 @@ class PolluxImpl(
         credential: AnonCredential,
         linkSecret: LinkSecret
     ): Presentation {
-        if (request.attachments.isEmpty() || request.attachments[0].data !is AttachmentBase64) {
-            throw Error("")
-            // TODO: Custom pollux error
+        if (request.attachments.isEmpty()) {
+            throw PolluxError.RequestPresentationHasWrongAttachments("Attachment cannot be empty")
+        }
+        if (request.attachments[0].data !is AttachmentBase64) {
+            throw PolluxError.RequestPresentationHasWrongAttachments("Attachment data must be AttachmentBase64")
         }
         val attachmentBase64 = request.attachments[0].data as AttachmentBase64
         val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
@@ -474,7 +485,7 @@ class PolluxImpl(
      * @param privateKey The PrivateKey to parse.
      * @return The parsed ECPrivateKey.
      */
-    private fun parsePrivateKey(privateKey: PrivateKey): ECPrivateKey {
+    internal fun parsePrivateKey(privateKey: PrivateKey): ECPrivateKey {
         val curveName = KMMEllipticCurve.SECP256k1.value
         val sp = ECNamedCurveTable.getParameterSpec(curveName)
         val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
@@ -541,7 +552,7 @@ class PolluxImpl(
      * @param challenge The challenge value for the JWT.
      * @return The signed JWT as a string.
      */
-    private fun signClaimsProofPresentationJWT(
+    internal fun signClaimsProofPresentationJWT(
         subjectDID: DID,
         privateKey: ECPrivateKey,
         credential: Credential,
@@ -568,18 +579,18 @@ class PolluxImpl(
         challenge: String,
         credential: Credential? = null
     ): String {
-        val vp: MutableMap<String, Collection<String>> = mutableMapOf(
+        val presentation: MutableMap<String, Collection<String>> = mutableMapOf(
             CONTEXT to setOf(CONTEXT_URL),
             TYPE to setOf(VERIFIABLE_PRESENTATION)
         )
         credential?.let {
-            vp[VERIFIABLE_CREDENTIAL] = listOf(it.id)
+            presentation[VERIFIABLE_CREDENTIAL] = listOf(it.id)
         }
         val claims = JWTClaimsSet.Builder()
             .issuer(subjectDID.toString())
             .audience(domain)
             .claim(NONCE, challenge)
-            .claim(VP, vp)
+            .claim(VP, presentation)
             .build()
 
         // Generate a JWS header with the ES256K algorithm
@@ -602,18 +613,26 @@ class PolluxImpl(
 
     override suspend fun createPresentationDefinitionRequest(
         type: CredentialType,
-        proofs: Array<ProofTypes>,
+        presentationClaims: PresentationClaims,
         options: PresentationOptions
     ): PresentationDefinitionRequest {
         if (type != CredentialType.JWT) {
             throw PolluxError.CredentialTypeNotSupportedError()
         }
-        val jwt = options.jwtAlg
-        val jwtVc = options.jwtVcAlg
-        val jwtVp = options.jwtVpAlg
-        if (jwt == null && jwtVc == null && jwtVp == null) {
-            throw PolluxError.InvalidJWTPresentationDefinitionError("Presentation option must contain at least one valid JWT alg.")
+        val jwt = options.jwt
+        if (jwt.isEmpty()) {
+            throw PolluxError.InvalidJWTPresentationDefinitionError("Presentation option must contain at least one valid JWT alg that is not empty.")
         }
+        val paths = presentationClaims.claims.keys
+        val mutableListFields: MutableList<PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field> = paths.map { path ->
+            PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
+                path = arrayOf("$.vc.credentialSubject.$path", "$.credentialSubject.$path"),
+                id = UUID.randomUUID().toString(),
+                optional = false,
+                filter = presentationClaims.claims[path],
+                name = path
+            )
+        } as MutableList
 
         val path = proofs
             .flatMap { proofType ->
@@ -621,38 +640,48 @@ class PolluxImpl(
             }
 
         val constraints =
-            PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.Constraints(
+            PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
                 fields = arrayOf(
-                    PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.Constraints.Fields(
+                    PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
                         path = path.toTypedArray()
                     )
                 )
             )
+        }
 
-        val inputDescriptor = PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor(
+        val constraints = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
+            fields = mutableListFields.toTypedArray(),
+            limitDisclosure = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
+        )
+
+        val inputDescriptor = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor(
             name = options.name,
             purpose = options.purpose,
             constraints = constraints
         )
 
         val format =
-            PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.PresentationFormat(
+            PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
                 jwtVc = jwtVc?.let {
-                    PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.JwtVcFormat(
+                    PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
                         jwtVc.toList()
                     )
                 },
                 jwtVp = jwtVp?.let {
-                    PresentationDefinitionRequest.PresentationDefinitionBody.InputDescriptor.JwtVpFormat(
+                    PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
                         jwtVp.toList()
                     )
                 }
             )
 
         return PresentationDefinitionRequest(
-            PresentationDefinitionRequest.PresentationDefinitionBody(
+            presentationDefinition = PresentationDefinitionRequest.PresentationDefinition(
                 inputDescriptors = arrayOf(inputDescriptor),
                 format = format
+            ),
+            options = PresentationDefinitionRequest.PresentationDefinitionOptions(
+                domain = options.domain,
+                challenge = options.challenge
             )
         )
     }
@@ -660,10 +689,7 @@ class PolluxImpl(
     override suspend fun createPresentationSubmission(
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
-        did: DID,
-        privateKey: PrivateKey,
-        challenge: String,
-        domain: String?
+        privateKey: PrivateKey
     ): PresentationSubmission {
         if (credential::class != JWTCredential::class) {
             throw PolluxError.CredentialTypeNotSupportedError()
@@ -672,12 +698,13 @@ class PolluxImpl(
             throw PolluxError.PrivateKeyTypeNotSupportedError()
         }
         privateKey as Secp256k1PrivateKey
+        credential as JWTCredential
         val descriptorItems =
-            presentationDefinitionRequest.presentationDefinitionBody.inputDescriptors.map { inputDescriptor ->
+            presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
                 PresentationSubmission.Submission.DescriptorItem(
                     id = inputDescriptor.id,
-                    format = "jwt_vp",
-                    path = "$.verifiableCredential[0]"
+                    format = "jwt",
+                    path = "$.verifiablePresentation[0]"
                 )
             }.toTypedArray()
 
@@ -703,25 +730,191 @@ class PolluxImpl(
 
             return PresentationSubmission(
                 presentationSubmission = PresentationSubmission.Submission(
-                    definitionId = presentationDefinitionRequest.presentationDefinitionBody.id
+                    definitionId = presentationDefinitionRequest.presentationDefinition.id
                         ?: UUID.randomUUID().toString(),
                     descriptorMap = descriptorItems
                 ),
-                verifiableCredential = arrayOf(
-                    W3cCredentialSubmission(vc = (credential as JWTCredential).jwtPayload.verifiableCredential)
-                ),
-                proof = proof
+                verifiablePresentation = arrayOf(presentationJwt)
             )
-        } ?: throw PolluxError.RequestMissingField("subject")
+        } ?: throw PolluxError.NullField("CredentialSubject")
     }
 
-    override suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean {
-        val ecPublicKey = parsePublicKey(publicKey)
-        val jwtParts = jwt.split(".")
-        val jwsObject = SignedJWT(Base64URL(jwtParts[0]), Base64URL(jwtParts[1]), Base64URL(jwtParts[2]))
+    override suspend fun verifyPresentationSubmission(
+        presentationSubmission: PresentationSubmission,
+        options: PresentationSubmissionOptions
+    ): Boolean {
+        if (options::class == PresentationSubmissionOptionsJWT::class) {
+            val presentationDefinitionRequest =
+                (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest
+            presentationDefinitionRequest.presentationDefinition
+            val inputDescriptors =
+                presentationDefinitionRequest.presentationDefinition.inputDescriptors
+            val descriptorMap = DescriptorPath(Json.encodeToJsonElement(presentationSubmission))
+            val descriptorMaps = presentationSubmission.presentationSubmission.descriptorMap
+            descriptorMaps.forEach { descriptorItem ->
+                if (descriptorItem.format == "jwt") {
+                    val holderJws =
+                        descriptorMap.getValue(descriptorItem.path)
+                            ?: throw Exception("Could not find ${descriptorItem.path} value")
+                    val presentation = JWTCredential.fromJwtString(holderJws as String)
+                    presentation.verifiablePresentation?.let { verifiablePresentation ->
+                        verifiablePresentation.type.find { it == VERIFIABLE_PRESENTATION }
+                            ?: throw Exception("Credential type should be JWT")
 
-        val verifiers = ECDSAVerifier(ecPublicKey)
+                        val holder = presentation.issuer
+                        val didDocHolder = castor.resolveDID(holder)
+                        val authenticationMethodHolder =
+                            didDocHolder.coreProperties.find { it::class == DIDDocument.Authentication::class }
+                                ?: throw PolluxError.VerificationUnsuccessful("Holder core properties must contain Authentication")
+                        val ecPublicKeysHolder =
+                            extractEcPublicKeyFromVerificationMethod(authenticationMethodHolder)
 
-        return jwsObject.verify(verifiers)
+                        if (!verifyJWTSignatureWithEcPublicKey(holderJws, ecPublicKeysHolder)) {
+                            throw PolluxError.VerificationUnsuccessful("Holder signature not valid")
+                        }
+
+                        val vcJws = verifiablePresentation.verifiableCredential.firstOrNull()
+                            ?: throw PolluxError.VerificationUnsuccessful("VC credential not found")
+                        val jwtCredential = JWTCredential.fromJwtString(vcJws)
+                        val didDocIssuer = castor.resolveDID(jwtCredential.issuer)
+                        val authenticationMethodIssuer =
+                            didDocIssuer.coreProperties.find { it::class == DIDDocument.Authentication::class }
+                                ?: throw PolluxError.VerificationUnsuccessful("Issuer core properties must contain Authentication")
+                        val ecPublicKeysIssuer =
+                            extractEcPublicKeyFromVerificationMethod(authenticationMethodIssuer)
+
+                        if (!verifyJWTSignatureWithEcPublicKey(vcJws, ecPublicKeysIssuer)) {
+                            throw PolluxError.VerificationUnsuccessful("Issuer signature not valid")
+                        }
+
+                        // Now we are going to validate the requested fields with the provided credentials
+                        val verifiableCredentialDescriptorPath = DescriptorPath(Json.encodeToJsonElement(jwtCredential))
+                        val inputDescriptor = inputDescriptors.find { it.id == descriptorItem.id }
+                        if (inputDescriptor != null) {
+                            val constraints = inputDescriptor.constraints
+                            val fields = constraints.fields
+                            if (constraints.limitDisclosure == PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
+                                fields?.forEach { field ->
+                                    val optional = field.optional
+                                    if (!optional) {
+                                        var validClaim = false
+                                        var reason = ""
+                                        val paths = field.path
+                                        paths.forEach { path ->
+                                            val fieldValue = verifiableCredentialDescriptorPath.getValue(path)
+                                            if (field.filter != null && fieldValue != null) {
+                                                val filter: InputFieldFilter = field.filter
+                                                filter.pattern?.let { pattern ->
+                                                    val regexPattern = Regex(pattern)
+                                                    if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
+                                                        validClaim = true
+                                                        return@forEach
+                                                    } else {
+                                                        reason =
+                                                            "Expected the $path field to be $pattern but got $fieldValue"
+                                                    }
+                                                }
+                                                filter.enum?.let { enum ->
+                                                    enum.forEach { predicate ->
+                                                        if (fieldValue == predicate) {
+                                                            validClaim = true
+                                                            return@forEach
+                                                        }
+                                                    }
+                                                    if (!validClaim) {
+                                                        reason =
+                                                            "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
+                                                    }
+                                                }
+                                                filter.const?.let { const ->
+                                                    const.forEach { constValue ->
+                                                        if (fieldValue == constValue) {
+                                                            validClaim = true
+                                                            return@forEach
+                                                        }
+                                                    }
+                                                    if (!validClaim) {
+                                                        reason =
+                                                            "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
+                                                    }
+                                                }
+                                                filter.value?.let { value ->
+                                                    if (value == fieldValue) {
+                                                        validClaim = true
+                                                        return@forEach
+                                                    } else {
+                                                        reason =
+                                                            "Expected the $path field to be $value but got $fieldValue"
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (!validClaim) {
+                                            throw PolluxError.VerificationUnsuccessful(reason)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } ?: throw PolluxError.VerificationUnsuccessful("Presentation must contain verifiable presentation")
+                    return true
+                }
+            }
+        } else {
+            // TODO: Anoncreds and more
+        }
+        return false
+    }
+
+    internal fun verifyJWTSignatureWithEcPublicKey(
+        jwtString: String,
+        ecPublicKeys: Array<ECPublicKey>
+    ): Boolean {
+        val jwtPartsIssuer = jwtString.split(".")
+        if (jwtPartsIssuer.size != 3) {
+            throw PolluxError.InvalidJWTString("Invalid JWT string, must contain 3 parts.")
+        }
+        val jwsObject =
+            SignedJWT(
+                Base64URL(jwtPartsIssuer[0]),
+                Base64URL(jwtPartsIssuer[1]),
+                Base64URL(jwtPartsIssuer[2])
+            )
+        val areVerified = ecPublicKeys.map { ecPublicKey ->
+            val verifiers = ECDSAVerifier(ecPublicKey)
+            val provider = BouncyCastleProviderSingleton.getInstance()
+            verifiers.jcaContext.provider = provider
+
+            jwsObject.verify(verifiers)
+        }
+        return areVerified.find { it } ?: false
+    }
+
+    override suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey> {
+        val publicKeys = castor.getPublicKeysFromCoreProperties(arrayOf(coreProperty))
+
+        val ecPublicKeys = publicKeys.map { publicKey ->
+            when (DIDDocument.VerificationMethod.getCurveByType(publicKey.getCurve())) {
+                Curve.SECP256K1 -> {
+                    val kmmEcSecp = KMMECSecp256k1PublicKey.secp256k1FromBytes(publicKey.raw)
+                    val x = BigInteger(1, kmmEcSecp.getCurvePoint().x)
+                    val y = BigInteger(1, kmmEcSecp.getCurvePoint().y)
+                    val ecPoint = ECPoint(x, y)
+                    val curveName = publicKey.getCurve()
+                    val sp = ECNamedCurveTable.getParameterSpec(curveName)
+                    val params: ECParameterSpec =
+                        ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
+
+                    val publicKeySpec = ECPublicKeySpec(ecPoint, params)
+                    val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
+                    keyFactory.generatePublic(publicKeySpec) as ECPublicKey
+                }
+
+                else -> {
+                    throw Exception("Key type not supported ${publicKey.getCurve()}")
+                }
+            }
+        }
+        return ecPublicKeys.toTypedArray()
     }
 }

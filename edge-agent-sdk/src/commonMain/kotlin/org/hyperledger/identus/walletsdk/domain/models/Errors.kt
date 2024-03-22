@@ -755,7 +755,7 @@ constructor(
      *
      * @see PolluxError
      */
-    class InvalidJWTString : PolluxError("Invalid JWT while decoding credential") {
+    class InvalidJWTString(msg: String? = null) : PolluxError(msg ?: "Invalid JWT while decoding credential") {
         override val code: Int
             get() = 52
     }
@@ -816,12 +816,45 @@ constructor(
     }
 
     /**
-     * A class representing an error when a field is missing on a received request.
+     * A class representing an error when a verification is unsuccessful.
      *
      * @see PolluxError
      */
-    class RequestMissingField(field: String) : PolluxError("The request is missing $field.") {
+    class VerificationUnsuccessful(reason: String) : PolluxError(reason) {
         override val code: Int
             get() = 56
     }
+
+    /**
+     * A class representing an error when a provided key is the wrong type.
+     *
+     * @see PolluxError
+     */
+    class WrongKeyProvided(expected: String?, actual: String?) : PolluxError("Provided key is: $actual but should be $expected") {
+        override val code: Int
+            get() = 57
+    }
+
+    /**
+     * A class representing an error when a field is null when it should not.
+     *
+     * @see PolluxError
+     */
+    class NullField(field: String) : PolluxError("Field $field must not be null") {
+        override val code: Int
+            get() = 58
+    }
+
+    /**
+     * A class representing an error when a request presentation has wrong attachments.
+     *
+     * @see PolluxError
+     */
+    class RequestPresentationHasWrongAttachments(reason: String) : PolluxError(reason) {
+        override val code: Int
+            get() = 59
+    }
+
+
+
 }

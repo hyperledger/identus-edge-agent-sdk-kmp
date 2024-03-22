@@ -2,8 +2,6 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Proof
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.W3cCredentialSubmission
 import java.util.UUID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -12,9 +10,7 @@ import kotlinx.serialization.Serializable
 data class PresentationSubmission(
     @SerialName("presentation_submission")
     val presentationSubmission: Submission,
-    @SerialName("verifiableCredential")
-    val verifiableCredential: Array<W3cCredentialSubmission>,
-    val proof: Proof
+    val verifiablePresentation: Array<String>,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -23,12 +19,12 @@ data class PresentationSubmission(
         other as PresentationSubmission
 
         if (presentationSubmission != other.presentationSubmission) return false
-        return verifiableCredential.contentEquals(other.verifiableCredential)
+        return verifiablePresentation.contentEquals(other.verifiablePresentation)
     }
 
     override fun hashCode(): Int {
         var result = presentationSubmission.hashCode()
-        result = 31 * result + verifiableCredential.contentHashCode()
+        result = 31 * result + verifiablePresentation.contentHashCode()
         return result
     }
 
