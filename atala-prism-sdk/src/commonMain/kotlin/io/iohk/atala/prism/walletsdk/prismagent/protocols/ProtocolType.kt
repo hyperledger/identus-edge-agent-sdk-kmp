@@ -36,6 +36,7 @@ enum class ProtocolType(val value: String) {
     PickupReceived("https://didcomm.org/messagepickup/3.0/messages-received"),
     LiveDeliveryChange("https://didcomm.org/messagepickup/3.0/live-delivery-change"),
     PrismRevocation("https://atalaprism.io/revocation_notification/1.0/revoke"),
+    ProblemReport("https://didcomm.org/report-problem/2.0/problem-report"),
     None("");
 
     companion object {

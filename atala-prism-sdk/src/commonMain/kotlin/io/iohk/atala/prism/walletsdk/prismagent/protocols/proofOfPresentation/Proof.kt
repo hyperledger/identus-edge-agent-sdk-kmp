@@ -8,9 +8,7 @@ data class Proof(
     val created: String,
     val proofPurpose: String,
     val verificationMethod: String,
-    val jws: String? = null,
-    val challenge: String? = null,
-    val domain: String? = null
+    val jws: String? = null
 ) {
     enum class Purpose(val value: String) {
         AUTHENTICATION("authentication")

@@ -1,7 +1,6 @@
 package io.iohk.atala.prism.sampleapp.ui.messages
 
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +8,6 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.sampleapp.databinding.CredentialDialogBinding
 import io.iohk.atala.prism.sampleapp.databinding.FragmentMessagesBinding
 import io.iohk.atala.prism.walletsdk.domain.models.Credential

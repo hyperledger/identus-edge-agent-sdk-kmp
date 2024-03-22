@@ -3,19 +3,24 @@ package io.iohk.atala.prism.sampleapp.ui.messages
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
 import io.iohk.atala.prism.sampleapp.Sdk
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
 import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 
 class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) :
@@ -63,28 +68,43 @@ class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) 
     inner class MessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val type: TextView = itemView.findViewById(R.id.message_type)
         private val body: TextView = itemView.findViewById(R.id.message)
+        private val validate: Button = itemView.findViewById(R.id.validate)
 
         @OptIn(DelicateCoroutinesApi::class)
         fun bind(message: Message) {
             type.text = message.piuri
-            if (message.piuri == ProtocolType.DidcommPresentation.value) {
-                GlobalScope.launch {
-                    val sdk = Sdk.getInstance()
-                    if (sdk.agent.handlePresentationSubmission(message)) {
-                        val attachmentData = message.attachments.first().data
-                        if (attachmentData::class == AttachmentBase64::class) {
-                            attachmentData as AttachmentBase64
-                            val decoded = attachmentData.base64.decodeBase64String()
-                            val presentationSubmission = Json.decodeFromString<PresentationSubmission>(decoded)
-                            presentationSubmission.verifiableCredential.forEach {
-                                println("stop")
+            if (message.attachments.isNotEmpty()) {
+                val attachmentDescriptor = message.attachments.first()
+                if (message.piuri == ProtocolType.DidcommPresentation.value && attachmentDescriptor.format == CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type) {
+                    validate.visibility = View.VISIBLE
+                    validate.setOnClickListener {
+                        GlobalScope.launch(Dispatchers.IO) {
+                            val sdk = Sdk.getInstance()
+                            if (sdk.agent.handlePresentation(message)) {
+                                val attachmentData = attachmentDescriptor.data
+                                if (attachmentData::class == AttachmentBase64::class) {
+                                    attachmentData as AttachmentBase64
+                                    val decoded = attachmentData.base64.decodeBase64String()
+                                    val presentationSubmission =
+                                        Json.decodeFromString<PresentationSubmission>(decoded)
+                                    presentationSubmission.verifiablePresentation.forEach { jwt ->
+                                        val jwtCredential = JWTCredential.fromJwtString(jwt)
+                                        // TODO: Extract fields to display
+                                    }
+                                }
+                                withContext(Dispatchers.Main) {
+                                    validate.text = "Valid presentation"
+                                    validate.isEnabled = false
+                                }
+                            } else {
+                                // TODO: Change UI body to say invalid presentation
                             }
                         }
-                    } else {
-                        // TODO: Change UI body to say invalid presentation
                     }
+                    this.body.text = message.body
+                } else {
+                    validate.visibility = View.GONE
                 }
-                this.body.text = message.body
             }
         }
     }

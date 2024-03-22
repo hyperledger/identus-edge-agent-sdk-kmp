@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.domain.buildingblocks
 
 import anoncreds_wrapper.CredentialDefinition
@@ -11,15 +13,17 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
+import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
-import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.ProofTypes
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import java.security.interfaces.ECPublicKey
 import kotlinx.serialization.json.JsonObject
 
 /**
@@ -111,7 +115,10 @@ interface Pollux {
      * @param credential The [Credential] object to be converted.
      * @return The converted [StorableCredential].
      */
-    fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential
+    fun credentialToStorableCredential(
+        type: CredentialType,
+        credential: Credential
+    ): StorableCredential
 
     /**
      * Extracts the credential format from the given array of attachment descriptors.
@@ -133,18 +140,20 @@ interface Pollux {
 
     suspend fun createPresentationDefinitionRequest(
         type: CredentialType,
-        proofs: Array<ProofTypes>,
-        options: PresentationOptions = PresentationOptions()
+        presentationClaims: PresentationClaims,
+        options: PresentationOptions
     ): PresentationDefinitionRequest
 
     suspend fun createPresentationSubmission(
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
-        did: DID,
-        privateKey: PrivateKey,
-        challenge: String,
-        domain: String? = "N/A"
+        privateKey: PrivateKey
     ): PresentationSubmission
 
-    suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean
+    suspend fun verifyPresentationSubmission(
+        presentationSubmission: PresentationSubmission,
+        options: PresentationSubmissionOptions
+    ): Boolean
+
+    suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey>
 }

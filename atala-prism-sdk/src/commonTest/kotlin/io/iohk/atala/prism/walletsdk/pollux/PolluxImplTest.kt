@@ -1,29 +1,51 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.pollux
 
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.JWSHeader
+import com.nimbusds.jose.crypto.ECDSASigner
+import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
+import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
-import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
+import io.iohk.atala.prism.walletsdk.castor.CastorImpl
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.InputFieldFilter
+import io.iohk.atala.prism.walletsdk.domain.models.JWTVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
+import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
+import io.iohk.atala.prism.walletsdk.domain.models.StringPredicate
+import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
+import io.iohk.atala.prism.walletsdk.logger.PrismLogger
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.ProofTypes
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.W3cCredentialSubmission
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.ktor.http.HttpStatusCode
+import java.text.SimpleDateFormat
+import java.util.*
+import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
+import org.mockito.kotlin.mock
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 
 class PolluxImplTest {
 
@@ -34,8 +56,14 @@ class PolluxImplTest {
     @BeforeTest
     fun setup() {
         castorMock = CastorMock()
-        val json =
-            "{\"name\":\"Schema name\",\"version\":\"1.1\",\"attrNames\":[\"name\",\"surname\"],\"issuerId\":\"did:prism:604ba1764ab89993f9a74625cc4f3e04737919639293eb382cc7adc53767f550\"}"
+        val json = """
+            {
+                "name": "Schema name",
+                "version": "1.1",
+                "attrNames": ["name", "surname"],
+                "issuerId": "did:prism:604ba1764ab89993f9a74625cc4f3e04737919639293eb382cc7adc53767f550"
+            }
+        """
         apiMock = ApiMock(HttpStatusCode.OK, json)
         pollux = PolluxImpl(castorMock, apiMock)
     }
@@ -58,54 +86,93 @@ class PolluxImplTest {
         assertFailsWith(PolluxError.InvalidJWTPresentationDefinitionError::class) {
             pollux.createPresentationDefinitionRequest(
                 type = CredentialType.JWT,
-                proofs = arrayOf(),
-                options = PresentationOptions()
+                presentationClaims = PresentationClaims(
+                    claims = mapOf()
+                ),
+                options = PresentationOptions(jwt = emptyArray(), domain = "", challenge = "")
             )
         }
     }
 
     @Test
-    fun testCreatePresentationDefinitionRequest_whenAllCorrect_thenPresentationDefinitionRequestCorrect() = runTest {
-        val proofType = ProofTypes(
-            schema = "schema",
-            requiredFields = arrayOf("$.vc.credentialSubject.dateOfBirth"),
-            trustIssuers = arrayOf("$.vc.issuer")
-        )
-
-        val definitionRequest = pollux.createPresentationDefinitionRequest(
-            type = CredentialType.JWT,
-            proofs = arrayOf(proofType),
-            options = PresentationOptions(
-                name = "Testing",
-                purpose = "Test presentation definition",
-                challenge = "1f44d55f-f161-4938-a659-f8026467f126",
-                domain = "domain",
-                jwtVpAlg = arrayOf("EcdsaSecp256k1Signature2019")
+    fun testCreatePresentationDefinitionRequest_whenAllCorrect_thenPresentationDefinitionRequestCorrect() =
+        runTest {
+            val definitionRequest = pollux.createPresentationDefinitionRequest(
+                type = CredentialType.JWT,
+                presentationClaims = PresentationClaims(
+                    claims = mapOf(
+                        "$.vc.credentialSubject.email" to InputFieldFilter(
+                            type = "string",
+                            value = StringPredicate("value")
+                        )
+                    )
+                ),
+                options = PresentationOptions(
+                    name = "Testing",
+                    purpose = "Test presentation definition",
+                    jwt = arrayOf("EcdsaSecp256k1Signature2019"),
+                    domain = "domain",
+                    challenge = "challenge"
+                )
             )
-        )
 
-        assertEquals("domain", definitionRequest.domain)
-        assertEquals("1f44d55f-f161-4938-a659-f8026467f126", definitionRequest.challenge)
-        assertEquals(1, definitionRequest.presentationDefinitionBody.inputDescriptors.size)
-        assertEquals(1, definitionRequest.presentationDefinitionBody.inputDescriptors.first().constraints.fields?.size)
-        assertEquals(
-            2,
-            definitionRequest.presentationDefinitionBody.inputDescriptors.first().constraints.fields?.first()?.path?.size
-        )
-        assertEquals(
-            "Testing",
-            definitionRequest.presentationDefinitionBody.inputDescriptors.first().name
-        )
-        assertEquals(
-            "Test presentation definition",
-            definitionRequest.presentationDefinitionBody.inputDescriptors.first().purpose
-        )
-    }
+            assertEquals(1, definitionRequest.presentationDefinition.inputDescriptors.size)
+            assertEquals(
+                1,
+                definitionRequest.presentationDefinition.inputDescriptors.first().constraints.fields?.size
+            )
+            assertEquals(
+                2,
+                definitionRequest.presentationDefinition.inputDescriptors.first().constraints.fields?.first()?.path?.size
+            )
+            assertEquals(
+                "Testing",
+                definitionRequest.presentationDefinition.inputDescriptors.first().name
+            )
+            assertEquals(
+                "Test presentation definition",
+                definitionRequest.presentationDefinition.inputDescriptors.first().purpose
+            )
+        }
 
     @Test
     fun testCreatePresentationSubmission_whenCredentialNotJWT_thenExceptionThrown() = runTest {
-        val definitionJson =
-            "{\"presentation_definition\": {\"id\": \"32f54163-7166-48f1-93d8-ff217bdb0653\", \"input_descriptors\": [{\"id\": \"wa_driver_license\", \"name\": \"Washington State Business License\", \"purpose\": \"We can only allow licensed Washington State business representatives into the WA Business Conference\", \"constraints\": {\"fields\": [{\"path\": [\"\$.credentialSubject.dateOfBirth\", \"\$.credentialSubject.dob\", \"\$.vc.credentialSubject.dateOfBirth\", \"\$.vc.credentialSubject.dob\"]}]}}],\"format\": { \"jwt_vp\": { \"alg\": [\"EdDSA\", \"ES256K\"]}}},\"challenge\": \"1f44d55f-f161-4938-a659-f8026467f126\"}"
+        val definitionJson = """
+            {
+                "presentation_definition": {
+                    "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                    "input_descriptors": [
+                        {
+                            "id": "wa_driver_license",
+                            "name": "Washington State Business License",
+                            "purpose": "We can only allow licensed Washington State business representatives into the WA Business Conference",
+                            "constraints": {
+                                "fields": [
+                                    {
+                                        "path": [
+                                            "$.credentialSubject.dateOfBirth",
+                                            "$.credentialSubject.dob",
+                                            "$.vc.credentialSubject.dateOfBirth",
+                                            "$.vc.credentialSubject.dob"
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    ],
+                    "format": {
+                        "jwt": {
+                            "alg": ["ES256K"]
+                        }
+                    }
+                },
+                "options": {
+                    "domain": "domain",
+                    "challenge": "challenge"
+                }
+            }
+        """
+
         val presentationDefinitionRequest: PresentationDefinitionRequest =
             Json.decodeFromString(definitionJson)
         val credential = AnonCredential(
@@ -125,7 +192,6 @@ class PolluxImplTest {
             pollux.createPresentationSubmission(
                 presentationDefinitionRequest = presentationDefinitionRequest,
                 credential = credential,
-                did = DID("did", "test", "123"),
                 privateKey = secpKeyPair.privateKey
             )
         }
@@ -134,11 +200,45 @@ class PolluxImplTest {
     @Test
     fun testCreatePresentationSubmission_whenPrivateKeyNotSecp256k1_thenExceptionThrown() =
         runTest {
-            val definitionJson =
-                "{\"presentation_definition\": {\"id\": \"32f54163-7166-48f1-93d8-ff217bdb0653\", \"input_descriptors\": [{\"id\": \"wa_driver_license\", \"name\": \"Washington State Business License\", \"purpose\": \"We can only allow licensed Washington State business representatives into the WA Business Conference\", \"constraints\": {\"fields\": [{\"path\": [\"\$.credentialSubject.dateOfBirth\", \"\$.credentialSubject.dob\", \"\$.vc.credentialSubject.dateOfBirth\", \"\$.vc.credentialSubject.dob\"]}]}}],\"format\": { \"jwt_vp\": { \"alg\": [\"EdDSA\", \"ES256K\"]}}},\"challenge\": \"1f44d55f-f161-4938-a659-f8026467f126\"}"
+            val definitionJson = """
+                {
+                    "presentation_definition": {
+                        "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+                        "input_descriptors": [
+                            {
+                                "id": "wa_driver_license",
+                                "name": "Washington State Business License",
+                                "purpose": "We can only allow licensed Washington State business representatives into the WA Business Conference",
+                                "constraints": {
+                                    "fields": [
+                                        {
+                                            "path": [
+                                                "$.credentialSubject.dateOfBirth",
+                                                "$.credentialSubject.dob",
+                                                "$.vc.credentialSubject.dateOfBirth",
+                                                "$.vc.credentialSubject.dob"
+                                            ]
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "format": {
+                            "jwt": {
+                                "alg": ["ES256K"]
+                            }
+                        }
+                    },
+                    "options": {
+                        "domain": "domain",
+                        "challenge": "challenge"
+                    }
+                }
+            """
+
             val presentationDefinitionRequest: PresentationDefinitionRequest =
                 Json.decodeFromString(definitionJson)
-            val credential = JWTCredential(
+            val credential = JWTCredential.fromJwtString(
                 "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
             )
             val nonSecpKeyPair = Ed25519KeyPair.generateKeyPair()
@@ -147,7 +247,6 @@ class PolluxImplTest {
                 pollux.createPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequest,
                     credential = credential,
-                    did = DID("did", "test", "123"),
                     privateKey = nonSecpKeyPair.privateKey
                 )
             }
@@ -156,48 +255,388 @@ class PolluxImplTest {
     @Test
     fun testCreatePresentationSubmission_whenAllCorrect_thenPresentationSubmissionProofWellFormed() =
         runTest {
-            val definitionJson =
-                "{\"presentation_definition\": {\"id\": \"32f54163-7166-48f1-93d8-ff217bdb0653\", \"input_descriptors\": [{\"id\": \"wa_driver_license\", \"name\": \"Washington State Business License\", \"purpose\": \"We can only allow licensed Washington State business representatives into the WA Business Conference\", \"constraints\": {\"fields\": [{\"path\": [\"\$.credentialSubject.dateOfBirth\", \"\$.credentialSubject.dob\", \"\$.vc.credentialSubject.dateOfBirth\", \"\$.vc.credentialSubject.dob\"]}]}}],\"format\": { \"jwt_vp\": { \"alg\": [\"EdDSA\", \"ES256K\"]}}},\"challenge\": \"1f44d55f-f161-4938-a659-f8026467f126\"}"
-            val presentationDefinitionRequest: PresentationDefinitionRequest =
-                Json.decodeFromString(definitionJson)
-            val credential = JWTCredential(
-                "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
-            )
-            val secpKeyPair = generateSecp256k1KeyPair()
-            val signedChallenge =
-                (secpKeyPair.privateKey as Secp256k1PrivateKey).sign("1f44d55f-f161-4938-a659-f8026467f126".encodeToByteArray())
+            val loggerMock = mock<PrismLogger>()
+            val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
 
-            val presentationSubmissionProof = pollux.createPresentationSubmission(
-                presentationDefinitionRequest = presentationDefinitionRequest,
-                credential = credential,
-                did = DID("did", "test", "123"),
-                privateKey = secpKeyPair.privateKey
+            val issuerKeyPair =
+                Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            val holderKeyPair =
+                Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+            val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+            val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+            val vtc = createVerificationTestCase(
+                VerificationTestCase(
+                    issuer = issuerDID,
+                    holder = holderDID,
+                    issuerPrv = issuerKeyPair.privateKey,
+                    holderPrv = holderKeyPair.privateKey,
+                    subject = """{"course": "Identus Training course Certification 2024"} """,
+                    claims = PresentationClaims(
+                        claims = mapOf(
+                            "course" to InputFieldFilter(
+                                type = "string",
+                                pattern = "Identus Training course Certification 2024"
+                            )
+                        )
+                    ),
+                )
             )
+            val presentationDefinitionRequest = vtc.first
+            val presentationSubmissionProof = vtc.second
 
             assertEquals(
-                presentationDefinitionRequest.presentationDefinitionBody.id,
+                presentationDefinitionRequest.presentationDefinition.id,
                 presentationSubmissionProof.presentationSubmission.definitionId
             )
             assertEquals(1, presentationSubmissionProof.presentationSubmission.descriptorMap.size)
             val inputDescriptor =
-                presentationDefinitionRequest.presentationDefinitionBody.inputDescriptors.first()
+                presentationDefinitionRequest.presentationDefinition.inputDescriptors.first()
             val descriptorMap =
                 presentationSubmissionProof.presentationSubmission.descriptorMap.first()
             assertEquals(inputDescriptor.id, descriptorMap.id)
-            assertEquals("jwt_vp", descriptorMap.format)
-            assertEquals("$.verifiableCredential[0]", descriptorMap.path)
-            assertEquals(1, presentationSubmissionProof.verifiableCredential.size)
-            val credentialSubmission = presentationSubmissionProof.verifiableCredential.first()
-            if (credentialSubmission::class == W3cCredentialSubmission::class) {
-                credentialSubmission as W3cCredentialSubmission
-                assertEquals(credential.jwtPayload.verifiableCredential, credentialSubmission.vc)
-            }
-            assertEquals(
-                "did:prism:asdfasdfasdfasdf#keys-1",
-                presentationSubmissionProof.proof.verificationMethod
-            )
-            assertEquals(signedChallenge.toHexString(), presentationSubmissionProof.proof.challenge)
+            assertEquals("$.verifiablePresentation[0]", descriptorMap.path)
+            assertEquals(1, presentationSubmissionProof.verifiablePresentation.size)
         }
+
+    @Test
+    fun testVerifyPresentationSubmission_whenWrongJwtIssuer_thenVerifiedFalse() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val wrongIssuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(wrongIssuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            pattern = "Identus Training course Certification 2024"
+                        )
+                    )
+                ),
+            )
+        )
+        assertFailsWith(PolluxError.VerificationUnsuccessful::class, "Issuer signature not valid") {
+            pollux.verifyPresentationSubmission(
+                presentationSubmission = vtc.second,
+                options = PresentationSubmissionOptionsJWT(vtc.first)
+            )
+        }
+    }
+
+    @Test
+    fun testVerifyPresentationSubmission_whenWrongJwtHolder_thenVerifiedFalse() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val wrongHolderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(wrongHolderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            pattern = "Identus Training course Certification 2024"
+                        )
+                    )
+                ),
+            )
+        )
+        assertFailsWith(PolluxError.VerificationUnsuccessful::class, "Holder signature not valid") {
+            pollux.verifyPresentationSubmission(
+                presentationSubmission = vtc.second,
+                options = PresentationSubmissionOptionsJWT(vtc.first)
+            )
+        }
+    }
+
+    @Test
+    fun testVerifyPresentationSubmission_whenJwtSignaturesOkAndFieldsNot_thenVerifiedFalse() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2023"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            pattern = "Identus Training course Certification 2024"
+                        )
+                    )
+                ),
+            )
+        )
+        assertFailsWith(PolluxError.VerificationUnsuccessful::class, "Identus Training course Certification 2023") {
+            pollux.verifyPresentationSubmission(
+                presentationSubmission = vtc.second,
+                options = PresentationSubmissionOptionsJWT(vtc.first)
+            )
+        }
+    }
+
+    @Test
+    fun testVerifyPresentationSubmission_whenJwtSignaturesAndFieldsOk_thenVerifiedOk() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            pattern = "Identus Training course Certification 2024"
+                        )
+                    )
+                ),
+            )
+        )
+
+        val isVerified = pollux.verifyPresentationSubmission(
+            presentationSubmission = vtc.second,
+            options = PresentationSubmissionOptionsJWT(vtc.first)
+        )
+        assertTrue(isVerified)
+    }
+
+    @Test
+    fun testDescriptorPath_whenGetValue_thenArrayIndexValueAsString() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            pattern = "Identus Training course Certification 2024"
+                        )
+                    )
+                ),
+            )
+        )
+        val presentationSubmission = vtc.second
+
+        val descriptorPath = DescriptorPath(Json.encodeToJsonElement(presentationSubmission))
+        val path = "\$.verifiablePresentation[0]"
+        val holderJws = descriptorPath.getValue(path)
+        assertNotNull(holderJws)
+        assertTrue(holderJws is String)
+        val path1 = "\$.verifiablePresentation"
+        val holderJws1 = descriptorPath.getValue(path1)
+        assertNotNull(holderJws1)
+    }
+
+    @Test
+    fun testDescriptorPath_whenClaimsAreEnum_thenValidatedOk() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            enum = listOf("test", "Identus Training course Certification 2024")
+                        )
+                    )
+                ),
+            )
+        )
+
+        val isVerified = pollux.verifyPresentationSubmission(
+            presentationSubmission = vtc.second,
+            options = PresentationSubmissionOptionsJWT(vtc.first)
+        )
+        assertTrue(isVerified)
+    }
+
+    @Test
+    fun testDescriptorPath_whenClaimsAreConst_thenValidatedOk() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            const = listOf("test", "Identus Training course Certification 2024")
+                        )
+                    )
+                ),
+            )
+        )
+
+        val isVerified = pollux.verifyPresentationSubmission(
+            presentationSubmission = vtc.second,
+            options = PresentationSubmissionOptionsJWT(vtc.first)
+        )
+        assertTrue(isVerified)
+    }
+
+    @Test
+    fun testDescriptorPath_whenClaimsAreValue_thenValidatedOk() = runTest {
+        val loggerMock = mock<PrismLogger>()
+        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        val pollux = PolluxImpl(castor, apiMock)
+
+        val issuerKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+        val holderKeyPair =
+            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+
+
+        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
+
+        val vtc = createVerificationTestCase(
+            VerificationTestCase(
+                issuer = issuerDID,
+                holder = holderDID,
+                issuerPrv = issuerKeyPair.privateKey,
+                holderPrv = holderKeyPair.privateKey,
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = PresentationClaims(
+                    claims = mapOf(
+                        "course" to InputFieldFilter(
+                            type = "string",
+                            value = "Identus Training course Certification 2024"
+                        )
+                    )
+                ),
+            )
+        )
+
+        val isVerified = pollux.verifyPresentationSubmission(
+            presentationSubmission = vtc.second,
+            options = PresentationSubmissionOptionsJWT(vtc.first)
+        )
+        assertTrue(isVerified)
+    }
+
+//    class General {
+//        @Test
+//        fun test() {
+//            val model = InputFieldFilter("number", enum = listOf())
+//            val json = Json.encodeToString(model)
+//            println()
+//        }
+//    }
 
     private fun generateSecp256k1KeyPair(): Secp256k1KeyPair {
         val mnemonics = listOf(
@@ -229,4 +668,92 @@ class PolluxImplTest {
         val seed = Seed(MnemonicHelper.createSeed(mnemonics = mnemonics, passphrase = "mnemonic"))
         return Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1))
     }
+
+    private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<PresentationDefinitionRequest, PresentationSubmission, String> {
+        val currentDate = Calendar.getInstance()
+        val nextMonthDate = currentDate.clone() as Calendar
+        nextMonthDate.add(Calendar.MONTH, 1)
+        val issuanceDate = currentDate.timeInMillis
+        val expirationDate = nextMonthDate.timeInMillis
+        val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
+        sdf.timeZone = TimeZone.getTimeZone("UTC")
+
+
+        val jwsHeader = JWSHeader.Builder(JWSAlgorithm.ES256K).build()
+        val json = Json {
+            ignoreUnknownKeys = true
+            explicitNulls = false
+        }
+        val vc = json.decodeFromString<JWTVerifiableCredential>(
+            """{"@context":[
+                     "https://www.w3.org/2018/credentials/v1"
+                  ],
+                  "type":[
+                     "VerifiableCredential"
+                  ],
+                  "issuer":"${testCaseOptions.issuer}",
+                  "issuanceDate": "${sdf.format(Date(issuanceDate))}",
+                  "credentialSubject": ${testCaseOptions.subject}}"""
+        )
+
+        val ecPrivateKey = pollux.parsePrivateKey(testCaseOptions.issuerPrv)
+        val claims = JWTClaimsSet.Builder()
+            .issuer(testCaseOptions.issuer.toString())
+            .audience(testCaseOptions.domain)
+            .notBeforeTime(Date(issuanceDate))
+            .expirationTime(Date(expirationDate))
+            .subject(testCaseOptions.holder.toString())
+            .claim("vc", vc)
+            .build()
+        val signedJwt = SignedJWT(jwsHeader, claims)
+        val signer = ECDSASigner(
+            ecPrivateKey as java.security.PrivateKey,
+            com.nimbusds.jose.jwk.Curve.SECP256K1
+        )
+        val provider = BouncyCastleProviderSingleton.getInstance()
+        signer.jcaContext.provider = provider
+        signedJwt.sign(signer)
+        val jwtString = signedJwt.serialize()
+        val credential = JWTCredential.fromJwtString(jwtString)
+
+        val signedJwtClaims = pollux.signClaimsProofPresentationJWT(
+            subjectDID = testCaseOptions.holder,
+            privateKey = pollux.parsePrivateKey(testCaseOptions.holderPrv),
+            credential = credential,
+            domain = testCaseOptions.domain,
+            challenge = testCaseOptions.challenge
+        )
+
+        val presentationDefinition = pollux.createPresentationDefinitionRequest(
+            type = CredentialType.JWT,
+            presentationClaims = PresentationClaims(
+                schema = testCaseOptions.claims.schema,
+                issuer = testCaseOptions.issuer.toString(),
+                claims = testCaseOptions.claims.claims
+            ),
+            options = PresentationOptions(domain = "domain", challenge = "challenge")
+        )
+
+        val presentationSubmission = pollux.createPresentationSubmission(
+            presentationDefinitionRequest = presentationDefinition,
+            credential = credential,
+            privateKey = testCaseOptions.holderPrv
+        )
+
+        return Triple(presentationDefinition, presentationSubmission, signedJwtClaims)
+    }
+
+    data class VerificationTestCase(
+//        val apollo: Apollo,
+//        val castor: Castor,
+//        val pollux: Pollux,
+        val issuer: DID,
+        val holder: DID,
+        val holderPrv: PrivateKey,
+        val issuerPrv: PrivateKey,
+        val subject: String,
+        val claims: PresentationClaims,
+        val domain: String = UUID.randomUUID().toString(),
+        val challenge: String = UUID.randomUUID().toString()
+    )
 }

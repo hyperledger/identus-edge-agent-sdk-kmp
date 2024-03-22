@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.domain.buildingblocks
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 
@@ -78,4 +79,12 @@ interface Castor {
         challenge: ByteArray,
         signature: ByteArray
     ): Boolean
+
+    /**
+     * Extract list of [PublicKey] from a list of [DIDDocumentCoreProperty].
+     *
+     * @param coreProperties list of [DIDDocumentCoreProperty] that we are going to extract a list of [DIDDocumentCoreProperty].
+     * @return List<[PublicKey]>
+     */
+    fun getPublicKeysFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey>
 }

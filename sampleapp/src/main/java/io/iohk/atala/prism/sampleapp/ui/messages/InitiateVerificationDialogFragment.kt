@@ -2,14 +2,10 @@ package io.iohk.atala.prism.sampleapp.ui.messages
 
 import android.app.AlertDialog
 import android.app.Dialog
-import android.content.DialogInterface
 import android.os.Bundle
-import android.widget.ArrayAdapter
 import android.widget.EditText
-import android.widget.Spinner
 import androidx.fragment.app.DialogFragment
 import io.iohk.atala.prism.sampleapp.R
-import io.iohk.atala.prism.walletsdk.domain.models.DID
 
 class InitiateVerificationDialogFragment(
     private val viewModel: MessagesViewModel

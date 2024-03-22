@@ -3,7 +3,10 @@ package io.iohk.atala.prism.sampleapp.ui.dids
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
+import androidx.cardview.widget.CardView
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
@@ -52,10 +55,32 @@ class DIDsAdapter(private var data: MutableList<DID> = mutableListOf()) :
     }
 
     inner class DIDHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val cardView: CardView = itemView.findViewById(R.id.card_view)
+        private val dropdown: ImageView = itemView.findViewById(R.id.dropdown)
         private val did: TextView = itemView.findViewById(R.id.did)
 
         fun bind(did: DID) {
+            this.cardView.setOnClickListener { handleDropdownClick() }
+            this.dropdown.setOnClickListener {
+                handleDropdownClick()
+            }
             this.did.text = did.toString()
+        }
+
+        private fun handleDropdownClick() {
+            var drawable =
+                ResourcesCompat.getDrawable(this.dropdown.context.resources, android.R.drawable.arrow_up_float, null)
+            if (this.did.maxLines == 1) {
+                this.did.maxLines = 3
+            } else {
+                drawable = ResourcesCompat.getDrawable(
+                    this.dropdown.context.resources,
+                    android.R.drawable.arrow_down_float,
+                    null
+                )
+                this.did.maxLines = 1
+            }
+            this.dropdown.setImageDrawable(drawable)
         }
     }
 }

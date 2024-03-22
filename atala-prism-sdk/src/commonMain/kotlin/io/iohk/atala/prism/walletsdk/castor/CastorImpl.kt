@@ -1,10 +1,11 @@
 package io.iohk.atala.prism.walletsdk.castor
 
+import io.iohk.atala.prism.apollo.base64.base64DecodedBytes
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
+import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import io.iohk.atala.prism.walletsdk.castor.resolvers.PeerDIDResolver
-import io.iohk.atala.prism.walletsdk.castor.resolvers.PrismDIDApiResolver
 import io.iohk.atala.prism.walletsdk.castor.shared.CastorShared
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
@@ -12,6 +13,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.domain.models.Curve
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
@@ -143,7 +145,7 @@ constructor(
     ): Boolean {
         val document = resolveDID(did.toString())
         val publicKeys: List<PublicKey> =
-            CastorShared.getKeyPairFromCoreProperties(document.coreProperties)
+            getPublicKeysFromCoreProperties(document.coreProperties)
 
         if (publicKeys.isEmpty()) {
             throw CastorError.InvalidKeyError("KeyPairs is empty")
@@ -162,5 +164,71 @@ constructor(
         }
 
         return false
+    }
+
+    /**
+     * Extract list of [PublicKey] from a list of [DIDDocumentCoreProperty].
+     *
+     * @param coreProperties list of [DIDDocumentCoreProperty] that we are going to extract a list of [DIDDocumentCoreProperty].
+     * @return List<[PublicKey]>
+     */
+    override fun getPublicKeysFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
+        return coreProperties
+            .filterIsInstance<DIDDocument.Authentication>()
+            .flatMap { it.verificationMethods.toList() }
+            .mapNotNull { verificationMethod ->
+                when {
+                    verificationMethod.publicKeyJwk != null -> {
+                        extractPublicKeyFromJwk(verificationMethod.publicKeyJwk)
+                    }
+
+                    verificationMethod.publicKeyMultibase != null -> {
+                        extractPublicKeyFromMultibase(
+                            verificationMethod.publicKeyMultibase,
+                            verificationMethod.type
+                        )
+                    }
+
+                    else -> null
+                }
+            }
+    }
+
+    private fun extractPublicKeyFromJwk(jwk: Map<String, String>): PublicKey? {
+        if (jwk.containsKey("x") && jwk.containsKey("crv")) {
+            val x = jwk["x"]
+            val crv = jwk["crv"]
+            return when (DIDDocument.VerificationMethod.getCurveByType(crv!!)) {
+                Curve.SECP256K1 -> {
+                    Secp256k1PublicKey(x!!.encodeToByteArray())
+                }
+
+                Curve.ED25519 -> {
+                    Ed25519PublicKey(x!!.encodeToByteArray())
+                }
+
+                Curve.X25519 -> {
+                    X25519PublicKey(x!!.encodeToByteArray())
+                }
+            }
+        }
+        return null
+    }
+
+    private fun extractPublicKeyFromMultibase(publicKey: String, type: String): PublicKey {
+        return when (DIDDocument.VerificationMethod.getCurveByType(type)) {
+            // TODO: When publicKey is encoded to multibase, decode the multibase publicKey first
+            Curve.SECP256K1 -> {
+                Secp256k1PublicKey(publicKey.base64DecodedBytes)
+            }
+
+            Curve.ED25519 -> {
+                Ed25519PublicKey(publicKey.base64DecodedBytes)
+            }
+
+            Curve.X25519 -> {
+                X25519PublicKey(publicKey.base64DecodedBytes)
+            }
+        }
     }
 }

@@ -3,6 +3,7 @@ package io.iohk.atala.prism.walletsdk.prismagent
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 
@@ -58,5 +59,9 @@ class CastorMock : Castor {
 
     override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
         return verifySignatureReturn
+    }
+
+    override fun getPublicKeysFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
+        TODO("Not yet implemented")
     }
 }

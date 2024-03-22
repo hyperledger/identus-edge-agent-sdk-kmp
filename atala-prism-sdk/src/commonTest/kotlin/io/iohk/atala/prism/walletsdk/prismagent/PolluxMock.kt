@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent
 
 import anoncreds_wrapper.CredentialOffer
@@ -10,17 +12,19 @@ import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
+import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
+import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
-import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequest
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.ProofTypes
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import java.security.interfaces.ECPublicKey
 import kotlinx.serialization.json.JsonObject
 
 class PolluxMock : Pollux {
@@ -90,7 +94,7 @@ class PolluxMock : Pollux {
 
     override suspend fun createPresentationDefinitionRequest(
         type: CredentialType,
-        proofs: Array<ProofTypes>,
+        presentationClaims: PresentationClaims,
         options: PresentationOptions
     ): PresentationDefinitionRequest {
         TODO("Not yet implemented")
@@ -99,13 +103,19 @@ class PolluxMock : Pollux {
     override suspend fun createPresentationSubmission(
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
-        did: DID,
         privateKey: PrivateKey
     ): PresentationSubmission {
         TODO("Not yet implemented")
     }
 
-    override suspend fun verifyPresentationSubmissionJWT(jwt: String, publicKey: PublicKey): Boolean {
+    override suspend fun verifyPresentationSubmission(
+        presentationSubmission: PresentationSubmission,
+        options: PresentationSubmissionOptions
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey> {
         TODO("Not yet implemented")
     }
 }

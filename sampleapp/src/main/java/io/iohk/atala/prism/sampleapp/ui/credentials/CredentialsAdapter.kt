@@ -61,7 +61,6 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
     inner class CredentialHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val type: TextView = itemView.findViewById(R.id.credential_id)
         private val issuanceDate: TextView = itemView.findViewById(R.id.credential_issuance_date)
-        private val expDate: TextView = itemView.findViewById(R.id.credential_expiration_date)
         private val revoked: TextView = itemView.findViewById(R.id.revoked)
         private val typeString: String = itemView.context.getString(R.string.credential_type)
         private val issuanceString: String = itemView.context.getString(R.string.credential_issuance)
@@ -78,9 +77,6 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                     // TODO: Check what else to display
                     jwt.jwtPayload.nbf?.let {
                         issuanceDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
-                    }
-                    jwt.jwtPayload.exp?.let {
-                        expDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
                     }
                 }
 

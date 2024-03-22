@@ -7,14 +7,11 @@ import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
-import io.iohk.atala.prism.walletsdk.castor.resolvers.PrismDIDApiResolver
-import io.iohk.atala.prism.walletsdk.castor.shared.CastorShared
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
@@ -36,6 +33,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
+import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
 import io.iohk.atala.prism.walletsdk.domain.models.Signature
@@ -47,7 +45,6 @@ import io.iohk.atala.prism.walletsdk.logger.LogComponent
 import io.iohk.atala.prism.walletsdk.logger.Metadata
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
 import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
-import io.iohk.atala.prism.walletsdk.pollux.EC
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
@@ -68,20 +65,14 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Pr
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.ProofTypes
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
-import java.math.BigInteger
 import java.net.UnknownHostException
-import java.security.KeyFactory
-import java.security.interfaces.ECPublicKey
-import java.security.spec.ECParameterSpec
-import java.security.spec.ECPoint
-import java.security.spec.ECPublicKeySpec
 import java.time.Duration
 import java.util.*
 import kotlinx.coroutines.CoroutineScope
@@ -99,9 +90,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
 
 /**
  * Check if the passed URL is valid or not.
@@ -1018,15 +1006,21 @@ class PrismAgent {
     suspend fun initiatePresentationRequest(
         type: CredentialType,
         toDID: DID,
-        proofTypes: Array<ProofTypes>
+        presentationClaims: PresentationClaims,
+        domain: String,
+        challenge: String
     ) {
         val didDocument = this.castor.resolveDID(toDID.toString())
         val newPeerDID = createNewPeerDID(services = didDocument.services, updateMediator = true)
 
         val presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
             type = type,
-            proofs = proofTypes,
-            options = PresentationOptions(jwtAlg = arrayOf("EdDSA"))
+            presentationClaims = presentationClaims,
+            options = PresentationOptions(
+                jwt = arrayOf("ES256K"),
+                domain = domain,
+                challenge = challenge
+            )
         )
 
         val attachmentDescriptor = AttachmentDescriptor(
@@ -1035,10 +1029,8 @@ class PrismAgent {
             data = AttachmentBase64(Json.encodeToString(presentationDefinitionRequest).base64UrlEncoded)
         )
 
-        val challenge: String = UUID.randomUUID().toString() // TODO: TBD
-
         val presentationRequest = RequestPresentation(
-            body = RequestPresentation.Body(goalCode = challenge, proofTypes = emptyArray()),
+            body = RequestPresentation.Body(proofTypes = emptyArray()),
             attachments = arrayOf(attachmentDescriptor),
             thid = UUID.randomUUID().toString(),
             from = newPeerDID,
@@ -1075,9 +1067,7 @@ class PrismAgent {
         val presentationSubmissionProof = pollux.createPresentationSubmission(
             presentationDefinitionRequest = presentationDefinitionRequest,
             credential = credential,
-            did = DID(didString),
-            privateKey = privateKey,
-            challenge = requestPresentation.body.goalCode ?: UUID.randomUUID().toString()
+            privateKey = privateKey
         )
 
         val attachmentDescriptor = AttachmentDescriptor(
@@ -1094,10 +1084,11 @@ class PrismAgent {
         )
     }
 
-    suspend fun handlePresentationSubmission(msg: Message): Boolean {
+    suspend fun handlePresentation(msg: Message): Boolean {
+        if (msg.thid == null) {
+            throw Exception() // TODO: Custom error
+        }
         val presentation = Presentation.fromMessage(msg)
-        val fromDID = presentation.from
-
         val msgAttachmentDescriptor =
             presentation.attachments.find { it.data::class == AttachmentBase64::class }
                 ?: throw PrismAgentError.AttachmentTypeNotSupported()
@@ -1106,54 +1097,20 @@ class PrismAgent {
         val presentationSubmission =
             Json.decodeFromString<PresentationSubmission>(attachmentBase64.base64.base64UrlDecoded)
 
-        val proof = presentationSubmission.proof
-
-        if (proof.challenge == null) {
-            throw PrismAgentError.PresentationSubmissionDoesNotContainChallenge()
-        }
-
-        val isProofVerified = presentation.thid?.let { thid ->
-            pluto.getMessageByThidAndPiuri(thid, ProtocolType.DidcommRequestPresentation.value).firstOrNull()
+        val presentationDefinitionRequest =
+            pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value).firstOrNull()
                 ?.let { message ->
                     val requestPresentation = RequestPresentation.fromMessage(message)
-                    val challenge = requestPresentation.body.goalCode
-                    challenge?.let { nonNullChallenge ->
-                        castor.verifySignature(
-                            fromDID,
-                            nonNullChallenge.encodeToByteArray(),
-                            proof.challenge.encodeToByteArray()
-                        )
-                    }
-                }
-        } ?: false
-
-        val isJWTVerified = proof.jws?.let { jws ->
-            val jwt = JWTCredential(proof.jws)
-            val resolver = PrismDIDApiResolver(this.apollo, "https://sit-prism-agent-issuer.atalaprism.io/prism-agent")
-            val diddoc = resolver.resolve(jwt.jwtPayload.iss)
-
-            val assertionMethod = diddoc.coreProperties.find { it::class == DIDDocument.AssertionMethod::class }
-            (assertionMethod as DIDDocument.AssertionMethod).verificationMethods.first().publicKeyJwk?.let { jwk ->
-
-                if (jwk.containsKey("x") && jwk.containsKey("y")) {
-                    val x = jwk["x"]!!.base64UrlDecoded
-                    val y = jwk["y"]!!.base64UrlDecoded
-                    val ecPoint = ECPoint(BigInteger(x), BigInteger(y))
-                    val curveName = KMMEllipticCurve.SECP256k1.value
-                    val sp = ECNamedCurveTable.getParameterSpec(curveName)
-                    val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
-
-                    val publicKeySpec = ECPublicKeySpec(ecPoint, params)
-                    val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
-                    val ecPublicKey = keyFactory.generatePublic(publicKeySpec) as ECPublicKey
-
-                    pollux.verifyPresentationSubmissionJWT(jws, ecPublicKey)
-                } else {
-                    false
-                }
-            } ?: false
-        } ?: false
-        return isProofVerified && isJWTVerified
+                    val attachmentDescriptor = requestPresentation.attachments.first()
+                    val base64 = (attachmentDescriptor.data as AttachmentBase64).base64
+                    Json.decodeFromString<PresentationDefinitionRequest>(base64.base64UrlDecoded)
+                } ?: throw Exception("Message by thid ${msg.thid} not found") // TODO: Custom error
+        return pollux.verifyPresentationSubmission(
+            presentationSubmission = presentationSubmission,
+            options = PresentationSubmissionOptionsJWT(
+                presentationDefinitionRequest
+            )
+        )
     }
 
     /**

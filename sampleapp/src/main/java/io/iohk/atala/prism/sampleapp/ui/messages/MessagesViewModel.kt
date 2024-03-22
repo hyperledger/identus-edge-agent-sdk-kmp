@@ -12,13 +12,15 @@ import io.iohk.atala.prism.walletsdk.domain.models.Credential
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
+import io.iohk.atala.prism.walletsdk.domain.models.InputFieldFilter
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
+import io.iohk.atala.prism.walletsdk.domain.models.StringPredicate
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM1
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.ProofTypes
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -94,13 +96,15 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             sdk.agent.initiatePresentationRequest(
                 type = CredentialType.JWT,
                 toDID = DID(toDID),
-                proofTypes = arrayOf(
-                    ProofTypes(
-                        schema = "",
-                        requiredFields = emptyArray(),
-                        trustIssuers = emptyArray()
-                    )
-                )
+                presentationClaims = PresentationClaims(
+                    claims = mapOf("$.issuer" to InputFieldFilter(
+                        type = "string",
+                        value = StringPredicate("did:prism:b0bde43c0f749705c34e1c1e1b70647068a80a861de14f73b73b03cd1fa472ca:CnoKeBI5CgVrZXktMRACSi4KCXNlY3AyNTZrMRIhA_HT0IOH-l7M5PdHtYXtEMs80xSnwZ8vnGwtSCvBTZYYEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMxGlCcLnODDcnw9W2949Y5yDyMr2KxPqiKnN1-khXQwQ")
+                    )),
+                    issuer = "did:prism:b0bde43c0f749705c34e1c1e1b70647068a80a861de14f73b73b03cd1fa472ca:CnoKeBI5CgVrZXktMRACSi4KCXNlY3AyNTZrMRIhA_HT0IOH-l7M5PdHtYXtEMs80xSnwZ8vnGwtSCvBTZYYEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMxGlCcLnODDcnw9W2949Y5yDyMr2KxPqiKnN1-khXQwQ"
+                ),
+                domain = "domain",
+                challenge = "challenge"
             )
         }
     }

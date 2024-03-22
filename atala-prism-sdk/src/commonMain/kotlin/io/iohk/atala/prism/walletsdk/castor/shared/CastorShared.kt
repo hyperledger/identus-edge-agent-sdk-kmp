@@ -19,11 +19,8 @@ import io.iohk.atala.prism.protos.AtalaOperation
 import io.iohk.atala.prism.protos.CreateDIDOperation
 import io.iohk.atala.prism.protos.Service
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519KeyPair
-import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1KeyPair
-import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519KeyPair
-import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
 import io.iohk.atala.prism.walletsdk.castor.DID
 import io.iohk.atala.prism.walletsdk.castor.PRISM
 import io.iohk.atala.prism.walletsdk.castor.did.DIDParser
@@ -413,6 +410,7 @@ internal class CastorShared {
                         id = didUrl,
                         controller = did,
                         type = publicKey.keyData.getCurve(),
+                        // TODO: Replace base64Encoded with Multibase.encode()
                         publicKeyMultibase = publicKey.keyData.getValue().base64Encoded
                     )
                     partialResult + (didUrl.string() to method)
@@ -433,69 +431,6 @@ internal class CastorShared {
         internal fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): List<DIDResolver> {
             val parsedDID = parseDID(did)
             return resolvers.filter { it.method == parsedDID.method }
-        }
-
-        /**
-         * Extract list of [PublicKey] from a list of [DIDDocumentCoreProperty].
-         *
-         * @param coreProperties list of [DIDDocumentCoreProperty] that we are going to extract a list of [DIDDocumentCoreProperty].
-         * @return List<[PublicKey]>
-         */
-        @JvmStatic
-        internal fun getKeyPairFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
-            return coreProperties
-                .filterIsInstance<DIDDocument.Authentication>()
-                .flatMap { it.verificationMethods.toList() }
-                .mapNotNull { verificationMethod ->
-                    when {
-                        verificationMethod.publicKeyJwk != null -> {
-                            extractPublicKeyFromJwk(verificationMethod.publicKeyJwk)
-                        }
-
-                        verificationMethod.publicKeyMultibase != null -> {
-                            extractPublicKeyFromMultibase(verificationMethod.publicKeyMultibase, verificationMethod.type)
-                        }
-
-                        else -> null
-                    }
-                }
-        }
-
-        private fun extractPublicKeyFromJwk(jwk: Map<String, String>): PublicKey? {
-            if (jwk.containsKey("x") && jwk.containsKey("crv")) {
-                val x = jwk["x"]
-                val crv = jwk["crv"]
-                return when (DIDDocument.VerificationMethod.getCurveByType(crv!!)) {
-                    Curve.SECP256K1 -> {
-                        Secp256k1PublicKey(x!!.encodeToByteArray())
-                    }
-
-                    Curve.ED25519 -> {
-                        Ed25519PublicKey(x!!.encodeToByteArray())
-                    }
-
-                    Curve.X25519 -> {
-                        X25519PublicKey(x!!.encodeToByteArray())
-                    }
-                }
-            }
-            return null
-        }
-
-        private fun extractPublicKeyFromMultibase(publicKey: String, type: String): PublicKey {
-            return when (DIDDocument.VerificationMethod.getCurveByType(type)) {
-                Curve.SECP256K1 -> {
-                    Secp256k1PublicKey(publicKey.encodeToByteArray())
-                }
-
-                Curve.ED25519 -> {
-                    Ed25519PublicKey(publicKey.encodeToByteArray())
-                }
-
-                Curve.X25519 -> {
-                    X25519PublicKey(publicKey.encodeToByteArray())
-                }
-            }
         }
 
         /**
