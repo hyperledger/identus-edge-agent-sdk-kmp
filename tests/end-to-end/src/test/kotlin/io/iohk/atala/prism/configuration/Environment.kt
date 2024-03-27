@@ -82,7 +82,7 @@ object Environment {
     private fun preparePublishedDid(publishedDid: String?) {
         try {
             assertThat(publishedDid).isNotEmpty()
-            val response = RestAssured
+            RestAssured
                 .given().get("did-registrar/dids/$publishedDid")
                 .then().assertThat().statusCode(200)
             this.publishedDid = publishedDid!!
