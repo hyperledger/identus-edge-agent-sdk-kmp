@@ -1,8 +1,8 @@
 @proof @anoncred
-Feature: Respond to request proof
-  The Edge Agent should be able to respond to a proof-of-request
+Feature: Respond to anoncred request proof
+  The Edge Agent should be able to respond to an anoncred proof-of-request
 
-  Scenario: Respond to request proof
+  Scenario: Respond to anoncred request proof
     Given Cloud Agent is connected to Edge Agent
     And Edge Agent has '1' anonymous credentials issued by Cloud Agent
     When Cloud Agent asks for present-proof for anoncred

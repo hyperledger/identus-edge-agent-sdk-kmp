@@ -58,6 +58,11 @@ class CloudAgentSteps {
         cloudAgentWorkflow.askForPresentProof(cloudAgent)
     }
 
+    @When("{actor} asks for present-proof for anoncred")
+    fun `Cloud Agent asks for present-proof for anoncred`(cloudAgent: Actor) {
+        cloudAgentWorkflow.askForPresentProofForAnoncred(cloudAgent)
+    }
+
     @Then("{actor} should have the connection status updated to '{}'")
     fun `Cloud Agent should have the connection status updated`(cloudAgent: Actor, expectedState: String) {
         cloudAgentWorkflow.waitForConnectionState(cloudAgent, expectedState)
