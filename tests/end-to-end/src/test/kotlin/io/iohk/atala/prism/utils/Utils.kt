@@ -3,20 +3,6 @@ package io.iohk.atala.prism.utils
 import java.security.SecureRandom
 
 object Utils {
-    /**
-    static generateNonce(length: number): string {
-    let result = ""
-    while (result.length < length) {
-    const byte = crypto.randomBytes(1)[0]
-    if (byte >= 250) {
-    continue
-    }
-    const randomDigit = byte % 10
-    result += randomDigit.toString()
-    }
-    return result
-    }
-     */
     fun generateNonce(length: Int): String {
         var result = ""
         val secureRandom = SecureRandom()
