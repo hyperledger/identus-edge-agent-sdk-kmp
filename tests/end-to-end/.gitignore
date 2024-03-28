@@ -17,6 +17,7 @@ notes
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
+.run
 
 ### Eclipse ###
 .apt_generated

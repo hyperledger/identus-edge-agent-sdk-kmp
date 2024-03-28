@@ -3,7 +3,7 @@ plugins {
     idea
     java
     id("com.github.ben-manes.versions") version "0.47.0"
-    id("net.serenity-bdd.serenity-gradle-plugin") version "4.0.1"
+    id("net.serenity-bdd.serenity-gradle-plugin") version "4.0.46"
 }
 
 group = "io.iohk.atala.prism"
