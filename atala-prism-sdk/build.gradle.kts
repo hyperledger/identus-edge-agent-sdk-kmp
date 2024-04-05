@@ -106,6 +106,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
                 implementation("io.ktor:ktor-client-logging:2.3.4")
+                implementation("io.ktor:ktor-websockets:2.3.4")
 
                 implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
@@ -141,6 +142,7 @@ kotlin {
             dependencies {
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
                 implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
+                implementation("io.ktor:ktor-client-java:2.3.4")
             }
         }
         val jvmTest by getting
@@ -149,6 +151,7 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
                 implementation("io.ktor:ktor-client-okhttp:2.3.4")
                 implementation("app.cash.sqldelight:android-driver:2.0.1")
+                implementation("io.ktor:ktor-client-android:2.3.4")
             }
         }
         val androidInstrumentedTest by getting {

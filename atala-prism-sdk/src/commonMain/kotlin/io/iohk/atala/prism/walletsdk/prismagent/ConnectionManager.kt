@@ -9,8 +9,18 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.mediation.OnMessageCallback
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocketSession
+import java.time.Duration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlin.jvm.Throws
 
 /**
@@ -29,6 +39,76 @@ class ConnectionManager(
     internal val mediationHandler: MediationHandler,
     private var pairings: MutableList<DIDPair>
 ) : ConnectionsManager, DIDCommConnection {
+
+    var fetchingMessagesJob: Job? = null
+    private val connectionManagerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+
+    @JvmOverloads
+    fun startFetchingMessages(requestInterval: Int = 5) {
+        if (fetchingMessagesJob == null) {
+            fetchingMessagesJob = connectionManagerScope.launch {
+                val currentMediatorDID = mediationHandler.mediatorDID
+                val mediatorDidDoc = castor.resolveDID(currentMediatorDID.toString())
+                var serviceEndpoint: String? = null
+                mediatorDidDoc.services.forEach {
+                    if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
+                        serviceEndpoint = it.serviceEndpoint.uri
+                        return@forEach
+                    }
+                }
+                serviceEndpoint?.let { serviceEndpointUrl ->
+                    mediationHandler.listenUnreadMessages(
+                        "signal",
+                        serviceEndpointUrl
+                    ) { arrayMessages ->
+                        println("Use websockets")
+                        val messagesIds = mutableListOf<String>()
+                        val messages = mutableListOf<Message>()
+                        arrayMessages.map { pair ->
+                            messagesIds.add(pair.first)
+                            messages.add(pair.second)
+                        }
+                        // Now we have the messages, we have to register them as read and store them in pluto.
+                        connectionManagerScope.launch {
+                            if (messagesIds.isNotEmpty()) {
+                                mediationHandler.registerMessagesAsRead(
+                                    messagesIds.toTypedArray()
+                                )
+                                pluto.storeMessages(messages)
+                            }
+                        }
+                    }
+                }
+                if (serviceEndpoint == null) {
+                    while (true) {
+                        awaitMessages().collect { array ->
+                            val messagesIds = mutableListOf<String>()
+                            val messages = mutableListOf<Message>()
+                            array.map { pair ->
+                                messagesIds.add(pair.first)
+                                messages.add(pair.second)
+                            }
+                            if (messagesIds.isNotEmpty()) {
+                                mediationHandler.registerMessagesAsRead(
+                                    messagesIds.toTypedArray()
+                                )
+                                pluto.storeMessages(messages)
+                            }
+                        }
+                        delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
+                    }
+                }
+            }
+            fetchingMessagesJob?.let {
+                if (it.isActive) return
+                it.start()
+            }
+        }
+    }
+
+    fun stopConnection() {
+        fetchingMessagesJob?.cancel()
+    }
 
     /**
      * Suspends the current coroutine and boots the registered mediator associated with the mediator handler.

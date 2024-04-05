@@ -57,4 +57,6 @@ interface MediationHandler {
      * @param ids An array of message IDs to register as read.
      */
     suspend fun registerMessagesAsRead(ids: Array<String>)
+
+    suspend fun listenUnreadMessages(serviceEndpointUri: String, onMessageCallback: OnMessageCallback)
 }
