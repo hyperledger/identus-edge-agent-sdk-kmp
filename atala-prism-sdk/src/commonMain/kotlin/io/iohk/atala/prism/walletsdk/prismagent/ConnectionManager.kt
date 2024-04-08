@@ -9,10 +9,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
-import io.iohk.atala.prism.walletsdk.prismagent.mediation.OnMessageCallback
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.webSocketSession
 import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,16 +33,16 @@ class ConnectionManager(
     private val castor: Castor,
     private val pluto: Pluto,
     internal val mediationHandler: MediationHandler,
-    private var pairings: MutableList<DIDPair>
+    private var pairings: MutableList<DIDPair>,
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : ConnectionsManager, DIDCommConnection {
 
     var fetchingMessagesJob: Job? = null
-    private val connectionManagerScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
         if (fetchingMessagesJob == null) {
-            fetchingMessagesJob = connectionManagerScope.launch {
+            fetchingMessagesJob = scope.launch {
                 val currentMediatorDID = mediationHandler.mediatorDID
                 val mediatorDidDoc = castor.resolveDID(currentMediatorDID.toString())
                 var serviceEndpoint: String? = null
@@ -58,10 +54,8 @@ class ConnectionManager(
                 }
                 serviceEndpoint?.let { serviceEndpointUrl ->
                     mediationHandler.listenUnreadMessages(
-                        "signal",
                         serviceEndpointUrl
                     ) { arrayMessages ->
-                        println("Use websockets")
                         val messagesIds = mutableListOf<String>()
                         val messages = mutableListOf<Message>()
                         arrayMessages.map { pair ->
@@ -69,7 +63,7 @@ class ConnectionManager(
                             messages.add(pair.second)
                         }
                         // Now we have the messages, we have to register them as read and store them in pluto.
-                        connectionManagerScope.launch {
+                        scope.launch {
                             if (messagesIds.isNotEmpty()) {
                                 mediationHandler.registerMessagesAsRead(
                                     messagesIds.toTypedArray()

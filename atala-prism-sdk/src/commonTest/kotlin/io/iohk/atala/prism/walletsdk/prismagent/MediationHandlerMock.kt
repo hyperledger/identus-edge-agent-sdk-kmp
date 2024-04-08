@@ -4,6 +4,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.mediation.OnMessageCallback
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import java.util.UUID
@@ -43,5 +44,12 @@ class MediationHandlerMock(
 
     @Throws()
     override suspend fun registerMessagesAsRead(ids: Array<String>) {
+    }
+
+    override suspend fun listenUnreadMessages(
+        serviceEndpointUri: String,
+        onMessageCallback: OnMessageCallback
+    ) {
+        TODO("Not yet implemented")
     }
 }

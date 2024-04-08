@@ -224,7 +224,6 @@ class BasicMediatorHandler(
     }
 
     private suspend fun handleReceivedMessagesFromSockets(text: String): Array<Pair<String, Message>> {
-        println("Handle received messages from sockets")
         val decryptedMessage = mercury.unpackMessage(text)
         if (decryptedMessage.piuri == ProtocolType.PickupStatus.value ||
             decryptedMessage.piuri == ProtocolType.PickupDelivery.value

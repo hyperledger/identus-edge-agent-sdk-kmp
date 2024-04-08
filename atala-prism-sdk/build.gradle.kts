@@ -136,6 +136,8 @@ kotlin {
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
                 implementation("io.ktor:ktor-client-mock:2.3.4")
                 implementation("junit:junit:4.13.2")
+                implementation("org.mockito:mockito-core:4.4.0")
+                implementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
             }
         }
         val jvmMain by getting {
