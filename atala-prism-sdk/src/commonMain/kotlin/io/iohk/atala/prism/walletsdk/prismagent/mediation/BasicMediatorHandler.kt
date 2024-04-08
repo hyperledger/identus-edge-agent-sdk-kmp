@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent.mediation
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
@@ -24,7 +26,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import java.util.UUID
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.isActive
 
 /**
@@ -178,7 +179,17 @@ class BasicMediatorHandler(
         mercury.sendMessage(requestMessage)
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
+    /**
+     * Listens for unread messages from a specified WebSocket service endpoint.
+     *
+     * This function creates a WebSocket connection to the provided service endpoint URI
+     * and listens for incoming messages. Upon receiving messages, it processes and
+     * dispatches them to the specified callback function.
+     *
+     * @param serviceEndpointUri The URI of the service endpoint. It should be a valid WebSocket URI.
+     * @param onMessageCallback A callback function that is invoked when a message is received.
+     *                          This function is responsible for handling the incoming message.
+     */
     override suspend fun listenUnreadMessages(
         serviceEndpointUri: String,
         onMessageCallback: OnMessageCallback
@@ -218,7 +229,6 @@ class BasicMediatorHandler(
                         continue
                     }
                 }
-
             }
         }
     }

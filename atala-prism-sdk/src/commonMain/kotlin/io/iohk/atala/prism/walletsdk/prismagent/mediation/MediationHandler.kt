@@ -58,5 +58,15 @@ interface MediationHandler {
      */
     suspend fun registerMessagesAsRead(ids: Array<String>)
 
-    suspend fun listenUnreadMessages(serviceEndpointUri: String, onMessageCallback: OnMessageCallback)
+    /**
+     * Listens for unread messages from a specified WebSocket service endpoint.
+     *
+     * @param serviceEndpointUri The URI of the service endpoint. It should be a valid WebSocket URI.
+     * @param onMessageCallback A callback function that is invoked when a message is received.
+     *                          This function is responsible for handling the incoming message.
+     */
+    suspend fun listenUnreadMessages(
+        serviceEndpointUri: String,
+        onMessageCallback: OnMessageCallback
+    )
 }

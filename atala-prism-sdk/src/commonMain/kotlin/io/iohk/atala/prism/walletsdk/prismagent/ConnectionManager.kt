@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
@@ -39,30 +41,46 @@ class ConnectionManager(
 
     var fetchingMessagesJob: Job? = null
 
+    /**
+     * Starts the process of fetching messages at a regular interval.
+     *
+     * @param requestInterval The time interval (in seconds) between message fetch requests.
+     *                        Defaults to 5 seconds if not specified.
+     */
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
+        // Check if the job for fetching messages is already running
         if (fetchingMessagesJob == null) {
+            // Launch a coroutine in the provided scope
             fetchingMessagesJob = scope.launch {
+                // Retrieve the current mediator DID
                 val currentMediatorDID = mediationHandler.mediatorDID
+                // Resolve the DID document for the mediator
                 val mediatorDidDoc = castor.resolveDID(currentMediatorDID.toString())
                 var serviceEndpoint: String? = null
+
+                // Loop through the services in the DID document to find a WebSocket endpoint
                 mediatorDidDoc.services.forEach {
                     if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
                         serviceEndpoint = it.serviceEndpoint.uri
-                        return@forEach
+                        return@forEach // Exit loop once the WebSocket endpoint is found
                     }
                 }
+
+                // If a WebSocket service endpoint is found
                 serviceEndpoint?.let { serviceEndpointUrl ->
+                    // Listen for unread messages on the WebSocket endpoint
                     mediationHandler.listenUnreadMessages(
                         serviceEndpointUrl
                     ) { arrayMessages ->
+                        // Process the received messages
                         val messagesIds = mutableListOf<String>()
                         val messages = mutableListOf<Message>()
                         arrayMessages.map { pair ->
                             messagesIds.add(pair.first)
                             messages.add(pair.second)
                         }
-                        // Now we have the messages, we have to register them as read and store them in pluto.
+                        // If there are any messages, mark them as read and store them
                         scope.launch {
                             if (messagesIds.isNotEmpty()) {
                                 mediationHandler.registerMessagesAsRead(
@@ -73,8 +91,11 @@ class ConnectionManager(
                         }
                     }
                 }
+
+                // Fallback mechanism if no WebSocket service endpoint is available
                 if (serviceEndpoint == null) {
                     while (true) {
+                        // Continuously await and process new messages
                         awaitMessages().collect { array ->
                             val messagesIds = mutableListOf<String>()
                             val messages = mutableListOf<Message>()
@@ -89,10 +110,13 @@ class ConnectionManager(
                                 pluto.storeMessages(messages)
                             }
                         }
+                        // Wait for the specified request interval before fetching new messages
                         delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
                     }
                 }
             }
+
+            // Start the coroutine if it's not already active
             fetchingMessagesJob?.let {
                 if (it.isActive) return
                 it.start()
