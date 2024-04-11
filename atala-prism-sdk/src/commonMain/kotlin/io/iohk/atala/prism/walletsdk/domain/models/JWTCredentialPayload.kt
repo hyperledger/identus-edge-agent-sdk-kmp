@@ -1,14 +1,7 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-import io.iohk.atala.prism.walletsdk.domain.VC
-import kotlinx.serialization.EncodeDefault
-import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonPrimitive
 
 interface JWTPayload {
     val iss: String

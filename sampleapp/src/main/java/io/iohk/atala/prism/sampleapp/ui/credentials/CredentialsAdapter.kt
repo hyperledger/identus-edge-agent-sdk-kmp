@@ -75,7 +75,7 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                     }
                     type.text = String.format(typeString, "JWT")
                     // TODO: Check what else to display
-                    jwt.jwtPayload.nbf?.let {
+                    jwt.nbf?.let {
                         issuanceDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
                     }
                 }

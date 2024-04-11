@@ -262,8 +262,6 @@ class PolluxImplTest {
                 Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
             val holderKeyPair =
                 Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
             val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
             val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -313,8 +311,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val holderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(wrongIssuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -355,8 +351,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val wrongHolderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(wrongHolderKeyPair.publicKey, emptyArray())
 
@@ -395,8 +389,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val holderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -435,8 +427,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val holderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -475,8 +465,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val holderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -519,8 +507,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val holderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -559,8 +545,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val holderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -599,8 +583,6 @@ class PolluxImplTest {
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
         val holderKeyPair =
             Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-
-
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -628,15 +610,6 @@ class PolluxImplTest {
         )
         assertTrue(isVerified)
     }
-
-//    class General {
-//        @Test
-//        fun test() {
-//            val model = InputFieldFilter("number", enum = listOf())
-//            val json = Json.encodeToString(model)
-//            println()
-//        }
-//    }
 
     private fun generateSecp256k1KeyPair(): Secp256k1KeyPair {
         val mnemonics = listOf(
@@ -677,8 +650,6 @@ class PolluxImplTest {
         val expirationDate = nextMonthDate.timeInMillis
         val sdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.getDefault())
         sdf.timeZone = TimeZone.getTimeZone("UTC")
-
-
         val jwsHeader = JWSHeader.Builder(JWSAlgorithm.ES256K).build()
         val json = Json {
             ignoreUnknownKeys = true
@@ -744,9 +715,6 @@ class PolluxImplTest {
     }
 
     data class VerificationTestCase(
-//        val apollo: Apollo,
-//        val castor: Castor,
-//        val pollux: Pollux,
         val issuer: DID,
         val holder: DID,
         val holderPrv: PrivateKey,
