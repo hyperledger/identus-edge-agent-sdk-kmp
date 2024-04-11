@@ -2,6 +2,7 @@ package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentatio
 
 import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import kotlinx.serialization.Serializable
+import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 
 @Serializable
 abstract class CredentialSubmission
@@ -9,7 +10,7 @@ abstract class CredentialSubmission
 @Serializable
 class W3cCredentialSubmission(
     val comment: String? = null,
-    val vc: JWTPayload.JWTVerifiableCredential
+    val vc: JWTVerifiableCredential
 ) : CredentialSubmission()
 
 @Serializable
