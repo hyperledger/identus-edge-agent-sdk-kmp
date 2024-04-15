@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
@@ -104,7 +105,7 @@ class PolluxImplTest {
                     claims = mapOf(
                         "$.vc.credentialSubject.email" to InputFieldFilter(
                             type = "string",
-                            value = StringPredicate("value")
+                            value = "value"
                         )
                     )
                 ),

@@ -112,7 +112,7 @@ data class JWTCredential(
         val c = this
         return object : StorableCredential {
             override val id: String
-                get() = id
+                get() = c.id
             override val recoveryId: String
                 get() = "jwt+credential"
             override val credentialData: ByteArray

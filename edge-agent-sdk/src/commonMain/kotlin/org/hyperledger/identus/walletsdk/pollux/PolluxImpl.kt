@@ -78,6 +78,7 @@ import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 
@@ -634,17 +635,17 @@ class PolluxImpl(
             )
         } as MutableList
 
-        val path = proofs
-            .flatMap { proofType ->
-                (proofType.requiredFields?.toList() ?: emptyList()) + (proofType.trustIssuers?.toList() ?: emptyList())
-            }
-
-        val constraints =
-            PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
-                fields = arrayOf(
-                    PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
-                        path = path.toTypedArray()
-                    )
+        presentationClaims.issuer?.let { issuer ->
+            mutableListFields.add(
+                PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
+                    path = arrayOf("$.issuer", "$.iss", "$.vc.iss", "$.vc.issuer"),
+                    optional = false,
+                    id = UUID.randomUUID().toString(),
+                    filter = InputFieldFilter(
+                        type = "String",
+                        pattern = issuer
+                    ),
+                    name = "issuer"
                 )
             )
         }
@@ -662,14 +663,9 @@ class PolluxImpl(
 
         val format =
             PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
-                jwtVc = jwtVc?.let {
+                jwt = jwt.let {
                     PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
-                        jwtVc.toList()
-                    )
-                },
-                jwtVp = jwtVp?.let {
-                    PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
-                        jwtVp.toList()
+                        jwt.toList()
                     )
                 }
             )
