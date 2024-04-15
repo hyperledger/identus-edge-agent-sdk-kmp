@@ -327,4 +327,6 @@ interface Pluto {
      * or null if no metadata is found.
      */
     fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?>
+
+    fun revokeCredential(credentialId: String)
 }

@@ -1020,4 +1020,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 )
             }
     }
+
+    override fun revokeCredential(credentialId: String) {
+        getInstance().storableCredentialQueries.revokeCredentialById(credentialId)
+    }
 }

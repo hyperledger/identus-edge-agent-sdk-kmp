@@ -222,7 +222,7 @@ class PrismAgent {
         this.logger = logger
         // Pairing will be removed in the future
         this.connectionManager =
-            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
+            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
     }
 
     init {
@@ -455,7 +455,7 @@ class PrismAgent {
     fun setupMediatorHandler(mediatorHandler: MediationHandler) {
         stop()
         this.connectionManager =
-            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf())
+            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
     }
 
     /**

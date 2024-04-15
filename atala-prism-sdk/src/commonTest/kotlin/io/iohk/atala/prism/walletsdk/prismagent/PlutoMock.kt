@@ -238,4 +238,8 @@ class PlutoMock : Pluto {
     override fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?> {
         return getCredentialMetadataReturn
     }
+
+    override fun revokeCredential(credentialId: String) {
+        TODO("Not yet implemented")
+    }
 }
