@@ -643,8 +643,7 @@ class PolluxImpl(
                     id = UUID.randomUUID().toString(),
                     filter = InputFieldFilter(
                         type = "String",
-                        pattern = issuer,
-                        value = StringPredicate("")
+                        pattern = issuer
                     ),
                     name = "issuer"
                 )
