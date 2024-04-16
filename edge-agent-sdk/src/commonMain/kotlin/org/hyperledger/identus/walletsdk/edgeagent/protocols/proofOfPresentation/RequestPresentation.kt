@@ -125,9 +125,12 @@ data class RequestPresentation(
                 fromMessage.from != null &&
                 fromMessage.to != null
             ) {
+                val json = Json {
+                    ignoreUnknownKeys = true
+                }
                 return RequestPresentation(
                     id = fromMessage.id,
-                    body = Json.decodeFromString(fromMessage.body) ?: Body(proofTypes = emptyArray()),
+                    body = json.decodeFromString(fromMessage.body) ?: Body(proofTypes = emptyArray()),
                     attachments = fromMessage.attachments,
                     thid = fromMessage.thid,
                     from = fromMessage.from,

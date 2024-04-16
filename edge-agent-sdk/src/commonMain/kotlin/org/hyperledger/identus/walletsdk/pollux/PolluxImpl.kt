@@ -631,7 +631,7 @@ class PolluxImpl(
                 id = UUID.randomUUID().toString(),
                 optional = false,
                 filter = presentationClaims.claims[path],
-                name = path
+                name = path,
             )
         } as MutableList
 
@@ -655,12 +655,6 @@ class PolluxImpl(
             limitDisclosure = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
         )
 
-        val inputDescriptor = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor(
-            name = options.name,
-            purpose = options.purpose,
-            constraints = constraints
-        )
-
         val format =
             PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
                 jwt = jwt.let {
@@ -669,6 +663,13 @@ class PolluxImpl(
                     )
                 }
             )
+
+        val inputDescriptor = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor(
+            name = options.name,
+            purpose = options.purpose,
+            constraints = constraints,
+            format = format
+        )
 
         return PresentationDefinitionRequest(
             presentationDefinition = PresentationDefinitionRequest.PresentationDefinition(

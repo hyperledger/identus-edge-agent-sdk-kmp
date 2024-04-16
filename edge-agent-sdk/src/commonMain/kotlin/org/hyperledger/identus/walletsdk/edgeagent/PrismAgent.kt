@@ -1036,7 +1036,6 @@ class PrismAgent {
             to = toDID,
             direction = Message.Direction.SENT
         )
-
         connectionManager.sendMessage(presentationRequest.makeMessage())
     }
 

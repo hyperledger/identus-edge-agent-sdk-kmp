@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import io.iohk.atala.prism.sampleapp.ui.messages.InitiateVerificationDialogFragment
 import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.CredentialDialogBinding
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentMessagesBinding
 import org.hyperledger.identus.walletsdk.sampleapp.ui.messages.MessagesAdapter
@@ -36,7 +37,7 @@ class MessagesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.list.adapter = adapter
         binding.sendMessage.setOnClickListener {
-            viewModel.sendMessage()
+            viewModel.sendMessage(DID("did:peer:2.Ez6LSkjhgJcoGRTSTpjN5XBSKGpNtDSa55qidsahb1s3ucWkJ.Vz6MkgG8bJA2P2HNhCwh4DGHmBtUbKiCafYwBtDMjKnAihaE9.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2WTNKcGMzUnBZVzR0YldWa2FXRjBiM0l1YW5KcFltOHVhMmwzYVNJc0ltRWlPbHNpWkdsa1kyOXRiUzkyTWlKZGZYMC5TZXlKMElqb2laRzBpTENKeklqcDdJblZ5YVNJNkluZHpjem92TDJOeWFYTjBhV0Z1TFcxbFpHbGhkRzl5TG1weWFXSnZMbXRwZDJrdmQzTWlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5IiwiciI6W10sImEiOltdfX0"))
         }
         binding.sendVerification.setOnClickListener {
             InitiateVerificationDialogFragment(viewModel).show(
