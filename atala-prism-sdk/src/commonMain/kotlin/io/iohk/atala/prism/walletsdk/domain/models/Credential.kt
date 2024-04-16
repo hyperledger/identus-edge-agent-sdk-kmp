@@ -11,4 +11,5 @@ interface Credential {
     val subject: String?
     val claims: Array<Claim>
     val properties: Map<String, Any?>
+    var revoked: Boolean?
 }

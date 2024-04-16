@@ -12,7 +12,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
@@ -211,7 +210,7 @@ class ConnectionManager(
 
     internal fun processMessages(arrayMessages: Array<Pair<String, Message>>) {
         scope.launch {
-           val messagesIds = mutableListOf<String>()
+            val messagesIds = mutableListOf<String>()
             val messages = mutableListOf<Message>()
             arrayMessages.map { pair ->
                 messagesIds.add(pair.first)
@@ -230,7 +229,8 @@ class ConnectionManager(
                     matchingMessages.forEach { message ->
                         val issueMessage = IssueCredential.fromMessage(message)
                         if (pollux.extractCredentialFormatFromMessage(issueMessage.attachments) == CredentialType.JWT) {
-                            val attachment = issueMessage.attachments.firstOrNull()?.data as? AttachmentBase64
+                            val attachment =
+                                issueMessage.attachments.firstOrNull()?.data as? AttachmentBase64
                             attachment?.let {
                                 val credentialId = it.base64.base64UrlDecoded
                                 pluto.revokeCredential(credentialId)

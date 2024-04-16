@@ -97,7 +97,7 @@ interface Pollux {
      * @param credentialData The byte array containing the credential data.
      * @return The restored credential.
      */
-    fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray): Credential
+    fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray, revoked: Boolean): Credential
 
     /**
      * Converts a [Credential] object to a [StorableCredential] object of the specified [CredentialType].

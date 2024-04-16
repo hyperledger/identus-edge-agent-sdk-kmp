@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.revocation
 
 import io.iohk.atala.prism.walletsdk.domain.models.DID
@@ -39,8 +41,8 @@ class RevocationNotification(
         fun fromMessage(message: Message): RevocationNotification {
             require(
                 message.piuri == ProtocolType.PrismRevocation.value &&
-                        message.from != null &&
-                        message.to != null
+                    message.from != null &&
+                    message.to != null
             ) {
                 throw PrismAgentError.InvalidMessageType(
                     type = message.piuri,

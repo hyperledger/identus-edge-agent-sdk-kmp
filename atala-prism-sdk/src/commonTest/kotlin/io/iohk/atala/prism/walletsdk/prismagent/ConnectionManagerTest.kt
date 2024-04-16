@@ -29,11 +29,9 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
-import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.anyList
 import org.mockito.kotlin.anyArray
 import org.mockito.kotlin.argumentCaptor
-import org.mockito.kotlin.mock
 import kotlin.test.assertNotNull
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -179,6 +177,32 @@ class ConnectionManagerTest {
                     )
                 }
             )
+            val attachments: Array<AttachmentDescriptor> =
+                arrayOf(
+                    AttachmentDescriptor(
+                        mediaType = "application/json",
+                        format = CredentialType.JWT.type,
+                        data = AttachmentBase64(base64 = "asdfasdfasdfasdfasdfasdfasdfasdfasdf".base64UrlEncoded)
+                    )
+                )
+            val listMessages = listOf(
+                Message(
+                    piuri = ProtocolType.DidcommconnectionRequest.value,
+                    body = ""
+                ),
+                Message(
+                    piuri = ProtocolType.DidcommIssueCredential.value,
+                    thid = UUID.randomUUID().toString(),
+                    from = DID("did:peer:asdf897a6sdf"),
+                    to = DID("did:peer:f706sg678ha"),
+                    attachments = attachments,
+                    body = """{}"""
+                )
+            )
+            val messageList: Flow<List<Message>> = flow {
+                emit(listMessages)
+            }
+            `when`(plutoMock.getAllMessages()).thenReturn(messageList)
 
             connectionManager.startFetchingMessages()
             assertNotNull(connectionManager.fetchingMessagesJob)
@@ -219,15 +243,15 @@ class ConnectionManagerTest {
 
         val messages = arrayOf(
             Pair(
-                threadId, Message(
+                threadId,
+                Message(
                     piuri = ProtocolType.PrismRevocation.value,
                     from = DID("did:peer:0978aszdf7890asg"),
                     to = DID("did:peer:asdf9068asdf"),
-                    body = """{"threadId":"$threadId","comment":null}"""
+                    body = """{"issueCredentialProtocolThreadId":"$threadId","comment":null}"""
                 )
             )
         )
-
 
         connectionManager.processMessages(messages)
         val argumentCaptor = argumentCaptor<String>()

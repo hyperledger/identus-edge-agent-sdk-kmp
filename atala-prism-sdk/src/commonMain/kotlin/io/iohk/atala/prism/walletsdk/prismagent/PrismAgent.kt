@@ -881,7 +881,7 @@ class PrismAgent {
         return pluto.getAllCredentials()
             .map { list ->
                 list.map {
-                    pollux.restoreCredential(it.restorationId, it.credentialData)
+                    pollux.restoreCredential(it.restorationId, it.credentialData, it.revoked)
                 }
             }
     }

@@ -57,7 +57,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 PrismPlutoDb.Schema.version,
                 AfterVersion(1) {
                     it.execute(null, "ALTER TABLE CredentialMetadata DROB COLUMN nonce;", 0)
-                    it.execute(null, "ALTER TABLE CredentialMetadata DROB COLUMN linkSecretBlindingData;", 0)
+                    it.execute(
+                        null,
+                        "ALTER TABLE CredentialMetadata DROB COLUMN linkSecretBlindingData;",
+                        0
+                    )
                     it.execute(null, "ALTER TABLE CredentialMetadata ADD COLUMN json TEXT;", 0)
                 }
             )
@@ -926,7 +930,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 it.executeAsList().map { credential ->
                     CredentialRecovery(
                         restorationId = credential.recoveryId,
-                        credentialData = credential.credentialData
+                        credentialData = credential.credentialData,
+                        revoked = credential.revoked != 0
                     )
                 }
             }
