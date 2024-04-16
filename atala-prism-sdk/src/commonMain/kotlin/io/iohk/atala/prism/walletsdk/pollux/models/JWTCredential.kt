@@ -62,7 +62,7 @@ data class JWTCredential(
     override val claims: Array<Claim>
         get() {
             return verifiableCredential?.credentialSubject?.map {
-                Claim(key = it.key, value = ClaimType.StringValue(it.value))
+                Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
             }?.toTypedArray()
                 ?: emptyArray<Claim>()
         }
@@ -136,7 +136,7 @@ data class JWTCredential(
 
             override val claims: Array<Claim>
                 get() = verifiableCredential?.credentialSubject?.map {
-                    Claim(key = it.key, value = ClaimType.StringValue(it.value))
+                    Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
                 }?.toTypedArray() ?: emptyArray()
 
             override val properties: Map<String, Any?>

@@ -1,6 +1,8 @@
 package io.iohk.atala.prism.walletsdk.castor
 
 import io.iohk.atala.prism.apollo.base64.base64DecodedBytes
+import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
+import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Ed25519PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PublicKey
 import io.iohk.atala.prism.walletsdk.apollo.utils.X25519PublicKey
@@ -200,15 +202,21 @@ constructor(
             val crv = jwk["crv"]
             return when (DIDDocument.VerificationMethod.getCurveByType(crv!!)) {
                 Curve.SECP256K1 -> {
-                    Secp256k1PublicKey(x!!.encodeToByteArray())
+                    if (jwk.containsKey("y")) {
+                        val y = jwk["y"]
+                        val kmmSecp = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(x!!.base64UrlDecodedBytes, y!!.base64UrlDecodedBytes)
+                        Secp256k1PublicKey(kmmSecp.raw)
+                    } else {
+                        Secp256k1PublicKey(x!!.base64UrlDecodedBytes)
+                    }
                 }
 
                 Curve.ED25519 -> {
-                    Ed25519PublicKey(x!!.encodeToByteArray())
+                    Ed25519PublicKey(x!!.base64UrlDecodedBytes)
                 }
 
                 Curve.X25519 -> {
-                    X25519PublicKey(x!!.encodeToByteArray())
+                    X25519PublicKey(x!!.base64UrlDecodedBytes)
                 }
             }
         }

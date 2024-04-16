@@ -39,7 +39,7 @@ data class PresentationDefinitionRequest(
             val id: String = UUID.randomUUID().toString(),
             val name: String? = null,
             val purpose: String? = null,
-            val format: String? = null,
+            val format: PresentationFormat? = null,
             val constraints: Constraints
         ) {
 

@@ -11,6 +11,7 @@ import androidx.fragment.app.viewModels
 import io.iohk.atala.prism.sampleapp.databinding.CredentialDialogBinding
 import io.iohk.atala.prism.sampleapp.databinding.FragmentMessagesBinding
 import io.iohk.atala.prism.walletsdk.domain.models.Credential
+import io.iohk.atala.prism.walletsdk.domain.models.DID
 
 class MessagesFragment : Fragment() {
 
@@ -33,7 +34,7 @@ class MessagesFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.list.adapter = adapter
         binding.sendMessage.setOnClickListener {
-            viewModel.sendMessage()
+            viewModel.sendMessage(DID("did:peer:2.Ez6LSkjhgJcoGRTSTpjN5XBSKGpNtDSa55qidsahb1s3ucWkJ.Vz6MkgG8bJA2P2HNhCwh4DGHmBtUbKiCafYwBtDMjKnAihaE9.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2WTNKcGMzUnBZVzR0YldWa2FXRjBiM0l1YW5KcFltOHVhMmwzYVNJc0ltRWlPbHNpWkdsa1kyOXRiUzkyTWlKZGZYMC5TZXlKMElqb2laRzBpTENKeklqcDdJblZ5YVNJNkluZHpjem92TDJOeWFYTjBhV0Z1TFcxbFpHbGhkRzl5TG1weWFXSnZMbXRwZDJrdmQzTWlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5IiwiciI6W10sImEiOltdfX0"))
         }
         binding.sendVerification.setOnClickListener {
             InitiateVerificationDialogFragment(viewModel).show(

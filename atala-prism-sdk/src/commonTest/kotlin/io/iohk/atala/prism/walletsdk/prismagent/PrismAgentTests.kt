@@ -25,6 +25,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.DIDResolver
 import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
 import io.iohk.atala.prism.walletsdk.domain.models.HttpResponse
+import io.iohk.atala.prism.walletsdk.domain.models.JWTVerifiableCredential
 import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
@@ -54,6 +55,7 @@ import java.util.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -1055,6 +1057,16 @@ class PrismAgentTests {
         val msg = Json.decodeFromString<Message>(msgString)
 
         assertTrue(agent.handlePresentation(msg))
+    }
+
+    @Test
+    fun test() {
+        val vc = JWTVerifiableCredential(
+            credentialSubject = mapOf("string" to "string", "int" to 1, "float" to 2f, "boolean" to false)
+        )
+
+        val encoded = Json.encodeToString(vc)
+        val decoded = Json.decodeFromString<JWTVerifiableCredential>(encoded)
     }
 
     val getCredentialDefinitionResponse =
