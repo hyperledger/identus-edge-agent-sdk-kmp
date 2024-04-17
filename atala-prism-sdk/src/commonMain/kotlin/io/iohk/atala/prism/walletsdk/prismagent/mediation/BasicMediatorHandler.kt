@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent.mediation
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
@@ -7,16 +9,24 @@ import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.UnknownError
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationGrant
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationKeysUpdateList
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation.MediationRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupReceived
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup.PickupRunner
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.websocket.Frame
+import io.ktor.websocket.readText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import java.util.UUID
+import kotlinx.coroutines.isActive
 
 /**
  * A class that provides an implementation of [MediationHandler] using a Pluto instance and a Mercury instance. It can
@@ -84,7 +94,8 @@ class BasicMediatorHandler(
             val registeredMediator = bootRegisteredMediator()
             if (registeredMediator == null) {
                 try {
-                    val requestMessage = MediationRequest(from = host, to = mediatorDID).makeMessage()
+                    val requestMessage =
+                        MediationRequest(from = host, to = mediatorDID).makeMessage()
                     val message = mercury.sendMessageParseResponse(message = requestMessage)
                         ?: throw UnknownError.SomethingWentWrongError(
                             message = "BasicMediatorHandler => mercury.sendMessageParseResponse returned null"
@@ -167,4 +178,75 @@ class BasicMediatorHandler(
         } ?: throw PrismAgentError.NoMediatorAvailableError()
         mercury.sendMessage(requestMessage)
     }
+
+    /**
+     * Listens for unread messages from a specified WebSocket service endpoint.
+     *
+     * This function creates a WebSocket connection to the provided service endpoint URI
+     * and listens for incoming messages. Upon receiving messages, it processes and
+     * dispatches them to the specified callback function.
+     *
+     * @param serviceEndpointUri The URI of the service endpoint. It should be a valid WebSocket URI.
+     * @param onMessageCallback A callback function that is invoked when a message is received.
+     *                          This function is responsible for handling the incoming message.
+     */
+    override suspend fun listenUnreadMessages(
+        serviceEndpointUri: String,
+        onMessageCallback: OnMessageCallback
+    ) {
+        val client = HttpClient {
+            install(WebSockets)
+            install(HttpTimeout) {
+                requestTimeoutMillis = WEBSOCKET_TIMEOUT
+                connectTimeoutMillis = WEBSOCKET_TIMEOUT
+                socketTimeoutMillis = WEBSOCKET_TIMEOUT
+            }
+        }
+        if (serviceEndpointUri.contains("wss://") || serviceEndpointUri.contains("ws://")) {
+            client.webSocket(serviceEndpointUri) {
+                if (isActive) {
+                    val liveDeliveryMessage = Message(
+                        body = "{\"live_delivery\":true}",
+                        piuri = ProtocolType.LiveDeliveryChange.value,
+                        id = UUID.randomUUID().toString(),
+                        from = mediator?.hostDID,
+                        to = mediatorDID
+                    )
+                    val packedMessage = mercury.packMessage(liveDeliveryMessage)
+                    send(Frame.Text(packedMessage))
+                }
+                while (isActive) {
+                    try {
+                        for (frame in incoming) {
+                            if (frame is Frame.Text) {
+                                val messages =
+                                    handleReceivedMessagesFromSockets(frame.readText())
+                                onMessageCallback.onMessage(messages)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        continue
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun handleReceivedMessagesFromSockets(text: String): Array<Pair<String, Message>> {
+        val decryptedMessage = mercury.unpackMessage(text)
+        if (decryptedMessage.piuri == ProtocolType.PickupStatus.value ||
+            decryptedMessage.piuri == ProtocolType.PickupDelivery.value
+        ) {
+            return PickupRunner(decryptedMessage, mercury).run()
+        } else {
+            return emptyArray()
+        }
+    }
 }
+
+fun interface OnMessageCallback {
+    fun onMessage(messages: Array<Pair<String, Message>>)
+}
+
+const val WEBSOCKET_TIMEOUT: Long = 15_000
