@@ -988,6 +988,10 @@ class PrismAgent {
         )
     }
 
+    /**
+     * This method provides a channel to listen for credentials that are revoked. As long as there is an
+     * observer collecting from this flow the updates will keep happening.
+     */
     fun observeRevokedCredentials(): Flow<List<Credential>> {
         return pluto.observeRevokedCredentials()
             .map { list ->

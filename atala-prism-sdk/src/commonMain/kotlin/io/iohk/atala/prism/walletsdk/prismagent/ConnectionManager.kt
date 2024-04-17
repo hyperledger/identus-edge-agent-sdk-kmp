@@ -82,22 +82,6 @@ class ConnectionManager(
                         serviceEndpointUrl
                     ) { arrayMessages ->
                         processMessages(arrayMessages)
-//                        // Process the received messages
-//                        val messagesIds = mutableListOf<String>()
-//                        val messages = mutableListOf<Message>()
-//                        arrayMessages.map { pair ->
-//                            messagesIds.add(pair.first)
-//                            messages.add(pair.second)
-//                        }
-//                        // If there are any messages, mark them as read and store them
-//                        scope.launch {
-//                            if (messagesIds.isNotEmpty()) {
-//                                mediationHandler.registerMessagesAsRead(
-//                                    messagesIds.toTypedArray()
-//                                )
-//                                pluto.storeMessages(messages)
-//                            }
-//                        }
                     }
                 }
 
@@ -107,18 +91,6 @@ class ConnectionManager(
                         // Continuously await and process new messages
                         awaitMessages().collect { array ->
                             processMessages(array)
-//                            val messagesIds = mutableListOf<String>()
-//                            val messages = mutableListOf<Message>()
-//                            array.map { pair ->
-//                                messagesIds.add(pair.first)
-//                                messages.add(pair.second)
-//                            }
-//                            if (messagesIds.isNotEmpty()) {
-//                                mediationHandler.registerMessagesAsRead(
-//                                    messagesIds.toTypedArray()
-//                                )
-//                                pluto.storeMessages(messages)
-//                            }
                         }
                         // Wait for the specified request interval before fetching new messages
                         delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
