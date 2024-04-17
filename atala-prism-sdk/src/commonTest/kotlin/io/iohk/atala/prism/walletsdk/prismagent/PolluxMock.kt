@@ -53,7 +53,7 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray): Credential {
+    override fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray, revoked: Boolean): Credential {
         TODO("Not yet implemented")
     }
 

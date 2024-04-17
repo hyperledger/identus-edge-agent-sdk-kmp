@@ -61,7 +61,7 @@ class PrismAgentTests {
         polluxMock = PolluxMock()
         mediationHandlerMock = MediationHandlerMock()
         // Pairing will be removed in the future
-        connectionManager = ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf())
+        connectionManager = ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf(), polluxMock)
         json = Json {
             ignoreUnknownKeys = true
             prettyPrint = true
@@ -357,7 +357,7 @@ class PrismAgentTests {
 
     @Test
     fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
-        val getLinkSecretReturn = flow<String> { "linkSecret" }
+        val getLinkSecretReturn = flow<String> { emit("linkSecret") }
         plutoMock.getLinkSecretReturn = getLinkSecretReturn
         val agent = PrismAgent(
             apollo = apolloMock,

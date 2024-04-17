@@ -147,25 +147,29 @@ class PolluxImpl(
      */
     override fun restoreCredential(
         restorationIdentifier: String,
-        credentialData: ByteArray
+        credentialData: ByteArray,
+        revoked: Boolean
     ): Credential {
-        return when (restorationIdentifier) {
+        val cred: Credential
+        when (restorationIdentifier) {
             "jwt+credential" -> {
-                JWTCredential(credentialData.decodeToString())
+                cred = JWTCredential(credentialData.decodeToString())
             }
 
             "anon+credential" -> {
-                AnonCredential.fromStorableData(credentialData)
+                cred = AnonCredential.fromStorableData(credentialData)
             }
 
             "w3c+credential" -> {
-                Json.decodeFromString<W3CCredential>(credentialData.decodeToString())
+                cred = Json.decodeFromString<W3CCredential>(credentialData.decodeToString())
             }
 
             else -> {
                 throw PolluxError.InvalidCredentialError()
             }
         }
+        cred.revoked = revoked
+        return cred
     }
 
     /**
@@ -258,8 +262,10 @@ class PolluxImpl(
         val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
         val cred = anoncreds_wrapper.Credential(credential.id)
 
-        val requestedAttributes = presentationRequest.getRequestedAttributes().toListRequestedAttribute()
-        val requestedPredicate = presentationRequest.getRequestedPredicates().toListRequestedPredicate()
+        val requestedAttributes =
+            presentationRequest.getRequestedAttributes().toListRequestedAttribute()
+        val requestedPredicate =
+            presentationRequest.getRequestedPredicates().toListRequestedPredicate()
 
         val credentialRequests = CredentialRequests(
             credential = cred,

@@ -57,7 +57,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 PrismPlutoDb.Schema.version,
                 AfterVersion(1) {
                     it.execute(null, "ALTER TABLE CredentialMetadata DROB COLUMN nonce;", 0)
-                    it.execute(null, "ALTER TABLE CredentialMetadata DROB COLUMN linkSecretBlindingData;", 0)
+                    it.execute(
+                        null,
+                        "ALTER TABLE CredentialMetadata DROB COLUMN linkSecretBlindingData;",
+                        0
+                    )
                     it.execute(null, "ALTER TABLE CredentialMetadata ADD COLUMN json TEXT;", 0)
                 }
             )
@@ -926,7 +930,8 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 it.executeAsList().map { credential ->
                     CredentialRecovery(
                         restorationId = credential.recoveryId,
-                        credentialData = credential.credentialData
+                        credentialData = credential.credentialData,
+                        revoked = credential.revoked != 0
                     )
                 }
             }
@@ -1018,6 +1023,32 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                     linkSecretName = metadata.linkSecretName,
                     json = metadata.json
                 )
+            }
+    }
+
+    /**
+     * Revokes an existing credential using the credential ID.
+     *
+     * @param credentialId The ID of the credential to be revoked
+     */
+    override fun revokeCredential(credentialId: String) {
+        getInstance().storableCredentialQueries.revokeCredentialById(credentialId)
+    }
+
+    /**
+     * Provides a flow to listen for revoked credentials.
+     */
+    override fun observeRevokedCredentials(): Flow<List<CredentialRecovery>> {
+        return getInstance().storableCredentialQueries.observeRevokedCredential()
+            .asFlow()
+            .map {
+                it.executeAsList().map { credential ->
+                    CredentialRecovery(
+                        restorationId = credential.recoveryId,
+                        credentialData = credential.credentialData,
+                        revoked = true
+                    )
+                }
             }
     }
 }

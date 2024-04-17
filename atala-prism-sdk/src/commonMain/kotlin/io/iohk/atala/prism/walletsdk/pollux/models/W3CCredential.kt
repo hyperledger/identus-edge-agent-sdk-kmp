@@ -82,6 +82,8 @@ data class W3CCredential @JvmOverloads constructor(
             return properties.toMap()
         }
 
+    override var revoked: Boolean? = null
+
     /**
      * Converts the current W3CCredential object to a StorableCredential object that can be stored and retrieved from a storage system.
      *
@@ -102,8 +104,7 @@ data class W3CCredential @JvmOverloads constructor(
                 get() = c.credentialSchema?.type
             override val validUntil: String?
                 get() = null
-            override val revoked: Boolean?
-                get() = null
+            override var revoked: Boolean? = c.revoked
             override val availableClaims: Array<String>
                 get() = claims.map { it.key }.toTypedArray()
 
