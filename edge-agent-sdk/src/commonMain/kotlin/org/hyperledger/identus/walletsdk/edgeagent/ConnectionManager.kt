@@ -96,6 +96,15 @@ class ConnectionManagerImpl(
                             serviceEndpoint = it.serviceEndpoint.uri
                             return@forEach // Exit loop once the WebSocket endpoint is found
                         }
+
+                // Loop through the services in the DID document to find a WebSocket endpoint
+                mediatorDidDoc.services.forEach {
+                    if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains(
+                            "ws://"
+                        )
+                    ) {
+                        serviceEndpoint = it.serviceEndpoint.uri
+                        return@forEach // Exit loop once the WebSocket endpoint is found
                     }
 
                     // If a WebSocket service endpoint is found
@@ -141,7 +150,8 @@ class ConnectionManagerImpl(
      * @throws PrismAgentError.NoMediatorAvailableError if no mediator is available.
      */
     override suspend fun startMediator() {
-        mediationHandler.bootRegisteredMediator() ?: throw PrismAgentError.NoMediatorAvailableError()
+        mediationHandler.bootRegisteredMediator()
+            ?: throw PrismAgentError.NoMediatorAvailableError()
     }
 
     /**

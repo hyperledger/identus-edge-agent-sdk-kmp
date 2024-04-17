@@ -102,7 +102,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
 //                            type = "string",
 //                            value = "did:prism:8b5321c004d4a11e87ef3601350eaa8b472a546d11677c9c6845c55a490f02f4"
 //                        ),
-                        "$.vp.emailAddress" to InputFieldFilter(
+                        "emailAddress" to InputFieldFilter(
                             type = "string",
                             pattern = "corporate@tomate.domain.com"
                         )

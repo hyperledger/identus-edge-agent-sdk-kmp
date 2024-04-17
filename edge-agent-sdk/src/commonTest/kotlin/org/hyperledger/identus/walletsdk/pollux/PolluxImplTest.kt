@@ -17,7 +17,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
@@ -30,6 +29,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
+import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
@@ -657,7 +657,7 @@ class PolluxImplTest {
             ignoreUnknownKeys = true
             explicitNulls = false
         }
-        val vc = json.decodeFromString<JWTPayload.JWTVerifiableCredential>(
+        val vc = json.decodeFromString<JWTVerifiableCredential>(
             """{"@context":[
                      "https://www.w3.org/2018/credentials/v1"
                   ],
