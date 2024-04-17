@@ -23,7 +23,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.KeyCurve
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
 import io.iohk.atala.prism.walletsdk.domain.models.Seed
-import io.iohk.atala.prism.walletsdk.domain.models.StringPredicate
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.logger.PrismLogger
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
@@ -38,7 +37,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.mockito.kotlin.mock

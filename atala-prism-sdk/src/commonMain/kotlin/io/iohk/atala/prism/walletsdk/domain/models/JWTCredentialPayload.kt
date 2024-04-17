@@ -1,31 +1,15 @@
 package io.iohk.atala.prism.walletsdk.domain.models
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.PolymorphicSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.descriptors.StructureKind
-import kotlinx.serialization.descriptors.buildClassSerialDescriptor
-import kotlinx.serialization.descriptors.buildSerialDescriptor
-import kotlinx.serialization.encoding.CompositeDecoder
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.double
-import kotlinx.serialization.json.doubleOrNull
-import kotlinx.serialization.json.float
-import kotlinx.serialization.json.floatOrNull
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.long
-import kotlinx.serialization.json.longOrNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 interface JWTPayload {
     val iss: String
@@ -39,52 +23,30 @@ interface JWTPayload {
     val verifiableCredential: JWTVerifiableCredential?
 }
 
-object AnySerializer : KSerializer<Any> {
+object MapStringAnyToStringSerializer : KSerializer<Map<String, String>> {
+    override val descriptor = MapSerializer(String.serializer(), String.serializer()).descriptor
 
-    override val descriptor: SerialDescriptor = buildClassSerialDescriptor("Any") {
-        element("value", PolymorphicSerializer(Any::class).descriptor)
+    override fun serialize(encoder: Encoder, value: Map<String, String>) {
+        // Use the default MapSerializer for serialization
+        encoder.encodeSerializableValue(
+            MapSerializer(String.serializer(), String.serializer()),
+            value
+        )
     }
 
-    override fun deserialize(decoder: Decoder): Any {
-        val dec: CompositeDecoder = decoder.beginStructure(descriptor)
-        var value: Any? = null
+    override fun deserialize(decoder: Decoder): Map<String, String> {
+        // Decode as a JsonObject
+        val jsonObject = decoder.decodeSerializableValue(JsonObject.serializer())
 
-        val jsonElement = dec.decodeSerializableElement(descriptor, 0, JsonElement.serializer())
-        value = when (jsonElement) {
-            is JsonPrimitive -> {
-                when {
-                    jsonElement.isString -> jsonElement.content
-                    jsonElement.floatOrNull != null -> jsonElement.float
-                    jsonElement.intOrNull != null -> jsonElement.int
-                    jsonElement.doubleOrNull != null -> jsonElement.double
-                    jsonElement.longOrNull != null -> jsonElement.long
-                    else -> jsonElement.content
-                }
+        // Transform each value in the JsonObject to String
+        return jsonObject.mapValues { (_, value) ->
+            when (value) {
+                is JsonElement -> value.jsonPrimitive.content
+                else -> value.toString() // Default toString to handle non-primitive cases
             }
-
-            else -> ""
         }
-        dec.endStructure(descriptor)
-        return value
-    }
-
-    override fun serialize(encoder: Encoder, value: Any) {
-        val output = encoder.beginStructure(descriptor)
-        if (value is String) {
-            output.encodeStringElement(descriptor, 0, value)
-        } else if (value is Int) {
-            output.encodeIntElement(descriptor, 0, value)
-        } else if (value is Float) {
-            output.encodeFloatElement(descriptor, 0, value)
-        } else if (value is Boolean) {
-            output.encodeBooleanElement(descriptor, 0, value)
-        } else {
-            throw SerializationException("Unsupported type")
-        }
-        output.endStructure(descriptor)
     }
 }
-
 
 /**
  * A struct representing the verifiable credential in a JWT credential payload.
@@ -95,7 +57,8 @@ data class JWTVerifiableCredential @JvmOverloads constructor(
     val context: Array<String> = arrayOf(),
     val type: Array<String> = arrayOf(),
     val credentialSchema: VerifiableCredentialTypeContainer? = null,
-    val credentialSubject: Map<String, @Serializable(with = AnySerializer::class) Any>,
+    @Serializable(with = MapStringAnyToStringSerializer::class)
+    val credentialSubject: Map<String, String>,
     val credentialStatus: VerifiableCredentialTypeContainer? = null,
     val refreshService: VerifiableCredentialTypeContainer? = null,
     val evidence: VerifiableCredentialTypeContainer? = null,

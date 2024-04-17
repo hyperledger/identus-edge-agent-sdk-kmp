@@ -15,7 +15,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
 import io.iohk.atala.prism.walletsdk.domain.models.InputFieldFilter
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
-import io.iohk.atala.prism.walletsdk.domain.models.StringPredicate
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM1
 import io.iohk.atala.prism.walletsdk.prismagent.DIDCOMM_MESSAGING
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -102,7 +101,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
 //                            type = "string",
 //                            value = "did:prism:8b5321c004d4a11e87ef3601350eaa8b472a546d11677c9c6845c55a490f02f4"
 //                        ),
-                        "$.vp.emailAddress" to InputFieldFilter(
+                        "emailAddress" to InputFieldFilter(
                             type = "string",
                             pattern = "corporate@tomate.domain.com"
                         )

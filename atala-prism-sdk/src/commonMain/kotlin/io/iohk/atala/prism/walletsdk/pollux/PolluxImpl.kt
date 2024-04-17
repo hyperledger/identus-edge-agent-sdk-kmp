@@ -44,7 +44,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.InputFieldFilter
 import io.iohk.atala.prism.walletsdk.domain.models.PolluxError
 import io.iohk.atala.prism.walletsdk.domain.models.PresentationClaims
 import io.iohk.atala.prism.walletsdk.domain.models.StorableCredential
-import io.iohk.atala.prism.walletsdk.domain.models.StringPredicate
 import io.iohk.atala.prism.walletsdk.domain.models.httpClient
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey

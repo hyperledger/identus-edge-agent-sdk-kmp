@@ -61,7 +61,7 @@ class ConnectionManagerTest {
     @BeforeTest
     fun setup() {
         MockitoAnnotations.openMocks(this)
-        connectionManager = ConnectionManager(
+        connectionManager = ConnectionManagerImpl(
             mercury = mercuryMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -120,7 +120,7 @@ class ConnectionManagerTest {
         `when`(castorMock.resolveDID(any())).thenReturn(didDoc)
 
         connectionManager.startFetchingMessages()
-        assertNotNull(connectionManager.fetchingMessagesJob)
+        assertNotNull((connectionManager as ConnectionManagerImpl).fetchingMessagesJob)
         verify(basicMediatorHandlerMock).listenUnreadMessages(any(), any())
     }
 
@@ -303,7 +303,7 @@ class ConnectionManagerTest {
             `when`(plutoMock.getAllMessages()).thenReturn(messageList)
 
             connectionManager.startFetchingMessages()
-            assertNotNull(connectionManager.fetchingMessagesJob)
+            assertNotNull((connectionManager as ConnectionManagerImpl).fetchingMessagesJob)
             verify(basicMediatorHandlerMock).pickupUnreadMessages(10)
             verify(basicMediatorHandlerMock).registerMessagesAsRead(arrayOf("1234"))
         }
