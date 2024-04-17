@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent
 
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
@@ -9,8 +11,14 @@ import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import java.time.Duration
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlin.jvm.Throws
 
 /**
@@ -27,8 +35,98 @@ class ConnectionManager(
     private val castor: Castor,
     private val pluto: Pluto,
     internal val mediationHandler: MediationHandler,
-    private var pairings: MutableList<DIDPair>
+    private var pairings: MutableList<DIDPair>,
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : ConnectionsManager, DIDCommConnection {
+
+    var fetchingMessagesJob: Job? = null
+
+    /**
+     * Starts the process of fetching messages at a regular interval.
+     *
+     * @param requestInterval The time interval (in seconds) between message fetch requests.
+     *                        Defaults to 5 seconds if not specified.
+     */
+    @JvmOverloads
+    fun startFetchingMessages(requestInterval: Int = 5) {
+        // Check if the job for fetching messages is already running
+        if (fetchingMessagesJob == null) {
+            // Launch a coroutine in the provided scope
+            fetchingMessagesJob = scope.launch {
+                // Retrieve the current mediator DID
+                val currentMediatorDID = mediationHandler.mediatorDID
+                // Resolve the DID document for the mediator
+                val mediatorDidDoc = castor.resolveDID(currentMediatorDID.toString())
+                var serviceEndpoint: String? = null
+
+                // Loop through the services in the DID document to find a WebSocket endpoint
+                mediatorDidDoc.services.forEach {
+                    if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
+                        serviceEndpoint = it.serviceEndpoint.uri
+                        return@forEach // Exit loop once the WebSocket endpoint is found
+                    }
+                }
+
+                // If a WebSocket service endpoint is found
+                serviceEndpoint?.let { serviceEndpointUrl ->
+                    // Listen for unread messages on the WebSocket endpoint
+                    mediationHandler.listenUnreadMessages(
+                        serviceEndpointUrl
+                    ) { arrayMessages ->
+                        // Process the received messages
+                        val messagesIds = mutableListOf<String>()
+                        val messages = mutableListOf<Message>()
+                        arrayMessages.map { pair ->
+                            messagesIds.add(pair.first)
+                            messages.add(pair.second)
+                        }
+                        // If there are any messages, mark them as read and store them
+                        scope.launch {
+                            if (messagesIds.isNotEmpty()) {
+                                mediationHandler.registerMessagesAsRead(
+                                    messagesIds.toTypedArray()
+                                )
+                                pluto.storeMessages(messages)
+                            }
+                        }
+                    }
+                }
+
+                // Fallback mechanism if no WebSocket service endpoint is available
+                if (serviceEndpoint == null) {
+                    while (true) {
+                        // Continuously await and process new messages
+                        awaitMessages().collect { array ->
+                            val messagesIds = mutableListOf<String>()
+                            val messages = mutableListOf<Message>()
+                            array.map { pair ->
+                                messagesIds.add(pair.first)
+                                messages.add(pair.second)
+                            }
+                            if (messagesIds.isNotEmpty()) {
+                                mediationHandler.registerMessagesAsRead(
+                                    messagesIds.toTypedArray()
+                                )
+                                pluto.storeMessages(messages)
+                            }
+                        }
+                        // Wait for the specified request interval before fetching new messages
+                        delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
+                    }
+                }
+            }
+
+            // Start the coroutine if it's not already active
+            fetchingMessagesJob?.let {
+                if (it.isActive) return
+                it.start()
+            }
+        }
+    }
+
+    fun stopConnection() {
+        fetchingMessagesJob?.cancel()
+    }
 
     /**
      * Suspends the current coroutine and boots the registered mediator associated with the mediator handler.

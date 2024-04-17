@@ -67,11 +67,8 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import java.net.UnknownHostException
-import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
@@ -116,7 +113,6 @@ class PrismAgent {
     val pluto: Pluto
     val mercury: Mercury
     val pollux: Pollux
-    var fetchingMessagesJob: Job? = null
     val flowState = MutableSharedFlow<State>()
 
     private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
@@ -298,7 +294,6 @@ class PrismAgent {
         }
         logger.info(message = "Stoping agent")
         state = State.STOPPING
-        fetchingMessagesJob?.cancel()
         state = State.STOPPED
         logger.info(message = "Agent not running")
     }
@@ -724,32 +719,7 @@ class PrismAgent {
      */
     @JvmOverloads
     fun startFetchingMessages(requestInterval: Int = 5) {
-        if (fetchingMessagesJob == null) {
-            logger.info(message = "Start streaming new unread messages")
-            fetchingMessagesJob = prismAgentScope.launch {
-                while (true) {
-                    connectionManager.awaitMessages().collect { array ->
-                        val messagesIds = mutableListOf<String>()
-                        val messages = mutableListOf<Message>()
-                        array.map { pair ->
-                            messagesIds.add(pair.first)
-                            messages.add(pair.second)
-                        }
-                        if (messagesIds.isNotEmpty()) {
-                            connectionManager.mediationHandler.registerMessagesAsRead(
-                                messagesIds.toTypedArray()
-                            )
-                            pluto.storeMessages(messages)
-                        }
-                    }
-                    delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
-                }
-            }
-        }
-        fetchingMessagesJob?.let {
-            if (it.isActive) return
-            it.start()
-        }
+        connectionManager.startFetchingMessages(requestInterval)
     }
 
     /**
@@ -757,7 +727,7 @@ class PrismAgent {
      */
     fun stopFetchingMessages() {
         logger.info(message = "Stop streaming new unread messages")
-        fetchingMessagesJob?.cancel()
+        connectionManager.stopConnection()
     }
 
     /**
