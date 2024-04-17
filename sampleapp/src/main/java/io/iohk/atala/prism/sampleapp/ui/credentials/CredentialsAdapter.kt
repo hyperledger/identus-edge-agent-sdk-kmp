@@ -62,6 +62,7 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
         private val type: TextView = itemView.findViewById(R.id.credential_id)
         private val issuanceDate: TextView = itemView.findViewById(R.id.credential_issuance_date)
         private val expDate: TextView = itemView.findViewById(R.id.credential_expiration_date)
+        private val revoked: TextView = itemView.findViewById(R.id.revoked)
         private val typeString: String = itemView.context.getString(R.string.credential_type)
         private val issuanceString: String = itemView.context.getString(R.string.credential_issuance)
         private val expirationString: String = itemView.context.getString(R.string.credential_expiration)
@@ -70,6 +71,9 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
             when (cred::class) {
                 JWTCredential::class -> {
                     val jwt = cred as JWTCredential
+                    if (jwt.revoked != null && jwt.revoked!!) {
+                        revoked.visibility = View.VISIBLE
+                    }
                     type.text = String.format(typeString, "JWT")
                     // TODO: Check what else to display
                     jwt.jwtPayload.nbf?.let {

@@ -32,6 +32,8 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     private val issuedCredentials: ArrayList<String> = arrayListOf()
     private val processedOffers: ArrayList<String> = arrayListOf()
     private val db: AppDatabase = DatabaseClient.getInstance()
+    private val revokedCredentialsNotified: MutableList<Credential> = mutableListOf()
+    private var revokedCredentials: MutableLiveData<List<Credential>> = MutableLiveData()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -101,6 +103,27 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 }
             }
         }
+    }
+
+    fun revokedCredentialsStream(): LiveData<List<Credential>> {
+        viewModelScope.launch {
+            Sdk.getInstance().agent.let {
+                it.observeRevokedCredentials().collect { list ->
+                    val newRevokedCredentials = list.filter { newCredential ->
+                        revokedCredentialsNotified.none { notifiedCredential ->
+                            notifiedCredential.id == newCredential.id
+                        }
+                    }
+                    if (newRevokedCredentials.isNotEmpty()) {
+                        revokedCredentialsNotified.addAll(newRevokedCredentials)
+                        revokedCredentials.postValue(newRevokedCredentials)
+                    } else {
+                        revokedCredentials.postValue(emptyList())
+                    }
+                }
+            }
+        }
+        return revokedCredentials
     }
 
     private suspend fun processMessages(messages: List<Message>) {

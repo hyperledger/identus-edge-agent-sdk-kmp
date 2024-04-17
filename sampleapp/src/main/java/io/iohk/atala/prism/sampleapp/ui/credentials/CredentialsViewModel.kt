@@ -14,7 +14,7 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
 
     private var credentials: MutableLiveData<List<Credential>> = MutableLiveData()
 
-    init {
+    fun credentialsStream(): LiveData<List<Credential>> {
         viewModelScope.launch {
             Sdk.getInstance().agent.let {
                 it.getAllCredentials().collect { list ->
@@ -22,9 +22,6 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
                 }
             }
         }
-    }
-
-    fun credentialsStream(): LiveData<List<Credential>> {
         return credentials
     }
 }

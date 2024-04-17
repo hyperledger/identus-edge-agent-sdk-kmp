@@ -10,7 +10,6 @@ interface StorableCredential : Credential {
     val credentialUpdated: String?
     val credentialSchema: String?
     val validUntil: String?
-    val revoked: Boolean?
     val availableClaims: Array<String>
 
     /**

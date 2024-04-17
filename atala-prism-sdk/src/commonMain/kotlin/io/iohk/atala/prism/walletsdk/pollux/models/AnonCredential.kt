@@ -78,6 +78,8 @@ data class AnonCredential(
             return properties.toMap()
         }
 
+    override var revoked: Boolean? = null
+
     /**
      * Converts the current credential object into a storable credential object.
      *
@@ -119,8 +121,7 @@ data class AnonCredential(
             override val validUntil: String?
                 get() = null
 
-            override val revoked: Boolean?
-                get() = null
+            override var revoked: Boolean? = c.revoked
 
             override val availableClaims: Array<String>
                 get() = c.claims.map { it.key }.toTypedArray()

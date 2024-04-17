@@ -77,6 +77,8 @@ data class JWTCredential(val data: String) : Credential {
             return properties.toMap()
         }
 
+    override var revoked: Boolean? = null
+
     /**
      * Converts the current instance of [JWTCredential] to a [StorableCredential].
      *
@@ -105,8 +107,7 @@ data class JWTCredential(val data: String) : Credential {
                 get() = c.jwtPayload.verifiableCredential.credentialSchema?.type
             override val validUntil: String?
                 get() = null
-            override val revoked: Boolean?
-                get() = null
+            override var revoked: Boolean? = c.revoked
             override val availableClaims: Array<String>
                 get() = c.claims.map { it.key }.toTypedArray()
 

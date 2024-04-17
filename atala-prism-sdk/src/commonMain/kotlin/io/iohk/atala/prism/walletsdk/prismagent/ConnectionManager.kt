@@ -2,15 +2,22 @@
 
 package io.iohk.atala.prism.walletsdk.prismagent
 
+import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Mercury
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pluto
+import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
+import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
+import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
 import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.ConnectionsManager
 import io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager.DIDCommConnection
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.revocation.RevocationNotification
 import java.time.Duration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +43,7 @@ class ConnectionManager(
     private val pluto: Pluto,
     internal val mediationHandler: MediationHandler,
     private var pairings: MutableList<DIDPair>,
+    private val pollux: Pollux,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : ConnectionsManager, DIDCommConnection {
 
@@ -73,22 +81,7 @@ class ConnectionManager(
                     mediationHandler.listenUnreadMessages(
                         serviceEndpointUrl
                     ) { arrayMessages ->
-                        // Process the received messages
-                        val messagesIds = mutableListOf<String>()
-                        val messages = mutableListOf<Message>()
-                        arrayMessages.map { pair ->
-                            messagesIds.add(pair.first)
-                            messages.add(pair.second)
-                        }
-                        // If there are any messages, mark them as read and store them
-                        scope.launch {
-                            if (messagesIds.isNotEmpty()) {
-                                mediationHandler.registerMessagesAsRead(
-                                    messagesIds.toTypedArray()
-                                )
-                                pluto.storeMessages(messages)
-                            }
-                        }
+                        processMessages(arrayMessages)
                     }
                 }
 
@@ -97,18 +90,7 @@ class ConnectionManager(
                     while (true) {
                         // Continuously await and process new messages
                         awaitMessages().collect { array ->
-                            val messagesIds = mutableListOf<String>()
-                            val messages = mutableListOf<Message>()
-                            array.map { pair ->
-                                messagesIds.add(pair.first)
-                                messages.add(pair.second)
-                            }
-                            if (messagesIds.isNotEmpty()) {
-                                mediationHandler.registerMessagesAsRead(
-                                    messagesIds.toTypedArray()
-                                )
-                                pluto.storeMessages(messages)
-                            }
+                            processMessages(array)
                         }
                         // Wait for the specified request interval before fetching new messages
                         delay(Duration.ofSeconds(requestInterval.toLong()).toMillis())
@@ -196,6 +178,48 @@ class ConnectionManager(
             pairings.removeAt(index)
         }
         return null
+    }
+
+    internal fun processMessages(arrayMessages: Array<Pair<String, Message>>) {
+        scope.launch {
+            val messagesIds = mutableListOf<String>()
+            val messages = mutableListOf<Message>()
+            arrayMessages.map { pair ->
+                messagesIds.add(pair.first)
+                messages.add(pair.second)
+            }
+
+            val allMessages = pluto.getAllMessages().first()
+
+            val revokedMessages = messages.filter { it.piuri == ProtocolType.PrismRevocation.value }
+            revokedMessages.forEach { msg ->
+                val revokedMessage = RevocationNotification.fromMessage(msg)
+                val threadId = revokedMessage.body.threadId
+                val matchingMessages =
+                    allMessages.filter { it.piuri == ProtocolType.DidcommIssueCredential.value && it.thid == threadId }
+                if (matchingMessages.isNotEmpty()) {
+                    matchingMessages.forEach { message ->
+                        val issueMessage = IssueCredential.fromMessage(message)
+                        if (pollux.extractCredentialFormatFromMessage(issueMessage.attachments) == CredentialType.JWT) {
+                            val attachment =
+                                issueMessage.attachments.firstOrNull()?.data as? AttachmentBase64
+                            attachment?.let {
+                                val credentialId = it.base64.base64UrlDecoded
+                                pluto.revokeCredential(credentialId)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If there are any messages, mark them as read and store them
+            if (messagesIds.isNotEmpty()) {
+                mediationHandler.registerMessagesAsRead(
+                    messagesIds.toTypedArray()
+                )
+                pluto.storeMessages(messages)
+            }
+        }
     }
 
     /**
