@@ -230,7 +230,9 @@ class PrismAgent {
             if (flowState.subscriptionCount.value <= 0) {
                 state = State.STOPPED
             } else {
-                throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Agent state only accepts one subscription.")
+                throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
+                    "Agent state only accepts one subscription."
+                )
                 // throw Exception("Agent state only accepts one subscription.")
             }
         }
@@ -427,7 +429,12 @@ class PrismAgent {
 
         verificationMethods.values.forEach {
             if (it.type.contains("X25519")) {
-                pluto.storePrivateKeys(keyAgreementKeyPair.privateKey as StorableKey, did, 0, it.id.toString())
+                pluto.storePrivateKeys(
+                    keyAgreementKeyPair.privateKey as StorableKey,
+                    did,
+                    0,
+                    it.id.toString()
+                )
             } else if (it.type.contains("Ed25519")) {
                 pluto.storePrivateKeys(
                     authenticationKeyPair.privateKey as StorableKey,
@@ -565,7 +572,10 @@ class PrismAgent {
      * @throws [PolluxError.InvalidPrismDID] if there is a problem creating the request credential.
      * @throws [io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError] if credential type is not supported
      **/
-    @Throws(PolluxError.InvalidPrismDID::class, io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
+    @Throws(
+        PolluxError.InvalidPrismDID::class,
+        io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class
+    )
     suspend fun prepareRequestCredentialWithIssuer(
         did: DID,
         offer: OfferCredential
@@ -655,7 +665,9 @@ class PrismAgent {
 
             else -> {
                 // TODO: Create new prism agent error message
-                throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Not supported credential type: $type")
+                throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
+                    "Not supported credential type: $type"
+                )
                 // throw Error("Not supported credential type: $type")
             }
         }
@@ -686,7 +698,9 @@ class PrismAgent {
                 val metadata = if (credentialType == CredentialType.ANONCREDS_ISSUE) {
                     val plutoMetadata =
                         pluto.getCredentialMetadata(message.thid).first()
-                            ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Invalid credential metadata")
+                            ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
+                                "Invalid credential metadata"
+                            )
                     CredentialRequestMetadata(
                         plutoMetadata.json
                     )
@@ -709,8 +723,13 @@ class PrismAgent {
                     )
                 pluto.storeCredential(storableCredential)
                 return credential
-            } ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Thid should not be null")
-        } ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Cannot find attachment base64 in message")
+            }
+                ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
+                    "Thid should not be null"
+                )
+        } ?: throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
+            "Cannot find attachment base64 in message"
+        )
     }
 
 // Message Events
@@ -811,7 +830,10 @@ class PrismAgent {
             prismOnboarding.from = did
             return prismOnboarding
         } catch (e: Exception) {
-            throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(e.message, e.cause)
+            throw io.iohk.atala.prism.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
+                e.message,
+                e.cause
+            )
         }
     }
 
@@ -913,7 +935,10 @@ class PrismAgent {
 
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
                 val keyPair =
-                    Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, privateKeyKeyPath))
+                    Secp256k1KeyPair.generateKeyPair(
+                        seed,
+                        KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
+                    )
                 val requestData = request.attachments.mapNotNull {
                     when (it.data) {
                         is AttachmentJsonData -> it.data.data
@@ -936,7 +961,11 @@ class PrismAgent {
                     throw PrismAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
                 }
                 val linkSecret = getLinkSecret()
-                val presentation = pollux.createVerifiablePresentationAnoncred(request, credential as AnonCredential, linkSecret)
+                val presentation = pollux.createVerifiablePresentationAnoncred(
+                    request,
+                    credential as AnonCredential,
+                    linkSecret
+                )
                 presentationString = presentation.getJson()
             }
 
@@ -957,6 +986,15 @@ class PrismAgent {
             body = Presentation.Body(request.body.goalCode, request.body.comment),
             attachments = arrayOf(attachmentDescriptor)
         )
+    }
+
+    fun observeRevokedCredentials(): Flow<List<Credential>> {
+        return pluto.observeRevokedCredentials()
+            .map { list ->
+                list.map {
+                    pollux.restoreCredential(it.restorationId, it.credentialData, it.revoked)
+                }
+            }
     }
 
     /**

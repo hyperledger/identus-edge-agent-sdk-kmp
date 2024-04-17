@@ -328,5 +328,15 @@ interface Pluto {
      */
     fun getCredentialMetadata(linkSecretName: String): Flow<CredentialRequestMeta?>
 
+    /**
+     * Revokes an existing credential using the credential ID.
+     *
+     * @param credentialId The ID of the credential to be revoked
+     */
     fun revokeCredential(credentialId: String)
+
+    /**
+     * Provides a flow to listen for revoked credentials.
+     */
+    fun observeRevokedCredentials(): Flow<List<CredentialRecovery>>
 }

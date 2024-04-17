@@ -184,4 +184,8 @@ class PlutoMock : Pluto {
     override fun revokeCredential(credentialId: String) {
         TODO("Not yet implemented")
     }
+
+    override fun observeRevokedCredentials(): Flow<List<CredentialRecovery>> {
+        TODO("Not yet implemented")
+    }
 }

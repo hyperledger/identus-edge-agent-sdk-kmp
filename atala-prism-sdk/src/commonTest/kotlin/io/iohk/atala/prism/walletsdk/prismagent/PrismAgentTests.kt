@@ -357,7 +357,7 @@ class PrismAgentTests {
 
     @Test
     fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
-        val getLinkSecretReturn = flow<String> { "linkSecret" }
+        val getLinkSecretReturn = flow<String> { emit("linkSecret") }
         plutoMock.getLinkSecretReturn = getLinkSecretReturn
         val agent = PrismAgent(
             apollo = apolloMock,

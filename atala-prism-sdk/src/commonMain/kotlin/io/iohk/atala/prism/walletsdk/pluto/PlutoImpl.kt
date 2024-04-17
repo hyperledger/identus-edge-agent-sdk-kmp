@@ -1026,7 +1026,29 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Revokes an existing credential using the credential ID.
+     *
+     * @param credentialId The ID of the credential to be revoked
+     */
     override fun revokeCredential(credentialId: String) {
         getInstance().storableCredentialQueries.revokeCredentialById(credentialId)
+    }
+
+    /**
+     * Provides a flow to listen for revoked credentials.
+     */
+    override fun observeRevokedCredentials(): Flow<List<CredentialRecovery>> {
+        return getInstance().storableCredentialQueries.observeRevokedCredential()
+            .asFlow()
+            .map {
+                it.executeAsList().map { credential ->
+                    CredentialRecovery(
+                        restorationId = credential.recoveryId,
+                        credentialData = credential.credentialData,
+                        revoked = true
+                    )
+                }
+            }
     }
 }

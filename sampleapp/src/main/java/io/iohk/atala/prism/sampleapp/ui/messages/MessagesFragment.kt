@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import io.iohk.atala.prism.sampleapp.R
@@ -52,7 +53,8 @@ class MessagesFragment : Fragment() {
 
         // Set up the spinner with the options
         context?.let {
-            val adapter = CustomArrayAdapter(it, android.R.layout.simple_spinner_dropdown_item, credentials)
+            val adapter =
+                CustomArrayAdapter(it, android.R.layout.simple_spinner_dropdown_item, credentials)
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             dialogBinding.spinner.adapter = adapter
 
@@ -81,6 +83,16 @@ class MessagesFragment : Fragment() {
                 viewModel.preparePresentationProof(credential, message)
             }
         }
+        viewModel.revokedCredentialsStream()
+            .observe(this.viewLifecycleOwner) { revokedCredentials ->
+                if (revokedCredentials.isNotEmpty()) {
+                    Toast.makeText(
+                        context,
+                        "Credential revoked ID: ${revokedCredentials.last().id}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
     }
 
     companion object {
