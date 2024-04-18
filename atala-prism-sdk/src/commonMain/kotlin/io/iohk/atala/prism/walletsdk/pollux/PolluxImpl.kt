@@ -180,7 +180,7 @@ class PolluxImpl(
         val cred: Credential
         when (restorationIdentifier) {
             "jwt+credential" -> {
-                JWTCredential.fromJwtString(credentialData.decodeToString())
+                cred = JWTCredential.fromJwtString(credentialData.decodeToString())
             }
 
             "anon+credential" -> {

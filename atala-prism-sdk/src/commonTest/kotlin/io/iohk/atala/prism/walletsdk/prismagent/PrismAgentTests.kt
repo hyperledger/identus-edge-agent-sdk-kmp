@@ -94,7 +94,8 @@ class PrismAgentTests {
                 castorMock,
                 plutoMock,
                 mediationHandlerMock,
-                mutableListOf()
+                mutableListOf(),
+                polluxMock
             )
         json = Json {
             ignoreUnknownKeys = true
