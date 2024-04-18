@@ -13,8 +13,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.ktor.http.HttpStatusCode
-import java.text.SimpleDateFormat
-import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -43,6 +41,8 @@ import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.mockito.kotlin.mock
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -52,12 +52,11 @@ import kotlin.test.assertNotNull
 class PolluxImplTest {
 
     lateinit var pollux: PolluxImpl
-    lateinit var castorMock: CastorMock
+    lateinit var castor: Castor
     lateinit var apiMock: ApiMock
 
     @BeforeTest
     fun setup() {
-        castorMock = CastorMock()
         val json = """
             {
                 "name": "Schema name",
@@ -67,7 +66,9 @@ class PolluxImplTest {
             }
         """
         apiMock = ApiMock(HttpStatusCode.OK, json)
-        pollux = PolluxImpl(castorMock, apiMock)
+        val loggerMock = mock<PrismLogger>()
+        castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
+        pollux = PolluxImpl(castor, apiMock)
     }
 
     @Test
@@ -261,9 +262,15 @@ class PolluxImplTest {
             val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
 
             val issuerKeyPair =
-                Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+                Secp256k1KeyPair.generateKeyPair(
+                    Seed(MnemonicHelper.createRandomSeed()),
+                    KeyCurve(Curve.SECP256K1)
+                )
             val holderKeyPair =
-                Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+                Secp256k1KeyPair.generateKeyPair(
+                    Seed(MnemonicHelper.createRandomSeed()),
+                    KeyCurve(Curve.SECP256K1)
+                )
             val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
             val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -303,16 +310,21 @@ class PolluxImplTest {
 
     @Test
     fun testVerifyPresentationSubmission_whenWrongJwtIssuer_thenVerifiedFalse() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
-
         val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val wrongIssuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val issuerDID = castor.createPrismDID(wrongIssuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -343,16 +355,21 @@ class PolluxImplTest {
 
     @Test
     fun testVerifyPresentationSubmission_whenWrongJwtHolder_thenVerifiedFalse() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
-
         val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val wrongHolderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(wrongHolderKeyPair.publicKey, emptyArray())
 
@@ -382,53 +399,61 @@ class PolluxImplTest {
     }
 
     @Test
-    fun testVerifyPresentationSubmission_whenJwtSignaturesOkAndFieldsNot_thenVerifiedFalse() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
+    fun testVerifyPresentationSubmission_whenJwtSignaturesOkAndFieldsNot_thenVerifiedFalse() =
+        runTest {
+            val issuerKeyPair =
+                Secp256k1KeyPair.generateKeyPair(
+                    Seed(MnemonicHelper.createRandomSeed()),
+                    KeyCurve(Curve.SECP256K1)
+                )
+            val holderKeyPair =
+                Secp256k1KeyPair.generateKeyPair(
+                    Seed(MnemonicHelper.createRandomSeed()),
+                    KeyCurve(Curve.SECP256K1)
+                )
+            val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
+            val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
-        val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-        val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
-        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
-        val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
-
-        val vtc = createVerificationTestCase(
-            VerificationTestCase(
-                issuer = issuerDID,
-                holder = holderDID,
-                issuerPrv = issuerKeyPair.privateKey,
-                holderPrv = holderKeyPair.privateKey,
-                subject = """{"course": "Identus Training course Certification 2023"} """,
-                claims = PresentationClaims(
-                    claims = mapOf(
-                        "course" to InputFieldFilter(
-                            type = "string",
-                            pattern = "Identus Training course Certification 2024"
+            val vtc = createVerificationTestCase(
+                VerificationTestCase(
+                    issuer = issuerDID,
+                    holder = holderDID,
+                    issuerPrv = issuerKeyPair.privateKey,
+                    holderPrv = holderKeyPair.privateKey,
+                    subject = """{"course": "Identus Training course Certification 2023"} """,
+                    claims = PresentationClaims(
+                        claims = mapOf(
+                            "course" to InputFieldFilter(
+                                type = "string",
+                                pattern = "Identus Training course Certification 2024"
+                            )
                         )
-                    )
-                ),
+                    ),
+                )
             )
-        )
-        assertFailsWith(PolluxError.VerificationUnsuccessful::class, "Identus Training course Certification 2023") {
-            pollux.verifyPresentationSubmission(
-                presentationSubmission = vtc.second,
-                options = PresentationSubmissionOptionsJWT(vtc.first)
-            )
+            assertFailsWith(
+                PolluxError.VerificationUnsuccessful::class,
+                "Identus Training course Certification 2023"
+            ) {
+                pollux.verifyPresentationSubmission(
+                    presentationSubmission = vtc.second,
+                    options = PresentationSubmissionOptionsJWT(vtc.first)
+                )
+            }
         }
-    }
 
     @Test
     fun testVerifyPresentationSubmission_whenJwtSignaturesAndFieldsOk_thenVerifiedOk() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
-
         val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -459,14 +484,16 @@ class PolluxImplTest {
 
     @Test
     fun testDescriptorPath_whenGetValue_thenArrayIndexValueAsString() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
-
         val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -501,14 +528,16 @@ class PolluxImplTest {
 
     @Test
     fun testDescriptorPath_whenClaimsAreEnum_thenValidatedOk() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
-
         val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -539,14 +568,16 @@ class PolluxImplTest {
 
     @Test
     fun testDescriptorPath_whenClaimsAreConst_thenValidatedOk() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
-
         val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -577,14 +608,16 @@ class PolluxImplTest {
 
     @Test
     fun testDescriptorPath_whenClaimsAreValue_thenValidatedOk() = runTest {
-        val loggerMock = mock<PrismLogger>()
-        val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
-        val pollux = PolluxImpl(castor, apiMock)
-
         val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(Seed(MnemonicHelper.createRandomSeed()), KeyCurve(Curve.SECP256K1))
+            Secp256k1KeyPair.generateKeyPair(
+                Seed(MnemonicHelper.createRandomSeed()),
+                KeyCurve(Curve.SECP256K1)
+            )
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
@@ -687,33 +720,24 @@ class PolluxImplTest {
         signer.jcaContext.provider = provider
         signedJwt.sign(signer)
         val jwtString = signedJwt.serialize()
-        val credential = JWTCredential.fromJwtString(jwtString)
-
-        val signedJwtClaims = pollux.signClaimsProofPresentationJWT(
-            subjectDID = testCaseOptions.holder,
-            privateKey = pollux.parsePrivateKey(testCaseOptions.holderPrv),
-            credential = credential,
-            domain = testCaseOptions.domain,
-            challenge = testCaseOptions.challenge
-        )
+        val jwtCredential = JWTCredential.fromJwtString(jwtString)
 
         val presentationDefinition = pollux.createPresentationDefinitionRequest(
             type = CredentialType.JWT,
             presentationClaims = PresentationClaims(
-                schema = testCaseOptions.claims.schema,
                 issuer = testCaseOptions.issuer.toString(),
                 claims = testCaseOptions.claims.claims
             ),
-            options = PresentationOptions(domain = "domain", challenge = "challenge")
+            options = PresentationOptions(domain = "domain", challenge = testCaseOptions.challenge)
         )
 
         val presentationSubmission = pollux.createPresentationSubmission(
             presentationDefinitionRequest = presentationDefinition,
-            credential = credential,
+            credential = jwtCredential,
             privateKey = testCaseOptions.holderPrv
         )
 
-        return Triple(presentationDefinition, presentationSubmission, signedJwtClaims)
+        return Triple(presentationDefinition, presentationSubmission, jwtString)
     }
 
     data class VerificationTestCase(

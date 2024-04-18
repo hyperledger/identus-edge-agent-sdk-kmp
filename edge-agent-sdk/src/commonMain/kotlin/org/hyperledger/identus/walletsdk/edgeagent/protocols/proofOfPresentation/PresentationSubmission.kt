@@ -6,6 +6,11 @@ import java.util.UUID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+enum class DescriptorItemFormat(val value: String) {
+    JWT_VC("jwt_vc"),
+    JWT_VP("jwt_vp")
+}
+
 @Serializable
 data class PresentationSubmission(
     @SerialName("presentation_submission")
