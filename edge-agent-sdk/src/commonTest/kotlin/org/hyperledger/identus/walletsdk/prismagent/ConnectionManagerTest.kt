@@ -54,7 +54,7 @@ class ConnectionManagerTest {
     @Mock
     lateinit var basicMediatorHandlerMock: MediationHandler
 
-    lateinit var connectionManager: ConnectionManager
+    lateinit var connectionManager: ConnectionManagerImpl
 
     val testDispatcher = TestCoroutineDispatcher()
 
