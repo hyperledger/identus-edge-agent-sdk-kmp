@@ -27,6 +27,7 @@ import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
+import io.iohk.atala.prism.walletsdk.apollo.helpers.BytesOps
 import io.iohk.atala.prism.walletsdk.apollo.utils.Secp256k1PrivateKey
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
 import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Pollux
@@ -51,6 +52,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.SignableKey
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.W3CCredential
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.DescriptorItemFormat
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest.PresentationDefinition.InputDescriptor
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
@@ -586,6 +588,7 @@ class PolluxImpl(
         credential?.let {
             presentation[VERIFIABLE_CREDENTIAL] = listOf(it.id)
         }
+
         val claims = JWTClaimsSet.Builder()
             .issuer(subjectDID.toString())
             .audience(domain)
@@ -697,10 +700,18 @@ class PolluxImpl(
         credential as JWTCredential
         val descriptorItems =
             presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
+                if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
+                    throw Exception("Invalid format") // TODO: Custom exception
+                }
                 PresentationSubmission.Submission.DescriptorItem(
                     id = inputDescriptor.id,
-                    format = "jwt",
-                    path = "$.verifiablePresentation[0]"
+                    format = DescriptorItemFormat.JWT_VP.value,
+                    path = "$.verifiablePresentation[0]",
+                    pathNested = PresentationSubmission.Submission.DescriptorItem(
+                        id = inputDescriptor.id,
+                        format = DescriptorItemFormat.JWT_VC.value,
+                        path = "$.verifiableCredential[0]"
+                    )
                 )
             }.toTypedArray()
 
@@ -712,13 +723,16 @@ class PolluxImpl(
                     actual = privateKey::class.simpleName
                 )
             }
+            val signedChallenge =
+                privateKey.sign(presentationDefinitionRequest.options.challenge.encodeToByteArray())
+
             val ecPrivateKey = parsePrivateKey(privateKey)
             val presentationJwt = signClaimsProofPresentationJWT(
                 subjectDID = DID(subject),
                 privateKey = ecPrivateKey,
                 credential = credential,
                 domain = presentationDefinitionRequest.options.domain,
-                challenge = presentationDefinitionRequest.options.challenge
+                challenge = BytesOps.bytesToHex(signedChallenge)
             )
 
             return PresentationSubmission(
@@ -745,111 +759,135 @@ class PolluxImpl(
             val descriptorMap = DescriptorPath(Json.encodeToJsonElement(presentationSubmission))
             val descriptorMaps = presentationSubmission.presentationSubmission.descriptorMap
             descriptorMaps.forEach { descriptorItem ->
-                if (descriptorItem.format == "jwt") {
-                    val holderJws =
-                        descriptorMap.getValue(descriptorItem.path)
-                            ?: throw Exception("Could not find ${descriptorItem.path} value")
-                    val presentation = JWTCredential.fromJwtString(holderJws as String)
-                    presentation.verifiablePresentation?.let { verifiablePresentation ->
-                        verifiablePresentation.type.find { it == VERIFIABLE_PRESENTATION }
-                            ?: throw Exception("Credential type should be JWT")
+                if (descriptorItem.format != DescriptorItemFormat.JWT_VP.value) {
+                    throw PolluxError.VerificationUnsuccessful("Invalid submission, ${descriptorItem.path} expected to have format ${DescriptorItemFormat.JWT_VP.value}")
+                }
 
-                        val holder = presentation.issuer
-                        val didDocHolder = castor.resolveDID(holder)
-                        val authenticationMethodHolder =
-                            didDocHolder.coreProperties.find { it::class == DIDDocument.Authentication::class }
-                                ?: throw PolluxError.VerificationUnsuccessful("Holder core properties must contain Authentication")
-                        val ecPublicKeysHolder =
-                            extractEcPublicKeyFromVerificationMethod(authenticationMethodHolder)
+                val jws =
+                    descriptorMap.getValue(descriptorItem.path)
+                        ?: throw PolluxError.VerificationUnsuccessful("Could not find ${descriptorItem.path} value")
+                val presentation = JWTCredential.fromJwtString(jws as String)
+                val issuer = presentation.issuer
 
-                        if (!verifyJWTSignatureWithEcPublicKey(holderJws, ecPublicKeysHolder)) {
-                            throw PolluxError.VerificationUnsuccessful("Holder signature not valid")
-                        }
+                val presentationDefinitionOptions = presentationDefinitionRequest.options
+                val challenge = presentationDefinitionOptions.challenge
+                if (challenge.isNotBlank()) {
+                    val nonce = presentation.nonce
+                    if (nonce.isNullOrBlank()) {
+                        throw PolluxError.VerificationUnsuccessful("Invalid submission, ${descriptorItem.path} does snot contain a nonce with a valid signature for the challenge.")
+                    }
+                    val isValid = castor.verifySignature(
+                        did = DID(issuer),
+                        challenge = challenge.encodeToByteArray(),
+                        signature = BytesOps.hexToBytes(nonce)
+                    )
+                    if (!isValid) {
+                        throw PolluxError.VerificationUnsuccessful("Invalid submission, the signature from ${descriptorItem.path} is not valid for the challenge.")
+                    }
+                }
 
-                        val vcJws = verifiablePresentation.verifiableCredential.firstOrNull()
-                            ?: throw PolluxError.VerificationUnsuccessful("VC credential not found")
-                        val jwtCredential = JWTCredential.fromJwtString(vcJws)
-                        val didDocIssuer = castor.resolveDID(jwtCredential.issuer)
-                        val authenticationMethodIssuer =
-                            didDocIssuer.coreProperties.find { it::class == DIDDocument.Authentication::class }
-                                ?: throw PolluxError.VerificationUnsuccessful("Issuer core properties must contain Authentication")
-                        val ecPublicKeysIssuer =
-                            extractEcPublicKeyFromVerificationMethod(authenticationMethodIssuer)
+                presentation.verifiablePresentation?.let { verifiablePresentation ->
+                    descriptorItem.pathNested?.let { pathNested ->
+                        val verifiableCredentialMapper =
+                            DescriptorPath(Json.encodeToJsonElement(verifiablePresentation))
+                        val value = verifiableCredentialMapper.getValue(pathNested.path)
+                        value?.let { vc ->
+                            val verifiableCredential = JWTCredential.fromJwtString(vc as String)
+                            if (verifiableCredential.subject != issuer) {
+                                throw PolluxError.VerificationUnsuccessful("Invalid submission,") // TODO: Custom error
+                            }
 
-                        if (!verifyJWTSignatureWithEcPublicKey(vcJws, ecPublicKeysIssuer)) {
-                            throw PolluxError.VerificationUnsuccessful("Issuer signature not valid")
-                        }
+                            val didDocHolder = castor.resolveDID(verifiableCredential.issuer)
+                            val authenticationMethodHolder =
+                                didDocHolder.coreProperties.find { it::class == DIDDocument.Authentication::class }
+                                    ?: throw PolluxError.VerificationUnsuccessful("Holder core properties must contain Authentication")
+                            val ecPublicKeysHolder =
+                                extractEcPublicKeyFromVerificationMethod(authenticationMethodHolder)
 
-                        // Now we are going to validate the requested fields with the provided credentials
-                        val verifiableCredentialDescriptorPath = DescriptorPath(Json.encodeToJsonElement(jwtCredential))
-                        val inputDescriptor = inputDescriptors.find { it.id == descriptorItem.id }
-                        if (inputDescriptor != null) {
-                            val constraints = inputDescriptor.constraints
-                            val fields = constraints.fields
-                            if (constraints.limitDisclosure == InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
-                                fields?.forEach { field ->
-                                    val optional = field.optional
-                                    if (!optional) {
-                                        var validClaim = false
-                                        var reason = ""
-                                        val paths = field.path
-                                        paths.forEach { path ->
-                                            val fieldValue = verifiableCredentialDescriptorPath.getValue(path)
-                                            if (field.filter != null && fieldValue != null) {
-                                                val filter: InputFieldFilter = field.filter
-                                                filter.pattern?.let { pattern ->
-                                                    val regexPattern = Regex(pattern)
-                                                    if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
-                                                        validClaim = true
-                                                        return@forEach
-                                                    } else {
-                                                        reason =
-                                                            "Expected the $path field to be $pattern but got $fieldValue"
-                                                    }
-                                                }
-                                                filter.enum?.let { enum ->
-                                                    enum.forEach { predicate ->
-                                                        if (fieldValue == predicate) {
+                            if (!verifyJWTSignatureWithEcPublicKey(
+                                    verifiableCredential.id,
+                                    ecPublicKeysHolder
+                                )
+                            ) {
+                                throw PolluxError.VerificationUnsuccessful("Invalid presentation credential JWT Signature")
+                            }
+
+                            // Now we are going to validate the requested fields with the provided credentials
+                            val verifiableCredentialDescriptorPath =
+                                DescriptorPath(Json.encodeToJsonElement(verifiableCredential))
+                            val inputDescriptor =
+                                inputDescriptors.find { it.id == descriptorItem.id }
+                            if (inputDescriptor != null) {
+                                val constraints = inputDescriptor.constraints
+                                val fields = constraints.fields
+                                if (constraints.limitDisclosure == InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
+                                    fields?.forEach { field ->
+                                        val optional = field.optional
+                                        if (!optional) {
+                                            var validClaim = false
+                                            var reason = ""
+                                            val paths = field.path
+                                            paths.forEach { path ->
+                                                val fieldValue =
+                                                    verifiableCredentialDescriptorPath.getValue(path)
+                                                if (field.filter != null && fieldValue != null) {
+                                                    val filter: InputFieldFilter = field.filter
+                                                    filter.pattern?.let { pattern ->
+                                                        val regexPattern = Regex(pattern)
+                                                        if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
                                                             validClaim = true
                                                             return@forEach
+                                                        } else {
+                                                            reason =
+                                                                "Expected the $path field to be $pattern but got $fieldValue"
                                                         }
                                                     }
-                                                    if (!validClaim) {
-                                                        reason =
-                                                            "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
+                                                    filter.enum?.let { enum ->
+                                                        enum.forEach { predicate ->
+                                                            if (fieldValue == predicate) {
+                                                                validClaim = true
+                                                                return@forEach
+                                                            }
+                                                        }
+                                                        if (!validClaim) {
+                                                            reason =
+                                                                "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
+                                                        }
                                                     }
-                                                }
-                                                filter.const?.let { const ->
-                                                    const.forEach { constValue ->
-                                                        if (fieldValue == constValue) {
+                                                    filter.const?.let { const ->
+                                                        const.forEach { constValue ->
+                                                            if (fieldValue == constValue) {
+                                                                validClaim = true
+                                                                return@forEach
+                                                            }
+                                                        }
+                                                        if (!validClaim) {
+                                                            reason =
+                                                                "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
+                                                        }
+                                                    }
+                                                    filter.value?.let { value ->
+                                                        if (value == fieldValue) {
                                                             validClaim = true
                                                             return@forEach
+                                                        } else {
+                                                            reason =
+                                                                "Expected the $path field to be $value but got $fieldValue"
                                                         }
-                                                    }
-                                                    if (!validClaim) {
-                                                        reason =
-                                                            "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
-                                                    }
-                                                }
-                                                filter.value?.let { value ->
-                                                    if (value == fieldValue) {
-                                                        validClaim = true
-                                                        return@forEach
-                                                    } else {
-                                                        reason =
-                                                            "Expected the $path field to be $value but got $fieldValue"
                                                     }
                                                 }
                                             }
-                                        }
-                                        if (!validClaim) {
-                                            throw PolluxError.VerificationUnsuccessful(reason)
+                                            if (!validClaim) {
+                                                throw PolluxError.VerificationUnsuccessful(reason)
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
-                    } ?: throw PolluxError.VerificationUnsuccessful("Presentation must contain verifiable presentation")
+                            ?: throw PolluxError.VerificationUnsuccessful("Invalid submission,") // TODO: Custom error
+                    }
+                        ?: throw PolluxError.VerificationUnsuccessful("Invalid submission,") // TODO: Custom error
                     return true
                 }
             }

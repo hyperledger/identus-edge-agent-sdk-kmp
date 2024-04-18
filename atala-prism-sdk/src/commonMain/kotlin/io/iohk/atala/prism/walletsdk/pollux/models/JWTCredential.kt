@@ -50,7 +50,8 @@ data class JWTCredential(
     @SerialName("vp")
     override var verifiablePresentation: JWTVerifiablePresentation? = null,
     @SerialName(VC)
-    override var verifiableCredential: JWTVerifiableCredential? = null
+    override var verifiableCredential: JWTVerifiableCredential? = null,
+    var nonce: String? = null
 ) : Credential, JWTPayload {
 
     @Transient
