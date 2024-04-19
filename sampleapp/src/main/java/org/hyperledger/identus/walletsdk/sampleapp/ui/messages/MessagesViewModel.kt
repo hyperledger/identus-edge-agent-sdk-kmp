@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import io.iohk.atala.prism.sampleapp.ui.messages.UiMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -17,7 +18,6 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
-import org.hyperledger.identus.walletsdk.domain.models.StringPredicate
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -26,6 +26,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
+import kotlinx.coroutines.CoroutineExceptionHandler
 import org.hyperledger.identus.walletsdk.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -98,16 +99,12 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 toDID = DID(toDID),
                 presentationClaims = PresentationClaims(
                     claims = mapOf(
-//                        "$.issuer" to InputFieldFilter(
-//                            type = "string",
-//                            value = "did:prism:8b5321c004d4a11e87ef3601350eaa8b472a546d11677c9c6845c55a490f02f4"
-//                        ),
                         "emailAddress" to InputFieldFilter(
                             type = "string",
-                            pattern = "corporate@tomate.domain.com"
+                            pattern = "cristian.castro@iohk.io"
                         )
                     ),
-                    issuer = "did:prism:8b5321c004d4a11e87ef3601350eaa8b472a546d11677c9c6845c55a490f02f4"
+                    issuer = "did:prism:e02e8099d50351345c5dd831a9e9112b394a85d0064a2eb59429080734a159b6:CrkBCrYBEjoKBmF1dGgtMRAESi4KCXNlY3AyNTZrMRIhAuVYcorfWnL0fYtA5vgJK4_-ob3bUDc-w2UOHdO3QEvqEjsKB2lzc3VlLTEQAkouCglzZWNwMjU2azESIQLCu9NntqupBj-0NCdMA75zReBeyaCJO1aGYeP4BMQHVBI7CgdtYXN0ZXIwEAFKLgoJc2VjcDI1NmsxEiEDOWgvQx6vRu6wUb4FYcJuaECj9BjPMJvRp8LwM61hET4"
                 ),
                 domain = "domain",
                 challenge = "challenge"
@@ -153,6 +150,25 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             }
         }
         return revokedCredentials
+    }
+
+    fun handlePresentation(uiMessage: UiMessage): LiveData<String> {
+        val liveData = MutableLiveData<String>()
+        val handler = CoroutineExceptionHandler { _, exception ->
+            liveData.postValue(exception.message)
+        }
+        viewModelScope.launch(handler) {
+            messages.value?.find { it.id == uiMessage.id }?.let { message ->
+                val sdk = Sdk.getInstance()
+                val valid = sdk.agent.handlePresentation(message)
+                if (valid) {
+                    liveData.postValue("Valid!")
+                } else {
+                    liveData.postValue("Not valid!")
+                }
+            }
+        }
+        return liveData
     }
 
     private suspend fun processMessages(messages: List<Message>) {
