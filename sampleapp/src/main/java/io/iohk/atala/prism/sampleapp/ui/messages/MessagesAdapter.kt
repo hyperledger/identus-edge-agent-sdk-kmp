@@ -8,25 +8,16 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import io.iohk.atala.prism.sampleapp.R
-import io.iohk.atala.prism.sampleapp.Sdk
-import io.iohk.atala.prism.walletsdk.domain.models.AttachmentBase64
 import io.iohk.atala.prism.walletsdk.domain.models.CredentialType
-import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
-import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
 
-class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) :
-    RecyclerView.Adapter<MessagesAdapter.MessageHolder>() {
+class MessagesAdapter(
+    private var data: MutableList<UiMessage> = mutableListOf(),
+    private val validateListener: MessagesFragment.ValidateMessageListener
+) : RecyclerView.Adapter<MessagesAdapter.MessageHolder>() {
 
-    fun updateMessages(updatedMessages: List<Message>) {
+    fun updateMessages(updatedMessages: List<UiMessage>) {
         val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
             override fun getOldListSize(): Int {
                 return data.size
@@ -37,16 +28,23 @@ class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) 
             }
 
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                return data[oldItemPosition].id == updatedMessages[newItemPosition].id
+                return data[oldItemPosition].id == updatedMessages[newItemPosition].id && data[oldItemPosition].status == updatedMessages[newItemPosition].status
             }
 
             override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                return data[oldItemPosition] == updatedMessages[newItemPosition]
+                return data[oldItemPosition] == updatedMessages[newItemPosition] && data[oldItemPosition].status == updatedMessages[newItemPosition].status
             }
         })
         data.clear()
         data.addAll(updatedMessages)
         diffResult.dispatchUpdatesTo(this)
+    }
+
+    fun updateMessageStatus(updatedMessage: UiMessage) {
+        val message = data.find { it.id == updatedMessage.id }
+        val index = data.indexOf(message)
+        data[index] = updatedMessage
+        notifyItemChanged(index)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder {
@@ -57,7 +55,7 @@ class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) 
 
     override fun onBindViewHolder(holder: MessageHolder, position: Int) {
         // Bind data to the views
-        holder.bind(data[position])
+        holder.bind(data[position], validateListener)
     }
 
     override fun getItemCount(): Int {
@@ -69,42 +67,48 @@ class MessagesAdapter(private var data: MutableList<Message> = mutableListOf()) 
         private val type: TextView = itemView.findViewById(R.id.message_type)
         private val body: TextView = itemView.findViewById(R.id.message)
         private val validate: Button = itemView.findViewById(R.id.validate)
+        private val validationError: TextView = itemView.findViewById(R.id.validation_error)
 
         @OptIn(DelicateCoroutinesApi::class)
-        fun bind(message: Message) {
+        fun bind(message: UiMessage, validateListener: MessagesFragment.ValidateMessageListener) {
             type.text = message.piuri
             if (message.attachments.isNotEmpty()) {
                 val attachmentDescriptor = message.attachments.first()
                 if (message.piuri == ProtocolType.DidcommPresentation.value && attachmentDescriptor.format == CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type) {
+                    validationError.visibility = View.GONE
                     validate.visibility = View.VISIBLE
-                    validate.setOnClickListener {
-                        GlobalScope.launch(Dispatchers.IO) {
-                            val sdk = Sdk.getInstance()
-                            if (sdk.agent.handlePresentation(message)) {
-                                val attachmentData = attachmentDescriptor.data
-                                if (attachmentData::class == AttachmentBase64::class) {
-                                    attachmentData as AttachmentBase64
-                                    val decoded = attachmentData.base64.decodeBase64String()
-                                    val presentationSubmission =
-                                        Json.decodeFromString<PresentationSubmission>(decoded)
-                                    presentationSubmission.verifiablePresentation.forEach { jwt ->
-                                        val jwtCredential = JWTCredential.fromJwtString(jwt)
-                                        // TODO: Extract fields to display
-                                    }
-                                }
-                                withContext(Dispatchers.Main) {
-                                    validate.text = "Valid presentation"
-                                    validate.isEnabled = false
-                                }
-                            } else {
-                                // TODO: Change UI body to say invalid presentation
-                            }
-                        }
+                    validate.setOnClickListener { validateListener.validateMessage(message) }
+                    message.status?.let { status ->
+                        validationError.text = status
+                        validationError.visibility = View.VISIBLE
+                        validate.visibility = View.GONE
                     }
-                    this.body.text = message.body
-                } else {
-                    validate.visibility = View.GONE
+//                        CoroutineScope(Dispatchers.IO).launch(handler) {
+//                            val sdk = Sdk.getInstance()
+//                            validationError.visibility = View.GONE
+//                            if (sdk.agent.handlePresentation(message)) {
+//                                val attachmentData = attachmentDescriptor.data
+//                                if (attachmentData::class == AttachmentBase64::class) {
+//                                    attachmentData as AttachmentBase64
+//                                    val decoded = attachmentData.base64.decodeBase64String()
+//                                    val presentationSubmission =
+//                                        Json.decodeFromString<PresentationSubmission>(decoded)
+//                                    presentationSubmission.verifiablePresentation.forEach { jwt ->
+//                                        val jwtCredential = JWTCredential.fromJwtString(jwt)
+//                                        // TODO: Extract fields to display
+//                                    }
+//                                }
+//                                withContext(Dispatchers.Main) {
+//                                    validate.text = "Valid presentation"
+//                                    validate.isEnabled = false
+//                                }
+//                            } else {
+//                                // TODO: Change UI body to say invalid presentation
+//                            }
+//                        }
                 }
+            } else {
+                validate.visibility = View.GONE
             }
         }
     }
