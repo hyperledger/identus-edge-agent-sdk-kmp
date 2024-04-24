@@ -47,6 +47,7 @@ import io.iohk.atala.prism.walletsdk.logger.PrismLoggerImpl
 import io.iohk.atala.prism.walletsdk.pollux.models.AnonCredential
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
 import io.iohk.atala.prism.walletsdk.pollux.models.JWTCredential
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.AgentOptions
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
@@ -119,6 +120,7 @@ class PrismAgent {
     private val api: Api
     private var connectionManager: ConnectionManager
     private var logger: PrismLogger
+    private val agentOptions: AgentOptions
 
     /**
      * Initializes the PrismAgent with the given dependencies.
@@ -144,7 +146,8 @@ class PrismAgent {
         connectionManager: ConnectionManager,
         seed: Seed?,
         api: Api?,
-        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT)
+        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
+        agentOptions: AgentOptions
     ) {
         prismAgentScope.launch {
             flowState.emit(State.STOPPED)
@@ -170,6 +173,7 @@ class PrismAgent {
             }
         )
         this.logger = logger
+        this.agentOptions = agentOptions
     }
 
     /**
@@ -195,7 +199,8 @@ class PrismAgent {
         seed: Seed? = null,
         api: Api? = null,
         mediatorHandler: MediationHandler,
-        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT)
+        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
+        agentOptions: AgentOptions
     ) {
         prismAgentScope.launch {
             flowState.emit(State.STOPPED)
@@ -220,9 +225,10 @@ class PrismAgent {
             }
         )
         this.logger = logger
+        this.agentOptions = agentOptions
         // Pairing will be removed in the future
         this.connectionManager =
-            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
+            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux, agentOptions.experiments.liveMode)
     }
 
     init {
@@ -462,7 +468,7 @@ class PrismAgent {
     fun setupMediatorHandler(mediatorHandler: MediationHandler) {
         stop()
         this.connectionManager =
-            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
+            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux, agentOptions.experiments.liveMode)
     }
 
     /**

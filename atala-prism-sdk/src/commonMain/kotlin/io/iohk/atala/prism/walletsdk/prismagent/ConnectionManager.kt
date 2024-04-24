@@ -44,6 +44,7 @@ class ConnectionManager(
     internal val mediationHandler: MediationHandler,
     private var pairings: MutableList<DIDPair>,
     private val pollux: Pollux,
+    private val experimentLiveModeOptIn: Boolean = false,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) : ConnectionsManager, DIDCommConnection {
 
@@ -66,22 +67,23 @@ class ConnectionManager(
                 // Resolve the DID document for the mediator
                 val mediatorDidDoc = castor.resolveDID(currentMediatorDID.toString())
                 var serviceEndpoint: String? = null
-
-                // Loop through the services in the DID document to find a WebSocket endpoint
-                mediatorDidDoc.services.forEach {
-                    if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
-                        serviceEndpoint = it.serviceEndpoint.uri
-                        return@forEach // Exit loop once the WebSocket endpoint is found
+                if (experimentLiveModeOptIn) {
+                    // Loop through the services in the DID document to find a WebSocket endpoint
+                    mediatorDidDoc.services.forEach {
+                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
+                            serviceEndpoint = it.serviceEndpoint.uri
+                            return@forEach // Exit loop once the WebSocket endpoint is found
+                        }
                     }
-                }
 
-                // If a WebSocket service endpoint is found
-                serviceEndpoint?.let { serviceEndpointUrl ->
-                    // Listen for unread messages on the WebSocket endpoint
-                    mediationHandler.listenUnreadMessages(
-                        serviceEndpointUrl
-                    ) { arrayMessages ->
-                        processMessages(arrayMessages)
+                    // If a WebSocket service endpoint is found
+                    serviceEndpoint?.let { serviceEndpointUrl ->
+                        // Listen for unread messages on the WebSocket endpoint
+                        mediationHandler.listenUnreadMessages(
+                            serviceEndpointUrl
+                        ) { arrayMessages ->
+                            processMessages(arrayMessages)
+                        }
                     }
                 }
 
