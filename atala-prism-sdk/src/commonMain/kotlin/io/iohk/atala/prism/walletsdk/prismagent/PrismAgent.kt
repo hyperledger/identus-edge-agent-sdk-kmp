@@ -135,6 +135,7 @@ class PrismAgent {
      * @param api An optional Api instance used by the PrismAgent if provided, otherwise a default ApiImpl will be used.
      * @param logger An optional PrismLogger instance used by the PrismAgent if provided, otherwise a PrismLoggerImpl with
      *               LogComponent.PRISM_AGENT will be used.
+     * @param agentOptions Options to configure certain features with in the prism agent.
      */
     @JvmOverloads
     constructor(
@@ -188,6 +189,7 @@ class PrismAgent {
      * @param api The instance of the API. Default is null.
      * @param mediatorHandler The mediator handler.
      * @param logger The logger for PrismAgent. Default is PrismLoggerImpl with LogComponent.PRISM_AGENT.
+     * @param agentOptions Options to configure certain features with in the prism agent.
      */
     @JvmOverloads
     constructor(

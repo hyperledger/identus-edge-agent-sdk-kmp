@@ -35,6 +35,7 @@ import kotlin.jvm.Throws
  * @property castor The instance of the Castor interface used for working with DIDs.
  * @property pluto The instance of the Pluto interface used for storing messages and connection information.
  * @property mediationHandler The instance of the MediationHandler interface used for handling mediation.
+ * @property experimentLiveModeOptIn Flag to opt in or out of the experimental feature mediator live mode, using websockets.
  * @property pairings The mutable list of DIDPair representing the connections managed by the ConnectionManager.
  */
 class ConnectionManager(
