@@ -21,6 +21,8 @@ import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.AgentOptions
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.Experiments
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
 import kotlinx.coroutines.CoroutineScope
@@ -137,7 +139,8 @@ class Sdk {
             mercury = mercury,
             pollux = pollux,
             seed = seed,
-            mediatorHandler = handler
+            mediatorHandler = handler,
+            agentOptions = AgentOptions(Experiments(liveMode = false))
         )
     }
 

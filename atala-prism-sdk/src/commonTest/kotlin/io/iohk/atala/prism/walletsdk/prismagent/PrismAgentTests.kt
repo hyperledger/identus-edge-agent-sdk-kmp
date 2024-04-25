@@ -22,6 +22,7 @@ import io.iohk.atala.prism.walletsdk.logger.PrismLoggerMock
 import io.iohk.atala.prism.walletsdk.mercury.ApiMock
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
+import io.iohk.atala.prism.walletsdk.prismagent.helpers.AgentOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
@@ -61,7 +62,7 @@ class PrismAgentTests {
         polluxMock = PolluxMock()
         mediationHandlerMock = MediationHandlerMock()
         // Pairing will be removed in the future
-        connectionManager = ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf(), polluxMock)
+        connectionManager = ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf(), polluxMock, true)
         json = Json {
             ignoreUnknownKeys = true
             prettyPrint = true
@@ -83,7 +84,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = seed,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
         plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
         val newDID = agent.createNewPrismDID()
@@ -106,7 +108,8 @@ class PrismAgentTests {
             connectionManager,
             null,
             null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         val newDID = agent.createNewPeerDID(services = emptyArray(), updateMediator = false)
@@ -129,7 +132,8 @@ class PrismAgentTests {
             connectionManager,
             null,
             null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         val seAccept = arrayOf("someAccepts")
@@ -163,7 +167,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
         val invitationString = """
             {
@@ -189,7 +194,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = api,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
         val invitationString = """
             {
@@ -215,7 +221,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
         val invitationString = """
             {
@@ -240,7 +247,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         plutoMock.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
@@ -264,7 +272,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         val privateKeys = listOf(
@@ -293,7 +302,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         val invitationString = """
@@ -338,7 +348,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         val invitationString = """
@@ -368,7 +379,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
         assertEquals(PrismAgent.State.STOPPED, agent.state)
         agent.start()
@@ -386,7 +398,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
         agent.stop()
         assertEquals(PrismAgent.State.STOPPED, agent.state)
@@ -405,7 +418,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
         val x = agent.parseInvitation(oob)
         assert(x is OutOfBandInvitation)
@@ -434,7 +448,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         val attachmentDescriptor =
@@ -494,7 +509,8 @@ class PrismAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock()
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
         )
 
         val attachmentDescriptor =
