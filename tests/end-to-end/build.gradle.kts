@@ -1,9 +1,8 @@
 plugins {
     kotlin("jvm") version "1.9.21"
     idea
-    java
     id("com.github.ben-manes.versions") version "0.47.0"
-    id("net.serenity-bdd.serenity-gradle-plugin") version "4.0.46"
+    id("net.serenity-bdd.serenity-gradle-plugin") version "4.0.1"
 }
 
 group = "io.iohk.atala.prism"
@@ -29,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation("io.iohk.atala.prism.walletsdk:atala-prism-sdk:3.0.0")
+    testImplementation("io.iohk.atala.prism.walletsdk:atala-prism-sdk:3.0.0-K")
     testImplementation("io.iohk.atala.prism:prism-kotlin-client:1.31.0")
     testImplementation("io.iohk.atala:atala-automation:0.3.2")
 }
@@ -45,5 +44,5 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(11)
+    jvmToolchain(17)
 }
