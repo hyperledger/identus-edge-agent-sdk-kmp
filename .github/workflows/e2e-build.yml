@@ -1,4 +1,4 @@
-name: End-to-end tests
+name: End-to-end build
 
 concurrency:
   group: ${{ github.head_ref }}${{ github.ref }}-e2e-build
