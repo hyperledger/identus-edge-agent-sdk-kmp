@@ -1,3 +1,4 @@
+@connection
 Feature: Create connection
   The Edge Agent should be able to create a connection to prism-agent
 

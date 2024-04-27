@@ -23,10 +23,22 @@ class EdgeAgentSteps {
         edgeAgentWorkflow.connect(edgeAgent)
     }
 
-    @When("{actor} has {} credentials issued by {actor}")
+    @When("{actor} has '{}' credentials issued by {actor}")
     fun `Edge Agent has {} issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
         repeat(numberOfCredentialsIssued) {
             cloudAgentWorkflow.offerCredential(cloudAgent)
+            edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
+            edgeAgentWorkflow.acceptCredential(edgeAgent)
+            cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")
+            edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, 1)
+            edgeAgentWorkflow.processIssuedCredential(edgeAgent, 1)
+        }
+    }
+
+    @When("{actor} has '{}' anonymous credentials issued by {actor}")
+    fun `Edge Agent has {} anonymous issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+        repeat(numberOfCredentialsIssued) {
+            cloudAgentWorkflow.offerAnonymousCredential(cloudAgent)
             edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
             edgeAgentWorkflow.acceptCredential(edgeAgent)
             cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")

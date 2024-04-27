@@ -7,7 +7,15 @@ import io.iohk.atala.automation.serenity.ensure.Ensure
 import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.serenity.questions.HttpRequest
 import io.iohk.atala.prism.configuration.Environment
-import io.iohk.atala.prism.models.*
+import io.iohk.atala.prism.models.AnoncredPresentationRequestV1
+import io.iohk.atala.prism.models.AnoncredRequestedAttributeV1
+import io.iohk.atala.prism.models.AnoncredRequestedPredicateV1
+import io.iohk.atala.prism.models.CreateConnectionRequest
+import io.iohk.atala.prism.models.CreateIssueCredentialRecordRequest
+import io.iohk.atala.prism.models.Options
+import io.iohk.atala.prism.models.ProofRequestAux
+import io.iohk.atala.prism.models.RequestPresentationInput
+import io.iohk.atala.prism.utils.Utils
 import net.serenitybdd.rest.SerenityRest.lastResponse
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.rest.interactions.Post
@@ -64,13 +72,18 @@ class CloudAgentWorkflow {
     fun offerAnonymousCredential(cloudAgent: Actor) {
         val connectionId = cloudAgent.recall<String>("connectionId")
         val credential = CreateIssueCredentialRecordRequest(
-            claims = mapOf(Pair("name", "automation"), Pair("age", "99")),
+            claims = mapOf(
+                "name" to "automation",
+                "age" to "99",
+                "gender" to "M"
+            ),
             automaticIssuance = true,
             issuingDID = Environment.publishedDid,
             connectionId = UUID.fromString(connectionId),
             credentialFormat = "AnonCreds",
             credentialDefinitionId = UUID.fromString(Environment.anoncredDefinitionId)
         )
+
         cloudAgent.attemptsTo(
             Post.to("/issue-credentials/credential-offers").body(credential),
             Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
@@ -94,6 +107,50 @@ class CloudAgentWorkflow {
             connectionId = UUID.fromString(connectionId),
             options = options,
             proofs = listOf(proofs)
+        )
+
+        cloudAgent.attemptsTo(
+            Post.to("/present-proof/presentations").body(presentProofRequest),
+            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
+        )
+        cloudAgent.remember("presentationId", lastResponse().get<String>("presentationId"))
+    }
+
+    fun askForPresentProofForAnoncred(cloudAgent: Actor) {
+        val credentialDefinitionId = Environment.agentUrl +
+                "/credential-definition-registry/definitions/" +
+                Environment.anoncredDefinitionId +
+                "/definition"
+        val anoncredsPresentationRequestV1 = AnoncredPresentationRequestV1(
+            requestedAttributes = mapOf(
+                "gender" to AnoncredRequestedAttributeV1(
+                    name = "gender",
+                    restrictions = listOf(
+                        mapOf(
+                            "attr::gender::value" to "M",
+                            "cred_def_id" to credentialDefinitionId
+                        )
+                    )
+                )
+            ),
+            requestedPredicates = mapOf(
+                "age" to AnoncredRequestedPredicateV1(
+                    name = "age",
+                    pType = ">",
+                    pValue = 18,
+                    restrictions = emptyList()
+                )
+            ),
+            name = "proof_req_1",
+            nonce = Utils.generateNonce(25),
+            version = "0.1"
+        )
+
+        val presentProofRequest = RequestPresentationInput(
+            connectionId = UUID.fromString(cloudAgent.recall("connectionId")),
+            credentialFormat = "AnonCreds",
+            anoncredPresentationRequest = anoncredsPresentationRequestV1,
+            proofs = emptyList()
         )
 
         cloudAgent.attemptsTo(

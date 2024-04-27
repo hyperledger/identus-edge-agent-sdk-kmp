@@ -1,3 +1,4 @@
+@credential @anoncred
 Feature: Receive anonymous credential
   The Edge Agent should be able to receive an anonymous credential from Cloud Agent
 
