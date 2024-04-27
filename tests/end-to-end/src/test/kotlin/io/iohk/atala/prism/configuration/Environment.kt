@@ -82,7 +82,7 @@ object Environment {
     private fun preparePublishedDid(publishedDid: String?) {
         try {
             assertThat(publishedDid).isNotEmpty()
-            val response = RestAssured
+            RestAssured
                 .given().get("did-registrar/dids/$publishedDid")
                 .then().assertThat().statusCode(200)
             this.publishedDid = publishedDid!!
@@ -190,7 +190,7 @@ object Environment {
         anoncredSchema.name = "Automation Anoncred"
         anoncredSchema.version = "1.0"
         anoncredSchema.issuerId = this.publishedDid
-        anoncredSchema.attrNames = mutableListOf("name", "age")
+        anoncredSchema.attrNames = mutableListOf("name", "age", "gender")
 
         val credentialSchemaInput = CredentialSchemaInput(
             author = this.publishedDid,
@@ -219,7 +219,7 @@ object Environment {
             author = publishedDid,
             schemaId = "${agentUrl}/schema-registry/schemas/${newSchemaGuid}/schema",
             signatureType = "CL",
-            supportRevocation = true,
+            supportRevocation = false,
             description = "Test Automation Auto-Generated"
         )
 
