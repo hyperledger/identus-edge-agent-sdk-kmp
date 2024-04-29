@@ -38,7 +38,7 @@ import kotlin.jvm.Throws
  * @property experimentLiveModeOptIn Flag to opt in or out of the experimental feature mediator live mode, using websockets.
  * @property pairings The mutable list of DIDPair representing the connections managed by the ConnectionManager.
  */
-class ConnectionManager(
+class ConnectionManager @JvmOverloads constructor(
     private val mercury: Mercury,
     private val castor: Castor,
     private val pluto: Pluto,

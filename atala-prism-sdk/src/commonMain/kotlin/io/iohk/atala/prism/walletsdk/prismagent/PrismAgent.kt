@@ -148,7 +148,7 @@ class PrismAgent {
         seed: Seed?,
         api: Api?,
         logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
-        agentOptions: AgentOptions
+        agentOptions: AgentOptions = AgentOptions()
     ) {
         prismAgentScope.launch {
             flowState.emit(State.STOPPED)
@@ -202,7 +202,7 @@ class PrismAgent {
         api: Api? = null,
         mediatorHandler: MediationHandler,
         logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
-        agentOptions: AgentOptions
+        agentOptions: AgentOptions = AgentOptions()
     ) {
         prismAgentScope.launch {
             flowState.emit(State.STOPPED)
