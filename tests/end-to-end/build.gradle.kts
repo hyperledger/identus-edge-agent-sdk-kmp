@@ -19,7 +19,7 @@ repositories {
         }
     }
     maven {
-        url = uri("https://maven.pkg.github.com/hyperledger-labs/open-enterprise-agent/")
+        url = uri("https://maven.pkg.github.com/hyperledger/identus-cloud-agent/")
         credentials {
             username = System.getenv("ATALA_GITHUB_ACTOR")
             password = System.getenv("ATALA_GITHUB_TOKEN")
