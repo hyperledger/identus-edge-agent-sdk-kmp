@@ -29,6 +29,7 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import java.net.UnknownHostException
+import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 
 class Sdk {
     private val apollo: Apollo = createApollo()
@@ -142,8 +143,7 @@ class Sdk {
             mercury = mercury,
             pollux = pollux,
             seed = seed,
-            mediatorHandler = handler,
-            agentOptions = AgentOptions(Experiments(liveMode = false))
+            mediatorHandler = handler
         )
     }
 
