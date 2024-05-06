@@ -131,7 +131,7 @@ data class JWTCredential(
             override val credentialSchema: String?
                 get() = verifiableCredential?.credentialSchema?.type
             override val validUntil: String?
-                get() = null
+                get() = c.exp?.toString()
             override var revoked: Boolean? = c.revoked
             override val availableClaims: Array<String>
                 get() = c.claims.map { it.key }.toTypedArray()
