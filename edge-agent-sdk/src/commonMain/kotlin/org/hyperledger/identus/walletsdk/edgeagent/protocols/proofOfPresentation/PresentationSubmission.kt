@@ -48,7 +48,20 @@ data class PresentationSubmission(
             val path: String,
             @SerialName("path_nested")
             val pathNested: DescriptorItem? = null
-        )
+        ) {
+            companion object {
+                fun replacePathWithVerifiablePresentation(originalPath: String): String {
+                    val start = originalPath.indexOf("$.")
+                    val end = originalPath.indexOf("[")
+
+                    if (start != -1 && end != -1 && start < end) {
+                        return originalPath.substring(0, start + 2) + "verifiablePresentation" + originalPath.substring(end)
+                    } else {
+                        return originalPath // or handle error
+                    }
+                }
+            }
+        }
 
         override fun equals(other: Any?): Boolean {
             if (this === other) return true

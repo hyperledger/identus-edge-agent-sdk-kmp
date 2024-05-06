@@ -9,6 +9,9 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 
 /**
  * Data class representing proof types.
@@ -18,10 +21,13 @@ import java.util.UUID
  * @property trustIssuers An optional array of trusted issuers for the proof.
  */
 @Serializable
-data class ProofTypes(
+@OptIn(ExperimentalSerializationApi::class)
+data class ProofTypes @JvmOverloads constructor(
     val schema: String,
+    @SerialName("required_fields")
     val requiredFields: Array<String>?,
-    val trustIssuers: Array<String>?
+    @EncodeDefault
+    val trustIssuers: Array<String>? = null
 ) {
     /**
      * Overrides the equals method from the Any class to compare two ProofTypes objects for equality.
