@@ -15,6 +15,7 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
+import io.iohk.atala.prism.walletsdk.domain.models.Message.Direction
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
@@ -24,13 +25,15 @@ import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.StorableKey
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pluto.data.isConnected
 import io.iohk.atala.prism.walletsdk.pollux.models.CredentialRequestMeta
+import io.ktor.util.date.getTimeMillis
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
-import java.util.UUID
+import kotlinx.coroutines.flow.mapNotNull
 import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import io.iohk.atala.prism.walletsdk.pluto.data.DID as DIDDB
 import io.iohk.atala.prism.walletsdk.pluto.data.DIDPair as DIDPairDB
@@ -547,7 +550,6 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 allDIDs.executeAsList()
                     .groupBy { allPeerDid -> allPeerDid.did }
                     .map {
-                        println("Restoration ID: ${it.value[0].restorationIdentifier}")
                         val privateKeyList: Array<PrivateKey> = it.value.map { allPeerDID ->
                             when (allPeerDID.restorationIdentifier) {
                                 "secp256k1+priv" -> {
@@ -955,13 +957,19 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         return getInstance().storableCredentialQueries.fetchAllCredentials()
             .asFlow()
             .map {
-                it.executeAsList().map { credential ->
-                    CredentialRecovery(
-                        restorationId = credential.recoveryId,
-                        credentialData = credential.credentialData,
-                        revoked = credential.revoked != 0
-                    )
-                }
+                it.executeAsList()
+                    .mapNotNull { credential ->
+                        // Convert timestamp in millisecond to seconds to compare with the credential timestamp
+                        if (credential.validUntil != null && credential.validUntil.toInt() > (getTimeMillis() / 1000)) {
+                            CredentialRecovery(
+                                restorationId = credential.recoveryId,
+                                credentialData = credential.credentialData,
+                                revoked = credential.revoked != 0
+                            )
+                        } else {
+                            null
+                        }
+                    }.takeIf { it.isNotEmpty() } ?: emptyList()
             }
     }
 

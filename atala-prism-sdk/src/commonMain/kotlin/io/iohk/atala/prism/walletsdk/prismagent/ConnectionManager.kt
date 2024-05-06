@@ -176,8 +176,24 @@ class ConnectionManagerImpl(
         if (mediationHandler.mediator == null) {
             throw PrismAgentError.NoMediatorAvailableError()
         }
-        pluto.storeMessage(message)
-        return mercury.sendMessageParseResponse(message)
+        val msg = Message(
+            id = message.id,
+            piuri = message.piuri,
+            from = message.from,
+            to = message.to,
+            fromPrior =  message.fromPrior,
+            body = message.body,
+            extraHeaders = message.extraHeaders,
+            createdTime = message.createdTime,
+            expiresTimePlus = message.expiresTimePlus,
+            attachments = message.attachments,
+            thid = message.thid,
+            pthid = message.pthid,
+            ack = message.ack,
+            direction = Message.Direction.SENT
+        )
+        pluto.storeMessage(msg)
+        return mercury.sendMessageParseResponse(msg)
     }
 
     /**
