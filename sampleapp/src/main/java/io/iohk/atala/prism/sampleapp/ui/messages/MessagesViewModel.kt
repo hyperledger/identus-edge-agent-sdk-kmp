@@ -86,7 +86,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 to = toDID ?: did,
                 body = "{\"msg\":\"This is a new test message ${time}\"}"
             )
-            sdk.mercury.sendMessage(message)
+            sdk.agent.sendMessage(message)
         }
     }
 
@@ -98,12 +98,20 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 toDID = DID(toDID),
                 presentationClaims = PresentationClaims(
                     claims = mapOf(
-                        "emailAddress" to InputFieldFilter(
+                        "test" to InputFieldFilter(
                             type = "string",
-                            pattern = "cristian.castro@iohk.io"
+                            pattern = "aliceTest"
                         )
-                    ),
-                    issuer = "did:prism:e02e8099d50351345c5dd831a9e9112b394a85d0064a2eb59429080734a159b6:CrkBCrYBEjoKBmF1dGgtMRAESi4KCXNlY3AyNTZrMRIhAuVYcorfWnL0fYtA5vgJK4_-ob3bUDc-w2UOHdO3QEvqEjsKB2lzc3VlLTEQAkouCglzZWNwMjU2azESIQLCu9NntqupBj-0NCdMA75zReBeyaCJO1aGYeP4BMQHVBI7CgdtYXN0ZXIwEAFKLgoJc2VjcDI1NmsxEiEDOWgvQx6vRu6wUb4FYcJuaECj9BjPMJvRp8LwM61hET4"
+//                        ),
+//                        "issuer" to InputFieldFilter(
+//                            type = "string",
+//                            pattern = "did:prism:50e6cd35d1d57654af2269e6f4c70f32408c96e75b58c1d5a519b8621aac2413:CscBCsQBEmQKD2F1dGhlbnRpY2F0aW9uMBAEQk8KCXNlY3AyNTZrMRIgtzWR-rgd87zym6fi1LoyUZ4M7RmUlyD0EhTDCrQSNOAaIMe5sR-zMlaJguzP0aVjuLjKJV_-ItAic0lOOP45vjo_ElwKB21hc3RlcjAQAUJPCglzZWNwMjU2azESILc1kfq4HfO88pun4tS6MlGeDO0ZlJcg9BIUwwq0EjTgGiDHubEfszJWiYLsz9GlY7i4yiVf_iLQInNJTjj-Ob46Pw"
+//                        )
+//                        "emailAddress" to InputFieldFilter(
+//                            type = "string",
+//                            pattern = "cristian.castro@iohk.io"
+//                        )
+                    )
                 ),
                 domain = "domain",
                 challenge = "challenge"
@@ -124,7 +132,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                         RequestPresentation.fromMessage(message),
                         credential
                     )
-                    mercury.sendMessage(presentation.makeMessage())
+                    sdk.agent.sendMessage(presentation.makeMessage())
                 }
             }
         }
@@ -196,7 +204,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                                     subjectDID,
                                                     offer
                                                 )
-                                            mercury.sendMessage(request.makeMessage())
+                                            agent.sendMessage(request.makeMessage())
 //                                }
                                         }
                                     }

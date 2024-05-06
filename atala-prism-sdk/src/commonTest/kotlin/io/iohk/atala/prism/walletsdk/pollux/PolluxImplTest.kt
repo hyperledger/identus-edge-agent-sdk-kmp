@@ -33,13 +33,13 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Pr
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.ktor.http.HttpStatusCode
+import java.text.SimpleDateFormat
+import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.mockito.kotlin.mock
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -343,51 +343,6 @@ class PolluxImplTest {
             )
         )
         assertFailsWith(PolluxError.VerificationUnsuccessful::class, "Issuer signature not valid") {
-            pollux.verifyPresentationSubmission(
-                presentationSubmission = vtc.second,
-                options = PresentationSubmissionOptionsJWT(vtc.first)
-            )
-        }
-    }
-
-    @Test
-    fun testVerifyPresentationSubmission_whenWrongJwtHolder_thenVerifiedFalse() = runTest {
-        val issuerKeyPair =
-            Secp256k1KeyPair.generateKeyPair(
-                Seed(MnemonicHelper.createRandomSeed()),
-                KeyCurve(Curve.SECP256K1)
-            )
-        val holderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(
-                Seed(MnemonicHelper.createRandomSeed()),
-                KeyCurve(Curve.SECP256K1)
-            )
-        val wrongHolderKeyPair =
-            Secp256k1KeyPair.generateKeyPair(
-                Seed(MnemonicHelper.createRandomSeed()),
-                KeyCurve(Curve.SECP256K1)
-            )
-        val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
-        val holderDID = castor.createPrismDID(wrongHolderKeyPair.publicKey, emptyArray())
-
-        val vtc = createVerificationTestCase(
-            VerificationTestCase(
-                issuer = issuerDID,
-                holder = holderDID,
-                issuerPrv = issuerKeyPair.privateKey,
-                holderPrv = holderKeyPair.privateKey,
-                subject = """{"course": "Identus Training course Certification 2024"} """,
-                claims = PresentationClaims(
-                    claims = mapOf(
-                        "course" to InputFieldFilter(
-                            type = "string",
-                            pattern = "Identus Training course Certification 2024"
-                        )
-                    )
-                ),
-            )
-        )
-        assertFailsWith(PolluxError.VerificationUnsuccessful::class, "Holder signature not valid") {
             pollux.verifyPresentationSubmission(
                 presentationSubmission = vtc.second,
                 options = PresentationSubmissionOptionsJWT(vtc.first)

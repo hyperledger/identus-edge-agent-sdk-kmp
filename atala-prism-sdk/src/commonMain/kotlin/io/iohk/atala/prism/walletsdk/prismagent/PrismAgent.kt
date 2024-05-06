@@ -65,6 +65,7 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.Pr
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationOptions
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission
+import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmission.Submission
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -87,8 +88,12 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * Check if the passed URL is valid or not.
@@ -1076,7 +1081,7 @@ class PrismAgent {
         return Presentation(
             body = Presentation.Body(),
             attachments = arrayOf(attachmentDescriptor),
-            thid = requestPresentation.thid,
+            thid = requestPresentation.thid ?: requestPresentation.id,
             from = requestPresentation.to,
             to = requestPresentation.from
         )
@@ -1084,7 +1089,7 @@ class PrismAgent {
 
     suspend fun handlePresentation(msg: Message): Boolean {
         if (msg.thid == null) {
-            throw Exception() // TODO: Custom error
+            throw PrismAgentError.MissingOrNullFieldError("thid", "presentation message")
         }
         val presentation = Presentation.fromMessage(msg)
         val msgAttachmentDescriptor =
@@ -1092,8 +1097,28 @@ class PrismAgent {
                 ?: throw PrismAgentError.AttachmentTypeNotSupported()
         val attachmentBase64 = msgAttachmentDescriptor.data as AttachmentBase64
 
-        val presentationSubmission =
-            Json.decodeFromString<PresentationSubmission>(attachmentBase64.base64.base64UrlDecoded)
+        val presentationSubmissionJsonObject =
+            Json.decodeFromString<JsonElement>(attachmentBase64.base64.base64UrlDecoded).jsonObject
+
+        val presentationSubmission: PresentationSubmission =
+            presentationSubmissionJsonObject["presentation_submission"]?.let { presentationSubmissionField ->
+                val submission = Json.decodeFromJsonElement<Submission>(presentationSubmissionField)
+                var arrayStrings: Array<String> = arrayOf()
+
+                if (submission.descriptorMap.isNotEmpty()) {
+                    val firstDescriptorItem = submission.descriptorMap.first()
+                    // Assume the path denotes a direct key in the JSON and strip out JSONPath or XPath specific characters if any.
+                    val path = firstDescriptorItem.path.removePrefix("$.")
+                        .removeSuffix("[0]") // Adjust based on actual path format
+                    arrayStrings = presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
+                        ?.toTypedArray()
+                        ?: arrayOf()
+                }
+                return@let PresentationSubmission(submission, arrayStrings)
+            } ?: throw PrismAgentError.MissingOrNullFieldError(
+                "presentation_submission",
+                "presentation submission message"
+            )
 
         val presentationDefinitionRequest =
             pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value).firstOrNull()
@@ -1102,7 +1127,7 @@ class PrismAgent {
                     val attachmentDescriptor = requestPresentation.attachments.first()
                     val base64 = (attachmentDescriptor.data as AttachmentBase64).base64
                     Json.decodeFromString<PresentationDefinitionRequest>(base64.base64UrlDecoded)
-                } ?: throw Exception("Message by thid ${msg.thid} not found") // TODO: Custom error
+                } ?: throw PrismAgentError.MissingOrNullFieldError("thid", "presentation message")
         return pollux.verifyPresentationSubmission(
             presentationSubmission = presentationSubmission,
             options = PresentationSubmissionOptionsJWT(

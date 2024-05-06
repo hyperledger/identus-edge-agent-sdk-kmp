@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation
 
 import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
@@ -5,10 +7,13 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.Message
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
+import java.util.*
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.UUID
 
 /**
  * Data class representing proof types.
@@ -18,10 +23,13 @@ import java.util.UUID
  * @property trustIssuers An optional array of trusted issuers for the proof.
  */
 @Serializable
-data class ProofTypes(
+@OptIn(ExperimentalSerializationApi::class)
+data class ProofTypes @JvmOverloads constructor(
     val schema: String,
+    @SerialName("required_fields")
     val requiredFields: Array<String>?,
-    val trustIssuers: Array<String>?
+    @EncodeDefault
+    val trustIssuers: Array<String>? = null
 ) {
     /**
      * Overrides the equals method from the Any class to compare two ProofTypes objects for equality.
