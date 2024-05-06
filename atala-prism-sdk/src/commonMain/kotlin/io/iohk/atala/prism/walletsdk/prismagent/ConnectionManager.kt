@@ -92,19 +92,13 @@ class ConnectionManagerImpl(
                 if (experimentLiveModeOptIn) {
                     // Loop through the services in the DID document to find a WebSocket endpoint
                     mediatorDidDoc.services.forEach {
-                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
+                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains(
+                                "ws://"
+                            )
+                        ) {
                             serviceEndpoint = it.serviceEndpoint.uri
                             return@forEach // Exit loop once the WebSocket endpoint is found
                         }
-
-                // Loop through the services in the DID document to find a WebSocket endpoint
-                mediatorDidDoc.services.forEach {
-                    if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains(
-                            "ws://"
-                        )
-                    ) {
-                        serviceEndpoint = it.serviceEndpoint.uri
-                        return@forEach // Exit loop once the WebSocket endpoint is found
                     }
 
                     // If a WebSocket service endpoint is found
@@ -181,7 +175,7 @@ class ConnectionManagerImpl(
             piuri = message.piuri,
             from = message.from,
             to = message.to,
-            fromPrior =  message.fromPrior,
+            fromPrior = message.fromPrior,
             body = message.body,
             extraHeaders = message.extraHeaders,
             createdTime = message.createdTime,

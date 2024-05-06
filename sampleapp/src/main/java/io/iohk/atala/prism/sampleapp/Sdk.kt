@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.sampleapp
 
 import android.app.Application
@@ -22,14 +24,12 @@ import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
-import io.iohk.atala.prism.walletsdk.prismagent.helpers.AgentOptions
-import io.iohk.atala.prism.walletsdk.prismagent.helpers.Experiments
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.MediationHandler
+import java.net.UnknownHostException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.net.UnknownHostException
 
 class Sdk {
     private val apollo: Apollo = createApollo()
@@ -143,8 +143,7 @@ class Sdk {
             mercury = mercury,
             pollux = pollux,
             seed = seed,
-            mediatorHandler = handler,
-            agentOptions = AgentOptions(Experiments(liveMode = false))
+            mediatorHandler = handler
         )
     }
 

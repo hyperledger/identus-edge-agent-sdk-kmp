@@ -126,7 +126,7 @@ class ConnectionManagerTest {
 
     @Test
     fun testStartFetchingMessages_whenServiceEndpointContainsWSSButOptInLiveModeFalse_thenRegunarlApi() = runTest {
-        connectionManager = ConnectionManager(
+        connectionManager = ConnectionManagerImpl(
             mercury = mercuryMock,
             castor = castorMock,
             pluto = plutoMock,

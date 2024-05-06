@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.walletsdk.pluto
 
 import app.cash.sqldelight.ColumnAdapter
@@ -15,7 +17,6 @@ import io.iohk.atala.prism.walletsdk.domain.models.DID
 import io.iohk.atala.prism.walletsdk.domain.models.DIDPair
 import io.iohk.atala.prism.walletsdk.domain.models.Mediator
 import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.Message.Direction
 import io.iohk.atala.prism.walletsdk.domain.models.PeerDID
 import io.iohk.atala.prism.walletsdk.domain.models.PlutoError
 import io.iohk.atala.prism.walletsdk.domain.models.PrismDIDInfo
@@ -33,7 +34,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.serialization.json.Json
-import kotlinx.coroutines.flow.mapNotNull
 import io.iohk.atala.prism.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import io.iohk.atala.prism.walletsdk.pluto.data.DID as DIDDB
 import io.iohk.atala.prism.walletsdk.pluto.data.DIDPair as DIDPairDB
