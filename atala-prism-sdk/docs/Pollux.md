@@ -1,4 +1,4 @@
-# Package io.iohk.atala.prism.walletsdk.pollux
+# Package org.hyperledger.identus.walletsdk.pollux
 
 A credential contains a set of claims about the subject of the credential. Those claims are made by a single authority called the credential issuer. The entity (person, organization) to whom the credential is issued, i.e., the one who keeps it in their digital wallet, is called the credential holder. Apart from claims, the credential contains the subject identifier (DID) to whom the credential is issued.
 

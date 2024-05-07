@@ -7,11 +7,11 @@ plugins {
 apply(plugin = "kotlinx-atomicfu")
 
 android {
-    namespace = "io.iohk.atala.prism.sampleapp"
+    namespace = "org.hyperledger.identus.walletsdk.sampleapp"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "io.iohk.atala.prism.sampleapp"
+        applicationId = "org.hyperledger.identus.walletsdk"
         minSdk = 28
         targetSdk = 34
         versionCode = 1

@@ -5,7 +5,7 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.net.URL
 
-val currentModuleName: String = "AtalaPrismSDK"
+val currentModuleName: String = "EdgeAgentSDK"
 val os: OperatingSystem = OperatingSystem.current()
 val apolloVersion = project.property("apollo_version")
 val didpeerVersion = project.property("didpeer_version")
@@ -32,8 +32,8 @@ koverReport {
         excludes {
             packages(
                 "io.iohk.atala.prism.protos",
-                "io.iohk.atala.prism.walletsdk.domain",
-                "io.iohk.atala.prism.walletsdk.pluto.data"
+                "org.hyperledger.identus.walletsdk.domain",
+                "org.hyperledger.identus.walletsdk.pluto.data"
             )
         }
     }
@@ -158,6 +158,7 @@ kotlin {
         }
         val androidInstrumentedTest by getting {
             dependencies {
+                implementation(kotlin("test"))
                 implementation("androidx.test.espresso:espresso-core:3.5.1")
                 implementation("androidx.test.ext:junit:1.1.5")
                 implementation("junit:junit:4.13.2")
@@ -181,7 +182,7 @@ kotlin {
 android {
     compileSdk = 34
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    namespace = "io.iohk.atala.prism.walletsdk"
+    namespace = "org.hyperledger.identus.walletsdk"
     defaultConfig {
         minSdk = 21
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -213,8 +214,8 @@ android {
 
 sqldelight {
     databases {
-        create("PrismPlutoDb") {
-            packageName.set("io.iohk.atala.prism.walletsdk")
+        create("SdkPlutoDb") {
+            packageName.set("org.hyperledger.identus.walletsdk")
             srcDirs.setFrom("src/commonMain/sqldelight")
         }
     }

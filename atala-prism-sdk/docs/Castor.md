@@ -1,4 +1,4 @@
-# Package io.iohk.atala.prism.walletsdk.castor
+# Package org.hyperledger.identus.walletsdk.castor
 
 Castor is a powerful and flexible library for working with DIDs. Whether you are building a decentralised application or a more traditional system requiring secure and private identity management, Castor provides the tools and features you need to easily create, manage, and resolve DIDs.
 

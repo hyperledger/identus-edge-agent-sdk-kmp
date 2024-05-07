@@ -1,4 +1,4 @@
-# Package io.iohk.atala.prism.walletsdk.apollo
+# Package org.hyperledger.identus.walletsdk.apollo
 
 Apollo is a suite of cryptographic primitives designed to ensure the integrity, authenticity, and confidentiality of stored and processed data. These primitives provide a provably secure way to protect sensitive information, and they can be used in a wide range of applications.
 

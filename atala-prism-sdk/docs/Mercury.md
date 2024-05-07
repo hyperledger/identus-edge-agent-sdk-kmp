@@ -1,4 +1,4 @@
-# Package io.iohk.atala.prism.walletsdk.mercury
+# Package org.hyperledger.identus.walletsdk.mercury
 
 Mercury is a powerful and flexible library for working with decentralized identifiers and secure communications protocols. Whether you are a developer looking to build a secure and private messaging app or a more complex decentralized system requiring trusted peer-to-peer connections, Mercury provides the tools and features you need to establish, manage, and secure your communications easily.
 

@@ -1,4 +1,4 @@
-# Package io.iohk.atala.prism.walletsdk.pluto
+# Package org.hyperledger.identus.walletsdk.pluto
 
 Pluto is a powerful and flexible data storage interface library for working with decentralized identifiers. Whether you are building a decentralized application that requires secure and private data storage or working with a more traditional system that requires reliable and redundant storage for your DID-related data, Pluto provides the tools and features you need to do the job with ease.
 

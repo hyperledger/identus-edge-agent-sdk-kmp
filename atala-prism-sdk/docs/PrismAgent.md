@@ -1,4 +1,4 @@
-# Package io.iohk.atala.prism.walletsdk.prismagent
+# Package org.hyperledger.identus.walletsdk.prismagent
 
 Prism Agent is a powerful and flexible library for working with decentralized identifiers on the Prism platform. Whether you are building a decentralized application that requires secure and private identity management or working with a more traditional system that requires reliable and resilient communication between DIDs, Prism Agent provides the tools and features you need to do the job with ease.
 
