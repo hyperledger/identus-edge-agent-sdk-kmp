@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package io.iohk.atala.prism.sampleapp.ui.messages
 
 import android.app.Application
@@ -21,11 +23,11 @@ import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import java.time.LocalDateTime
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 import io.iohk.atala.prism.sampleapp.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -162,12 +164,12 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch(handler) {
             messages.value?.find { it.id == uiMessage.id }?.let { message ->
                 val sdk = Sdk.getInstance()
-                    val valid = sdk.agent.handlePresentation(message)
-                    if (valid) {
-                        liveData.postValue("Valid!")
-                    } else {
-                        liveData.postValue("Not valid!")
-                    }
+                val valid = sdk.agent.handlePresentation(message)
+                if (valid) {
+                    liveData.postValue("Valid!")
+                } else {
+                    liveData.postValue("Not valid!")
+                }
             }
         }
         return liveData
