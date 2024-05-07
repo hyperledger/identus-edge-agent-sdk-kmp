@@ -60,7 +60,7 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
 
     inner class CredentialHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val type: TextView = itemView.findViewById(R.id.credential_id)
-        private val issuanceDate: TextView = itemView.findViewById(R.id.credential_issuance_date)
+        private val expiryDate: TextView = itemView.findViewById(R.id.credential_expiry_date)
         private val revoked: TextView = itemView.findViewById(R.id.revoked)
         private val typeString: String = itemView.context.getString(R.string.credential_type)
         private val issuanceString: String = itemView.context.getString(R.string.credential_issuance)
@@ -75,8 +75,8 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                     }
                     type.text = String.format(typeString, "JWT")
                     // TODO: Check what else to display
-                    jwt.nbf?.let {
-                        issuanceDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
+                    jwt.exp?.let {
+                        expiryDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
                     }
                 }
 
@@ -88,7 +88,7 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                 AnonCredential::class -> {
                     val anon = cred as AnonCredential
                     type.text = String.format(typeString, "Anoncred")
-                    issuanceDate.text = String.format("Issuer: ${anon.credentialDefinitionID}")
+                    expiryDate.text = String.format("Issuer: ${anon.credentialDefinitionID}")
                 }
             }
         }

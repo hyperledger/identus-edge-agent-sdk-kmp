@@ -99,19 +99,14 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 toDID = DID(toDID),
                 presentationClaims = PresentationClaims(
                     claims = mapOf(
-                        "test" to InputFieldFilter(
+                        "issuer" to InputFieldFilter(
                             type = "string",
-                            pattern = "aliceTest"
+                            pattern = "did:prism:bc9daaeaf0ad673f5d55b3b6612a1653bc72ac1659cefa81c6eef45c1f721639"
+                        ),
+                        "emailAddress" to InputFieldFilter(
+                            type = "string",
+                            pattern = "cristian.castro@iohk.io"
                         )
-//                        ),
-//                        "issuer" to InputFieldFilter(
-//                            type = "string",
-//                            pattern = "did:prism:50e6cd35d1d57654af2269e6f4c70f32408c96e75b58c1d5a519b8621aac2413:CscBCsQBEmQKD2F1dGhlbnRpY2F0aW9uMBAEQk8KCXNlY3AyNTZrMRIgtzWR-rgd87zym6fi1LoyUZ4M7RmUlyD0EhTDCrQSNOAaIMe5sR-zMlaJguzP0aVjuLjKJV_-ItAic0lOOP45vjo_ElwKB21hc3RlcjAQAUJPCglzZWNwMjU2azESILc1kfq4HfO88pun4tS6MlGeDO0ZlJcg9BIUwwq0EjTgGiDHubEfszJWiYLsz9GlY7i4yiVf_iLQInNJTjj-Ob46Pw"
-//                        )
-//                        "emailAddress" to InputFieldFilter(
-//                            type = "string",
-//                            pattern = "cristian.castro@iohk.io"
-//                        )
                     )
                 ),
                 domain = "domain",
@@ -168,12 +163,12 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch(handler) {
             messages.value?.find { it.id == uiMessage.id }?.let { message ->
                 val sdk = Sdk.getInstance()
-                val valid = sdk.agent.handlePresentation(message)
-                if (valid) {
-                    liveData.postValue("Valid!")
-                } else {
-                    liveData.postValue("Not valid!")
-                }
+                    val valid = sdk.agent.handlePresentation(message)
+                    if (valid) {
+                        liveData.postValue("Valid!")
+                    } else {
+                        liveData.postValue("Not valid!")
+                    }
             }
         }
         return liveData

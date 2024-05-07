@@ -828,51 +828,57 @@ class PolluxImpl(
                                         paths.forEach { path ->
                                             val fieldValue =
                                                 verifiableCredentialDescriptorPath.getValue(path)
-                                            if (field.filter != null && fieldValue != null) {
-                                                val filter: InputFieldFilter = field.filter
-                                                filter.pattern?.let { pattern ->
-                                                    val regexPattern = Regex(pattern)
-                                                    if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
-                                                        validClaim = true
-                                                        return@forEach
-                                                    } else {
-                                                        reason =
-                                                            "Expected the $path field to be $pattern but got $fieldValue"
-                                                    }
-                                                }
-                                                filter.enum?.let { enum ->
-                                                    enum.forEach { predicate ->
-                                                        if (fieldValue == predicate) {
+                                            if (fieldValue != null) {
+                                                if (field.filter != null) {
+                                                    val filter: InputFieldFilter = field.filter
+                                                    filter.pattern?.let { pattern ->
+                                                        val regexPattern = Regex(pattern)
+                                                        if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
                                                             validClaim = true
                                                             return@forEach
+                                                        } else {
+                                                            reason =
+                                                                "Expected the $path field to be $pattern but got $fieldValue"
                                                         }
                                                     }
-                                                    if (!validClaim) {
-                                                        reason =
-                                                            "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
+                                                    filter.enum?.let { enum ->
+                                                        enum.forEach { predicate ->
+                                                            if (fieldValue == predicate) {
+                                                                validClaim = true
+                                                                return@forEach
+                                                            }
+                                                        }
+                                                        if (!validClaim) {
+                                                            reason =
+                                                                "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
+                                                        }
                                                     }
-                                                }
-                                                filter.const?.let { const ->
-                                                    const.forEach { constValue ->
-                                                        if (fieldValue == constValue) {
+                                                    filter.const?.let { const ->
+                                                        const.forEach { constValue ->
+                                                            if (fieldValue == constValue) {
+                                                                validClaim = true
+                                                                return@forEach
+                                                            }
+                                                        }
+                                                        if (!validClaim) {
+                                                            reason =
+                                                                "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
+                                                        }
+                                                    }
+                                                    filter.value?.let { value ->
+                                                        if (value == fieldValue) {
                                                             validClaim = true
                                                             return@forEach
+                                                        } else {
+                                                            reason =
+                                                                "Expected the $path field to be $value but got $fieldValue"
                                                         }
                                                     }
-                                                    if (!validClaim) {
-                                                        reason =
-                                                            "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
-                                                    }
+                                                } else {
+                                                    reason = "Input field filter for ${field.name} is null"
                                                 }
-                                                filter.value?.let { value ->
-                                                    if (value == fieldValue) {
-                                                        validClaim = true
-                                                        return@forEach
-                                                    } else {
-                                                        reason =
-                                                            "Expected the $path field to be $value but got $fieldValue"
-                                                    }
-                                                }
+                                            } else {
+                                                reason = "Field value for path $path is null"
                                             }
                                         }
                                         if (!validClaim) {

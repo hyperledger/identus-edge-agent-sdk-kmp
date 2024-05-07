@@ -46,7 +46,7 @@ data class PresentationDefinitionRequest(
             @Serializable
             data class Constraints constructor(
                 val fields: Array<Field>? = null,
-//                @SerialName("limit_disclosure")
+                @SerialName("limit_disclosure")
                 val limitDisclosure: LimitDisclosure? = null
             ) {
                 @Serializable
