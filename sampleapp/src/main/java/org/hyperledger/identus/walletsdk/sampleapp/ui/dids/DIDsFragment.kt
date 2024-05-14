@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import org.hyperledger.identus.walletsdk.databinding.FragmentDidsBinding
+import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentDidsBinding
 
 class DIDsFragment : Fragment() {
 

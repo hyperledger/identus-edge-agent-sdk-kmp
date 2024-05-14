@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import org.hyperledger.identus.walletsdk.R
 import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.sampleapp.R
 
 class DIDsAdapter(private var data: MutableList<DID> = mutableListOf()) :
     RecyclerView.Adapter<DIDsAdapter.DIDHolder>() {

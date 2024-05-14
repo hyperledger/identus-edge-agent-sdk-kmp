@@ -9,8 +9,8 @@ import android.widget.EditText
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import com.google.android.material.snackbar.Snackbar
-import org.hyperledger.identus.walletsdk.R
-import org.hyperledger.identus.walletsdk.databinding.FragmentContactsBinding
+import org.hyperledger.identus.walletsdk.sampleapp.R
+import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentContactsBinding
 
 class ContactsFragment : Fragment() {
 

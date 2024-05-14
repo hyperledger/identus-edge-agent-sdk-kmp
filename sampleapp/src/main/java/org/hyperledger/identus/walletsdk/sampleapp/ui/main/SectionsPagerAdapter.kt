@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
-import org.hyperledger.identus.walletsdk.R
+import org.hyperledger.identus.walletsdk.sampleapp.R
 import org.hyperledger.identus.walletsdk.ui.contacts.ContactsFragment
 import org.hyperledger.identus.walletsdk.ui.credentials.CredentialsFragment
 import org.hyperledger.identus.walletsdk.ui.dids.DIDsFragment

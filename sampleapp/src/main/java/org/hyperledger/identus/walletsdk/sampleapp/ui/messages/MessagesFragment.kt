@@ -8,10 +8,10 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import org.hyperledger.identus.walletsdk.R
-import org.hyperledger.identus.walletsdk.databinding.CredentialDialogBinding
-import org.hyperledger.identus.walletsdk.databinding.FragmentMessagesBinding
 import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.sampleapp.R
+import org.hyperledger.identus.walletsdk.sampleapp.databinding.CredentialDialogBinding
+import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentMessagesBinding
 
 class MessagesFragment : Fragment() {
 

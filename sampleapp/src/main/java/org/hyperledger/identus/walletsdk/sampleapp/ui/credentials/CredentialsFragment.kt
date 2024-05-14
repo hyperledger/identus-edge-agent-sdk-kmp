@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import org.hyperledger.identus.walletsdk.databinding.FragmentCredentialsBinding
+import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentCredentialsBinding
 
 class CredentialsFragment : Fragment() {
 
