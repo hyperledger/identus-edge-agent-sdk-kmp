@@ -6,10 +6,10 @@ val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
     id("com.android.library") version "8.1.4" apply false
-    kotlin("jvm") version "1.9.23"
+    kotlin("jvm") version "1.9.24"
     kotlin("plugin.serialization") version "1.8.20"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
-    id("org.jetbrains.dokka") version "1.9.0"
+    id("org.jetbrains.dokka") version "1.9.20"
     id("org.jetbrains.kotlin.kapt") version "1.9.10"
     id("maven-publish")
     id("signing")
@@ -24,7 +24,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.24")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.23.1")
@@ -62,7 +62,7 @@ allprojects {
                     }
                 } else if (requested.group == "com.nimbusds") {
                     // Making sure we are using the latest version of `nimbus-jose-jwt` instead if 9.25.6
-                    useTarget("com.nimbusds:nimbus-jose-jwt:9.31")
+                    useTarget("com.nimbusds:nimbus-jose-jwt:9.39")
                 } else if (requested.group == "com.google.protobuf") {
                     // Because of Duplicate Classes issue happening on the sampleapp module
                     if (requested.name == "protobuf-javalite" || requested.name == "protobuf-java") {
