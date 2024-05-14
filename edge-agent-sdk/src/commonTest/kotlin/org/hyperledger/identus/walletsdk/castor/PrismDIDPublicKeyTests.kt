@@ -1,8 +1,8 @@
 package org.hyperledger.identus.walletsdk.castor
 
-import io.iohk.atala.prism.protos.PublicKey
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import org.hyperledger.identus.protos.PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
