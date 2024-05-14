@@ -5,7 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import org.hyperledger.identus.walletsdk.sampleapp.Sdk
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -17,9 +19,7 @@ import org.hyperledger.identus.walletsdk.prismagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
 import org.hyperledger.identus.walletsdk.db.Message as MessageEntity
 

@@ -68,9 +68,9 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
     implementation("io.ktor:ktor-client-logging:2.3.4")
+    implementation(project(":edge-agent-sdk"))
 
     // WalletSDK
-    implementation(project(":atala-prism-sdk"))
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
 

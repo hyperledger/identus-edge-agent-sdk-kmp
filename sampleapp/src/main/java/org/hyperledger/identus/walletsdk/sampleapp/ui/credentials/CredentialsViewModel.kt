@@ -5,9 +5,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import org.hyperledger.identus.walletsdk.sampleapp.Sdk
-import org.hyperledger.identus.walletsdk.domain.models.Credential
 import kotlinx.coroutines.launch
+import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 
 class CredentialsViewModel(application: Application) : AndroidViewModel(application) {
 

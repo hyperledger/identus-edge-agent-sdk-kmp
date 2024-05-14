@@ -3,6 +3,9 @@ package org.hyperledger.identus.walletsdk.sampleapp
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
@@ -25,9 +28,6 @@ import org.hyperledger.identus.walletsdk.prismagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.prismagent.helpers.Experiments
 import org.hyperledger.identus.walletsdk.prismagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.prismagent.mediation.MediationHandler
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import java.net.UnknownHostException
 
 class Sdk {

@@ -1,12 +1,12 @@
 import org.gradle.internal.os.OperatingSystem
 import java.util.Base64
 
-val publishedMavenId = "io.iohk.atala.prism.walletsdk"
+val publishedMavenId = "org.hyperledger.identus"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
     id("com.android.library") version "8.1.4" apply false
-    kotlin("jvm") version "1.9.22"
+    kotlin("jvm") version "1.9.23"
     kotlin("plugin.serialization") version "1.8.20"
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("org.jetbrains.dokka") version "1.9.0"
@@ -24,7 +24,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.23")
         classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
         classpath("com.squareup.sqldelight:gradle-plugin:1.5.5")
         classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.23.1")
@@ -96,7 +96,7 @@ subprojects {
         }
     }
 
-    if (this.name == "atala-prism-sdk") {
+    if (this.name == "edge-agent-sdk") {
         apply(plugin = "org.gradle.maven-publish")
         apply(plugin = "org.gradle.signing")
 
@@ -107,8 +107,8 @@ subprojects {
                     artifactId = project.name
                     version = project.version.toString()
                     pom {
-                        name.set("Atala PRISM Wallet SDK")
-                        description.set("Atala Prism Wallet SDK - Kotlin Multiplatform (Android/JVM)")
+                        name.set("Identus Edge Agent SDK")
+                        description.set("Identus Edge Agent - Kotlin Multiplatform (Android/JVM)")
                         url.set("https://docs.atalaprism.io/")
                         organization {
                             name.set("IOG")
@@ -196,16 +196,6 @@ subprojects {
                         }
                     }
                 }
-            }
-            repositories {
-//                maven {
-//                    this.name = "GitHubPackages"
-//                    this.url = uri("https://maven.pkg.github.com/input-output-hk/atala-prism-wallet-sdk-kmm")
-//                    credentials {
-//                        this.username = System.getenv("ATALA_GITHUB_ACTOR")
-//                        this.password = System.getenv("ATALA_GITHUB_TOKEN")
-//                    }
-//                }
             }
         }
     }

@@ -5,12 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
-import org.hyperledger.identus.walletsdk.sampleapp.Sdk
+import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.prismagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.prismagent.DIDCOMM_MESSAGING
-import kotlinx.coroutines.launch
+import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 
 class DIDsViewModel(application: Application) : AndroidViewModel(application) {
 

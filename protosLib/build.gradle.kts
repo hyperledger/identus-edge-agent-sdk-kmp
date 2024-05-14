@@ -61,7 +61,7 @@ protobuf {
             }
             task.plugins {
                 id("kotlin") {
-                    option("kotlin_package=io.iohk.atala.prism.protos")
+                    option("kotlin_package=org.hyperledger.identus.protos")
                     option("visibility=public")
                     option("js_export=true")
                 }

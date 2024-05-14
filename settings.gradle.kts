@@ -29,5 +29,5 @@ buildscript {
 
 rootProject.name = "wallet-sdk"
 include(":protosLib")
-include(":atala-prism-sdk")
+include(":edge-agent-sdk")
 include(":sampleapp")

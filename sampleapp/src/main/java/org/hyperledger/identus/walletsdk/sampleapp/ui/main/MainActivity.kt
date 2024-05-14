@@ -6,9 +6,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import org.hyperledger.identus.walletsdk.databinding.ActivityMainBinding
 import org.hyperledger.identus.walletsdk.prismagent.PrismAgent
+import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 
 class MainActivity : AppCompatActivity() {
 
