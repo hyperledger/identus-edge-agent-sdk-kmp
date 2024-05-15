@@ -99,22 +99,46 @@ data class JWTPayload
      * @return true if the objects are equal, false otherwise.
      */
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (this === other) {
+            return true
+        }
+        if (javaClass != other?.javaClass) {
+            return false
+        }
 
         other as JWTPayload
 
-        if (iss != other.iss) return false
-        if (sub != other.sub) return false
-        if (verifiableCredential != other.verifiableCredential) return false
-        if (nbf != other.nbf) return false
-        if (exp != other.exp) return false
-        if (jti != other.jti) return false
+        if (iss != other.iss) {
+            return false
+        }
+        if (sub != other.sub) {
+            return false
+        }
+        if (verifiableCredential != other.verifiableCredential) {
+            return false
+        }
+        if (nbf != other.nbf) {
+            return false
+        }
+        if (exp != other.exp) {
+            return false
+        }
+        if (jti != other.jti) {
+            return false
+        }
         if (aud != null) {
-            if (other.aud == null) return false
-            if (!aud.contentEquals(other.aud)) return false
-        } else if (other.aud != null) return false
-        if (originalJWTString != other.originalJWTString) return false
+            if (other.aud == null) {
+                return false
+            }
+            if (!aud.contentEquals(other.aud)) {
+                return false
+            }
+        } else if (other.aud != null) {
+            return false
+        }
+        if (originalJWTString != other.originalJWTString) {
+            return false
+        }
 
         return true
     }

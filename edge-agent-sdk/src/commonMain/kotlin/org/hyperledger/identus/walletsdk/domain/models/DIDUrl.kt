@@ -58,18 +58,34 @@ data class DIDUrl @JvmOverloads constructor(
      * @return `true` if the objects are equal, `false` otherwise.
      */
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+        if (this === other) {
+            return true
+        }
+        if (other == null || this::class != other::class) {
+            return false
+        }
 
         other as DIDUrl
 
-        if (did != other.did) return false
+        if (did != other.did) {
+            return false
+        }
         if (path != null) {
-            if (other.path == null) return false
-            if (!path.contentEquals(other.path)) return false
-        } else if (other.path != null) return false
-        if (parameters != other.parameters) return false
-        if (fragment != other.fragment) return false
+            if (other.path == null) {
+                return false
+            }
+            if (!path.contentEquals(other.path)) {
+                return false
+            }
+        } else if (other.path != null) {
+            return false
+        }
+        if (parameters != other.parameters) {
+            return false
+        }
+        if (fragment != other.fragment) {
+            return false
+        }
 
         return true
     }

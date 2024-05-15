@@ -163,20 +163,38 @@ data class DIDDocument(
          * @return true if the current object is equal to the other object, otherwise false.
          */
         override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
+            if (this === other) {
+                return true
+            }
+            if (other == null || this::class != other::class) {
+                return false
+            }
 
             other as ServiceEndpoint
 
-            if (uri != other.uri) return false
+            if (uri != other.uri) {
+                return false
+            }
             if (accept != null) {
-                if (other.accept == null) return false
-                if (!accept.contentEquals(other.accept)) return false
-            } else if (other.accept != null) return false
+                if (other.accept == null) {
+                    return false
+                }
+                if (!accept.contentEquals(other.accept)) {
+                    return false
+                }
+            } else if (other.accept != null) {
+                return false
+            }
             if (routingKeys != null) {
-                if (other.routingKeys == null) return false
-                if (!routingKeys.contentEquals(other.routingKeys)) return false
-            } else if (other.routingKeys != null) return false
+                if (other.routingKeys == null) {
+                    return false
+                }
+                if (!routingKeys.contentEquals(other.routingKeys)) {
+                    return false
+                }
+            } else if (other.routingKeys != null) {
+                return false
+            }
 
             return true
         }
