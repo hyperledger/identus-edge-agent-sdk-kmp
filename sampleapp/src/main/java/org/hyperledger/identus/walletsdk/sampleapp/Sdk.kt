@@ -35,7 +35,7 @@ class Sdk {
     private val castor: Castor = createCastor()
     private var pollux: Pollux = createPollux()
     private val seed: Seed = createSeed()
-    private val agentStatusStream: MutableLiveData<PrismAgent.State> = MutableLiveData()
+    private val agentStatusStream: MutableLiveData<EdgeAgent.State> = MutableLiveData()
 
     val pluto: Pluto = createPluto()
     val mercury: Mercury = createMercury()
@@ -58,7 +58,7 @@ class Sdk {
         agent.start()
         agent.startFetchingMessages()
 
-        agentStatusStream.postValue(PrismAgent.State.RUNNING)
+        agentStatusStream.postValue(EdgeAgent.State.RUNNING)
     }
 
     fun stopAgent() {
@@ -68,7 +68,7 @@ class Sdk {
         }
     }
 
-    fun agentStatusStream(): LiveData<PrismAgent.State> {
+    fun agentStatusStream(): LiveData<EdgeAgent.State> {
         return agentStatusStream
     }
 

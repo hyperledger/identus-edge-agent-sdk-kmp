@@ -201,7 +201,7 @@ class EdgeAgent {
         seed: Seed? = null,
         api: Api? = null,
         mediatorHandler: MediationHandler,
-        logger: PrismLogger = EdgeLoggerImpl(LogComponent.PRISM_AGENT),
+        logger: EdgeLogger = EdgeLoggerImpl(LogComponent.PRISM_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
         prismAgentScope.launch {

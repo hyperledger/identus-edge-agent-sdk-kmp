@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.ActivityMainBinding
 
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         viewPager = binding.viewPager
         tabs = binding.tabs
         Sdk.getInstance().agentStatusStream().observe(this) {
-            if (it == PrismAgent.State.RUNNING) {
+            if (it == EdgeAgent.State.RUNNING) {
                 Snackbar.make(binding.root, "Agent state: $it", Snackbar.LENGTH_LONG).show()
                 agentStartedShowViews()
             }

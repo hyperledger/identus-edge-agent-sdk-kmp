@@ -18,7 +18,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -84,7 +84,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = seed,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
         plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
@@ -108,7 +108,7 @@ class EdgeAgentTests {
             connectionManager,
             null,
             null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -122,7 +122,7 @@ class EdgeAgentTests {
     @Test
     fun testCreateNewPeerDID_whenUpdateMediatorFalse_thenShouldUseProvidedServices() = runTest {
         val apollo = ApolloImpl()
-        val castor = CastorImpl(apollo = apollo, logger = PrismLoggerMock())
+        val castor = CastorImpl(apollo = apollo, logger = EdgeLoggerMock())
         val agent = EdgeAgent(
             apollo,
             castor,
@@ -132,7 +132,7 @@ class EdgeAgentTests {
             connectionManager,
             null,
             null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -167,7 +167,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
         val invitationString = """
@@ -194,7 +194,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = api,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
         val invitationString = """
@@ -221,7 +221,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
         val invitationString = """
@@ -247,7 +247,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -272,7 +272,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -302,7 +302,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -348,7 +348,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -379,12 +379,12 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
-        assertEquals(PrismAgent.State.STOPPED, agent.state)
+        assertEquals(EdgeAgent.State.STOPPED, agent.state)
         agent.start()
-        assertEquals(PrismAgent.State.RUNNING, agent.state)
+        assertEquals(EdgeAgent.State.RUNNING, agent.state)
     }
 
     @Test
@@ -398,7 +398,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
         agent.stop()
@@ -418,7 +418,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
         val x = agent.parseInvitation(oob)
@@ -448,7 +448,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -509,7 +509,7 @@ class EdgeAgentTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = EdgeLoggerMock(),
             agentOptions = AgentOptions()
         )
 
