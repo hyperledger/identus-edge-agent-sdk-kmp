@@ -22,12 +22,12 @@ import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
 import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
-import org.hyperledger.identus.walletsdk.prismagent.PrismAgent
-import org.hyperledger.identus.walletsdk.prismagent.PrismAgentError
-import org.hyperledger.identus.walletsdk.prismagent.helpers.AgentOptions
-import org.hyperledger.identus.walletsdk.prismagent.helpers.Experiments
-import org.hyperledger.identus.walletsdk.prismagent.mediation.BasicMediatorHandler
-import org.hyperledger.identus.walletsdk.prismagent.mediation.MediationHandler
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.Experiments
+import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
+import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
 import java.net.UnknownHostException
 
 class Sdk {
@@ -41,9 +41,9 @@ class Sdk {
     val mercury: Mercury = createMercury()
 
     lateinit var handler: MediationHandler
-    lateinit var agent: PrismAgent
+    lateinit var agent: EdgeAgent
 
-    @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
+    @Throws(EdgeAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun startAgent(mediatorDID: String, context: Application) {
         handler = createHandler(mediatorDID)
         agent = createAgent(handler)
@@ -131,8 +131,8 @@ class Sdk {
         )
     }
 
-    private fun createAgent(handler: MediationHandler): PrismAgent {
-        return PrismAgent(
+    private fun createAgent(handler: MediationHandler): EdgeAgent {
+        return EdgeAgent(
             apollo = apollo,
             castor = castor,
             pluto = pluto,

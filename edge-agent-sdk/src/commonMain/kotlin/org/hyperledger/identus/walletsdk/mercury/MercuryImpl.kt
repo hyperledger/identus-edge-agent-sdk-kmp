@@ -14,11 +14,11 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLogger
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.EdgeLogger
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import org.hyperledger.identus.walletsdk.mercury.forward.ForwardMessage
-import org.hyperledger.identus.walletsdk.prismagent.DIDCOMM_MESSAGING
-import org.hyperledger.identus.walletsdk.prismagent.shared.KeyValue
+import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
+import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 
 /**
  * The DIDCommProtocol interface provides methods for packing and unpacking DIDComm messages.
@@ -55,7 +55,7 @@ constructor(
     private val castor: Castor,
     private val protocol: DIDCommProtocol,
     private val api: Api,
-    private val logger: PrismLogger = PrismLoggerImpl(LogComponent.MERCURY)
+    private val logger: EdgeLogger = EdgeLoggerImpl(LogComponent.MERCURY)
 ) : Mercury {
 
     /**

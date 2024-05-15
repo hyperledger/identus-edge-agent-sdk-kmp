@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:import-ordering")
 
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
@@ -15,8 +15,8 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.prismagent.mediation.MediationHandler
-import org.hyperledger.identus.walletsdk.prismagent.protocols.ProtocolType
+import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.TestCoroutineDispatcher

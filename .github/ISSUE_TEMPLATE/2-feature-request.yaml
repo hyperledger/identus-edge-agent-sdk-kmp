@@ -1,5 +1,5 @@
 name: 'Feature Request'
-description: Suggest a new feature for Atala PRISM KMM SDK
+description: Suggest a new feature for Edge Agent KMM SDK
 
 body:
   - type: textarea

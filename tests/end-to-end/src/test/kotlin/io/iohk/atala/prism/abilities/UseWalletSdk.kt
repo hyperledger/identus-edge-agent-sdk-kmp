@@ -14,7 +14,7 @@ import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
-import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
+import io.iohk.atala.prism.walletsdk.prismagent.EdgeAgent
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
 import io.iohk.atala.prism.workflow.EdgeAgentWorkflow
@@ -98,7 +98,7 @@ class UseWalletSdk : Ability {
         val handler = BasicMediatorHandler(mediatorDid, mercury, store)
         val seed = apollo.createRandomSeed().seed
 
-        val sdk = PrismAgent(
+        val sdk = EdgeAgent(
             apollo,
             castor,
             pluto,
@@ -146,7 +146,7 @@ class UseWalletSdk : Ability {
 }
 
 data class SdkContext(
-    val sdk: PrismAgent,
+    val sdk: EdgeAgent,
     val credentialOfferStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val proofRequestStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())

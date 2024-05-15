@@ -91,6 +91,6 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: atala-prism-sdk-kmm
+          name: edge-agent-sdk-kmm
           path: tests/end-to-end/target/site/serenity
           if-no-files-found: 'error'

@@ -19,8 +19,8 @@ import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
 import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
 import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
 import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
-import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
-import io.iohk.atala.prism.walletsdk.prismagent.PrismAgentError
+import io.iohk.atala.prism.walletsdk.prismagent.EdgeAgent
+import io.iohk.atala.prism.walletsdk.prismagent.EdgeAgentError
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.AgentOptions
 import io.iohk.atala.prism.walletsdk.prismagent.helpers.Experiments
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
@@ -35,15 +35,15 @@ class Sdk {
     private val castor: Castor = createCastor()
     private var pollux: Pollux = createPollux()
     private val seed: Seed = createSeed()
-    private val agentStatusStream: MutableLiveData<PrismAgent.State> = MutableLiveData()
+    private val agentStatusStream: MutableLiveData<EdgeAgent.State> = MutableLiveData()
 
     val pluto: Pluto = createPluto()
     val mercury: Mercury = createMercury()
 
     lateinit var handler: MediationHandler
-    lateinit var agent: PrismAgent
+    lateinit var agent: EdgeAgent
 
-    @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
+    @Throws(EdgeAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun startAgent(mediatorDID: String, context: Application) {
         handler = createHandler(mediatorDID)
         agent = createAgent(handler)
@@ -131,8 +131,8 @@ class Sdk {
         )
     }
 
-    private fun createAgent(handler: MediationHandler): PrismAgent {
-        return PrismAgent(
+    private fun createAgent(handler: MediationHandler): EdgeAgent {
+        return EdgeAgent(
             apollo = apollo,
             castor = castor,
             pluto = pluto,

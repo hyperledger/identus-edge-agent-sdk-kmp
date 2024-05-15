@@ -17,7 +17,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import kotlinx.coroutines.flow.Flow
 
 /**
- * The `Pluto` interface defines the contract for storing and retrieving various data related to Atala PRISM architecture.
+ * The `Pluto` interface defines the contract for storing and retrieving various data related to Identus architecture.
  */
 interface Pluto {
 

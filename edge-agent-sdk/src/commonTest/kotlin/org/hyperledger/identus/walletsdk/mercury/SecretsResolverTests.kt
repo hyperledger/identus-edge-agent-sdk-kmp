@@ -4,7 +4,7 @@ import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommSecretsResolver
-import org.hyperledger.identus.walletsdk.prismagent.ApolloMock
+import org.hyperledger.identus.walletsdk.edgeagent.ApolloMock
 import org.junit.Before
 import org.junit.Ignore
 import org.junit.Test

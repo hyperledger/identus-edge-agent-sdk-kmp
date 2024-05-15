@@ -1,12 +1,12 @@
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.prismagent.mediation.MediationHandler
-import org.hyperledger.identus.walletsdk.prismagent.mediation.OnMessageCallback
+import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
+import org.hyperledger.identus.walletsdk.edgeagent.mediation.OnMessageCallback
 import java.util.UUID
 
 class MediationHandlerMock(
@@ -30,7 +30,7 @@ class MediationHandlerMock(
     @Throws()
     override fun achieveMediation(host: DID): Flow<Mediator> {
         mediator = achieveMediationResponse
-        return flow { achieveMediationResponse?.let { emit(it) } ?: throw PrismAgentError.NoMediatorAvailableError() }
+        return flow { achieveMediationResponse?.let { emit(it) } ?: throw EdgeAgentError.NoMediatorAvailableError() }
     }
 
     @Throws()

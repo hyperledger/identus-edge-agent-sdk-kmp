@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:import-ordering")
 
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import anoncreds_wrapper.LinkSecret
@@ -10,14 +10,14 @@ import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.LinkSecretBlindingData
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.IssueCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import io.ktor.http.HttpStatusCode
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
@@ -73,7 +73,7 @@ class AnoncredsTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -82,7 +82,7 @@ class AnoncredsTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(statusCode = HttpStatusCode.OK, response = "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock()
+            logger = EdgeLoggerMock()
         )
 
         val attachmentDescriptor =
@@ -137,7 +137,7 @@ class AnoncredsTests {
         )
         plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -146,7 +146,7 @@ class AnoncredsTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock()
+            logger = EdgeLoggerMock()
         )
 
         val attachmentDescriptor =

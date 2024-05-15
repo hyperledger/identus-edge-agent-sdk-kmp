@@ -8,7 +8,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import kotlin.jvm.Throws
 
 /**
- * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
+ * Apollo defines the set of cryptographic operations that are used in the Identus.
  */
 interface Apollo : KeyRestoration {
 

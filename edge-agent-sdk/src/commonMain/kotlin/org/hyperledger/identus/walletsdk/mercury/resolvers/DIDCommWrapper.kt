@@ -36,7 +36,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import org.hyperledger.identus.walletsdk.mercury.ATTACHMENT_SEPARATOR
 import org.hyperledger.identus.walletsdk.mercury.BASE64
 import org.hyperledger.identus.walletsdk.mercury.DIDCommProtocol
@@ -57,7 +57,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
     private val didDocResolver = DIDCommDIDResolver(castor)
     private val secretsResolver = DIDCommSecretsResolver(pluto, apollo)
     private val didComm = DIDComm(didDocResolver, secretsResolver)
-    private val logger = PrismLoggerImpl(LogComponent.MERCURY)
+    private val logger = EdgeLoggerImpl(LogComponent.MERCURY)
 
     /**
      * Converts a JSON element to a map.

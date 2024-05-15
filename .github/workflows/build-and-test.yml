@@ -47,14 +47,14 @@ jobs:
       - name: Coveralls
         uses: coverallsapp/github-action@v2
         with:
-          file: "${{ github.workspace }}/atala-prism-sdk/build/reports/android/result.xml"
+          file: "${{ github.workspace }}/edge-agent-sdk/build/reports/android/result.xml"
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish test results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action/composite@v2
         with:
-          files: "${{ github.workspace }}/atala-prism-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
+          files: "${{ github.workspace }}/edge-agent-sdk/build/test-results/testReleaseUnitTest/TEST-*.xml"
           comment_title: "Unit Test Results"
           check_name: "Unit Test Results"
 
@@ -64,6 +64,6 @@ jobs:
         with:
           name: coverage-results
           path: |
-            atala-prism-sdk/build/reports/jvm
-            atala-prism-sdk/build/reports/android
+            edge-agent-sdk/build/reports/jvm
+            edge-agent-sdk/build/reports/android
           if-no-files-found: error

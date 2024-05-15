@@ -29,7 +29,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 
 /**
- * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
+ * Apollo defines the set of cryptographic operations that are used in the Identus.
  */
 class ApolloImpl : Apollo {
 

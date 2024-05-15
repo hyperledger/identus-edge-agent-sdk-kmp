@@ -6,7 +6,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.MercuryError
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerMock
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
@@ -24,7 +24,7 @@ class MercuryTests {
         apiMock = ApiMock(HttpStatusCode.OK, "")
         castorMock = CastorMock()
         protocolMock = ProtocolMock()
-        sut = MercuryImpl(castorMock, protocolMock, apiMock, PrismLoggerMock())
+        sut = MercuryImpl(castorMock, protocolMock, apiMock, EdgeLoggerMock())
     }
 
     @Test

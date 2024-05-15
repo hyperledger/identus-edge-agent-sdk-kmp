@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey

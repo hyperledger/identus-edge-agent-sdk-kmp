@@ -18,7 +18,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.RawKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
-import org.hyperledger.identus.walletsdk.prismagent.DIDCOMM_MESSAGING
+import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

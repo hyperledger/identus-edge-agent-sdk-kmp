@@ -17,8 +17,8 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLogger
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.EdgeLogger
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import kotlin.jvm.Throws
 
 /**
@@ -30,7 +30,7 @@ class CastorImpl
 @JvmOverloads
 constructor(
     val apollo: Apollo,
-    private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)
+    private val logger: EdgeLogger = EdgeLoggerImpl(LogComponent.CASTOR)
 ) : Castor {
     var resolvers: Array<DIDResolver> = arrayOf(
         PeerDIDResolver(),

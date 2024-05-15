@@ -1,3 +1,3 @@
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 expect annotation class AndroidIgnore()

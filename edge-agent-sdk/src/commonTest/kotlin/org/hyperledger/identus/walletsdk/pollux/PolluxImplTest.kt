@@ -3,7 +3,7 @@ package org.hyperledger.identus.walletsdk.pollux
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.test.runTest
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
-import org.hyperledger.identus.walletsdk.prismagent.CastorMock
+import org.hyperledger.identus.walletsdk.edgeagent.CastorMock
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

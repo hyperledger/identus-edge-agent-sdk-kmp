@@ -1,6 +1,6 @@
 # Module EdgeAgentSDK
 
-Atala PRISM KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign
+Identus KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign
 identity) applications with Identus. This documentation will explain how to use the SDK in your project, how to
 prepare your development environment if you wish to contribute, and some fundamental considerations around the project.
 
@@ -84,11 +84,11 @@ Together, these building blocks provide a solid foundation for building decentra
 secure, privacy-preserving, and interoperable. Using Identus, developers can focus on creating innovative identity
 solutions without worrying about the underlying infrastructure.
 
-### Prism Agent
+### Edge Agent
 
-Prism Agent is a comprehensive library that combines all the Prism platform's building blocks - Apollo, Castor, Pluto,
+Edge Agent is a comprehensive library that combines all the Identus platform's building blocks - Apollo, Castor, Pluto,
 Mercury, and Pollux - to provide a seamless experience for developers working with decentralized identifiers (DIDs) on
-the Prism platform.
+the Identus platform.
 
 ## Documentation
 
@@ -97,4 +97,4 @@ the Prism platform.
 - [Getting Started](https://docs.atalaprism.io/docs/getting-started)
 - [What is identity?](https://docs.atalaprism.io/docs/concepts/what-is-identity)
 - [Digital wallets](https://docs.atalaprism.io/docs/concepts/digital-wallets)
-- [Atala PRISM Overview](https://docs.atalaprism.io/docs/atala-prism/overview)
+- [Identus Overview](https://docs.atalaprism.io/docs/atala-prism/overview)

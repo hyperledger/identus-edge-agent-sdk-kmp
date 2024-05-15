@@ -48,7 +48,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -65,12 +65,12 @@ internal class CastorShared {
     companion object {
 
         /**
-         * The logger property is a PrismLoggerImpl instance for logging purposes.
+         * The logger property is a EdgeLoggerImpl instance for logging purposes.
          * It is used to log debug, info, warning, and error messages, along with the associated metadata.
          *
          * @property logger The logger instance.
          */
-        private val logger = PrismLoggerImpl(LogComponent.CASTOR)
+        private val logger = EdgeLoggerImpl(LogComponent.CASTOR)
 
         /**
          * parseDID parses a string representation of a Decentralized Identifier (DID) into a DID object.

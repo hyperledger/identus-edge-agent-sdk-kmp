@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
@@ -16,7 +16,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import org.hyperledger.identus.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 
 class PolluxMock : Pollux {
 

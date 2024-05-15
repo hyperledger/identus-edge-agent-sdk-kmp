@@ -5,8 +5,8 @@ import io.ktor.client.request.request
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
-import org.hyperledger.identus.walletsdk.prismagent.shared.KeyValue
-import org.hyperledger.identus.walletsdk.prismagent.shared.PrismShared
+import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
+import org.hyperledger.identus.walletsdk.edgeagent.shared.PrismShared
 
 /**
  * Implementation of API interface for http requests.

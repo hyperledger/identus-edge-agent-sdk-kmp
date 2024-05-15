@@ -1,5 +1,5 @@
 APPLY_FIXES: none
-FILTER_REGEX_INCLUDE: (.editorconfig|.github/|atala-prism-sdk/src/|sampleapp/src/|protosLib/src/)
+FILTER_REGEX_INCLUDE: (.editorconfig|.github/|edge-agent-sdk/src/|sampleapp/src/|protosLib/src/)
 FILTER_REGEX_EXCLUDE: (tests/)
 VALIDATE_ALL_CODEBASE: false
 

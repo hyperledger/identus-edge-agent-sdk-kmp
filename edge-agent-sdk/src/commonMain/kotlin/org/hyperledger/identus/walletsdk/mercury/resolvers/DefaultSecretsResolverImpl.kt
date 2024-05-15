@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.mercury.resolvers
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.iohk.atala..apollo.base64.base64UrlEncoded
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.Serializable
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto

@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.prismagent.helpers
+package org.hyperledger.identus.walletsdk.edgeagent.helpers
 
 import org.hyperledger.identus.walletsdk.domain.models.DID
 

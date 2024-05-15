@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:import-ordering")
 
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
@@ -22,13 +22,13 @@ import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import org.hyperledger.identus.walletsdk.prismagent.helpers.AgentOptions
-import org.hyperledger.identus.walletsdk.prismagent.protocols.ProtocolType
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.IssueCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.OfferCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
-import org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
@@ -42,7 +42,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-class PrismAgentTests {
+class EdgeAgentTests {
 
     lateinit var apolloMock: ApolloMock
     lateinit var castorMock: CastorMock
@@ -75,7 +75,7 @@ class PrismAgentTests {
         val seed = Seed(MnemonicHelper.createRandomSeed())
         val validDID = DID("did", "test", "123")
         castorMock.createPrismDIDReturn = validDID
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -99,7 +99,7 @@ class PrismAgentTests {
     fun testCreateNewPeerDID_shouldCreateNewDID_whenCalled() = runTest {
         val validDID = DID("did", "test", "123")
         castorMock.createPeerDIDReturn = validDID
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apolloMock,
             castorMock,
             plutoMock,
@@ -123,7 +123,7 @@ class PrismAgentTests {
     fun testCreateNewPeerDID_whenUpdateMediatorFalse_thenShouldUseProvidedServices() = runTest {
         val apollo = ApolloImpl()
         val castor = CastorImpl(apollo = apollo, logger = PrismLoggerMock())
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo,
             castor,
             plutoMock,
@@ -157,8 +157,8 @@ class PrismAgentTests {
     }
 
     @Test
-    fun testPrismAgentOnboardingInvitation_shouldAcceptOnboardingInvitation_whenStatusIs200() = runTest {
-        val agent = PrismAgent(
+    fun testEdgeAgentOnboardingInvitation_shouldAcceptOnboardingInvitation_whenStatusIs200() = runTest {
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -183,9 +183,9 @@ class PrismAgentTests {
     }
 
     @Test
-    fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenStatusIsNot200() = runTest {
+    fun testEdgeAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenStatusIsNot200() = runTest {
         val api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -205,14 +205,14 @@ class PrismAgentTests {
             }
         """
         val invitation = agent.parseInvitation(invitationString)
-        assertFailsWith<PrismAgentError.FailedToOnboardError> {
+        assertFailsWith<EdgeAgentError.FailedToOnboardError> {
             agent.acceptInvitation(invitation as PrismOnboardingInvitation)
         }
     }
 
     @Test
-    fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenBodyIsWrong() = runTest {
-        val agent = PrismAgent(
+    fun testEdgeAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenBodyIsWrong() = runTest {
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -237,8 +237,8 @@ class PrismAgentTests {
     }
 
     @Test
-    fun testPrismAgentSignWith_whenNoPrivateKeyAvailable_thenThrowCannotFindDIDPrivateKey() = runTest {
-        val agent = PrismAgent(
+    fun testEdgeAgentSignWith_whenNoPrivateKeyAvailable_thenThrowCannotFindDIDPrivateKey() = runTest {
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -256,14 +256,14 @@ class PrismAgentTests {
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
         assertFalse { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
-        assertFailsWith(PrismAgentError.CannotFindDIDPrivateKey::class, null) {
+        assertFailsWith(EdgeAgentError.CannotFindDIDPrivateKey::class, null) {
             agent.signWith(did, messageString.toByteArray())
         }
     }
 
     @Test
-    fun testPrismAgentSignWith_whenPrivateKeyAvailable_thenSignatureReturned() = runTest {
-        val agent = PrismAgent(
+    fun testEdgeAgentSignWith_whenPrivateKeyAvailable_thenSignatureReturned() = runTest {
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -293,7 +293,7 @@ class PrismAgentTests {
 
     @Test
     fun testParseInvitation_whenOutOfBand_thenReturnsOutOfBandInvitationObject() = runTest {
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -339,7 +339,7 @@ class PrismAgentTests {
 
     @Test
     fun testParseInvitation_whenOutOfBandWrongBody_thenThrowsUnknownInvitationTypeError() = runTest {
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -367,10 +367,10 @@ class PrismAgentTests {
     }
 
     @Test
-    fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
+    fun testStartEdgeAgent_whenCalled_thenStatusIsRunning() = runTest {
         val getLinkSecretReturn = flow<String> { emit("linkSecret") }
         plutoMock.getLinkSecretReturn = getLinkSecretReturn
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -388,8 +388,8 @@ class PrismAgentTests {
     }
 
     @Test
-    fun testStopPrismAgent_whenCalled_thenStatusIsStopped() = runTest {
-        val agent = PrismAgent(
+    fun testStopEdgeAgent_whenCalled_thenStatusIsStopped() = runTest {
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -402,14 +402,14 @@ class PrismAgentTests {
             agentOptions = AgentOptions()
         )
         agent.stop()
-        assertEquals(PrismAgent.State.STOPPED, agent.state)
+        assertEquals(EdgeAgent.State.STOPPED, agent.state)
     }
 
     @Test
     fun test_OOPInvitationInURLFormat() = runTest {
         val oob =
             "https://my.domain.com/path?_oob=eyJpZCI6ImQzNjM3NzlhLWYyMmItNGFiNC1hYjY0LTkxZjkxNjgzNzYwNyIsInR5cGUiOiJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzIuMC9pbnZpdGF0aW9uIiwiZnJvbSI6ImRpZDpwZWVyOjIuRXo2TFNjcGZReGJ2VEhLaGpvbzVvMzlmc254VEp1RTRobVp3ckROUE5BVzI0dmFORi5WejZNa3UzSkpVTDNkaHpYQXB0RWpuUDFpNkF0TDlTNGlwRTNYOHM3MWV4MW9WVGNHLlNleUowSWpvaVpHMGlMQ0p6SWpvaWFIUjBjSE02THk5ck9ITXRaR1YyTG1GMFlXeGhjSEpwYzIwdWFXOHZjSEpwYzIwdFlXZGxiblF2Wkdsa1kyOXRiU0lzSW5JaU9sdGRMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDAiLCJib2R5Ijp7ImdvYWxfY29kZSI6ImlvLmF0YWxhcHJpc20uY29ubmVjdCIsImdvYWwiOiJFc3RhYmxpc2ggYSB0cnVzdCBjb25uZWN0aW9uIGJldHdlZW4gdHdvIHBlZXJzIHVzaW5nIHRoZSBwcm90b2NvbCAnaHR0cHM6Ly9hdGFsYXByaXNtLmlvL21lcmN1cnkvY29ubmVjdGlvbnMvMS4wL3JlcXVlc3QnIiwiYWNjZXB0IjpbXX19"
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -439,7 +439,7 @@ class PrismAgentTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -500,7 +500,7 @@ class PrismAgentTests {
         )
         plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
