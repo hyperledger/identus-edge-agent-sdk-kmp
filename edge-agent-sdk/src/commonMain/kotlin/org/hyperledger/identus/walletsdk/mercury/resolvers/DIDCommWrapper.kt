@@ -33,10 +33,10 @@ import org.hyperledger.identus.walletsdk.domain.models.AttachmentLinkData
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.MercuryError
 import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import org.hyperledger.identus.walletsdk.mercury.ATTACHMENT_SEPARATOR
 import org.hyperledger.identus.walletsdk.mercury.BASE64
 import org.hyperledger.identus.walletsdk.mercury.DIDCommProtocol

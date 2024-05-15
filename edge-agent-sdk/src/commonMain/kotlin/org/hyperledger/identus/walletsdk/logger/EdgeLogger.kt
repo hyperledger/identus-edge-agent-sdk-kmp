@@ -78,7 +78,6 @@ interface EdgeLogger {
  * @property category the LogComponent category for this logger
  */
 class EdgeLoggerImpl(category: LogComponent) : EdgeLogger {
-    edgeagent
     private val log = logging("[org.hyperledger.identus.walletsdk.$category]")
 
     private var logLevel: LogLevel = LogLevel.INFO

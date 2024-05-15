@@ -13,8 +13,8 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
 import org.hyperledger.identus.walletsdk.domain.models.OctetPublicKey
-import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommDIDResolver
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
+import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommDIDResolver
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertContains

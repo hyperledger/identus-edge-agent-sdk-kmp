@@ -18,10 +18,10 @@ import org.hyperledger.identus.walletsdk.domain.models.CastorError
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.OctetPublicKey
+import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.mercury.CRV
 import org.hyperledger.identus.walletsdk.mercury.MULTIBASE_BYTES_SIZE
 import org.hyperledger.identus.walletsdk.mercury.X
-import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import java.util.Optional
 
 /**

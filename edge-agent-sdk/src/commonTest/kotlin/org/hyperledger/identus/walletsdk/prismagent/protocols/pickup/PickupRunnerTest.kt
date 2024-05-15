@@ -5,8 +5,8 @@ import kotlinx.coroutines.test.runTest
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.MercuryMock
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.MercuryMock
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.junit.Before
 import org.junit.Test

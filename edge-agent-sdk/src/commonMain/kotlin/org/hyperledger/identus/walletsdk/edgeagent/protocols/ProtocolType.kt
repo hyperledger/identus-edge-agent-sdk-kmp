@@ -9,8 +9,8 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import org.hyperledger.identus.walletsdk.edgeagent.PROTOCOL_TYPE
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.PROTOCOL_TYPE
 
 @Serializable(with = ProtocolTypeSerializer::class)
 enum class ProtocolType(val value: String) {

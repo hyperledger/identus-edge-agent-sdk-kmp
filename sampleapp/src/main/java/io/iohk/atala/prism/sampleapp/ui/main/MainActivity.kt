@@ -8,7 +8,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import io.iohk.atala.prism.sampleapp.Sdk
 import io.iohk.atala.prism.sampleapp.databinding.ActivityMainBinding
-import io.iohk.atala.prism.walletsdk.prismagent.EdgeAgent
 
 class MainActivity : AppCompatActivity() {
 

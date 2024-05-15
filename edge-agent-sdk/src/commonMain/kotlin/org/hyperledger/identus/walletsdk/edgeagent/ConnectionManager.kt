@@ -1,6 +1,13 @@
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
@@ -17,13 +24,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation.RevocationNotification
 import java.time.Duration
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlin.jvm.Throws
 
 /**

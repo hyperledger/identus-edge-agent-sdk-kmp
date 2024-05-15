@@ -14,11 +14,11 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDResolver
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
+import org.hyperledger.identus.walletsdk.logger.EdgeLogger
+import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.EdgeLogger
-import org.hyperledger.identus.walletsdk.logger.EdgeLoggerImpl
 import kotlin.jvm.Throws
 
 /**

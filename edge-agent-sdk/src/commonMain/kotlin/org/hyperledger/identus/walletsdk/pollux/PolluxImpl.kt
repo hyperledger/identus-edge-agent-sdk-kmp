@@ -46,11 +46,11 @@ import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey

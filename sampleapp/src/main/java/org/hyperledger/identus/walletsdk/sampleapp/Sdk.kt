@@ -17,17 +17,17 @@ import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
-import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
-import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
-import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
-import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
-import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.Experiments
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
+import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
+import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
+import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
+import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
+import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import java.net.UnknownHostException
 
 class Sdk {

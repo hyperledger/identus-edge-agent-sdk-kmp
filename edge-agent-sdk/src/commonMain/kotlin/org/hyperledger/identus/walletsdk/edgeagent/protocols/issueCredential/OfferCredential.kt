@@ -8,9 +8,9 @@ import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.CREDENTIAL_PREVIEW
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
 import org.hyperledger.identus.walletsdk.edgeagent.MULTIPLE_AVAILABLE
-import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.REPLACEMENT_ID
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.build
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
