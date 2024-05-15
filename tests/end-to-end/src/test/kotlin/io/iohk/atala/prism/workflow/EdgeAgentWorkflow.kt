@@ -4,11 +4,11 @@ import com.google.gson.GsonBuilder
 import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.utils.Logger
 import io.iohk.atala.prism.abilities.UseWalletSdk
-import io.iohk.atala.prism.walletsdk.domain.models.CastorError
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import org.hyperledger.identus.walletsdk.domain.models.CastorError
+import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.IssueCredential
+import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
+import org.hyperledger.identus.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 import kotlinx.coroutines.flow.first
 import net.serenitybdd.screenplay.Actor
 import org.hamcrest.CoreMatchers.equalTo
