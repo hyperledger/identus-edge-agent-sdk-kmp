@@ -14,8 +14,8 @@ import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
 
 /**
  * The `Pollux` interface represents a set of operations for working with verifiable credentials.

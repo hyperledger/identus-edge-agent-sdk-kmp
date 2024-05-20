@@ -1,9 +1,9 @@
-package org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential
+package org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential
 
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.prismagent.PrismAgentError
-import org.hyperledger.identus.walletsdk.prismagent.helpers.fromIndex
+import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.fromIndex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith

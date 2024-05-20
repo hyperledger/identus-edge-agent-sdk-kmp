@@ -1,4 +1,4 @@
-# Wallet SDK KMM E2E
+# Edge Agent SDK KMP E2E
 
 End-to-end tests
 

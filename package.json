@@ -1,7 +1,7 @@
 {
-  "name": "atala-prism-wallet-sdk-kmm",
+  "name": "edge-agent-sdk-kmp",
   "version": "0.0.1",
-  "description": "atala-prism-wallet-sdk-kmm",
+  "description": "edge-agent-sdk-kmp",
   "directories": {
     "example": "examples"
   },

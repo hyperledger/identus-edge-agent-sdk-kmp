@@ -7,9 +7,9 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
-import org.hyperledger.identus.walletsdk.prismagent.PrismAgentError
-import org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
-import org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
+import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.net.MalformedURLException
 import java.net.URISyntaxException

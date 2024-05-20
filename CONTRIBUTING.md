@@ -1,13 +1,13 @@
-# Contributing to Atala PRISM KMM SDK
+# Contributing to Edge Agent SDK KMP
 
 :rocket::tada: First off, thanks for taking the time to contribute! :tada::rocket:
-The following is a set of guidelines for contributing to Atala PRISM KMM SDK. These are mostly guidelines. Use your best judgment, and feel free to propose changes to this document in a pull request.
+The following is a set of guidelines for contributing to Edge Agent SDK KMP. These are mostly guidelines. Use your best judgment, and feel free to propose changes to this document in a pull request.
 
 #### Table Of Contents
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
-  * [Atala PRISM](#atala-prism)
-  * [Atala PRISM KMM SDK](#atala-prism-kmm)
+  * [Identus](#Identus)
+  * [Edge Agent SDK KMP](#edge-agent-kmp)
 
 [How Can I Contribute?](#how-can-i-contribute)
   * [Your First Code Contribution](#your-first-code-contribution)
@@ -21,23 +21,23 @@ The following is a set of guidelines for contributing to Atala PRISM KMM SDK. Th
 
 ## What should I know before I get started?
 
-### Atala PRISM
+### Identus
 
-Atala PRISM is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs (Decentralized identifiers) and verifiable credentials alongside tools and frameworks to help expand your ecosystem.
+Identus is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs (Decentralized identifiers) and verifiable credentials alongside tools and frameworks to help expand your ecosystem.
 The complete platform is separated into multiple repositories:
 
-* [atala-prism-building-blocks](https://github.com/hyperledger-labs/open-enterprise-agent) - Repo that contains the servers Building Blocks.
-* [atala-prism-wallet-sdk-swift](https://github.com/input-output-hk/atala-prism-wallet-sdk-swift) - Repo for the Swift version of the SDK.
-* [atala-prism-wallet-sdk-ts](https://github.com/input-output-hk/atala-prism-wallet-sdk-ts) - Repo for the TS version of the SDK.
-* [atala-prism-mediator](https://github.com/input-output-hk/atala-prism-mediator) - Repo for DIDComm V2 Mediator
+* [identus-cloud-agent](https://github.com/hyperledger/identus-cloud-agent) - Repo that contains the servers Building Blocks.
+* [edge-agent-sdk-swift](https://github.com/input-output-hk/atala-prism-wallet-sdk-swift) - Repo for the Swift version of the SDK.
+* [edge-agent-sdk-ts](https://github.com/input-output-hk/atala-prism-wallet-sdk-ts) - Repo for the TS version of the SDK.
+* [mediator](https://github.com/input-output-hk/atala-prism-mediator) - Repo for DIDComm V2 Mediator
 
-### Atala PRISM KMM SDK
+### Edge Agent SDK KMP
 
-Atala PRISM KMM software development kit will help adoption within Kotlin platforms (Java/Android) by providing key functionalities. For more information about the SDK, please have a look at the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md)
+Edge Agent SDK KMP software development kit will help adoption within Kotlin platforms (Java/Android) by providing key functionalities. For more information about the SDK, please have a look at the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md)
 
 ### Your First Code Contribution
 
-Unsure where to begin contributing to Atala PRISM KMM SDK? You can start by looking through the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md) that provides all the steps to setup your environment.
+Unsure where to begin contributing to Edge Agent SDK KMP? You can start by looking through the [Readme](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/README.md) that provides all the steps to setup your environment.
 
 ### Pull Requests
 
@@ -58,7 +58,7 @@ While the prerequisites above must be satisfied prior to having your pull reques
 
 ### Reporting Bugs
 
-This section guides you through submitting a bug report for Atala PRISM KMM SDK. Following these guidelines helps maintainers and the community understand your report :pencil:, reproduce the behaviour :computer: :computer:, and find related reports :mag_right:.
+This section guides you through submitting a bug report for Edge Agent SDK KMP. Following these guidelines helps maintainers and the community understand your report :pencil:, reproduce the behaviour :computer: :computer:, and find related reports :mag_right:.
 
 Before creating bug reports, please check [this list](#before-submitting-a-bug-report), as you might not need to create one. When you are creating a bug report, please [include as many details as possible](#how-do-i-submit-a-good-bug-report). Fill out [the required template](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/blob/main/.github/ISSUE_TEMPLATE/1-bug-report.yaml), the information it asks for helps us resolve issues faster.
 
@@ -110,7 +110,7 @@ Enhancement suggestions are tracked as [GitHub issues](https://guides.github.com
 
 ### Git Commit Messages
 
-Atala PRISM uses [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#specification). Please always provide a commit following these specifications.
+Identus uses [Conventional commits](https://www.conventionalcommits.org/en/v1.0.0/#specification). Please always provide a commit following these specifications.
 
 #### Commit Message Format
 

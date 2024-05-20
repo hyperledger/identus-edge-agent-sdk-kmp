@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand
+package org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand
 
 import io.ktor.http.Url
 import org.hyperledger.identus.walletsdk.domain.models.CommonError

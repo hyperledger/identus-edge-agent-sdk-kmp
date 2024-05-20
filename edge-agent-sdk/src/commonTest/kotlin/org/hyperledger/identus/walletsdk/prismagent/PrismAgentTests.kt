@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:import-ordering")
 
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
@@ -22,13 +22,13 @@ import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import org.hyperledger.identus.walletsdk.prismagent.helpers.AgentOptions
-import org.hyperledger.identus.walletsdk.prismagent.protocols.ProtocolType
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.CredentialPreview
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.IssueCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.OfferCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand.OutOfBandInvitation
-import org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand.PrismOnboardingInvitation
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import io.ktor.http.HttpStatusCode
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest

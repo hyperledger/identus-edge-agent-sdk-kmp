@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.prismagent.protocols.outOfBand
+package org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand
 
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json

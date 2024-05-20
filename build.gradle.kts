@@ -107,8 +107,8 @@ subprojects {
                     artifactId = project.name
                     version = project.version.toString()
                     pom {
-                        name.set("Identus Edge Agent SDK")
-                        description.set("Identus Edge Agent - Kotlin Multiplatform (Android/JVM)")
+                        name.set("Edge Agent SDK")
+                        description.set(" Edge Agent SDK - Kotlin Multiplatform (Android/JVM)")
                         url.set("https://docs.atalaprism.io/")
                         organization {
                             name.set("IOG")

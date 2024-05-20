@@ -27,7 +27,7 @@ buildscript {
     }
 }
 
-rootProject.name = "wallet-sdk"
+rootProject.name = "edge-agent-sdk"
 include(":protosLib")
 include(":edge-agent-sdk")
 include(":sampleapp")

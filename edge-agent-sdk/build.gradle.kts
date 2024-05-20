@@ -31,7 +31,7 @@ koverReport {
     filters {
         excludes {
             packages(
-                "io.iohk.atala.prism.protos",
+                "org.hyperledger.identus.protos",
                 "org.hyperledger.identus.walletsdk.domain",
                 "org.hyperledger.identus.walletsdk.pluto.data"
             )
@@ -224,7 +224,7 @@ sqldelight {
 tasks.withType<DokkaTask>().configureEach {
     moduleName.set(currentModuleName)
     moduleVersion.set(rootProject.version.toString())
-    description = "This is a Kotlin Multiplatform implementation of Identus Edge Agent KMM"
+    description = "This is a Kotlin Multiplatform implementation of Edge Agent SDK KMP"
     dokkaSourceSets {
         configureEach {
             jdkVersion.set(17)
@@ -237,7 +237,7 @@ tasks.withType<DokkaTask>().configureEach {
                 "docs/Mercury.md",
                 "docs/Pluto.md",
                 "docs/Pollux.md",
-                "docs/PrismAgent.md"
+                "docs/EdgeAgent.md"
             )
             sourceLink {
                 localDirectory.set(projectDir.resolve("src"))

@@ -13,12 +13,12 @@ import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.prismagent.DIDCOMM1
-import org.hyperledger.identus.walletsdk.prismagent.DIDCOMM_MESSAGING
-import org.hyperledger.identus.walletsdk.prismagent.protocols.ProtocolType
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.IssueCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.issueCredential.OfferCredential
-import org.hyperledger.identus.walletsdk.prismagent.protocols.proofOfPresentation.RequestPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
+import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
 import org.hyperledger.identus.walletsdk.db.Message as MessageEntity
