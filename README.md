@@ -4,7 +4,7 @@
 ![badge-platform-jvm]
 [![Coverage Status](https://coveralls.io/repos/github/input-output-hk/atala-prism-wallet-sdk-kmm/badge.svg?branch=main)](https://coveralls.io/github/input-output-hk/atala-prism-wallet-sdk-kmm?branch=main)
 
-# Welcome to Edge Agent SDK KMP
+# Welcome to Edge Agent SDK KMP (Kotlin Multiplatform)
 
 The following will explain how to use the SDK in your project, how to prepare your development environment if you wish to contribute and some basic considerations around the project.
 
