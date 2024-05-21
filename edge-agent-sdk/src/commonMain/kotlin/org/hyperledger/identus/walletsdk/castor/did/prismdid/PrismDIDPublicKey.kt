@@ -12,7 +12,7 @@ import pbandk.ByteArr
 import kotlin.jvm.Throws
 
 /**
- * Represents a public key for the Atala PRISM system.
+ * Represents a public key for the system.
  *
  * @property apollo The instance of [Apollo] used for cryptographic operations.
  * @property id The ID of the public key.
