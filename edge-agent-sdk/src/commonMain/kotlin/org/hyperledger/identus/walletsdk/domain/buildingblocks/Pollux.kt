@@ -151,4 +151,6 @@ interface Pollux {
     ): Boolean
 
     suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey>
+
+    suspend fun isCredentialRevoked(credential: Credential): Boolean
 }

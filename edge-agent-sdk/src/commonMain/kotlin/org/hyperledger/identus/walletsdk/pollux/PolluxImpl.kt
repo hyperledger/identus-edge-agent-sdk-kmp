@@ -62,6 +62,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
+import java.io.ByteArrayInputStream
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
@@ -81,6 +82,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.DescriptorItemFormat
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pluto.RestorationID
+import java.util.zip.GZIPInputStream
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -492,6 +494,45 @@ class PolluxImpl(
             }
         }
         throw PolluxError.InvalidCredentialDefinitionError()
+    }
+
+    override suspend fun isCredentialRevoked(credential: Credential): Boolean {
+        if (credential !is JWTCredential) {
+            throw PolluxError.InvalidCredentialError()
+        }
+        if (credential.jwtPayload.verifiableCredential.credentialStatus == null) {
+            throw PolluxError.InvalidJWTCredential("Credential must contain credential status")
+        }
+        credential.jwtPayload.verifiableCredential.credentialStatus?.let { credentialStatus ->
+            val result = api.request(
+                HttpMethod.Get.value,
+                credentialStatus.statusListCredential,
+                emptyArray(),
+                arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+                null
+            )
+            if (result.status == 200) {
+                val response = (Json.parseToJsonElement(result.jsonString) as JsonObject)
+                if (response.containsKey("credentialSubject")) {
+                    val credentialSubject = response["credentialSubject"]!!.jsonObject
+                    if (credentialSubject.containsKey("encodedList")) {
+                        val encodedList = credentialSubject["encodedList"]?.jsonPrimitive?.content
+                        if (encodedList != null) {
+                            val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
+
+                            val byteArrayInputStream = ByteArrayInputStream(decodedBytes)
+                            val gzipInputStream = GZIPInputStream(byteArrayInputStream)
+                            val decompressedBytes = gzipInputStream.readBytes()
+                            if (credentialStatus.statusListIndex > decompressedBytes.size) {
+                                throw PolluxError.StatusListOutOfBoundIndex()
+                            }
+                            return decompressedBytes[credentialStatus.statusListIndex].toInt() == 1
+                        }
+                    }
+                }
+            }
+        }
+        return false
     }
 
     /**

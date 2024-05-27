@@ -60,7 +60,11 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray, revoked: Boolean): Credential {
+    override fun restoreCredential(
+        restorationIdentifier: String,
+        credentialData: ByteArray,
+        revoked: Boolean
+    ): Credential {
         TODO("Not yet implemented")
     }
 
@@ -114,6 +118,9 @@ class PolluxMock : Pollux {
     }
 
     override suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey> {
+    }
+
+    override suspend fun isCredentialRevoked(credential: Credential): Boolean {
         TODO("Not yet implemented")
     }
 }

@@ -767,7 +767,8 @@ constructor(
      *
      * @see PolluxError
      */
-    class InvalidJWTCredential : PolluxError("To create a JWT presentation please provide a valid JWTCredential") {
+    class InvalidJWTCredential(msg: String? = null) :
+        PolluxError(msg ?: "To create a JWT presentation please provide a valid JWTCredential") {
         override val code: Int
             get() = 54
     }
@@ -830,7 +831,8 @@ constructor(
      *
      * @see PolluxError
      */
-    class WrongKeyProvided(expected: String?, actual: String?) : PolluxError("Provided key is: $actual but should be $expected") {
+    class WrongKeyProvided(expected: String?, actual: String?) :
+        PolluxError("Provided key is: $actual but should be $expected") {
         override val code: Int
             get() = 57
     }
@@ -853,5 +855,13 @@ constructor(
     class RequestPresentationHasWrongAttachments(reason: String) : PolluxError(reason) {
         override val code: Int
             get() = 59
+    }
+
+    /*
+     * Represents an error that occurs when the status list index is out of bounds compared to the decoded and decompressed value of encodedList.
+     */
+    class StatusListOutOfBoundIndex : PolluxError("Status list index is out of bound") {
+        override val code: Int
+            get() = 57
     }
 }
