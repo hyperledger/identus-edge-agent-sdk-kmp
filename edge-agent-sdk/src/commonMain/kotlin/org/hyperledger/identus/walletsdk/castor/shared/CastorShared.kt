@@ -21,11 +21,8 @@ import org.hyperledger.identus.protos.AtalaOperation
 import org.hyperledger.identus.protos.CreateDIDOperation
 import org.hyperledger.identus.protos.Service
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
-import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
-import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
-import org.hyperledger.identus.walletsdk.apollo.utils.X25519PublicKey
 import org.hyperledger.identus.walletsdk.castor.DID
 import org.hyperledger.identus.walletsdk.castor.PRISM
 import org.hyperledger.identus.walletsdk.castor.did.DIDParser

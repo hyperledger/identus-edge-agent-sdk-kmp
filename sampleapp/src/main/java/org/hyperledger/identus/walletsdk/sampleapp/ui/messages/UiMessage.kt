@@ -1,6 +1,6 @@
-package io.iohk.atala.prism.sampleapp.ui.messages
+package org.hyperledger.identus.walletsdk.sampleapp.ui.messages
 
-import io.iohk.atala.prism.walletsdk.domain.models.AttachmentDescriptor
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 
 data class UiMessage(
     val id: String,

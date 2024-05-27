@@ -1,15 +1,17 @@
-package io.iohk.atala.prism.walletsdk.castor
+@file:Suppress("ktlint:standard:import-ordering")
+
+package org.hyperledger.identus.walletsdk.castor
 
 import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Apollo
-import io.iohk.atala.prism.walletsdk.domain.models.Api
-import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.HttpResponse
-import io.iohk.atala.prism.walletsdk.prismagent.shared.KeyValue
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.test.runTest
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
+import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.junit.Test
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.mock

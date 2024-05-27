@@ -1,6 +1,7 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
-import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import kotlinx.serialization.Serializable
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 

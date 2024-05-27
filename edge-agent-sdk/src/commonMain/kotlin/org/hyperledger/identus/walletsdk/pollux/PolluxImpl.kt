@@ -30,10 +30,8 @@ import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.Proof
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
-import io.ktor.util.date.getTimeMillis
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
@@ -72,9 +70,7 @@ import java.security.spec.ECParameterSpec
 import java.security.spec.ECPoint
 import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
-import java.text.SimpleDateFormat
 import java.util.*
-import org.hyperledger.identus.walletsdk.apollo.helpers.BytesOps
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
@@ -629,15 +625,16 @@ class PolluxImpl(
             throw PolluxError.InvalidJWTPresentationDefinitionError("Presentation option must contain at least one valid JWT alg that is not empty.")
         }
         val paths = presentationClaims.claims.keys
-        val mutableListFields: MutableList<PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field> = paths.map { path ->
-            PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
-                path = arrayOf("$.vc.credentialSubject.$path", "$.credentialSubject.$path"),
-                id = UUID.randomUUID().toString(),
-                optional = false,
-                filter = presentationClaims.claims[path],
-                name = path,
-            )
-        } as MutableList
+        val mutableListFields: MutableList<PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field> =
+            paths.map { path ->
+                PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
+                    path = arrayOf("$.vc.credentialSubject.$path", "$.credentialSubject.$path"),
+                    id = UUID.randomUUID().toString(),
+                    optional = false,
+                    filter = presentationClaims.claims[path],
+                    name = path,
+                )
+            } as MutableList
 
         presentationClaims.issuer?.let { issuer ->
             mutableListFields.add(

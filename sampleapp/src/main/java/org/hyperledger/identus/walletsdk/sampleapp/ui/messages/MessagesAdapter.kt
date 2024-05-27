@@ -7,22 +7,10 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import io.iohk.atala.prism.sampleapp.ui.messages.UiMessage
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
-import io.ktor.util.decodeBase64String
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.json.Json
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
-import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
-import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.sampleapp.R
-import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import org.hyperledger.identus.walletsdk.ui.messages.MessagesFragment
 
 class MessagesAdapter(

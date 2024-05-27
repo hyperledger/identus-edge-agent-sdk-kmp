@@ -1,13 +1,13 @@
-package io.iohk.atala.prism.walletsdk.pollux
+package org.hyperledger.identus.walletsdk.pollux
 
-import io.iohk.atala.prism.walletsdk.domain.buildingblocks.Castor
-import io.iohk.atala.prism.walletsdk.domain.models.Curve
-import io.iohk.atala.prism.walletsdk.domain.models.DID
-import io.iohk.atala.prism.walletsdk.domain.models.DIDDocument
-import io.iohk.atala.prism.walletsdk.domain.models.DIDDocumentCoreProperty
-import io.iohk.atala.prism.walletsdk.domain.models.DIDUrl
-import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.KeyPair
-import io.iohk.atala.prism.walletsdk.domain.models.keyManagement.PublicKey
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
+import org.hyperledger.identus.walletsdk.domain.models.Curve
+import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
+import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 
 class CastorMock : Castor {
     var parseDIDReturn: DID? = null

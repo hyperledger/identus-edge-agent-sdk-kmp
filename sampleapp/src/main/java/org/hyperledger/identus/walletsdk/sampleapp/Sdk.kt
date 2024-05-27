@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.sampleapp
 
 import android.app.Application
@@ -19,8 +21,6 @@ import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.edgeagent.PrismAgent
 import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
-import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
-import org.hyperledger.identus.walletsdk.edgeagent.helpers.Experiments
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
 import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
@@ -83,7 +83,8 @@ class Sdk {
 
     private fun createCastor(): Castor {
         val castor = CastorImpl(apollo)
-        val prismDIDApiResolver = PrismDIDApiResolver(this.apollo, "https://sit-prism-agent-issuer.atalaprism.io/prism-agent")
+        val prismDIDApiResolver =
+            PrismDIDApiResolver(this.apollo, "https://sit-prism-agent-issuer.atalaprism.io/prism-agent")
         castor.addResolver(prismDIDApiResolver)
         return castor
     }

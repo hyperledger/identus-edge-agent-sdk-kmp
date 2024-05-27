@@ -1,11 +1,11 @@
-package io.iohk.atala.prism.sampleapp.ui.messages
+package org.hyperledger.identus.walletsdk.sampleapp.ui.messages
 
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.widget.EditText
 import androidx.fragment.app.DialogFragment
-import io.iohk.atala.prism.sampleapp.R
+import org.hyperledger.identus.walletsdk.sampleapp.R
 
 class InitiateVerificationDialogFragment(
     private val viewModel: MessagesViewModel
