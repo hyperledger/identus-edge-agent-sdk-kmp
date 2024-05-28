@@ -35,7 +35,6 @@ class PrismDIDApiResolverTest {
                 arrayOf(
                     KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ),
                     KeyValue(HttpHeaders.Accept, "*/*"),
-                    KeyValue("APIKEY", "2l52tYGpCaRbly5yDiiF1ImRv0sIrSHF")
                 ),
                 null
             )

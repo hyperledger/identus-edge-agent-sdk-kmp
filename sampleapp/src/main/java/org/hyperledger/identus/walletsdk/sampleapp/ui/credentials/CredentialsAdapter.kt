@@ -74,7 +74,6 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
                         revoked.visibility = View.VISIBLE
                     }
                     type.text = String.format(typeString, "JWT")
-                    // TODO: Check what else to display
                     jwt.exp?.let {
                         expiryDate.text = formatTimeStamp(Instant.ofEpochMilli(it * 1000))
                     }

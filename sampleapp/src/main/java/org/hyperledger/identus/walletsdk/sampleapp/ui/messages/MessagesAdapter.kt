@@ -84,29 +84,6 @@ class MessagesAdapter(
                         validationError.visibility = View.VISIBLE
                         validate.visibility = View.GONE
                     }
-//                        CoroutineScope(Dispatchers.IO).launch(handler) {
-//                            val sdk = Sdk.getInstance()
-//                            validationError.visibility = View.GONE
-//                            if (sdk.agent.handlePresentation(message)) {
-//                                val attachmentData = attachmentDescriptor.data
-//                                if (attachmentData::class == AttachmentBase64::class) {
-//                                    attachmentData as AttachmentBase64
-//                                    val decoded = attachmentData.base64.decodeBase64String()
-//                                    val presentationSubmission =
-//                                        Json.decodeFromString<PresentationSubmission>(decoded)
-//                                    presentationSubmission.verifiablePresentation.forEach { jwt ->
-//                                        val jwtCredential = JWTCredential.fromJwtString(jwt)
-//                                        // TODO: Extract fields to display
-//                                    }
-//                                }
-//                                withContext(Dispatchers.Main) {
-//                                    validate.text = "Valid presentation"
-//                                    validate.isEnabled = false
-//                                }
-//                            } else {
-//                                // TODO: Change UI body to say invalid presentation
-//                            }
-//                        }
                 }
             } else {
                 validate.visibility = View.GONE

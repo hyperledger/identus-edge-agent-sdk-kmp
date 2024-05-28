@@ -33,14 +33,5 @@ internal class DIDCommConnectionRunner(
         val request = ConnectionRequest(invitationMessage, ownDID)
         connection.sendMessage(request.makeMessage())
         return DIDPair(ownDID, request.to, null)
-        // TODO: Check this with @Gonçalo
-//        val message = pluto.getAllMessagesReceived().first().first {
-//            it.id == request.id
-//        }
-//        if (message.piuri == ProtocolType.DidcommconnectionResponse.value) {
-//            return DIDPair(ownDID, request.to, null)
-//        } else {
-//            throw PrismAgentError.InvitationIsInvalidError()
-//        }
     }
 }

@@ -51,8 +51,6 @@ class PrismDIDApiResolver(
             arrayOf(
                 KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ),
                 KeyValue(HttpHeaders.Accept, "*/*"),
-                // TODO: REMOVE BEFORE MERGE
-                KeyValue("APIKEY", "2l52tYGpCaRbly5yDiiF1ImRv0sIrSHF")
             ),
             null
         )

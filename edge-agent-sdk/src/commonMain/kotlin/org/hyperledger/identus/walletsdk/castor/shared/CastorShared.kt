@@ -2,7 +2,6 @@
 
 package org.hyperledger.identus.walletsdk.castor.shared
 
-import io.iohk.atala.prism.apollo.base64.base64Encoded
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
@@ -17,6 +16,7 @@ import io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAgreement
 import io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.iohk.atala.prism.didcomm.didpeer.createPeerDIDNumalgo2
+import io.ipfs.multibase.Multibase
 import org.hyperledger.identus.protos.AtalaOperation
 import org.hyperledger.identus.protos.CreateDIDOperation
 import org.hyperledger.identus.protos.Service
@@ -413,8 +413,7 @@ internal class CastorShared {
                         id = didUrl,
                         controller = did,
                         type = publicKey.keyData.getCurve(),
-                        // TODO: Replace base64Encoded with Multibase.encode()
-                        publicKeyMultibase = publicKey.keyData.getValue().base64Encoded
+                        publicKeyMultibase = Multibase.encode(Multibase.Base.Base58BTC, publicKey.keyData.getValue())
                     )
                     partialResult + (didUrl.string() to method)
                 }

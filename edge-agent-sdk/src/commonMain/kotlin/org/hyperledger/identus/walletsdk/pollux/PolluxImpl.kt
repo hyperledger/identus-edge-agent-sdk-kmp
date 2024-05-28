@@ -700,7 +700,7 @@ class PolluxImpl(
         val descriptorItems =
             presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
                 if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
-                    throw Exception("Invalid format") // TODO: Custom exception
+                    throw PolluxError.InvalidCredentialDefinitionError()
                 }
                 PresentationSubmission.Submission.DescriptorItem(
                     id = inputDescriptor.id,

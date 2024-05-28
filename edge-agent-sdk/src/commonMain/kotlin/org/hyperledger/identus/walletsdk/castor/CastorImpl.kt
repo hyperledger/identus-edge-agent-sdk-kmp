@@ -1,8 +1,8 @@
 package org.hyperledger.identus.walletsdk.castor
 
-import io.iohk.atala.prism.apollo.base64.base64DecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
+import io.ipfs.multibase.Multibase
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PublicKey
@@ -225,17 +225,16 @@ constructor(
 
     private fun extractPublicKeyFromMultibase(publicKey: String, type: String): PublicKey {
         return when (DIDDocument.VerificationMethod.getCurveByType(type)) {
-            // TODO: When publicKey is encoded to multibase, decode the multibase publicKey first
             Curve.SECP256K1 -> {
-                Secp256k1PublicKey(publicKey.base64DecodedBytes)
+                Secp256k1PublicKey(Multibase.decode(publicKey))
             }
 
             Curve.ED25519 -> {
-                Ed25519PublicKey(publicKey.base64DecodedBytes)
+                Ed25519PublicKey(Multibase.decode(publicKey))
             }
 
             Curve.X25519 -> {
-                X25519PublicKey(publicKey.base64DecodedBytes)
+                X25519PublicKey(Multibase.decode(publicKey))
             }
         }
     }
