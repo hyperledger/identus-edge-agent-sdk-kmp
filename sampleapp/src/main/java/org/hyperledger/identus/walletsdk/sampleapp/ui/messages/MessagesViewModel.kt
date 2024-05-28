@@ -100,10 +100,10 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 toDID = DID(toDID),
                 presentationClaims = PresentationClaims(
                     claims = mapOf(
-                        "issuer" to InputFieldFilter(
-                            type = "string",
-                            pattern = "did:prism:bc9daaeaf0ad673f5d55b3b6612a1653bc72ac1659cefa81c6eef45c1f721639"
-                        ),
+//                        "issuer" to InputFieldFilter(
+//                            type = "string",
+//                            pattern = "did:prism:bc9daaeaf0ad673f5d55b3b6612a1653bc72ac1659cefa81c6eef45c1f721639"
+//                        ),
                         "emailAddress" to InputFieldFilter(
                             type = "string",
                             pattern = "cristian.castro@iohk.io"
