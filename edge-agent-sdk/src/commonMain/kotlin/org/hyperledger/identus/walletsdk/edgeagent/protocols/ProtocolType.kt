@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols
 
 import kotlinx.serialization.ExperimentalSerializationApi

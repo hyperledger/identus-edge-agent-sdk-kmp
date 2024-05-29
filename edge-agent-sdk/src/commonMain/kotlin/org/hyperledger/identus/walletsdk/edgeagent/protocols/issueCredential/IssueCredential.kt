@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
