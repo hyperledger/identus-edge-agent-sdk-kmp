@@ -150,7 +150,7 @@ constructor(
             getPublicKeysFromCoreProperties(document.coreProperties)
 
         if (publicKeys.isEmpty()) {
-            throw CastorError.InvalidKeyError("KeyPairs is empty")
+            throw CastorError.InvalidKeyError("DID was resolved, but does not contain public keys in its core properties.")
         }
 
         for (publicKey in publicKeys) {

@@ -5,9 +5,9 @@ import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Error
 import org.hyperledger.identus.walletsdk.domain.models.KnownPrismError
 
-sealed class PrismAgentError : KnownPrismError() {
+sealed class EdgeAgentError : KnownPrismError() {
 
-    class CannotFindDIDKeyPairIndex : PrismAgentError() {
+    class CannotFindDIDKeyPairIndex : EdgeAgentError() {
         override val code: Int
             get() = 111
 
@@ -15,7 +15,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "To sign with a DID a key pair needs to be registered, please register the key pair first"
     }
 
-    class InvitationIsInvalidError : PrismAgentError() {
+    class InvitationIsInvalidError : EdgeAgentError() {
         override val code: Int
             get() = 112
 
@@ -23,7 +23,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "The system could not parse the invitation, the message/json are invalid"
     }
 
-    class UnknownInvitationTypeError(private val type: String) : PrismAgentError() {
+    class UnknownInvitationTypeError(private val type: String) : EdgeAgentError() {
         override val code: Int
             get() = 113
 
@@ -31,7 +31,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "The type of the invitation is not supported: $type"
     }
 
-    class InvalidMessageType(private val type: String, private val shouldBe: String) : PrismAgentError() {
+    class InvalidMessageType(private val type: String, private val shouldBe: String) : EdgeAgentError() {
         override val code: Int
             get() = 114
 
@@ -39,7 +39,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "The following message $type, does not represent the protocol $shouldBe.\nAlso the message should have \"from\" and \"to\" fields\n"
     }
 
-    class NoMediatorAvailableError : PrismAgentError() {
+    class NoMediatorAvailableError : EdgeAgentError() {
         override val code: Int
             get() = 115
 
@@ -48,7 +48,7 @@ sealed class PrismAgentError : KnownPrismError() {
     }
 
     class MediationRequestFailedError
-    @JvmOverloads constructor(private val underlyingError: Array<Error>? = null) : PrismAgentError() {
+    @JvmOverloads constructor(private val underlyingError: Array<Error>? = null) : EdgeAgentError() {
         override val code: Int
             get() = 116
 
@@ -60,7 +60,7 @@ sealed class PrismAgentError : KnownPrismError() {
             }
     }
 
-    class OfferDoesNotProvideEnoughInformation : PrismAgentError() {
+    class OfferDoesNotProvideEnoughInformation : EdgeAgentError() {
         override val code: Int
             get() = 117
 
@@ -68,7 +68,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "Offer provided doesnt have challenge and domain in the attachments"
     }
 
-    class CannotFindDIDPrivateKey(private val did: String) : PrismAgentError() {
+    class CannotFindDIDPrivateKey(private val did: String) : EdgeAgentError() {
 
         override val code: Int
             get() = 118
@@ -76,7 +76,7 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "Could not find private key for DID: $did"
     }
 
-    class FailedToOnboardError(private val statusCode: Int, private val response: String) : PrismAgentError() {
+    class FailedToOnboardError(private val statusCode: Int, private val response: String) : EdgeAgentError() {
         override val code: Int
             get() = 119
 
@@ -88,7 +88,7 @@ sealed class PrismAgentError : KnownPrismError() {
         private val credential: Credential? = null,
         private val type: CredentialType? = null
     ) :
-        PrismAgentError() {
+        EdgeAgentError() {
         override val code: Int
             get() = 120
 
@@ -101,7 +101,7 @@ sealed class PrismAgentError : KnownPrismError() {
     }
 
     class InvalidCredentialFormatError constructor(private val expectedFormat: CredentialType) :
-        PrismAgentError() {
+        EdgeAgentError() {
         override val code: Int
             get() = 121
 
@@ -110,7 +110,7 @@ sealed class PrismAgentError : KnownPrismError() {
     }
 
     class AttachmentTypeNotSupported @JvmOverloads constructor() :
-        PrismAgentError() {
+        EdgeAgentError() {
         override val code: Int
             get() = 122
 
@@ -119,7 +119,7 @@ sealed class PrismAgentError : KnownPrismError() {
     }
 
     class PresentationSubmissionDoesNotContainChallenge @JvmOverloads constructor() :
-        PrismAgentError() {
+        EdgeAgentError() {
         override val code: Int
             get() = 123
 
@@ -127,8 +127,8 @@ sealed class PrismAgentError : KnownPrismError() {
             get() = "Presentation submission must contain a challenge."
     }
 
-    class PrismAgentStateAcceptOnlyOneObserver @JvmOverloads constructor() :
-        PrismAgentError() {
+    class EdgeAgentStateAcceptOnlyOneObserver @JvmOverloads constructor() :
+        EdgeAgentError() {
         override val code: Int
             get() = 124
 
@@ -137,7 +137,7 @@ sealed class PrismAgentError : KnownPrismError() {
     }
 
     class InvalidCredentialMetadata @JvmOverloads constructor() :
-        PrismAgentError() {
+        EdgeAgentError() {
         override val code: Int
             get() = 125
 
@@ -146,7 +146,7 @@ sealed class PrismAgentError : KnownPrismError() {
     }
 
     class MissingOrNullFieldError constructor(private val field: String, private val parent: String) :
-        PrismAgentError() {
+        EdgeAgentError() {
         override val code: Int
             get() = 126
 

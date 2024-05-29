@@ -139,13 +139,13 @@ class ConnectionManagerImpl(
 
     /**
      * Suspends the current coroutine and boots the registered mediator associated with the mediator handler.
-     * If no mediator is available, a [PrismAgentError.NoMediatorAvailableError] is thrown.
+     * If no mediator is available, a [EdgeAgentError.NoMediatorAvailableError] is thrown.
      *
-     * @throws PrismAgentError.NoMediatorAvailableError if no mediator is available.
+     * @throws EdgeAgentError.NoMediatorAvailableError if no mediator is available.
      */
     override suspend fun startMediator() {
         mediationHandler.bootRegisteredMediator()
-            ?: throw PrismAgentError.NoMediatorAvailableError()
+            ?: throw EdgeAgentError.NoMediatorAvailableError()
     }
 
     /**
@@ -165,10 +165,10 @@ class ConnectionManagerImpl(
      * @param message The message to send.
      * @return The response message, if one is received.
      */
-    @Throws(PrismAgentError.NoMediatorAvailableError::class)
+    @Throws(EdgeAgentError.NoMediatorAvailableError::class)
     override suspend fun sendMessage(message: Message): Message? {
         if (mediationHandler.mediator == null) {
-            throw PrismAgentError.NoMediatorAvailableError()
+            throw EdgeAgentError.NoMediatorAvailableError()
         }
         val msg = Message(
             id = message.id,

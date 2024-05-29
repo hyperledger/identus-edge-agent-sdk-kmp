@@ -8,7 +8,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.mediation.MediationGrant
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.mediation.MediationKeysUpdateList
@@ -88,7 +88,7 @@ class BasicMediatorHandler(
      * @param host The DID of the entity to mediate with.
      * @return The mediator associated with the achieved mediation.
      */
-    @Throws(PrismAgentError.MediationRequestFailedError::class)
+    @Throws(EdgeAgentError.MediationRequestFailedError::class)
     override fun achieveMediation(host: DID): Flow<Mediator> {
         return flow {
             val registeredMediator = bootRegisteredMediator()
@@ -113,7 +113,7 @@ class BasicMediatorHandler(
                     mediator = tmpMediator
                     emit(tmpMediator)
                 } catch (e: UnknownError) {
-                    throw PrismAgentError.MediationRequestFailedError(arrayOf(e))
+                    throw EdgeAgentError.MediationRequestFailedError(arrayOf(e))
                 }
             } else {
                 emit(registeredMediator)
@@ -126,7 +126,7 @@ class BasicMediatorHandler(
      *
      * @param dids An array of DIDs to add to the key list.
      */
-    @Throws(PrismAgentError.NoMediatorAvailableError::class)
+    @Throws(EdgeAgentError.NoMediatorAvailableError::class)
     override suspend fun updateKeyListWithDIDs(dids: Array<DID>) {
         val keyListUpdateMessage = mediator?.let {
             MediationKeysUpdateList(
@@ -134,7 +134,7 @@ class BasicMediatorHandler(
                 to = it.mediatorDID,
                 recipientDids = dids
             ).makeMessage()
-        } ?: throw PrismAgentError.NoMediatorAvailableError()
+        } ?: throw EdgeAgentError.NoMediatorAvailableError()
         keyListUpdateMessage.let { message -> mercury.sendMessage(message) }
     }
 
@@ -144,7 +144,7 @@ class BasicMediatorHandler(
      * @param limit The maximum number of messages to pick up.
      * @return An array of pairs containing the message ID and the message itself.
      */
-    @Throws(PrismAgentError.NoMediatorAvailableError::class)
+    @Throws(EdgeAgentError.NoMediatorAvailableError::class)
     override fun pickupUnreadMessages(limit: Int): Flow<Array<Pair<String, Message>>> {
         val requestMessage = mediator?.let {
             PickupRequest(
@@ -152,7 +152,7 @@ class BasicMediatorHandler(
                 to = it.mediatorDID,
                 body = PickupRequest.Body(limit = limit)
             ).makeMessage()
-        } ?: throw PrismAgentError.NoMediatorAvailableError()
+        } ?: throw EdgeAgentError.NoMediatorAvailableError()
 
         return flow {
             val message = mercury.sendMessageParseResponse(requestMessage)
@@ -172,7 +172,7 @@ class BasicMediatorHandler(
      *
      * @param ids An array of message IDs to register as read.
      */
-    @Throws(PrismAgentError.NoMediatorAvailableError::class)
+    @Throws(EdgeAgentError.NoMediatorAvailableError::class)
     override suspend fun registerMessagesAsRead(ids: Array<String>) {
         val requestMessage = mediator?.let {
             PickupReceived(
@@ -180,7 +180,7 @@ class BasicMediatorHandler(
                 to = it.mediatorDID,
                 body = PickupReceived.Body(messageIdList = ids)
             ).makeMessage()
-        } ?: throw PrismAgentError.NoMediatorAvailableError()
+        } ?: throw EdgeAgentError.NoMediatorAvailableError()
         mercury.sendMessage(requestMessage)
     }
 

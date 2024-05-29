@@ -2,7 +2,7 @@ package org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup
 
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 
 /**
@@ -16,7 +16,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
  * @property attachments: An array of attachment descriptors associated with the pickup delivery.
  */
 final class PickupDelivery
-@Throws(PrismAgentError.InvalidMessageType::class)
+@Throws(EdgeAgentError.InvalidMessageType::class)
 constructor(fromMessage: Message) {
     var id: String
     var type = ProtocolType.PickupDelivery.value
@@ -24,7 +24,7 @@ constructor(fromMessage: Message) {
 
     init {
         if (fromMessage.piuri != ProtocolType.PickupDelivery.value) {
-            throw PrismAgentError.InvalidMessageType(
+            throw EdgeAgentError.InvalidMessageType(
                 type = fromMessage.piuri,
                 shouldBe = ProtocolType.PickupDelivery.value
             )

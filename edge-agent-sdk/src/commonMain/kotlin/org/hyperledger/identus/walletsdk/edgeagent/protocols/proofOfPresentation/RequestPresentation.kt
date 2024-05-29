@@ -11,7 +11,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
 import org.hyperledger.identus.walletsdk.edgeagent.PROOF_TYPES
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.WILL_CONFIRM
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
@@ -117,11 +117,11 @@ data class RequestPresentation(
          *
          * @param fromMessage The [Message] object to convert.
          * @return The converted [RequestPresentation] object.
-         * @throws PrismAgentError.InvalidMessageType if the [Message] object does not represent the correct protocol
+         * @throws EdgeAgentError.InvalidMessageType if the [Message] object does not represent the correct protocol
          *         or if it is missing the "from" and "to" fields.
          */
         @JvmStatic
-        @Throws(PrismAgentError.InvalidMessageType::class)
+        @Throws(EdgeAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): RequestPresentation {
             if (fromMessage.piuri == ProtocolType.DidcommRequestPresentation.value &&
                 fromMessage.from != null &&
@@ -140,7 +140,7 @@ data class RequestPresentation(
                     direction = fromMessage.direction
                 )
             } else {
-                throw PrismAgentError.InvalidMessageType(
+                throw EdgeAgentError.InvalidMessageType(
                     type = fromMessage.piuri,
                     shouldBe = ProtocolType.DidcommRequestPresentation.value
                 )
@@ -152,10 +152,10 @@ data class RequestPresentation(
          *
          * @param msg The [Message] object representing a proposal.
          * @return The newly created [RequestPresentation] object.
-         * @throws PrismAgentError.InvalidMessageType if the message type is invalid.
+         * @throws EdgeAgentError.InvalidMessageType if the message type is invalid.
          */
         @JvmStatic
-        @Throws(PrismAgentError.InvalidMessageType::class)
+        @Throws(EdgeAgentError.InvalidMessageType::class)
         fun makeRequestFromProposal(msg: Message): RequestPresentation {
             val request = ProposePresentation(msg)
 

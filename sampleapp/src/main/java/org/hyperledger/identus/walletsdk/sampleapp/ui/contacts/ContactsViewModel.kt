@@ -7,7 +7,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
@@ -32,7 +32,7 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
         return contactsStream
     }
 
-    @Throws(PrismAgentError.UnknownInvitationTypeError::class, Exception::class)
+    @Throws(EdgeAgentError.UnknownInvitationTypeError::class, Exception::class)
     fun parseAndAcceptOOB(oobUrl: String) {
         Sdk.getInstance().agent.let { agent ->
             viewModelScope.launch {
@@ -46,7 +46,7 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
                     }
 
                     else -> {
-                        throw PrismAgentError.UnknownInvitationTypeError(invitation.toString())
+                        throw EdgeAgentError.UnknownInvitationTypeError(invitation.toString())
                     }
                 }
             }

@@ -10,7 +10,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.CREDENTIAL_PREVIEW
 import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
 import org.hyperledger.identus.walletsdk.edgeagent.MULTIPLE_AVAILABLE
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.REPLACEMENT_ID
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.build
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -79,17 +79,17 @@ data class OfferCredential @JvmOverloads constructor(
          *
          * @param fromMessage The Message object to convert.
          * @return The converted OfferCredential object.
-         * @throws PrismAgentError.InvalidMessageType if the message type is invalid or the "from" and "to" fields are not present.
+         * @throws EdgeAgentError.InvalidMessageType if the message type is invalid or the "from" and "to" fields are not present.
          */
         @JvmStatic
-        @Throws(PrismAgentError.InvalidMessageType::class)
+        @Throws(EdgeAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): OfferCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommOfferCredential.value &&
                     fromMessage.from != null &&
                     fromMessage.to != null
             ) {
-                throw PrismAgentError.InvalidMessageType(
+                throw EdgeAgentError.InvalidMessageType(
                     type = fromMessage.piuri,
                     shouldBe = ProtocolType.DidcommOfferCredential.value
                 )

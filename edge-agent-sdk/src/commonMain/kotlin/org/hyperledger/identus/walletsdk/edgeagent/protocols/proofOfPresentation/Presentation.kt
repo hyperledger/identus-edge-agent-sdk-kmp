@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
 import kotlinx.serialization.EncodeDefault
@@ -140,9 +140,9 @@ class Presentation {
      * Constructor for creating a Presentation object from a Message object.
      *
      * @param fromMessage The Message object to create Presentation from.
-     * @throws PrismAgentError.InvalidMessageType if the message type does not represent the protocol "didcomm.presentation" or if the message does not have "from" and "to" fields.
+     * @throws EdgeAgentError.InvalidMessageType if the message type does not represent the protocol "didcomm.presentation" or if the message does not have "from" and "to" fields.
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (
             fromMessage.piuri == ProtocolType.DidcommPresentation.value &&
@@ -159,7 +159,7 @@ class Presentation {
                 fromMessage.to
             )
         } else {
-            throw PrismAgentError.InvalidMessageType(
+            throw EdgeAgentError.InvalidMessageType(
                 type = fromMessage.piuri,
                 shouldBe = ProtocolType.DidcommPresentation.value
             )
@@ -188,9 +188,9 @@ class Presentation {
      *
      * @param msg The input message to convert.
      * @return The converted Presentation object.
-     * @throws PrismAgentError.InvalidMessageType If the message type is invalid.
+     * @throws EdgeAgentError.InvalidMessageType If the message type is invalid.
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     fun makePresentationFromRequest(msg: Message): Presentation {
         val requestPresentation = RequestPresentation.fromMessage(msg)
         return Presentation(
@@ -276,7 +276,7 @@ class Presentation {
                     to = fromMessage.to
                 )
             } else {
-                throw PrismAgentError.InvalidMessageType(
+                throw EdgeAgentError.InvalidMessageType(
                     type = fromMessage.piuri,
                     shouldBe = ProtocolType.DidcommPresentation.value
                 )

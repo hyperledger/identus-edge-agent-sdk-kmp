@@ -6,7 +6,7 @@ import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 
 /**
@@ -64,7 +64,7 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
             }
 
             else -> {
-                throw PrismAgentError.InvalidMessageType(
+                throw EdgeAgentError.InvalidMessageType(
                     type = message.piuri,
                     shouldBe = "${ProtocolType.PickupStatus.value} or ${ProtocolType.PickupDelivery.value}"
                 )

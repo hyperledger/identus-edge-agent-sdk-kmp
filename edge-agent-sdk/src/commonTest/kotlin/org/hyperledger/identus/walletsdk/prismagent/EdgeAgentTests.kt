@@ -68,7 +68,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-class PrismAgentTests {
+class EdgeAgentTests {
 
     lateinit var apolloMock: ApolloMock
     lateinit var castorMock: CastorMock
@@ -109,7 +109,7 @@ class PrismAgentTests {
         val seed = Seed(MnemonicHelper.createRandomSeed())
         val validDID = DID("did", "test", "123")
         castorMock.createPrismDIDReturn = validDID
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -133,7 +133,7 @@ class PrismAgentTests {
     fun testCreateNewPeerDID_shouldCreateNewDID_whenCalled() = runTest {
         val validDID = DID("did", "test", "123")
         castorMock.createPeerDIDReturn = validDID
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apolloMock,
             castorMock,
             plutoMock,
@@ -157,7 +157,7 @@ class PrismAgentTests {
     fun testCreateNewPeerDID_whenUpdateMediatorFalse_thenShouldUseProvidedServices() = runTest {
         val apollo = ApolloImpl()
         val castor = CastorImpl(apollo = apollo, logger = PrismLoggerMock())
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo,
             castor,
             plutoMock,
@@ -193,7 +193,7 @@ class PrismAgentTests {
     @Test
     fun testPrismAgentOnboardingInvitation_shouldAcceptOnboardingInvitation_whenStatusIs200() =
         runTest {
-            val agent = PrismAgent(
+            val agent = EdgeAgent(
                 apollo = apolloMock,
                 castor = castorMock,
                 pluto = plutoMock,
@@ -220,7 +220,7 @@ class PrismAgentTests {
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenStatusIsNot200() =
         runTest {
             val api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
-            val agent = PrismAgent(
+            val agent = EdgeAgent(
                 apollo = apolloMock,
                 castor = castorMock,
                 pluto = plutoMock,
@@ -239,7 +239,7 @@ class PrismAgentTests {
             }
         """
             val invitation = agent.parseInvitation(invitationString)
-            assertFailsWith<PrismAgentError.FailedToOnboardError> {
+            assertFailsWith<EdgeAgentError.FailedToOnboardError> {
                 agent.acceptInvitation(invitation as PrismOnboardingInvitation)
             }
         }
@@ -247,7 +247,7 @@ class PrismAgentTests {
     @Test
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenBodyIsWrong() =
         runTest {
-            val agent = PrismAgent(
+            val agent = EdgeAgent(
                 apollo = apolloMock,
                 castor = castorMock,
                 pluto = plutoMock,
@@ -272,7 +272,7 @@ class PrismAgentTests {
             @Test
             fun testPrismAgentSignWith_whenNoPrivateKeyAvailable_thenThrowCannotFindDIDPrivateKey() =
                 runTest {
-                    val agent = PrismAgent(
+                    val agent = EdgeAgent(
                         apollo = apolloMock,
                         castor = castorMock,
                         pluto = plutoMock,
@@ -289,14 +289,14 @@ class PrismAgentTests {
                     val did = DID("did", "peer", "asdf1234asdf1234")
                     val messageString = "This is a message"
                     assertFalse { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
-                    assertFailsWith(PrismAgentError.CannotFindDIDPrivateKey::class, null) {
+                    assertFailsWith(EdgeAgentError.CannotFindDIDPrivateKey::class, null) {
                         agent.signWith(did, messageString.toByteArray())
                     }
                 }
 
             @Test
             fun testPrismAgentSignWith_whenPrivateKeyAvailable_thenSignatureReturned() = runTest {
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -326,7 +326,7 @@ class PrismAgentTests {
 
             @Test
             fun testParseInvitation_whenOutOfBand_thenReturnsOutOfBandInvitationObject() = runTest {
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -373,7 +373,7 @@ class PrismAgentTests {
             @Test
             fun testParseInvitation_whenOutOfBandWrongBody_thenThrowsUnknownInvitationTypeError() =
                 runTest {
-                    val agent = PrismAgent(
+                    val agent = EdgeAgent(
                         apollo = apolloMock,
                         castor = castorMock,
                         pluto = plutoMock,
@@ -403,7 +403,7 @@ class PrismAgentTests {
             fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
                 val getLinkSecretReturn = flow<String> { emit("linkSecret") }
                 plutoMock.getLinkSecretReturn = getLinkSecretReturn
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -415,14 +415,14 @@ class PrismAgentTests {
                     logger = PrismLoggerMock(),
                     agentOptions = AgentOptions()
                 )
-                assertEquals(PrismAgent.State.STOPPED, agent.state)
+                assertEquals(EdgeAgent.State.STOPPED, agent.state)
                 agent.start()
-                assertEquals(PrismAgent.State.RUNNING, agent.state)
+                assertEquals(EdgeAgent.State.RUNNING, agent.state)
             }
 
             @Test
             fun testStopPrismAgent_whenCalled_thenStatusIsStopped() = runTest {
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -435,14 +435,14 @@ class PrismAgentTests {
                     agentOptions = AgentOptions()
                 )
                 agent.stop()
-                assertEquals(PrismAgent.State.STOPPED, agent.state)
+                assertEquals(EdgeAgent.State.STOPPED, agent.state)
             }
 
             @Test
             fun test_OOPInvitationInURLFormat() = runTest {
                 val oob =
                     "https://my.domain.com/path?_oob=eyJpZCI6ImQzNjM3NzlhLWYyMmItNGFiNC1hYjY0LTkxZjkxNjgzNzYwNyIsInR5cGUiOiJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzIuMC9pbnZpdGF0aW9uIiwiZnJvbSI6ImRpZDpwZWVyOjIuRXo2TFNjcGZReGJ2VEhLaGpvbzVvMzlmc254VEp1RTRobVp3ckROUE5BVzI0dmFORi5WejZNa3UzSkpVTDNkaHpYQXB0RWpuUDFpNkF0TDlTNGlwRTNYOHM3MWV4MW9WVGNHLlNleUowSWpvaVpHMGlMQ0p6SWpvaWFIUjBjSE02THk5ck9ITXRaR1YyTG1GMFlXeGhjSEpwYzIwdWFXOHZjSEpwYzIwdFlXZGxiblF2Wkdsa1kyOXRiU0lzSW5JaU9sdGRMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDAiLCJib2R5Ijp7ImdvYWxfY29kZSI6ImlvLmF0YWxhcHJpc20uY29ubmVjdCIsImdvYWwiOiJFc3RhYmxpc2ggYSB0cnVzdCBjb25uZWN0aW9uIGJldHdlZW4gdHdvIHBlZXJzIHVzaW5nIHRoZSBwcm90b2NvbCAnaHR0cHM6Ly9hdGFsYXByaXNtLmlvL21lcmN1cnkvY29ubmVjdGlvbnMvMS4wL3JlcXVlc3QnIiwiYWNjZXB0IjpbXX19"
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -472,7 +472,7 @@ class PrismAgentTests {
                 val pollux = PolluxImpl(castorMock, apiMock)
                 plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -538,7 +538,7 @@ class PrismAgentTests {
                 )
                 plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -613,7 +613,7 @@ class PrismAgentTests {
                 )
                 `when`(mediatorHandlerMock.mediator).thenReturn(mediator)
 
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,
@@ -714,7 +714,7 @@ class PrismAgentTests {
                     )
                     `when`(mediatorHandlerMock.mediator).thenReturn(mediator)
 
-                    val agent = PrismAgent(
+                    val agent = EdgeAgent(
                         apollo = apolloMock,
                         castor = castorMock,
                         pluto = plutoMock,
@@ -739,7 +739,7 @@ class PrismAgentTests {
                         witnessJson = "",
                         json = ""
                     )
-                    assertFailsWith(PrismAgentError.InvalidCredentialError::class) {
+                    assertFailsWith(EdgeAgentError.InvalidCredentialError::class) {
                         agent.preparePresentationForRequestProof(
                             RequestPresentation.fromMessage(msg),
                             credential
@@ -772,7 +772,7 @@ class PrismAgentTests {
                     )
                     `when`(mediatorHandlerMock.mediator).thenReturn(mediator)
 
-                    val agent = PrismAgent(
+                    val agent = EdgeAgent(
                         apollo = apolloMock,
                         castor = castorMock,
                         pluto = plutoMock,
@@ -789,7 +789,7 @@ class PrismAgentTests {
                     val credential = JWTCredential.fromJwtString(
                         "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
                     )
-                    assertFailsWith(PrismAgentError.AttachmentTypeNotSupported::class) {
+                    assertFailsWith(EdgeAgentError.AttachmentTypeNotSupported::class) {
                         agent.preparePresentationForRequestProof(
                             RequestPresentation.fromMessage(msg),
                             credential
@@ -831,7 +831,7 @@ class PrismAgentTests {
                         presentationSubmission
                     )
 
-                    val agent = PrismAgent(
+                    val agent = EdgeAgent(
                         apollo = apolloMock,
                         castor = castorMock,
                         pluto = plutoMock,
@@ -926,7 +926,7 @@ class PrismAgentTests {
                     `when`(castorMock.resolveDID(any())).thenReturn(didDoc)
                     `when`(resolverMock.resolve(any())).thenReturn(didDoc)
 
-                    val agent = PrismAgent(
+                    val agent = EdgeAgent(
                         apollo = apolloMock,
                         castor = castorMock,
                         pluto = plutoMock,
@@ -942,7 +942,7 @@ class PrismAgentTests {
                         "{\"id\":\"00000000-621a-4ae9-0000-00002ffb05bf\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"to\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-18T17:11:58.053680Z\",\"expiresTimePlus\":\"2024-03-19T17:11:58.058523Z\",\"attachments\":[{\"id\":\"00000000-ef5f-40c0-0000-0000d2674b80\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"io.iohk.atala.prism.walletsdk.domain.models.AttachmentJsonData\",\"data\":\"eyJwcmVzZW50YXRpb25fc3VibWlzc2lvbiI6eyJpZCI6IjAwMDAwMDAwLWMyMjQtNDVkNy0wMDAwLTAwMDA3MzJmNDkzMiIsImRlZmluaXRpb25faWQiOiIzMmY1NDE2My03MTY2LTQ4ZjEtOTNkOC1mZjIxN2JkYjA2NTMiLCJkZXNjcmlwdG9yX21hcCI6W3siaWQiOiJ3YV9kcml2ZXJfbGljZW5zZSIsImZvcm1hdCI6Imp3dF92cCIsInBhdGgiOiIkLnZlcmlmaWFibGVDcmVkZW50aWFsWzBdIn1dfSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlt7InZjIjp7ImNvbnRleHQiOltdLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImFkZGl0aW9uYWxQcm9wMiI6IlRlc3QzIiwiaWQiOiJkaWQ6cHJpc206YmVlYTUyMzRhZjQ2ODA0NzE0ZDhlYThlYzc3YjY2Y2M3ZjNlODE1YzY4YWJiNDc1ZjI1NGNmOWMzMDYyNjc2MzpDc2NCQ3NRQkVtUUtEMkYxZEdobGJuUnBZMkYwYVc5dU1CQUVRazhLQ1hObFkzQXlOVFpyTVJJZ2VTZy0yT08xSmRucHpVT0JpdHpJaWNYZGZ6ZUFjVGZXQU4tWUNldUNieUlhSUpRNEdUSTMwdGFWaXdjaFQzZTBuTFhCUzQzQjRqOWpsc2xLbzJabGRYempFbHdLQjIxaGMzUmxjakFRQVVKUENnbHpaV053TWpVMmF6RVNJSGtvUHRqanRTWFo2YzFEZ1lyY3lJbkYzWDgzZ0hFMzFnRGZtQW5yZ204aUdpQ1VPQmt5TjlMV2xZc0hJVTkzdEp5MXdVdU53ZUlfWTViSlNxTm1aWFY4NHcifX19XSwicHJvb2YiOnsidHlwZSI6IkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSIsImNyZWF0ZWQiOiIyOCBKdW5lIDU2MTU1LCAwNzozMToxMCIsInByb29mUHVycG9zZSI6ImF1dGhlbnRpY2F0aW9uIiwidmVyaWZpY2F0aW9uTWV0aG9kIjoiZGlkOnByaXNtOmFzZGZhc2RmYXNkZmFzZGYja2V5cy0xIiwiandzIjoiZXlKaGJHY2lPaUpGVXpJMU5rc2lmUS5leUpwYzNNaU9pSmthV1E2Y0hKcGMyMDZNalUzTVRsaE9UWmlNVFV4TWpBM01UWTVPREZoT0RRek1HRmtNR05pT1RZNFpHUTFNelF3TnpNMU9UTmpPR05rTTJZeFpESTNZVFk0TURSbFl6VXdaVHBEY0c5RFEzQmpRMFZzYjB0Q1YzUnNaVk13ZUVWQlNrTlVkMjlLWXpKV2FtTkVTVEZPYlhONFJXbEJSVzlUUTI0MWRIbEVZVFpaTm5JdFNXMVRjWEJLT0ZreGJXbzNTa016WDI5VmVrVXdUbmw1UldsRFFtOW5jMmRPWVdWU1pHTkRVa2RRYkdVNE1sWjJPWFJLWms1M2JEWnlaelpXWTJoU00wOXhhR2xXWWxSaE9GTlhkMjlIV1ZoV01HRkRNSGhGUVZKRFZIZHZTbU15Vm1walJFa3hUbTF6ZUVWcFJFMXJRbVEyUm5ScGIwcHJNMWhQUm5VdFgyTjVOVmh0VWkwMGRGVlJNazVNUjJsWE9HRkpVMjl0YTFKdlp6WlRaR1U1VUhkdVJ6QlJNRk5DVkcxR1UxUkVZbE5MUW5aSlZqWkRWRXhZY21wSlNuUjBaVWRKYlVGVFdFRnZTR0pYUm5wa1IxWjVUVUpCUWxGck9FdERXRTVzV1ROQmVVNVVXbkpOVWtsblR6Y3hNRzEwTVZkZmFYaEVlVkZOTTNoSmN6ZFVjR3BNUTA1UFJGRjRaMVpvZURWemFHWkxUbGd4YjJGSlNGZFFjbmMzU1ZWTGJHWnBZbEYwZURaS2F6UlVVMnBuWTFkT1QyWmpUM1JWT1VRNVVIVmFOMVE1ZENJc0luTjFZaUk2SW1ScFpEcHdjbWx6YlRwaVpXVmhOVEl6TkdGbU5EWTRNRFEzTVRSa09HVmhPR1ZqTnpkaU5qWmpZemRtTTJVNE1UVmpOamhoWW1JME56Vm1NalUwWTJZNVl6TXdOakkyTnpZek9rTnpZMEpEYzFGQ1JXMVJTMFF5UmpGa1IyaHNZbTVTY0ZreVJqQmhWemwxVFVKQlJWRnJPRXREV0U1c1dUTkJlVTVVV25KTlVrbG5aVk5uTFRKUFR6RktaRzV3ZWxWUFFtbDBla2xwWTFoa1pucGxRV05VWmxkQlRpMVpRMlYxUTJKNVNXRkpTbEUwUjFSSk16QjBZVlpwZDJOb1ZETmxNRzVNV0VKVE5ETkNOR281YW14emJFdHZNbHBzWkZoNmFrVnNkMHRDTWpGb1l6TlNiR05xUVZGQlZVcFFRMmRzZWxwWFRuZE5hbFV5WVhwRlUwbElhMjlRZEdwcWRGTllXalpqTVVSbldYSmplVWx1UmpOWU9ETm5TRVV6TVdkRVptMUJibkpuYlRocFIybERWVTlDYTNsT09VeFhiRmx6U0VsVk9UTjBTbmt4ZDFWMVRuZGxTVjlaTldKS1UzRk9iVnBZVmpnMGR5SXNJbTVpWmlJNk1UWTROVFl6TVRrNU5Td2laWGh3SWpveE5qZzFOak0xTlRrMUxDSjJZeUk2ZXlKamNtVmtaVzUwYVdGc1UzVmlhbVZqZENJNmV5SmhaR1JwZEdsdmJtRnNVSEp2Y0RJaU9pSlVaWE4wTXlJc0ltbGtJam9pWkdsa09uQnlhWE50T21KbFpXRTFNak0wWVdZME5qZ3dORGN4TkdRNFpXRTRaV00zTjJJMk5tTmpOMll6WlRneE5XTTJPR0ZpWWpRM05XWXlOVFJqWmpsak16QTJNalkzTmpNNlEzTmpRa056VVVKRmJWRkxSREpHTVdSSGFHeGlibEp3V1RKR01HRlhPWFZOUWtGRlVXczRTME5ZVG14Wk0wRjVUbFJhY2sxU1NXZGxVMmN0TWs5UE1VcGtibkI2VlU5Q2FYUjZTV2xqV0dSbWVtVkJZMVJtVjBGT0xWbERaWFZEWW5sSllVbEtVVFJIVkVrek1IUmhWbWwzWTJoVU0yVXdia3hZUWxNME0wSTBhamxxYkhOc1MyOHlXbXhrV0hwcVJXeDNTMEl5TVdoak0xSnNZMnBCVVVGVlNsQkRaMng2V2xkT2QwMXFWVEpoZWtWVFNVaHJiMUIwYW1wMFUxaGFObU14UkdkWmNtTjVTVzVHTTFnNE0yZElSVE14WjBSbWJVRnVjbWR0T0dsSGFVTlZUMEpyZVU0NVRGZHNXWE5JU1ZVNU0zUktlVEYzVlhWT2QyVkpYMWsxWWtwVGNVNXRXbGhXT0RSM0luMHNJblI1Y0dVaU9sc2lWbVZ5YVdacFlXSnNaVU55WldSbGJuUnBZV3dpWFN3aVFHTnZiblJsZUhRaU9sc2lhSFIwY0hNNlhDOWNMM2QzZHk1M015NXZjbWRjTHpJd01UaGNMMk55WldSbGJuUnBZV3h6WEM5Mk1TSmRmWDAueDBTRjE3WTBWQ0RtdDdIY2VPZFR4Zkhsb2ZzWm1ZMThSbjZWUWIwLXIta19CbTNoVGkxLWsydmtkakIyNWhkeHlUQ3Z4YW0tQWtBUC1BZzNBaG41TmciLCJjaGFsbGVuZ2UiOiIzMDQ1MDIyMTAwYjE0MTJjMGYzZmJiYzVjODc2ZGRlNjExNDFmYTY4N2Y3ZjJmYWJhODM0YWJjZTA5Yzg2YzcwNWEwYjkwMjAwNTAyMjA2YjY3MjUzZmE1ZjgwMzQ0YzQyZGQ4NGQyMzZiYmJiMTVkNTBhODliODE2ZmE1NWQ1YTZhNzQyY2NjODYwZTIzIn19\"},\"format\":\"prism/jwt\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
                     val msg = Json.decodeFromString<Message>(msgString)
 
-                    assertFailsWith<PrismAgentError.AttachmentTypeNotSupported> {
+                    assertFailsWith<EdgeAgentError.AttachmentTypeNotSupported> {
                         agent.handlePresentation(msg)
                     }
                 }
@@ -1038,7 +1038,7 @@ class PrismAgentTests {
                 `when`(resolverMock.resolve(any())).thenReturn(didDoc)
                 `when`(castorMock.verifySignature(any(), any(), any())).thenReturn(true)
 
-                val agent = PrismAgent(
+                val agent = EdgeAgent(
                     apollo = apolloMock,
                     castor = castorMock,
                     pluto = plutoMock,

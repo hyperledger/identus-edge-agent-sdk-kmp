@@ -26,7 +26,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.edgeagent.ConnectionManager
 import org.hyperledger.identus.walletsdk.edgeagent.ConnectionManagerImpl
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgent
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -75,7 +75,7 @@ class AnoncredsTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -139,7 +139,7 @@ class AnoncredsTests {
         )
         plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
