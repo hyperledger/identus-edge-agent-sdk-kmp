@@ -17,7 +17,8 @@ import kotlin.jvm.JvmStatic
 data class DID @JvmOverloads constructor(
     val schema: String = DID,
     val method: String,
-    val methodId: String
+    val methodId: String,
+    val alias: String? = null
 ) {
     /**
      * Constructor overload for creating a [DID] object based on a [String].

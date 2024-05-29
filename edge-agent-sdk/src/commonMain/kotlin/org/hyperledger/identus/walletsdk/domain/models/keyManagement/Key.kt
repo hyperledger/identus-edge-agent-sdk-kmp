@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve

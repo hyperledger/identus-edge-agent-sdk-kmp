@@ -62,6 +62,23 @@ class Sdk {
         agentStatusStream.postValue(EdgeAgent.State.RUNNING)
     }
 
+    suspend fun startAgentForBackup(context: Application) {
+        handler = createHandler("did:prism:asldkfjalsdf")
+        agent = createAgent(handler)
+
+        CoroutineScope(Dispatchers.Default).launch {
+            agent.flowState.collect {
+                agentStatusStream.postValue(it)
+            }
+        }
+        startPluto(context)
+        agentStatusStream.postValue(EdgeAgent.State.RUNNING)
+    }
+
+    suspend fun startPluto(context: Application) {
+        (pluto as PlutoImpl).start(context)
+    }
+
     fun stopAgent() {
         agent.let {
             it.stopFetchingMessages()
@@ -125,7 +142,8 @@ class Sdk {
             "admit",
             "peanut"
         )
-        return apollo.createSeed(words, "")
+        return Seed(byteArrayOf(69, -65, 35, -24, -43, 102, 3, 93, -76, 106, -32, -112, 79, -85, 79, -33, -102, -39, -21, -24, 96, 30, -8, 92, 100, 38, 38, 42, 101, 53, 2, -9, 56, 111, -108, -36, -19, 122, 15, 120, 55, 82, 89, -106, 35, 45, 123, -121, -97, -116, 52, 127, -17, -108, -106, 109, 86, -111, 77, 109, 47, 60, 20, 16))
+//        return apollo.createSeed(words, "")
     }
 
     private fun createHandler(mediatorDID: String): MediationHandler {

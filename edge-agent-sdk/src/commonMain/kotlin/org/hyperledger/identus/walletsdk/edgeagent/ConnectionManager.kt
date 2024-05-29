@@ -2,7 +2,7 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
@@ -92,10 +92,7 @@ class ConnectionManagerImpl(
                 if (experimentLiveModeOptIn) {
                     // Loop through the services in the DID document to find a WebSocket endpoint
                     mediatorDidDoc.services.forEach {
-                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains(
-                                "ws://"
-                            )
-                        ) {
+                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
                             serviceEndpoint = it.serviceEndpoint.uri
                             return@forEach // Exit loop once the WebSocket endpoint is found
                         }

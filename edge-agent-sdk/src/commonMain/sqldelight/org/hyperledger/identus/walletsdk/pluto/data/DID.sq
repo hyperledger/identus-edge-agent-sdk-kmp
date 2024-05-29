@@ -14,28 +14,36 @@ VALUES ?;
 fetchAllPrismDID:
 SELECT DID.*, PrivateKey.keyPathIndex
 FROM DID
-JOIN PrivateKey ON DID.did = PrivateKey.didId
+JOIN DIDKeyLink ON DID.did = DIDKeyLink.didId
+JOIN PrivateKey ON DIDKeyLink.keyId = PrivateKey.id
 WHERE method = 'prism';
 
 fetchDIDInfoByDID:
 SELECT DID.*, PrivateKey.keyPathIndex
 FROM DID
-JOIN PrivateKey ON DID.did = PrivateKey.didId
+JOIN DIDKeyLink ON DID.did = DIDKeyLink.didId
+JOIN PrivateKey ON DIDKeyLink.keyId = PrivateKey.id
 WHERE DID.did = ?;
 
 fetchDIDInfoByAlias:
 SELECT DID.*, PrivateKey.keyPathIndex
 FROM DID
-JOIN PrivateKey ON DID.did = PrivateKey.didId
-WHERE alias = ?;
+JOIN DIDKeyLink ON DID.did = DIDKeyLink.didId
+JOIN PrivateKey ON DIDKeyLink.keyId = PrivateKey.id
+WHERE DID.alias = ?;
 
 fetchAllPeerDID:
 SELECT DID.did, DID.alias, PrivateKey.*
 FROM DID
-JOIN PrivateKey ON DID.did = PrivateKey.didId
+JOIN DIDKeyLink ON DID.did = DIDKeyLink.didId
+JOIN PrivateKey ON DIDKeyLink.keyId = PrivateKey.id
 WHERE DID.method = 'peer';
 
 fetchDIDByMethodId:
 SELECT DID.did
 FROM DID
 WHERE methodId = ?;
+
+fetchAllDIDs:
+SELECT *
+FROM DID;

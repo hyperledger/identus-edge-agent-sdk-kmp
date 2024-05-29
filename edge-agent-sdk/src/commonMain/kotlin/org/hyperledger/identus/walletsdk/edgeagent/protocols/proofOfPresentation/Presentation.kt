@@ -26,8 +26,9 @@ import kotlinx.serialization.SerialName
 @OptIn(ExperimentalSerializationApi::class)
 data class ProofTypes @JvmOverloads constructor(
     val schema: String,
+    @EncodeDefault
     @SerialName("required_fields")
-    val requiredFields: Array<String>?,
+    val requiredFields: Array<String>? = null,
     @EncodeDefault
     val trustIssuers: Array<String>? = null
 ) {

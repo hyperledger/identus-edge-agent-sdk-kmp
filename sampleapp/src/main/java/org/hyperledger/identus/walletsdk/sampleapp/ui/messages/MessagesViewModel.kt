@@ -28,7 +28,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
 import kotlinx.coroutines.CoroutineExceptionHandler
-import org.hyperledger.identus.walletsdk.db.Message as MessageEntity
+import org.hyperledger.identus.walletsdk.sampleapp.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -186,13 +186,9 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                         sdk.mercury.let { mercury ->
                             if (message.piuri == ProtocolType.DidcommOfferCredential.value) {
                                 message.thid?.let {
-                                    println("Processed offers: $it")
                                     if (!processedOffers.contains(it)) {
-                                        println("Processing offer: $it")
                                         processedOffers.add(it)
                                         viewModelScope.launch {
-//                                val credentials = pluto.getAllCredentials().first()
-//                                if (credentials.isEmpty()) {
                                             val offer = OfferCredential.fromMessage(message)
                                             val subjectDID = agent.createNewPrismDID()
                                             val request =
@@ -201,7 +197,6 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                                     offer
                                                 )
                                             agent.sendMessage(request.makeMessage())
-//                                }
                                         }
                                     }
                                 }

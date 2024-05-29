@@ -24,9 +24,6 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
-import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
@@ -42,6 +39,9 @@ import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
+import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
@@ -80,6 +80,7 @@ import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.DescriptorItemFormat
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
+import org.hyperledger.identus.walletsdk.pluto.RestorationID
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -186,15 +187,15 @@ class PolluxImpl(
     ): Credential {
         val cred: Credential
         when (restorationIdentifier) {
-            "jwt+credential" -> {
+            RestorationID.JWT.value -> {
                 cred = JWTCredential.fromJwtString(credentialData.decodeToString())
             }
 
-            "anon+credential" -> {
+            RestorationID.ANONCRED.value -> {
                 cred = AnonCredential.fromStorableData(credentialData)
             }
 
-            "w3c+credential" -> {
+            RestorationID.W3C.value -> {
                 cred = Json.decodeFromString<W3CCredential>(credentialData.decodeToString())
             }
 
@@ -665,10 +666,11 @@ class PolluxImpl(
             )
         }
 
-        val constraints = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
-            fields = mutableListFields.toTypedArray(),
-            limitDisclosure = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
-        )
+        val constraints =
+            PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
+                fields = mutableListFields.toTypedArray(),
+                limitDisclosure = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
+            )
 
         val format =
             PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
@@ -778,9 +780,10 @@ class PolluxImpl(
 
                 var newPath: String? = null
                 if (!descriptorItem.path.contains("verifiablePresentation")) {
-                    newPath = PresentationSubmission.Submission.DescriptorItem.replacePathWithVerifiablePresentation(
-                        descriptorItem.path
-                    )
+                    newPath =
+                        PresentationSubmission.Submission.DescriptorItem.replacePathWithVerifiablePresentation(
+                            descriptorItem.path
+                        )
                 }
                 val jws =
                     descriptorMap.getValue(newPath ?: descriptorItem.path)
@@ -817,7 +820,11 @@ class PolluxImpl(
                         val ecPublicKeysHolder =
                             extractEcPublicKeyFromVerificationMethod(authenticationMethodHolder)
 
-                        if (!verifyJWTSignatureWithEcPublicKey(verifiableCredential.id, ecPublicKeysHolder)) {
+                        if (!verifyJWTSignatureWithEcPublicKey(
+                                verifiableCredential.id,
+                                ecPublicKeysHolder
+                            )
+                        ) {
                             throw PolluxError.VerificationUnsuccessful("Invalid presentation credential JWT Signature")
                         }
 
@@ -886,7 +893,8 @@ class PolluxImpl(
                                                         }
                                                     }
                                                 } else {
-                                                    reason = "Input field filter for ${field.name} is null"
+                                                    reason =
+                                                        "Input field filter for ${field.name} is null"
                                                 }
                                             } else {
                                                 reason = "Field value for path $path is null"

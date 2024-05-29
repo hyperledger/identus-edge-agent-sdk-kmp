@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor

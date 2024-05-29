@@ -1,8 +1,12 @@
 package org.hyperledger.identus.walletsdk.apollo
 
-import io.iohk.atala.prism.apollo.derivation.HDKey
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
-import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.derivation.DerivationPath
+import org.hyperledger.identus.apollo.derivation.EdHDKey
+import org.hyperledger.identus.apollo.derivation.HDKey
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
+import org.hyperledger.identus.apollo.derivation.MnemonicLengthException
+import org.hyperledger.identus.apollo.utils.KMMEdPrivateKey
 import org.hyperledger.identus.walletsdk.apollo.helpers.BytesOps
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -116,9 +120,21 @@ class ApolloImpl : Apollo {
                                 throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
                             }
                             return Ed25519PrivateKey(it)
+                        } ?: run {
+                            val seed = properties[SeedKey().property] as String?
+                            if (seed.isNullOrBlank()) {
+                                val keyPair = Ed25519KeyPair.generateKeyPair()
+                                return keyPair.privateKey
+                            } else {
+                                val derivationParam: String = (properties[DerivationPathKey().property] as String?) ?: "m/0'/0'/0'"
+                                val derivationPath = DerivationPath.fromPath(derivationParam)
+                                val seedBytes = seed.base64UrlDecodedBytes
+                                val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
+                                val edkey = Ed25519PrivateKey(hdKey.privateKey)
+
+                                return edkey
+                            }
                         }
-                        val keyPair = Ed25519KeyPair.generateKeyPair()
-                        return keyPair.privateKey
                     }
 
                     Curve.SECP256K1.value -> {
@@ -158,14 +174,31 @@ class ApolloImpl : Apollo {
             }
 
             KeyTypes.Curve25519 -> {
-                keyData?.let {
-                    if (it !is ByteArray) {
-                        throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
+                when (curve) {
+                    Curve.X25519.value -> {
+                        keyData?.let {
+                            if (it !is ByteArray) {
+                                throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
+                            }
+                            return X25519PrivateKey(it)
+                        } ?: run {
+                            val seed = properties[SeedKey().property] as String?
+                            if (seed.isNullOrBlank()) {
+                                val keyPair = X25519KeyPair.generateKeyPair()
+                                return keyPair.privateKey
+                            } else {
+                                val derivationParam: String = (properties[DerivationPathKey().property] as String?) ?: "m/0'/0'/0'"
+                                val derivationPath = DerivationPath.fromPath(derivationParam)
+                                val seedBytes = seed.base64UrlDecodedBytes
+                                val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
+                                val edkey = KMMEdPrivateKey(hdKey.privateKey)
+                                val xKey = edkey.x25519PrivateKey()
+
+                                return X25519PrivateKey(xKey.raw)
+                            }
+                        }
                     }
-                    return X25519PrivateKey(it)
                 }
-                val keyPair = X25519KeyPair.generateKeyPair()
-                return keyPair.privateKey
             }
         }
         throw ApolloError.InvalidKeyType(TypeKey().property)

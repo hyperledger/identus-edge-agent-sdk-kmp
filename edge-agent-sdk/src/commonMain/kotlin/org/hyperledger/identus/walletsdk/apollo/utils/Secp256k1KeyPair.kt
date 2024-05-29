@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
-import io.iohk.atala.prism.apollo.derivation.HDKey
+import org.hyperledger.identus.apollo.derivation.HDKey
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair

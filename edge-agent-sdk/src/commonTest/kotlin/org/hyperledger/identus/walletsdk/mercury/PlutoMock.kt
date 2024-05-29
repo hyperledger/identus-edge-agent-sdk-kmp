@@ -14,9 +14,13 @@ import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
-import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
+import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
+
 class PlutoMock : Pluto {
     var privateKeys = mutableListOf<PrivateKey>()
 
@@ -57,6 +61,10 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
+    override fun storePrivate(sorableKey: StorableKey, recoveryId: String) {
+        TODO("Not yet implemented")
+    }
+
     override fun storeMediator(mediator: DID, host: DID, routing: DID) {
         TODO("Not yet implemented")
     }
@@ -86,6 +94,10 @@ class PlutoMock : Pluto {
     }
 
     override fun getAllPeerDIDs(): Flow<List<PeerDID>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllDIDs(): Flow<List<DID>> {
         TODO("Not yet implemented")
     }
 
@@ -134,6 +146,10 @@ class PlutoMock : Pluto {
     }
 
     override fun getAllMessages(from: DID, to: DID): Flow<List<Message>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllMessagesByType(type: String): Flow<List<Message>> {
         TODO("Not yet implemented")
     }
 
@@ -194,6 +210,18 @@ class PlutoMock : Pluto {
     }
 
     override fun observeRevokedCredentials(): Flow<List<CredentialRecovery>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun backup(): Flow<BackupV0_0_1> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun restore(backup: BackupV0_0_1, castor: Castor, pollux: Pollux): Flow<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>> {
         TODO("Not yet implemented")
     }
 }

@@ -44,7 +44,7 @@ class SecretsResolverTests {
 
     @Test
     fun testFindKeys_kidMatches_isReturned() {
-        val privateKey = X25519PrivateKey(ByteArray(0))
+        val privateKey = X25519PrivateKey(ByteArray(32))
         plutoMock.privateKeys.add(privateKey)
 
         val kids = listOf(privateKey.getCurve())
@@ -56,7 +56,7 @@ class SecretsResolverTests {
 
     @Test
     fun testFindKeys_kidNoMatch_emptySetReturned() {
-        val privateKey = X25519PrivateKey(ByteArray(0))
+        val privateKey = X25519PrivateKey(ByteArray(32))
         val kids = listOf(privateKey.getCurve())
         val result = sut.findKeys(kids)
 

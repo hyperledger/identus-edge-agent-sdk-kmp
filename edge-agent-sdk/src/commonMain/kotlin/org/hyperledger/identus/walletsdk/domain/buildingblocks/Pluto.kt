@@ -2,6 +2,7 @@
 
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
+import kotlinx.coroutines.flow.Flow
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
@@ -12,9 +13,9 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
+import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import kotlinx.coroutines.flow.Flow
 
 /**
  * The `Pluto` interface defines the contract for storing and retrieving various data related to Atala PRISM architecture.
@@ -76,6 +77,8 @@ interface Pluto {
      */
     fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String? = null)
 
+    fun storePrivate(sorableKey: StorableKey, recoveryId: String)
+
     /**
      * Stores a mediator in the system.
      *
@@ -100,7 +103,7 @@ interface Pluto {
     fun storeLinkSecret(linkSecret: String)
 
     /**
-     * This method is used to store credential metadata.
+     * Stores the metadata associated with a credential request.
      *
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
      *
@@ -171,6 +174,13 @@ interface Pluto {
     fun getAllPeerDIDs(): Flow<List<PeerDID>>
 
     /**
+     * Retrieves all DIDs.
+     *
+     * @return A flow of lists of DIDs.
+     */
+    fun getAllDIDs(): Flow<List<DID>>
+
+    /**
      * Retrieves a list of private keys associated with a given DID.
      *
      * @param did The DID for which to retrieve private keys.
@@ -218,6 +228,8 @@ interface Pluto {
      * @return a Flow of List of Message objects representing all the messages.
      */
     fun getAllMessages(): Flow<List<Message>>
+
+    fun getAllMessagesByType(type: String): Flow<List<Message>>
 
     /**
      * Retrieves all messages based on the provided DID.
@@ -367,4 +379,20 @@ interface Pluto {
      * Provides a flow to listen for revoked credentials.
      */
     fun observeRevokedCredentials(): Flow<List<CredentialRecovery>>
+
+    /**
+     * Create a Backup object from the stored data.
+     */
+    suspend fun backup(): Flow<BackupV0_0_1>
+
+    /**
+     * Load the given data into the store.
+     *
+     * @param backup The backup object to be restored.
+     */
+    suspend fun restore(backup: BackupV0_0_1, castor: Castor, pollux: Pollux): Flow<Unit>
+
+    fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>>
+
+    // Top-level class to encapsulate the backup structure
 }

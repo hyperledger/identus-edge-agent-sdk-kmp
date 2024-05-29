@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import java.util.UUID
 import kotlin.jvm.JvmOverloads
 import kotlin.time.Duration.Companion.days
@@ -24,9 +25,12 @@ constructor(
     @EncodeDefault
     val id: String = UUID.randomUUID().toString(),
     val piuri: String,
-    @EncodeDefault val from: DID? = null,
-    @EncodeDefault val to: DID? = null,
-    @EncodeDefault val fromPrior: String? = null,
+    @EncodeDefault
+    val from: DID? = null,
+    @EncodeDefault
+    val to: DID? = null,
+    @EncodeDefault
+    val fromPrior: String? = null,
     val body: String,
     val extraHeaders: Map<String, String> = emptyMap(),
     val createdTime: String = Clock.System.now().toString(),
@@ -104,9 +108,34 @@ constructor(
      *
      * @param value The numeric value representing the direction.
      */
+    @Serializable
     enum class Direction(val value: Int) {
         SENT(0),
-        RECEIVED(1)
+        RECEIVED(1);
+
+        companion object {
+            /**
+             * Converts an integer value to a `Direction`.
+             *
+             * @param value The integer value to convert.
+             * @return The corresponding `Direction` based on the given value.
+             */
+            @JvmStatic
+            fun fromValue(value: Int): Direction {
+                return entries.first { it.value == value }
+            }
+        }
+    }
+
+    /**
+     * Creates a backup message object using the provided properties.
+     *
+     * @return The backup message object.
+     */
+    fun toBackUpMessage(): PlutoRestoreTask.BackUpMessage {
+        return PlutoRestoreTask.BackUpMessage(
+            id, piuri, from, to, fromPrior, body, extraHeaders, createdTime, expiresTimePlus, attachments, thid, pthid, ack, direction
+        )
     }
 
     companion object {

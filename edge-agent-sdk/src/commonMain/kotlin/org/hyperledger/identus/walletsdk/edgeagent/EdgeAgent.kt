@@ -5,8 +5,16 @@ package org.hyperledger.identus.walletsdk.edgeagent
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import com.nimbusds.jose.EncryptionMethod
+import com.nimbusds.jose.JWEAlgorithm
+import com.nimbusds.jose.JWEDecrypter
+import com.nimbusds.jose.JWEEncrypter
+import com.nimbusds.jose.JWEHeader
+import com.nimbusds.jose.JWEObject
+import com.nimbusds.jose.Payload
+import com.nimbusds.jose.crypto.X25519Decrypter
+import com.nimbusds.jose.crypto.X25519Encrypter
+import com.nimbusds.jose.jwk.OctetKeyPair
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
@@ -60,6 +68,7 @@ import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
@@ -81,15 +90,25 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import org.hyperledger.identus.walletsdk.logger.LogComponent
+import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
-import org.hyperledger.identus.walletsdk.logger.Metadata
+import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
@@ -363,7 +382,7 @@ class EdgeAgent {
         pluto.storePrismDIDAndPrivateKeys(
             did = did,
             keyPathIndex = keyPathIndex,
-            alias = alias,
+            alias = alias ?: did.alias,
             listOf(privateKey as StorableKey)
         )
     }
@@ -1155,6 +1174,121 @@ class EdgeAgent {
                     pollux.restoreCredential(it.restorationId, it.credentialData, it.revoked)
                 }
             }
+    }
+
+    /**
+     * Performs a backup operation.
+     *
+     * @throws UnknownError.SomethingWentWrongError if something unexpected happens during the backup process.
+     *
+     * @return the encrypted backup string.
+     */
+    @Throws(UnknownError.SomethingWentWrongError::class)
+    suspend fun backupWallet(): String {
+        // 1. Get the JWK
+        val masterKey = createX25519PrivateKeyFrom(this.seed)
+        if (masterKey.isExportable().not()) {
+            throw UnknownError.SomethingWentWrongError("Key is not exportable")
+        }
+        val jwk = masterKey.getJwk().toNimbusJwk()
+
+        // 2. Create an encrypter
+        val encrypter: JWEEncrypter
+        if (jwk is OctetKeyPair) {
+            encrypter = X25519Encrypter(jwk.toPublicJWK())
+        } else {
+            throw UnknownError.SomethingWentWrongError("Unsupported JWK type for ECDH-ES encryption")
+        }
+
+        // 3. Set the JWE header (algorithm and encryption)
+        val header = JWEHeader.Builder(JWEAlgorithm.ECDH_ES_A256KW, EncryptionMethod.A256CBC_HS512)
+            .build()
+
+        val backup = pluto.backup().first()
+
+        // 4. Create a JWE object
+        val payloadString = Json.encodeToString(backup)
+        val jweObject = JWEObject(header, Payload(payloadString))
+
+        // 5. Perform the encryption
+        jweObject.encrypt(encrypter)
+
+        // 6. Serialize the JWE to a string
+        val jweString = jweObject.serialize()
+
+        return jweString
+    }
+
+    /**
+     * Restores a Pluto instance from a JWE (JSON Web Encryption) string.
+     *
+     * @param jwe The JWE string that contains the encrypted backup.
+     * @throws UnknownError.SomethingWentWrongError if the JWE algorithm or key type is unsupported.
+     */
+    @Throws(UnknownError.SomethingWentWrongError::class)
+    suspend fun recoverWallet(jwe: String) {
+        // 1. Get the JWK
+        val privateKey = createX25519PrivateKeyFrom(this.seed)
+        if (privateKey.isExportable().not()) {
+            throw UnknownError.SomethingWentWrongError("Key is not exportable")
+        }
+        val jwk = privateKey.getJwk().toNimbusJwk()
+
+        // 2. Parse the JWE string
+        val jweObject = JWEObject.parse(jwe)
+
+        // 3. Determine the algorithm and create a decrypter
+        val alg = jweObject.header.algorithm
+        val enc = jweObject.header.encryptionMethod
+        val decrypter: JWEDecrypter
+        if (alg == JWEAlgorithm.ECDH_ES_A256KW && enc == EncryptionMethod.A256CBC_HS512 && jwk is OctetKeyPair) {
+            decrypter = X25519Decrypter(jwk) // ECDH decrypter for key agreement
+        } else {
+            throw UnknownError.SomethingWentWrongError("Unsupported JWE algorithm or key type")
+        }
+
+        // 4. Decrypt the JWE
+        jweObject.decrypt(decrypter)
+
+        // 5. Get the decrypted payload
+        val json = jweObject.payload.toString()
+
+        // 6. Parse the decrypted payload
+        val backupObject = Json.decodeFromString<BackupV0_0_1>(json)
+
+        // 7. Restore the pluto instance
+        pluto.restore(backupObject, castor, pollux)
+    }
+
+    /**
+     * Converts a JWK to a Nimbus JWK.
+     *
+     * @return The converted Nimbus JWK.
+     */
+    private fun JWK.toNimbusJwk(): com.nimbusds.jose.jwk.JWK {
+        return com.nimbusds.jose.jwk.JWK.parse(Json.encodeToString(this))
+    }
+
+    /**
+     * Creates an X25519 private key from a given seed.
+     *
+     * @param seed The seed to generate the private key from.
+     * @return The generated X25519 private key.
+     * @throws UnknownError.SomethingWentWrongError If something goes wrong during the key generation process.
+     */
+    private fun createX25519PrivateKeyFrom(seed: Seed): X25519PrivateKey {
+        return try {
+            apollo.createPrivateKey(
+                mapOf(
+                    TypeKey().property to KeyTypes.Curve25519,
+                    CurveKey().property to Curve.X25519.value,
+                    SeedKey().property to seed.value.base64UrlEncoded,
+                    IndexKey().property to 0
+                )
+            ) as X25519PrivateKey
+        } catch (ex: Exception) {
+            throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError(ex.localizedMessage, ex)
+        }
     }
 
     /**

@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
-import io.iohk.atala.prism.apollo.derivation.DerivationPath
+import org.hyperledger.identus.apollo.derivation.DerivationPath
 
 /**
  * This interface defines the functionality of a derivable key.

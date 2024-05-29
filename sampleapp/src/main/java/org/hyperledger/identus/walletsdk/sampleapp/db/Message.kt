@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.db
+package org.hyperledger.identus.walletsdk.sampleapp.db
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

@@ -1,7 +1,9 @@
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import kotlinx.coroutines.flow.Flow
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
@@ -12,6 +14,7 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
+import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 
@@ -98,6 +101,10 @@ class PlutoMock : Pluto {
         wasStorePrivateKeysCalled = true
     }
 
+    override fun storePrivate(sorableKey: StorableKey, recoveryId: String) {
+        TODO("Not yet implemented")
+    }
+
     override fun storeMediator(mediator: DID, host: DID, routing: DID) {
         wasStoreMediatorCalled = true
     }
@@ -128,6 +135,10 @@ class PlutoMock : Pluto {
     override fun getAllPeerDIDs(): Flow<List<PeerDID>> {
         wasGetAllPeerDIDsCalled = true
         return getAllPeerDIDsReturn
+    }
+
+    override fun getAllDIDs(): Flow<List<DID>> {
+        TODO("Not yet implemented")
     }
 
     override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
@@ -195,6 +206,10 @@ class PlutoMock : Pluto {
         return getAllMessagesReturn
     }
 
+    override fun getAllMessagesByType(type: String): Flow<List<Message>> {
+        TODO("Not yet implemented")
+    }
+
     override fun getMessage(id: String): Flow<Message?> {
         wasGetMessageCalled = true
         return getMessageReturn
@@ -250,6 +265,18 @@ class PlutoMock : Pluto {
     }
 
     override fun observeRevokedCredentials(): Flow<List<CredentialRecovery>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun backup(): Flow<BackupV0_0_1> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun restore(backup: BackupV0_0_1, castor: Castor, pollux: Pollux): Flow<Unit> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>> {
         TODO("Not yet implemented")
     }
 }

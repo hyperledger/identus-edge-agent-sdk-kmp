@@ -4,29 +4,39 @@ CREATE TABLE PrivateKey (
     id TEXT NOT NULL UNIQUE,
     restorationIdentifier TEXT NOT NULL,
     data TEXT NOT NULL,
-    keyPathIndex INTEGER AS Int DEFAULT 0,
-    didId TEXT NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (didId) REFERENCES DID(did)
+    keyPathIndex INTEGER AS Int,
+    PRIMARY KEY (id)
 );
 
 insert:
-INSERT INTO PrivateKey(id, restorationIdentifier, data, keyPathIndex, didId)
+INSERT INTO PrivateKey(id, restorationIdentifier, data, keyPathIndex)
 VALUES ?;
 
 fetchPrivateKeyByDID:
-SELECT * FROM PrivateKey
-WHERE didId = ?;
+SELECT *
+FROM PrivateKey
+JOIN DIDKeyLink ON PrivateKey.id = DIDKeyLink.keyId
+WHERE DIDKeyLink.didId = ?;
 
 fetchPrivateKeyByID:
 SELECT * FROM PrivateKey
 WHERE id = ?;
 
 fetchKeyPathIndexByDID:
-SELECT keyPathIndex FROM PrivateKey
-WHERE didId = ?;
+SELECT keyPathIndex
+FROM PrivateKey
+JOIN DIDKeyLink ON PrivateKey.id = DIDKeyLink.keyId
+WHERE DIDKeyLink.didId = ?;
 
 fetchLastkeyPathIndex:
 SELECT keyPathIndex FROM PrivateKey
 ORDER BY keyPathIndex DESC
 LIMIT 1;
+
+fetchAllPrivateKeys:
+SELECT * FROM PrivateKey;
+
+fetchAllPrivateKeyWithDID:
+SELECT PrivateKey.*, DIDKeyLink.didId
+FROM PrivateKey
+JOIN DIDKeyLink ON PrivateKey.id = DIDKeyLink.keyId;

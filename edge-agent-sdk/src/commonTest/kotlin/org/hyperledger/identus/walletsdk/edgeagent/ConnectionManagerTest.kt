@@ -2,7 +2,6 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
@@ -29,6 +28,7 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import java.util.UUID
 import kotlinx.coroutines.flow.Flow
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.mockito.Mockito.anyList
 import org.mockito.kotlin.anyArray
 import org.mockito.kotlin.argumentCaptor

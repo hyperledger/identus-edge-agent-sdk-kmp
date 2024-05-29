@@ -1,5 +1,6 @@
 package org.hyperledger.identus.walletsdk.pollux.models
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -7,6 +8,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 
 /**
  * Represents an anonymous verifiable credential that contains information about an entity or identity.
@@ -26,16 +28,36 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
  */
 @Serializable
 data class AnonCredential(
+    @SerialName("schema_id")
     val schemaID: String,
+    @SerialName("cred_def_id")
     val credentialDefinitionID: String,
     val values: Map<String, Attribute>,
+    @SerialName("signature")
     val signatureJson: String,
+    @SerialName("signature_correctness_proof")
     val signatureCorrectnessProofJson: String,
+    @SerialName("revocation_registry_id")
     val revocationRegistryId: String?,
+    @SerialName("revocation_registry")
     val revocationRegistryJson: String?,
+    @SerialName("witness")
     val witnessJson: String,
     private val json: String
 ) : Credential {
+
+    fun toAnonCredentialBackUp(): PlutoRestoreTask.AnonCredentialBackUp {
+        return PlutoRestoreTask.AnonCredentialBackUp(
+            schemaID = this.schemaID,
+            credentialDefinitionID = this.credentialDefinitionID,
+            values = this.values,
+            signature = Json.decodeFromString(this.signatureJson),
+            signatureCorrectnessProof = Json.decodeFromString(this.signatureCorrectnessProofJson),
+            revocationRegistryId = this.revocationRegistryId,
+            revocationRegistry = this.revocationRegistryJson,
+            witnessJson = this.witnessJson
+        )
+    }
 
     /**
      * Represents an attribute in a verifiable credential.

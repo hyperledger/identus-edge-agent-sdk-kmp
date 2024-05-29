@@ -115,10 +115,7 @@ interface Pollux {
      * @param credential The [Credential] object to be converted.
      * @return The converted [StorableCredential].
      */
-    fun credentialToStorableCredential(
-        type: CredentialType,
-        credential: Credential
-    ): StorableCredential
+    fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential
 
     /**
      * Extracts the credential format from the given array of attachment descriptors.

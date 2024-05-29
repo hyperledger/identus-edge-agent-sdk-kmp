@@ -2,8 +2,6 @@
 
 package org.hyperledger.identus.walletsdk.castor.shared
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
 import io.iohk.atala.prism.didcomm.didpeer.DIDDocPeerDID
 import io.iohk.atala.prism.didcomm.didpeer.MalformedPeerDIDException
@@ -17,6 +15,10 @@ import io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.iohk.atala.prism.didcomm.didpeer.createPeerDIDNumalgo2
 import io.ipfs.multibase.Multibase
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.protos.AtalaOperation
 import org.hyperledger.identus.protos.CreateDIDOperation
 import org.hyperledger.identus.protos.Service
@@ -46,9 +48,6 @@ import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.kotlincrypto.hash.sha2.SHA256
 import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray

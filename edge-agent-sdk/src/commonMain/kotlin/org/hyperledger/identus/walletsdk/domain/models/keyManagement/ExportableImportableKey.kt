@@ -1,8 +1,8 @@
 package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
-import io.iohk.atala.prism.apollo.base64.base64PadEncoded
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import kotlinx.serialization.Serializable
+import org.hyperledger.identus.apollo.base64.base64PadEncoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 
 /**
  * This interface defines what is required for a key to be exportable
@@ -50,10 +50,13 @@ interface ImportableKey {
  */
 @Serializable
 data class JWK(
+    // Key parameters
     val kty: String,
     val alg: String? = null,
     val kid: String? = null,
     val use: String? = null,
+
+    // RSA key parameters
     val n: String? = null,
     val e: String? = null,
     val d: String? = null,
@@ -62,9 +65,13 @@ data class JWK(
     val dp: String? = null,
     val dq: String? = null,
     val qi: String? = null,
+
+    // ED key parameters
     val crv: String? = null,
     val x: String? = null,
     val y: String? = null,
+
+    // Symmetric key parameters
     val k: String? = null
 )
 

@@ -1,10 +1,10 @@
 package org.hyperledger.identus.walletsdk.apollo
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.derivation.DerivationPath
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
-import io.iohk.atala.prism.apollo.utils.ECConfig
 import kotlinx.serialization.json.Json
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.apollo.derivation.DerivationPath
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
+import org.hyperledger.identus.walletsdk.apollo.config.ECConfig
 import org.hyperledger.identus.walletsdk.apollo.derivation.bip39Vectors
 import org.hyperledger.identus.walletsdk.apollo.helpers.BytesOps
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
