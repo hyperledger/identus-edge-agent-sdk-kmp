@@ -2,7 +2,6 @@
 
 package org.hyperledger.identus.walletsdk.castor.shared
 
-import io.iohk.atala.prism.apollo.base64.base64Encoded
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
@@ -17,15 +16,13 @@ import io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAgreement
 import io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.iohk.atala.prism.didcomm.didpeer.createPeerDIDNumalgo2
+import io.ipfs.multibase.Multibase
 import org.hyperledger.identus.protos.AtalaOperation
 import org.hyperledger.identus.protos.CreateDIDOperation
 import org.hyperledger.identus.protos.Service
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
-import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
-import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
-import org.hyperledger.identus.walletsdk.apollo.utils.X25519PublicKey
 import org.hyperledger.identus.walletsdk.castor.DID
 import org.hyperledger.identus.walletsdk.castor.PRISM
 import org.hyperledger.identus.walletsdk.castor.did.DIDParser
@@ -416,7 +413,7 @@ internal class CastorShared {
                         id = didUrl,
                         controller = did,
                         type = publicKey.keyData.getCurve(),
-                        publicKeyMultibase = publicKey.keyData.getValue().base64Encoded
+                        publicKeyMultibase = Multibase.encode(Multibase.Base.Base58BTC, publicKey.keyData.getValue())
                     )
                     partialResult + (didUrl.string() to method)
                 }
@@ -433,42 +430,9 @@ internal class CastorShared {
          */
         @JvmStatic
         @Throws(CastorError.NotPossibleToResolveDID::class)
-        internal fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): DIDResolver {
+        internal fun getDIDResolver(did: String, resolvers: Array<DIDResolver>): List<DIDResolver> {
             val parsedDID = parseDID(did)
-            return resolvers.find { it.method == parsedDID.method } ?: throw CastorError.NotPossibleToResolveDID(
-                did,
-                "Method or method id are invalid"
-            )
-        }
-
-        /**
-         * Extract list of [PublicKey] from a list of [DIDDocumentCoreProperty].
-         *
-         * @param coreProperties list of [DIDDocumentCoreProperty] that we are going to extract a list of [DIDDocumentCoreProperty].
-         * @return List<[PublicKey]>
-         */
-        @JvmStatic
-        internal fun getKeyPairFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
-            return coreProperties
-                .filterIsInstance<DIDDocument.Authentication>()
-                .flatMap { it.verificationMethods.toList() }
-                .mapNotNull {
-                    it.publicKeyMultibase?.let { publicKey ->
-                        when (DIDDocument.VerificationMethod.getCurveByType(it.type)) {
-                            Curve.SECP256K1 -> {
-                                Secp256k1PublicKey(publicKey.encodeToByteArray())
-                            }
-
-                            Curve.ED25519 -> {
-                                Ed25519PublicKey(publicKey.encodeToByteArray())
-                            }
-
-                            Curve.X25519 -> {
-                                X25519PublicKey(publicKey.encodeToByteArray())
-                            }
-                        }
-                    }
-                }
+            return resolvers.filter { it.method == parsedDID.method }
         }
 
         /**

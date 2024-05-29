@@ -52,8 +52,7 @@ class AnoncredsTests {
         polluxMock = PolluxMock()
         mediationHandlerMock = MediationHandlerMock()
         // Pairing will be removed in the future
-        connectionManager =
-            ConnectionManager(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf(), polluxMock)
+        connectionManager = ConnectionManagerImpl(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf())
         json = Json {
             ignoreUnknownKeys = true
             prettyPrint = true
@@ -73,7 +72,7 @@ class AnoncredsTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
@@ -137,7 +136,7 @@ class AnoncredsTests {
         )
         plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 
-        val agent = PrismAgent(
+        val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,

@@ -1,4 +1,6 @@
-package org.hyperledger.identus.walletsdk.ui.messages
+@file:Suppress("ktlint:standard:import-ordering")
+
+package org.hyperledger.identus.walletsdk.sampleapp.ui.messages
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -11,8 +13,12 @@ import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -21,6 +27,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
+import kotlinx.coroutines.CoroutineExceptionHandler
 import org.hyperledger.identus.walletsdk.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -28,7 +35,6 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     private var messages: MutableLiveData<List<Message>> = MutableLiveData()
     private var proofRequestToProcess: MutableLiveData<Pair<Message, List<Credential>>> =
         MutableLiveData()
-    private var presentationDone = false
     private val issuedCredentials: ArrayList<String> = arrayListOf()
     private val processedOffers: ArrayList<String> = arrayListOf()
     private val db: AppDatabase = DatabaseClient.getInstance()
@@ -61,7 +67,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         return messages
     }
 
-    fun sendMessage() {
+    fun sendMessage(toDID: DID? = null) {
         CoroutineScope(Dispatchers.Default).launch {
             val sdk = Sdk.getInstance()
             val did = sdk.agent.createNewPeerDID(
@@ -76,13 +82,36 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             )
             val time = LocalDateTime.now()
             val message = Message(
-                // TODO: This should be on ProtocolTypes as an enum
-                piuri = "https://didcomm.org/basicmessage/2.0/message",
+                piuri = ProtocolType.BasicMessage.value,
                 from = did,
-                to = did,
+                to = toDID ?: did,
                 body = "{\"msg\":\"This is a new test message ${time}\"}"
             )
-            sdk.mercury.sendMessage(message)
+            sdk.agent.sendMessage(message)
+        }
+    }
+
+    fun sendVerificationRequest(toDID: String) {
+        CoroutineScope(Dispatchers.Default).launch {
+            val sdk = Sdk.getInstance()
+            sdk.agent.initiatePresentationRequest(
+                type = CredentialType.JWT,
+                toDID = DID(toDID),
+                presentationClaims = PresentationClaims(
+                    claims = mapOf(
+//                        "issuer" to InputFieldFilter(
+//                            type = "string",
+//                            pattern = "did:prism:bc9daaeaf0ad673f5d55b3b6612a1653bc72ac1659cefa81c6eef45c1f721639"
+//                        ),
+                        "emailAddress" to InputFieldFilter(
+                            type = "string",
+                            pattern = "cristian.castro@iohk.io"
+                        )
+                    )
+                ),
+                domain = "domain",
+                challenge = "challenge"
+            )
         }
     }
 
@@ -99,7 +128,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                         RequestPresentation.fromMessage(message),
                         credential
                     )
-                    mercury.sendMessage(presentation.makeMessage())
+                    sdk.agent.sendMessage(presentation.makeMessage())
                 }
             }
         }
@@ -124,6 +153,25 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             }
         }
         return revokedCredentials
+    }
+
+    fun handlePresentation(uiMessage: UiMessage): LiveData<String> {
+        val liveData = MutableLiveData<String>()
+        val handler = CoroutineExceptionHandler { _, exception ->
+            liveData.postValue(exception.message)
+        }
+        viewModelScope.launch(handler) {
+            messages.value?.find { it.id == uiMessage.id }?.let { message ->
+                val sdk = Sdk.getInstance()
+                val valid = sdk.agent.handlePresentation(message)
+                if (valid) {
+                    liveData.postValue("Valid!")
+                } else {
+                    liveData.postValue("Not valid!")
+                }
+            }
+        }
+        return liveData
     }
 
     private suspend fun processMessages(messages: List<Message>) {
@@ -152,7 +200,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                                     subjectDID,
                                                     offer
                                                 )
-                                            mercury.sendMessage(request.makeMessage())
+                                            agent.sendMessage(request.makeMessage())
 //                                }
                                         }
                                     }
@@ -173,23 +221,17 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                 }
                             }
 
-                            if (message.piuri == ProtocolType.DidcommRequestPresentation.value && !presentationDone) {
+                            if (message.piuri == ProtocolType.DidcommRequestPresentation.value && message.direction == Message.Direction.RECEIVED) {
                                 viewModelScope.launch {
                                     agent.getAllCredentials().collect {
                                         proofRequestToProcess.postValue(Pair(message, it))
-//                                    // TODO: Show dialog and wait for the selected credential to prepare the presentation proof
-//                                    val credential = it.first()
-//                                    val presentation = agent.preparePresentationForRequestProof(
-//                                        RequestPresentation.fromMessage(message),
-//                                        credential
-//                                    )
-//                                    mercury.sendMessage(presentation.makeMessage())
                                     }
                                 }
                             }
-                            db.messageDao()
-                                .updateMessage(MessageEntity(messageId = message.id, isRead = true))
                         }
+
+                        db.messageDao()
+                            .updateMessage(MessageEntity(messageId = message.id, isRead = true))
                     }
                 }
             }

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.connection
 
 import kotlinx.serialization.SerialName
@@ -7,7 +9,7 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import java.util.UUID
@@ -50,12 +52,12 @@ class ConnectionRequest {
      * @param inviteMessage The invitation message to use for initialization.
      * @param from The DID of the sender of the connection request message.
      */
-    @Throws(PrismAgentError.InvitationIsInvalidError::class)
+    @Throws(EdgeAgentError.InvitationIsInvalidError::class)
     constructor(inviteMessage: Message, from: DID) {
         inviteMessage.from?.let { toDID ->
             val body = Json.decodeFromString<Body>(inviteMessage.body)
             ConnectionRequest(from = from, to = toDID, thid = inviteMessage.id, body = body)
-        } ?: throw PrismAgentError.InvitationIsInvalidError()
+        } ?: throw EdgeAgentError.InvitationIsInvalidError()
     }
 
     /**
@@ -80,7 +82,7 @@ class ConnectionRequest {
      *
      * @param fromMessage The message to decode.
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (
             fromMessage.piuri == ProtocolType.DidcommconnectionRequest.value &&
@@ -94,7 +96,7 @@ class ConnectionRequest {
                 body = Json.decodeFromString(fromMessage.body)
             )
         } else {
-            throw PrismAgentError.InvalidMessageType(
+            throw EdgeAgentError.InvalidMessageType(
                 type = fromMessage.piuri,
                 shouldBe = ProtocolType.DidcommconnectionRequest.value
             )

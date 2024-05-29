@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential
 
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
@@ -11,7 +13,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
 import org.hyperledger.identus.walletsdk.edgeagent.MORE_AVAILABLE
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.REPLACEMENT_ID
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.build
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -79,18 +81,18 @@ data class IssueCredential(
          *
          * @param fromMessage The Message object to convert.
          * @return The converted IssueCredential object.
-         * @throws PrismAgentError.InvalidMessageType if the fromMessage doesn't represent the DidcommIssueCredential protocol,
+         * @throws EdgeAgentError.InvalidMessageType if the fromMessage doesn't represent the DidcommIssueCredential protocol,
          * or if it doesn't have "from" and "to" fields.
          */
         @JvmStatic
-        @Throws(PrismAgentError.InvalidMessageType::class)
+        @Throws(EdgeAgentError.InvalidMessageType::class)
         fun fromMessage(fromMessage: Message): IssueCredential {
             require(
                 fromMessage.piuri == ProtocolType.DidcommIssueCredential.value &&
                     fromMessage.from != null &&
                     fromMessage.to != null
             ) {
-                throw PrismAgentError.InvalidMessageType(
+                throw EdgeAgentError.InvalidMessageType(
                     type = fromMessage.piuri,
                     shouldBe = ProtocolType.DidcommIssueCredential.value
                 )

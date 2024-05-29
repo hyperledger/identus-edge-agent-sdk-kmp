@@ -2,20 +2,20 @@ package org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential
 
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.fromIndex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
-class OfferCredentialTest {
+class ProposeCredentialTest {
 
     @Test
-    fun testWhenValidOfferMessageThenInitOfferCredential() {
+    fun testWhenValidProposeMessageThenInitProposeCredential() {
         val fromDID = DID.fromIndex(index = 0)
         val toDID = DID.fromIndex(index = 1)
-        val validOfferCredential = OfferCredential(
-            body = OfferCredential.Body(
+        val validProposeCredential = ProposeCredential(
+            body = ProposeCredential.Body(
                 credentialPreview = CredentialPreview(
                     attributes = arrayOf(
                         CredentialPreview.Attribute(
@@ -37,21 +37,21 @@ class OfferCredentialTest {
             from = fromDID,
             to = toDID
         )
-        val offerMessage = validOfferCredential.makeMessage()
-        val testOfferCredentialFormat = OfferCredential.fromMessage(offerMessage)
-        assertEquals(testOfferCredentialFormat, validOfferCredential)
+        val proposeMessage = validProposeCredential.makeMessage()
+        val testOfferCredentialFormat = ProposeCredential.fromMessage(proposeMessage)
+        assertEquals(testOfferCredentialFormat, validProposeCredential)
     }
 
     @Test
-    fun testWhenInvalidOfferMessageThenInitOfferCredential() {
-        val invalidOfferCredential = Message(
+    fun testWhenInvalidProposeMessageThenInitProposeCredential() {
+        val invalidProposeCredential = Message(
             piuri = "InvalidType",
             from = null,
             to = null,
             body = ""
         )
-        assertFailsWith<PrismAgentError.InvalidMessageType> {
-            OfferCredential.fromMessage(invalidOfferCredential)
+        assertFailsWith<EdgeAgentError.InvalidMessageType> {
+            ProposeCredential.fromMessage(invalidProposeCredential)
         }
     }
 }

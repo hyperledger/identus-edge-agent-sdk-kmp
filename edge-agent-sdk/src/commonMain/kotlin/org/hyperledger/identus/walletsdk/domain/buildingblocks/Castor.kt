@@ -3,6 +3,7 @@ package org.hyperledger.identus.walletsdk.domain.buildingblocks
 import org.hyperledger.identus.walletsdk.domain.models.CastorError
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 
@@ -78,4 +79,12 @@ interface Castor {
         challenge: ByteArray,
         signature: ByteArray
     ): Boolean
+
+    /**
+     * Extract list of [PublicKey] from a list of [DIDDocumentCoreProperty].
+     *
+     * @param coreProperties list of [DIDDocumentCoreProperty] that we are going to extract a list of [DIDDocumentCoreProperty].
+     * @return List<[PublicKey]>
+     */
+    fun getPublicKeysFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey>
 }

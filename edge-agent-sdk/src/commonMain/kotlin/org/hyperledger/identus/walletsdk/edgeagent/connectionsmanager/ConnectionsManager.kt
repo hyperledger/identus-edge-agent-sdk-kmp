@@ -21,4 +21,9 @@ interface ConnectionsManager {
      * @return The [DIDPair] object that was removed from the manager, or null if the connection was not found.
      */
     suspend fun removeConnection(pair: DIDPair): DIDPair?
+
+    /**
+     * Stops a connection
+     */
+    fun stopConnection()
 }

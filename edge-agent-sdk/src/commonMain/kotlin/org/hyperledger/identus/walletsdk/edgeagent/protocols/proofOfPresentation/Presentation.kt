@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
 import kotlinx.serialization.Serializable
@@ -6,9 +8,12 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 
 /**
  * Data class representing proof types.
@@ -18,10 +23,13 @@ import java.util.UUID
  * @property trustIssuers An optional array of trusted issuers for the proof.
  */
 @Serializable
-data class ProofTypes(
+@OptIn(ExperimentalSerializationApi::class)
+data class ProofTypes @JvmOverloads constructor(
     val schema: String,
+    @SerialName("required_fields")
     val requiredFields: Array<String>?,
-    val trustIssuers: Array<String>?
+    @EncodeDefault
+    val trustIssuers: Array<String>? = null
 ) {
     /**
      * Overrides the equals method from the Any class to compare two ProofTypes objects for equality.
@@ -80,7 +88,7 @@ data class ProofTypes(
 }
 
 /**
- * The Presentation class represents a presentation message in the PrismAgent software.
+ * The Presentation class represents a presentation message in the EdgeAgent software.
  * It contains the necessary information for constructing a presentation message.
  *
  * @property type The type of the presentation message.
@@ -101,7 +109,7 @@ class Presentation {
     lateinit var to: DID
 
     /**
-     * The Presentation class represents a presentation message in the PrismAgent software.
+     * The Presentation class represents a presentation message in the EdgeAgent software.
      * It contains the necessary information for constructing a presentation message.
      *
      * @param id The unique identifier for the presentation message.
@@ -132,9 +140,9 @@ class Presentation {
      * Constructor for creating a Presentation object from a Message object.
      *
      * @param fromMessage The Message object to create Presentation from.
-     * @throws PrismAgentError.InvalidMessageType if the message type does not represent the protocol "didcomm.presentation" or if the message does not have "from" and "to" fields.
+     * @throws EdgeAgentError.InvalidMessageType if the message type does not represent the protocol "didcomm.presentation" or if the message does not have "from" and "to" fields.
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (
             fromMessage.piuri == ProtocolType.DidcommPresentation.value &&
@@ -151,7 +159,7 @@ class Presentation {
                 fromMessage.to
             )
         } else {
-            throw PrismAgentError.InvalidMessageType(
+            throw EdgeAgentError.InvalidMessageType(
                 type = fromMessage.piuri,
                 shouldBe = ProtocolType.DidcommPresentation.value
             )
@@ -180,9 +188,9 @@ class Presentation {
      *
      * @param msg The input message to convert.
      * @return The converted Presentation object.
-     * @throws PrismAgentError.InvalidMessageType If the message type is invalid.
+     * @throws EdgeAgentError.InvalidMessageType If the message type is invalid.
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     fun makePresentationFromRequest(msg: Message): Presentation {
         val requestPresentation = RequestPresentation.fromMessage(msg)
         return Presentation(
@@ -252,4 +260,27 @@ class Presentation {
         val goalCode: String? = null,
         val comment: String? = null
     )
+
+    companion object {
+        fun fromMessage(fromMessage: Message): Presentation {
+            if (fromMessage.piuri == ProtocolType.DidcommPresentation.value &&
+                fromMessage.from != null &&
+                fromMessage.to != null
+            ) {
+                return Presentation(
+                    id = fromMessage.id,
+                    body = Json.decodeFromString(fromMessage.body) ?: Body(),
+                    attachments = fromMessage.attachments,
+                    thid = fromMessage.thid,
+                    from = fromMessage.from,
+                    to = fromMessage.to
+                )
+            } else {
+                throw EdgeAgentError.InvalidMessageType(
+                    type = fromMessage.piuri,
+                    shouldBe = ProtocolType.DidcommPresentation.value
+                )
+            }
+        }
+    }
 }

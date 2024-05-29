@@ -1,9 +1,8 @@
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.prismOnboarding
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 
 /**
  * Represents an onboarding invitation in PRISM.
@@ -12,10 +11,10 @@ import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
  *
  * @constructor Creates a PrismOnboardingInvitation object from a JSON string representation of the invitation.
  * @param jsonString The JSON string representation of the invitation.
- * @throws PrismAgentError.InvitationIsInvalidError If the JSON string is invalid and cannot be parsed.
+ * @throws EdgeAgentError.InvitationIsInvalidError If the JSON string is invalid and cannot be parsed.
  */
 class PrismOnboardingInvitation
-@Throws(PrismAgentError.InvitationIsInvalidError::class)
+@Throws(EdgeAgentError.InvitationIsInvalidError::class)
 constructor(jsonString: String) {
     var body: Body
 
@@ -28,7 +27,7 @@ constructor(jsonString: String) {
         body = try {
             json.decodeFromString(jsonString)
         } catch (e: Throwable) {
-            throw PrismAgentError.InvitationIsInvalidError()
+            throw EdgeAgentError.InvitationIsInvalidError()
         }
     }
 

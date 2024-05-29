@@ -2,7 +2,7 @@ package org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential
 
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.fromIndex
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -41,7 +41,7 @@ class IssueCredentialTest {
             to = null,
             body = ""
         )
-        assertFailsWith<PrismAgentError.InvalidMessageType> {
+        assertFailsWith<EdgeAgentError.InvalidMessageType> {
             IssueCredential.fromMessage(invalidIssueCredential)
         }
     }

@@ -4,7 +4,7 @@ package org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation
 
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import kotlinx.serialization.SerialName
 import java.util.UUID
@@ -44,7 +44,7 @@ class RevocationNotification(
                     message.from != null &&
                     message.to != null
             ) {
-                throw PrismAgentError.InvalidMessageType(
+                throw EdgeAgentError.InvalidMessageType(
                     type = message.piuri,
                     shouldBe = ProtocolType.PrismRevocation.value
                 )
