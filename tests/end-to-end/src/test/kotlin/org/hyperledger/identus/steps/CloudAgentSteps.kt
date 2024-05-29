@@ -1,10 +1,10 @@
-package io.iohk.atala.prism.steps
+package org.hyperledger.identus.steps
 
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import io.iohk.atala.prism.workflow.CloudAgentWorkflow
-import io.iohk.atala.prism.workflow.EdgeAgentWorkflow
+import org.hyperledger.identus.workflow.CloudAgentWorkflow
+import org.hyperledger.identus.workflow.EdgeAgentWorkflow
 import net.serenitybdd.screenplay.Actor
 import javax.inject.Inject
 

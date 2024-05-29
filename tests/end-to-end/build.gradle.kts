@@ -5,7 +5,7 @@ plugins {
     id("net.serenity-bdd.serenity-gradle-plugin") version "4.0.1"
 }
 
-group = "io.iohk.atala.prism"
+group = "org.hyperledger.identus"
 version = "1.0-SNAPSHOT"
 
 repositories {

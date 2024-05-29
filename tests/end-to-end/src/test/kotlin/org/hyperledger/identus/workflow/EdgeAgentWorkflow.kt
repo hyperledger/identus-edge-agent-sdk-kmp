@@ -1,9 +1,9 @@
-package io.iohk.atala.prism.workflow
+package org.hyperledger.identus.workflow
 
 import com.google.gson.GsonBuilder
 import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.utils.Logger
-import io.iohk.atala.prism.abilities.UseWalletSdk
+import org.hyperledger.identus.abilities.UseWalletSdk
 import io.iohk.atala.prism.walletsdk.domain.models.CastorError
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.IssueCredential
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential.OfferCredential

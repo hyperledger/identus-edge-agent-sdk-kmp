@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.models
+package org.hyperledger.identus.models
 
 import com.google.gson.annotations.SerializedName
 

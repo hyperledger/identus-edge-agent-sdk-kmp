@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.utils
+package org.hyperledger.identus.utils
 
 import io.iohk.atala.automation.utils.Logger
 import java.io.File

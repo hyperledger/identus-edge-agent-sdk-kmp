@@ -1,8 +1,8 @@
-package io.iohk.atala.prism.abilities
+package org.hyperledger.identus.abilities
 
 import com.jayway.jsonpath.JsonPath
 import io.iohk.atala.automation.utils.Logger
-import io.iohk.atala.prism.configuration.Environment
+import org.hyperledger.identus.configuration.Environment
 import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
 import io.iohk.atala.prism.walletsdk.castor.CastorImpl
 import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
@@ -17,7 +17,7 @@ import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
 import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
 import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
 import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
-import io.iohk.atala.prism.workflow.EdgeAgentWorkflow
+import org.hyperledger.identus.workflow.EdgeAgentWorkflow
 import io.restassured.RestAssured
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
