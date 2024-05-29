@@ -9,7 +9,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
  * The `PickupDelivery` class represents a pickup delivery protocol type in the Atala PRISM architecture.
  * It is a final class, meaning it cannot be subclassed.
  *
- * @throws (PrismAgentError.InvalidMessageType):: if the protocol type of the given message is not `ProtocolType.PickupDelivery`.
+ * @throws (EdgeAgentError.InvalidMessageType):: if the protocol type of the given message is not `ProtocolType.PickupDelivery`.
  *
  * @property id: The id of the pickup delivery.
  * @property type: The protocol type of the pickup delivery, always set to `ProtocolType.PickupDelivery.value`.

@@ -1,6 +1,6 @@
 @file:Suppress("ktlint:standard:import-ordering")
 
-package org.hyperledger.identus.walletsdk.prismagent
+package org.hyperledger.identus.walletsdk.edgeagent
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import anoncreds_wrapper.LinkSecret
@@ -24,9 +24,6 @@ import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import org.hyperledger.identus.walletsdk.edgeagent.ConnectionManager
-import org.hyperledger.identus.walletsdk.edgeagent.ConnectionManagerImpl
-import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

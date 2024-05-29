@@ -88,7 +88,7 @@ data class ProofTypes @JvmOverloads constructor(
 }
 
 /**
- * The Presentation class represents a presentation message in the PrismAgent software.
+ * The Presentation class represents a presentation message in the EdgeAgent software.
  * It contains the necessary information for constructing a presentation message.
  *
  * @property type The type of the presentation message.
@@ -109,7 +109,7 @@ class Presentation {
     lateinit var to: DID
 
     /**
-     * The Presentation class represents a presentation message in the PrismAgent software.
+     * The Presentation class represents a presentation message in the EdgeAgent software.
      * It contains the necessary information for constructing a presentation message.
      *
      * @param id The unique identifier for the presentation message.

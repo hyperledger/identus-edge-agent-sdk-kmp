@@ -108,14 +108,14 @@ private fun Url.Companion.parse(str: String): Url? {
 }
 
 /**
- * PrismAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
+ * EdgeAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
  * Service Endpoint and seed data.
  */
 class EdgeAgent {
     var state: State = State.STOPPED
         private set(value) {
             field = value
-            prismAgentScope.launch {
+            edgeAgentScope.launch {
                 flowState.emit(value)
             }
         }
@@ -127,24 +127,24 @@ class EdgeAgent {
     val pollux: Pollux
     val flowState = MutableSharedFlow<State>()
 
-    private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val edgeAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     private var connectionManager: ConnectionManager
     private var logger: PrismLogger
     private val agentOptions: AgentOptions
 
     /**
-     * Initializes the PrismAgent with the given dependencies.
+     * Initializes the EdgeAgent with the given dependencies.
      *
-     * @param apollo The Apollo instance used by the PrismAgent.
-     * @param castor The Castor instance used by the PrismAgent.
-     * @param pluto The Pluto instance used by the PrismAgent.
-     * @param mercury The Mercury instance used by the PrismAgent.
-     * @param pollux The Pollux instance used by the PrismAgent.
-     * @param connectionManager The ConnectionManager instance used by the PrismAgent.
+     * @param apollo The Apollo instance used by the EdgeAgent.
+     * @param castor The Castor instance used by the EdgeAgent.
+     * @param pluto The Pluto instance used by the EdgeAgent.
+     * @param mercury The Mercury instance used by the EdgeAgent.
+     * @param pollux The Pollux instance used by the EdgeAgent.
+     * @param connectionManager The ConnectionManager instance used by the EdgeAgent.
      * @param seed An optional Seed instance used by the Apollo if provided, otherwise a random seed will be used.
-     * @param api An optional Api instance used by the PrismAgent if provided, otherwise a default ApiImpl will be used.
-     * @param logger An optional PrismLogger instance used by the PrismAgent if provided, otherwise a PrismLoggerImpl with
+     * @param api An optional Api instance used by the EdgeAgent if provided, otherwise a default ApiImpl will be used.
+     * @param logger An optional PrismLogger instance used by the EdgeAgent if provided, otherwise a PrismLoggerImpl with
      *               LogComponent.PRISM_AGENT will be used.
      * @param agentOptions Options to configure certain features with in the prism agent.
      */
@@ -161,7 +161,7 @@ class EdgeAgent {
         logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
-        prismAgentScope.launch {
+        edgeAgentScope.launch {
             flowState.emit(State.STOPPED)
         }
         this.apollo = apollo
@@ -189,7 +189,7 @@ class EdgeAgent {
     }
 
     /**
-     * Initializes the PrismAgent constructor.
+     * Initializes the EdgeAgent constructor.
      *
      * @param apollo The instance of Apollo.
      * @param castor The instance of Castor.
@@ -199,7 +199,7 @@ class EdgeAgent {
      * @param seed The seed value for random generation. Default is null.
      * @param api The instance of the API. Default is null.
      * @param mediatorHandler The mediator handler.
-     * @param logger The logger for PrismAgent. Default is PrismLoggerImpl with LogComponent.PRISM_AGENT.
+     * @param logger The logger for EdgeAgent. Default is PrismLoggerImpl with LogComponent.PRISM_AGENT.
      * @param agentOptions Options to configure certain features with in the prism agent.
      */
     @JvmOverloads
@@ -215,7 +215,7 @@ class EdgeAgent {
         logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
-        prismAgentScope.launch {
+        edgeAgentScope.launch {
             flowState.emit(State.STOPPED)
         }
         this.apollo = apollo
