@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols
 
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -10,7 +12,7 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.hyperledger.identus.walletsdk.edgeagent.PROTOCOL_TYPE
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 
 @Serializable(with = ProtocolTypeSerializer::class)
 enum class ProtocolType(val value: String) {
@@ -36,6 +38,8 @@ enum class ProtocolType(val value: String) {
     PickupReceived("https://didcomm.org/messagepickup/3.0/messages-received"),
     LiveDeliveryChange("https://didcomm.org/messagepickup/3.0/live-delivery-change"),
     PrismRevocation("https://atalaprism.io/revocation_notification/1.0/revoke"),
+    ProblemReport("https://didcomm.org/report-problem/2.0/problem-report"),
+    BasicMessage("https://didcomm.org/basicmessage/2.0/message"),
     None("");
 
     companion object {
@@ -67,9 +71,9 @@ object ProtocolTypeSerializer : KSerializer<ProtocolType> {
  *
  * @param string The string value to match with the ProtocolType's value.
  * @return The matched ProtocolType.
- * @throws PrismAgentError.UnknownInvitationTypeError If the type of the invitation is not supported.
+ * @throws EdgeAgentError.UnknownInvitationTypeError If the type of the invitation is not supported.
  */
-@Throws(PrismAgentError.UnknownInvitationTypeError::class)
+@Throws(EdgeAgentError.UnknownInvitationTypeError::class)
 fun findProtocolTypeByValue(string: String): ProtocolType {
     val it = ProtocolType.values().iterator()
     while (it.hasNext()) {
@@ -78,5 +82,5 @@ fun findProtocolTypeByValue(string: String): ProtocolType {
             return internalType
         }
     }
-    throw PrismAgentError.UnknownInvitationTypeError(string)
+    throw EdgeAgentError.UnknownInvitationTypeError(string)
 }

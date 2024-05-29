@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.ui.messages
 
 import android.app.AlertDialog
@@ -8,10 +10,14 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import org.hyperledger.identus.walletsdk.sampleapp.ui.messages.InitiateVerificationDialogFragment
 import org.hyperledger.identus.walletsdk.domain.models.Credential
-import org.hyperledger.identus.walletsdk.sampleapp.R
+import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.CredentialDialogBinding
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentMessagesBinding
+import org.hyperledger.identus.walletsdk.sampleapp.ui.messages.MessagesAdapter
+import org.hyperledger.identus.walletsdk.sampleapp.ui.messages.MessagesViewModel
+import org.hyperledger.identus.walletsdk.sampleapp.ui.messages.UiMessage
 
 class MessagesFragment : Fragment() {
 
@@ -19,7 +25,12 @@ class MessagesFragment : Fragment() {
     private val viewModel: MessagesViewModel by viewModels()
 
     private val binding get() = _binding!!
-    private val adapter = MessagesAdapter()
+
+    interface ValidateMessageListener {
+        fun validateMessage(message: UiMessage)
+    }
+
+    private lateinit var adapter: MessagesAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,10 +43,35 @@ class MessagesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.list.adapter = adapter
         binding.sendMessage.setOnClickListener {
-            viewModel.sendMessage()
+            viewModel.sendMessage(DID("did:peer:2.Ez6LStdwaumgiojDcFwtwVU8W9oddwdUgmtbSfcwd6ZibE9ER.Vz6MkuecQ492kzZ7prfErLJ1KMa6Zen3kxoSEttjUqvxYfWS3.SeyJzIjp7ImEiOltdLCJyIjpbXSwidXJpIjoiZGlkOnBlZXI6Mi5FejZMU2dod1NFNDM3d25ERTFwdDNYNmhWRFVRelNqc0h6aW5wWDNYRnZNalJBbTd5LlZ6Nk1raGgxZTVDRVlZcTZKQlVjVFo2Q3AycmFuQ1dScnY3WWF4M0xlNE41OVI2ZGQuU2V5SjBJam9pWkcwaUxDSnpJanA3SW5WeWFTSTZJbWgwZEhCek9pOHZjMmwwTFhCeWFYTnRMVzFsWkdsaGRHOXlMbUYwWVd4aGNISnBjMjB1YVc4aUxDSmhJanBiSW1ScFpHTnZiVzB2ZGpJaVhYMTkuU2V5SjBJam9pWkcwaUxDSnpJanA3SW5WeWFTSTZJbmR6Y3pvdkwzTnBkQzF3Y21semJTMXRaV1JwWVhSdmNpNWhkR0ZzWVhCeWFYTnRMbWx2TDNkeklpd2lZU0k2V3lKa2FXUmpiMjF0TDNZeUlsMTlmUSJ9LCJ0IjoiZG0ifQ"))
         }
+        binding.sendVerification.setOnClickListener {
+            InitiateVerificationDialogFragment(viewModel).show(
+                parentFragmentManager,
+                "InitiateVerificationDialogFragment"
+            )
+        }
+
+        adapter = MessagesAdapter(
+            validateListener = object : ValidateMessageListener {
+                override fun validateMessage(message: UiMessage) {
+                    viewModel.handlePresentation(message).observe(viewLifecycleOwner) { status ->
+                        adapter.updateMessageStatus(
+                            UiMessage(
+                                id = message.id,
+                                piuri = message.piuri,
+                                from = message.from,
+                                to = message.to,
+                                attachments = message.attachments,
+                                status = status
+                            )
+                        )
+                    }
+                }
+            }
+        )
+        binding.list.adapter = adapter
         setupStreamObservers()
     }
 
@@ -74,7 +110,16 @@ class MessagesFragment : Fragment() {
 
     private fun setupStreamObservers() {
         viewModel.messagesStream().observe(this.viewLifecycleOwner) { messages ->
-            adapter.updateMessages(messages)
+            val uiMessages = messages.map { message ->
+                UiMessage(
+                    id = message.id,
+                    piuri = message.piuri,
+                    from = message.from?.toString() ?: "NA",
+                    to = message.to?.toString() ?: "NA",
+                    attachments = message.attachments
+                )
+            }
+            adapter.updateMessages(uiMessages)
         }
         viewModel.proofRequestToProcess().observe(this.viewLifecycleOwner) { proofRequest ->
             val message = proofRequest.first

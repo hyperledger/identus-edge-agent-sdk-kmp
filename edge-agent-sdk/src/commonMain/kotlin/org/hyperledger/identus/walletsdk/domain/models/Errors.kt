@@ -204,7 +204,9 @@ constructor(
     class InvalidKeyCurve(
         invalidCurve: String
     ) : ApolloError(
-        message = "Invalid key curve $invalidCurve. Valid options are: ${Curve.entries.map { it.value }.toTypedArray().joinToString(", ")}"
+        message = "Invalid key curve $invalidCurve. Valid options are: ${
+            Curve.entries.map { it.value }.toTypedArray().joinToString(", ")
+        }"
     ) {
         override val code: Int
             get() = 14
@@ -238,7 +240,9 @@ constructor(
     class InvalidKeyType(
         invalidType: String
     ) : ApolloError(
-        message = "Invalid key type $invalidType. Valid options are: ${KeyTypes.values().map { it.type }.toTypedArray().joinToString(", ")}"
+        message = "Invalid key type $invalidType. Valid options are: ${
+            KeyTypes.values().map { it.type }.toTypedArray().joinToString(", ")
+        }"
     ) {
         override val code: Int
             get() = 15
@@ -450,6 +454,34 @@ constructor(
     ) {
         override val code: Int
             get() = 29
+    }
+
+    /**
+     * Class representing an error thrown a json representation fo a DIDDocument cannot be parsed into the actual model.
+     *
+     * @param field The missing field
+     *
+     * @see CastorError
+     */
+    class CouldNotParseJsonIntoDIDDocument(field: String) : CastorError(
+        "Provided json cannot be parsed into DIDDocument. Missing field $field"
+    ) {
+        override val code: Int
+            get() = 30
+    }
+
+    /**
+     * Class representing an error thrown when a field is missing or null when it should not.
+     *
+     * @param field The missing field
+     *
+     * @see CastorError
+     */
+    class NullOrMissingRequiredField(field: String, parent: String) : CastorError(
+        "$field is missing or null from $parent when it must be provided and not null."
+    ) {
+        override val code: Int
+            get() = 30
     }
 }
 
@@ -723,7 +755,7 @@ constructor(
      *
      * @see PolluxError
      */
-    class InvalidJWTString : PolluxError("Invalid JWT while decoding credential") {
+    class InvalidJWTString(msg: String? = null) : PolluxError(msg ?: "Invalid JWT while decoding credential") {
         override val code: Int
             get() = 52
     }
@@ -745,7 +777,7 @@ constructor(
      *
      * @see PolluxError
      */
-    class NoDomainOrChallengeFound : PolluxError("No domain or challenge found as part of the offer json") {
+    class NoDomainOrChallengeFound() : PolluxError("No domain or challenge found as part of the offer json") {
         override val code: Int
             get() = 55
     }
@@ -758,5 +790,68 @@ constructor(
     class InvalidCredentialDefinitionError : PolluxError("Invalid credential definition") {
         override val code: Int
             get() = 56
+    }
+
+    /**
+     * Represents an error that occurs when there is an invalid credential definition.
+     *
+     * @see PolluxError
+     */
+    class InvalidJWTPresentationDefinitionError(msg: String? = null) :
+        PolluxError(msg ?: "Invalid JWT presentation definition") {
+        override val code: Int
+            get() = 57
+    }
+
+    class CredentialTypeNotSupportedError(msg: String? = null) :
+        PolluxError(msg ?: "Credential type not supported, must be JWTCredential") {
+        override val code: Int
+            get() = 58
+    }
+
+    class PrivateKeyTypeNotSupportedError(msg: String? = null) :
+        PolluxError(msg ?: "Provided private key should be Secp256k1") {
+        override val code: Int
+            get() = 59
+    }
+
+    /**
+     * A class representing an error when a verification is unsuccessful.
+     *
+     * @see PolluxError
+     */
+    class VerificationUnsuccessful(reason: String) : PolluxError(reason) {
+        override val code: Int
+            get() = 56
+    }
+
+    /**
+     * A class representing an error when a provided key is the wrong type.
+     *
+     * @see PolluxError
+     */
+    class WrongKeyProvided(expected: String?, actual: String?) : PolluxError("Provided key is: $actual but should be $expected") {
+        override val code: Int
+            get() = 57
+    }
+
+    /**
+     * A class representing an error when a field is null when it should not.
+     *
+     * @see PolluxError
+     */
+    class NullField(field: String) : PolluxError("Field $field must not be null") {
+        override val code: Int
+            get() = 58
+    }
+
+    /**
+     * A class representing an error when a request presentation has wrong attachments.
+     *
+     * @see PolluxError
+     */
+    class RequestPresentationHasWrongAttachments(reason: String) : PolluxError(reason) {
+        override val code: Int
+            get() = 59
     }
 }

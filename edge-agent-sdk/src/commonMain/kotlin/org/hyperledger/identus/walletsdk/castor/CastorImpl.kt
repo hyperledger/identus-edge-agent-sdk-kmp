@@ -1,7 +1,11 @@
 package org.hyperledger.identus.walletsdk.castor
 
+import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
+import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
+import io.ipfs.multibase.Multibase
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
+import org.hyperledger.identus.walletsdk.apollo.utils.X25519PublicKey
 import org.hyperledger.identus.walletsdk.castor.resolvers.LongFormPrismDIDResolver
 import org.hyperledger.identus.walletsdk.castor.resolvers.PeerDIDResolver
 import org.hyperledger.identus.walletsdk.castor.shared.CastorShared
@@ -11,6 +15,7 @@ import org.hyperledger.identus.walletsdk.domain.models.CastorError
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.DIDResolver
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
@@ -33,9 +38,13 @@ constructor(
     private val logger: PrismLogger = PrismLoggerImpl(LogComponent.CASTOR)
 ) : Castor {
     var resolvers: Array<DIDResolver> = arrayOf(
-        PeerDIDResolver(),
-        LongFormPrismDIDResolver(this.apollo)
+        LongFormPrismDIDResolver(this.apollo),
+        PeerDIDResolver()
     )
+
+    fun addResolver(resolver: DIDResolver) {
+        resolvers = resolvers.plus(resolver)
+    }
 
     /**
      * Parses a string representation of a Decentralized Identifier (DID) into a DID object.
@@ -108,8 +117,15 @@ constructor(
                 )
             )
         )
-        val resolver = CastorShared.getDIDResolver(did, resolvers)
-        return resolver.resolve(did)
+        val resolvers = CastorShared.getDIDResolver(did, resolvers)
+        resolvers.forEach { resolver ->
+            try {
+                val resolved = resolver.resolve(did)
+                return resolved
+            } catch (_: CastorError) {
+            }
+        }
+        throw Exception("No resolver could resolve the provided DID.")
     }
 
     /**
@@ -131,10 +147,10 @@ constructor(
     ): Boolean {
         val document = resolveDID(did.toString())
         val publicKeys: List<PublicKey> =
-            CastorShared.getKeyPairFromCoreProperties(document.coreProperties)
+            getPublicKeysFromCoreProperties(document.coreProperties)
 
         if (publicKeys.isEmpty()) {
-            throw CastorError.InvalidKeyError("KeyPairs is empty")
+            throw CastorError.InvalidKeyError("DID was resolved, but does not contain public keys in its core properties.")
         }
 
         for (publicKey in publicKeys) {
@@ -150,5 +166,76 @@ constructor(
         }
 
         return false
+    }
+
+    /**
+     * Extract list of [PublicKey] from a list of [DIDDocumentCoreProperty].
+     *
+     * @param coreProperties list of [DIDDocumentCoreProperty] that we are going to extract a list of [DIDDocumentCoreProperty].
+     * @return List<[PublicKey]>
+     */
+    override fun getPublicKeysFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
+        return coreProperties
+            .filterIsInstance<DIDDocument.Authentication>()
+            .flatMap { it.verificationMethods.toList() }
+            .mapNotNull { verificationMethod ->
+                when {
+                    verificationMethod.publicKeyJwk != null -> {
+                        extractPublicKeyFromJwk(verificationMethod.publicKeyJwk)
+                    }
+
+                    verificationMethod.publicKeyMultibase != null -> {
+                        extractPublicKeyFromMultibase(
+                            verificationMethod.publicKeyMultibase,
+                            verificationMethod.type
+                        )
+                    }
+
+                    else -> null
+                }
+            }
+    }
+
+    private fun extractPublicKeyFromJwk(jwk: Map<String, String>): PublicKey? {
+        if (jwk.containsKey("x") && jwk.containsKey("crv")) {
+            val x = jwk["x"]
+            val crv = jwk["crv"]
+            return when (DIDDocument.VerificationMethod.getCurveByType(crv!!)) {
+                Curve.SECP256K1 -> {
+                    if (jwk.containsKey("y")) {
+                        val y = jwk["y"]
+                        val kmmSecp = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(x!!.base64UrlDecodedBytes, y!!.base64UrlDecodedBytes)
+                        Secp256k1PublicKey(kmmSecp.raw)
+                    } else {
+                        Secp256k1PublicKey(x!!.base64UrlDecodedBytes)
+                    }
+                }
+
+                Curve.ED25519 -> {
+                    Ed25519PublicKey(x!!.base64UrlDecodedBytes)
+                }
+
+                Curve.X25519 -> {
+                    X25519PublicKey(x!!.base64UrlDecodedBytes)
+                }
+            }
+        }
+        return null
+    }
+
+    private fun extractPublicKeyFromMultibase(publicKey: String, type: String): PublicKey {
+        return when (DIDDocument.VerificationMethod.getCurveByType(type)) {
+            Curve.SECP256K1 -> {
+                Secp256k1PublicKey(Multibase.decode(publicKey))
+            }
+
+            Curve.ED25519 -> {
+                Ed25519PublicKey(Multibase.decode(publicKey))
+            }
+
+            Curve.X25519 -> {
+                X25519PublicKey(Multibase.decode(publicKey))
+            }
+        }
     }
 }

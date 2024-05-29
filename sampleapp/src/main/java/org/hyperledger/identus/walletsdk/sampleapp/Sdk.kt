@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.sampleapp
 
 import android.app.Application
@@ -17,10 +19,8 @@ import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgent
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
-import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
-import org.hyperledger.identus.walletsdk.edgeagent.helpers.Experiments
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
 import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
@@ -29,21 +29,22 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import java.net.UnknownHostException
+import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 
 class Sdk {
     private val apollo: Apollo = createApollo()
     private val castor: Castor = createCastor()
     private var pollux: Pollux = createPollux()
     private val seed: Seed = createSeed()
-    private val agentStatusStream: MutableLiveData<PrismAgent.State> = MutableLiveData()
+    private val agentStatusStream: MutableLiveData<EdgeAgent.State> = MutableLiveData()
 
     val pluto: Pluto = createPluto()
     val mercury: Mercury = createMercury()
 
     lateinit var handler: MediationHandler
-    lateinit var agent: PrismAgent
+    lateinit var agent: EdgeAgent
 
-    @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
+    @Throws(EdgeAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun startAgent(mediatorDID: String, context: Application) {
         handler = createHandler(mediatorDID)
         agent = createAgent(handler)
@@ -58,7 +59,7 @@ class Sdk {
         agent.start()
         agent.startFetchingMessages()
 
-        agentStatusStream.postValue(PrismAgent.State.RUNNING)
+        agentStatusStream.postValue(EdgeAgent.State.RUNNING)
     }
 
     fun stopAgent() {
@@ -68,7 +69,7 @@ class Sdk {
         }
     }
 
-    fun agentStatusStream(): LiveData<PrismAgent.State> {
+    fun agentStatusStream(): LiveData<EdgeAgent.State> {
         return agentStatusStream
     }
 
@@ -81,7 +82,11 @@ class Sdk {
     }
 
     private fun createCastor(): Castor {
-        return CastorImpl(apollo)
+        val castor = CastorImpl(apollo)
+        val prismDIDApiResolver =
+            PrismDIDApiResolver(this.apollo, "https://sit-prism-agent-issuer.atalaprism.io/prism-agent")
+        castor.addResolver(prismDIDApiResolver)
+        return castor
     }
 
     private fun createMercury(): MercuryImpl {
@@ -131,16 +136,15 @@ class Sdk {
         )
     }
 
-    private fun createAgent(handler: MediationHandler): PrismAgent {
-        return PrismAgent(
+    private fun createAgent(handler: MediationHandler): EdgeAgent {
+        return EdgeAgent(
             apollo = apollo,
             castor = castor,
             pluto = pluto,
             mercury = mercury,
             pollux = pollux,
             seed = seed,
-            mediatorHandler = handler,
-            agentOptions = AgentOptions(Experiments(liveMode = false))
+            mediatorHandler = handler
         )
     }
 

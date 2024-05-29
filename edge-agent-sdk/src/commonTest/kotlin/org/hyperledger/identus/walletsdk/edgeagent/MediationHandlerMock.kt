@@ -30,7 +30,7 @@ class MediationHandlerMock(
     @Throws()
     override fun achieveMediation(host: DID): Flow<Mediator> {
         mediator = achieveMediationResponse
-        return flow { achieveMediationResponse?.let { emit(it) } ?: throw PrismAgentError.NoMediatorAvailableError() }
+        return flow { achieveMediationResponse?.let { emit(it) } ?: throw EdgeAgentError.NoMediatorAvailableError() }
     }
 
     @Throws()

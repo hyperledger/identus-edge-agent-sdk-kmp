@@ -68,6 +68,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import java.net.UnknownHostException
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -79,9 +80,19 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 
 /**
  * Check if the passed URL is valid or not.
@@ -97,14 +108,14 @@ private fun Url.Companion.parse(str: String): Url? {
 }
 
 /**
- * PrismAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
+ * EdgeAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
  * Service Endpoint and seed data.
  */
-class PrismAgent {
+class EdgeAgent {
     var state: State = State.STOPPED
         private set(value) {
             field = value
-            prismAgentScope.launch {
+            edgeAgentScope.launch {
                 flowState.emit(value)
             }
         }
@@ -116,24 +127,24 @@ class PrismAgent {
     val pollux: Pollux
     val flowState = MutableSharedFlow<State>()
 
-    private val prismAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
+    private val edgeAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     private var connectionManager: ConnectionManager
     private var logger: PrismLogger
     private val agentOptions: AgentOptions
 
     /**
-     * Initializes the PrismAgent with the given dependencies.
+     * Initializes the EdgeAgent with the given dependencies.
      *
-     * @param apollo The Apollo instance used by the PrismAgent.
-     * @param castor The Castor instance used by the PrismAgent.
-     * @param pluto The Pluto instance used by the PrismAgent.
-     * @param mercury The Mercury instance used by the PrismAgent.
-     * @param pollux The Pollux instance used by the PrismAgent.
-     * @param connectionManager The ConnectionManager instance used by the PrismAgent.
+     * @param apollo The Apollo instance used by the EdgeAgent.
+     * @param castor The Castor instance used by the EdgeAgent.
+     * @param pluto The Pluto instance used by the EdgeAgent.
+     * @param mercury The Mercury instance used by the EdgeAgent.
+     * @param pollux The Pollux instance used by the EdgeAgent.
+     * @param connectionManager The ConnectionManager instance used by the EdgeAgent.
      * @param seed An optional Seed instance used by the Apollo if provided, otherwise a random seed will be used.
-     * @param api An optional Api instance used by the PrismAgent if provided, otherwise a default ApiImpl will be used.
-     * @param logger An optional PrismLogger instance used by the PrismAgent if provided, otherwise a PrismLoggerImpl with
+     * @param api An optional Api instance used by the EdgeAgent if provided, otherwise a default ApiImpl will be used.
+     * @param logger An optional PrismLogger instance used by the EdgeAgent if provided, otherwise a PrismLoggerImpl with
      *               LogComponent.PRISM_AGENT will be used.
      * @param agentOptions Options to configure certain features with in the prism agent.
      */
@@ -150,7 +161,7 @@ class PrismAgent {
         logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
-        prismAgentScope.launch {
+        edgeAgentScope.launch {
             flowState.emit(State.STOPPED)
         }
         this.apollo = apollo
@@ -178,7 +189,7 @@ class PrismAgent {
     }
 
     /**
-     * Initializes the PrismAgent constructor.
+     * Initializes the EdgeAgent constructor.
      *
      * @param apollo The instance of Apollo.
      * @param castor The instance of Castor.
@@ -188,7 +199,7 @@ class PrismAgent {
      * @param seed The seed value for random generation. Default is null.
      * @param api The instance of the API. Default is null.
      * @param mediatorHandler The mediator handler.
-     * @param logger The logger for PrismAgent. Default is PrismLoggerImpl with LogComponent.PRISM_AGENT.
+     * @param logger The logger for EdgeAgent. Default is PrismLoggerImpl with LogComponent.PRISM_AGENT.
      * @param agentOptions Options to configure certain features with in the prism agent.
      */
     @JvmOverloads
@@ -204,7 +215,7 @@ class PrismAgent {
         logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
-        prismAgentScope.launch {
+        edgeAgentScope.launch {
             flowState.emit(State.STOPPED)
         }
         this.apollo = apollo
@@ -230,7 +241,7 @@ class PrismAgent {
         this.agentOptions = agentOptions
         // Pairing will be removed in the future
         this.connectionManager =
-            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux, agentOptions.experiments.liveMode)
+            ConnectionManagerImpl(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
     }
 
     init {
@@ -238,22 +249,19 @@ class PrismAgent {
             if (flowState.subscriptionCount.value <= 0) {
                 state = State.STOPPED
             } else {
-                throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
-                    "Agent state only accepts one subscription."
-                )
-                // throw Exception("Agent state only accepts one subscription.")
+                throw EdgeAgentError.EdgeAgentStateAcceptOnlyOneObserver()
             }
         }
     }
 
     // Prism agent actions
     /**
-     * Start the [PrismAgent] and Mediator services.
+     * Start the [EdgeAgent] and Mediator services.
      *
-     * @throws [PrismAgentError.MediationRequestFailedError] failed to connect to mediator.
+     * @throws [EdgeAgentError.MediationRequestFailedError] failed to connect to mediator.
      * @throws [UnknownHostException] if unable to connect to the mediator.
      */
-    @Throws(PrismAgentError.MediationRequestFailedError::class, UnknownHostException::class)
+    @Throws(EdgeAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun start() {
         if (state != State.STOPPED) {
             return
@@ -262,7 +270,7 @@ class PrismAgent {
         state = State.STARTING
         try {
             connectionManager.startMediator()
-        } catch (error: PrismAgentError.NoMediatorAvailableError) {
+        } catch (error: EdgeAgentError.NoMediatorAvailableError) {
             logger.info(message = "Start accept DIDComm invitation")
             try {
                 val hostDID = createNewPeerDID(updateMediator = false)
@@ -288,15 +296,15 @@ class PrismAgent {
             logger.info(message = "Agent running")
         } else {
             state = State.STOPPED
-            throw PrismAgentError.MediationRequestFailedError()
+            throw EdgeAgentError.MediationRequestFailedError()
         }
     }
 
     /**
-     * Stops the [PrismAgent].
-     * The function sets the state of [PrismAgent] to [State.STOPPING].
-     * All ongoing events that was created by the [PrismAgent] are stopped.
-     * After all the events are stopped the state of the [PrismAgent] is set to [State.STOPPED].
+     * Stops the [EdgeAgent].
+     * The function sets the state of [EdgeAgent] to [State.STOPPING].
+     * All ongoing events that was created by the [EdgeAgent] are stopped.
+     * After all the events are stopped the state of the [EdgeAgent] is set to [State.STOPPED].
      */
     fun stop() {
         if (state != State.RUNNING) {
@@ -470,7 +478,7 @@ class PrismAgent {
     fun setupMediatorHandler(mediatorHandler: MediationHandler) {
         stop()
         this.connectionManager =
-            ConnectionManager(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux, agentOptions.experiments.liveMode)
+            ConnectionManagerImpl(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
     }
 
     /**
@@ -546,11 +554,11 @@ class PrismAgent {
      * @param message The message to be signed.
      * @return The signature of the message.
      */
-    @Throws(PrismAgentError.CannotFindDIDPrivateKey::class)
+    @Throws(EdgeAgentError.CannotFindDIDPrivateKey::class)
     suspend fun signWith(did: DID, message: ByteArray): Signature {
         val privateKey =
             pluto.getDIDPrivateKeysByDID(did).first().first()
-                ?: throw PrismAgentError.CannotFindDIDPrivateKey(did.toString())
+                ?: throw EdgeAgentError.CannotFindDIDPrivateKey(did.toString())
         val returnByteArray: ByteArray = when (privateKey.getCurve()) {
             Curve.ED25519.value -> {
                 val ed = privateKey as Ed25519PrivateKey
@@ -672,11 +680,7 @@ class PrismAgent {
             }
 
             else -> {
-                // TODO: Create new prism agent error message
-                throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
-                    "Not supported credential type: $type"
-                )
-                // throw Error("Not supported credential type: $type")
+                throw EdgeAgentError.InvalidCredentialError(type = type)
             }
         }
     }
@@ -706,9 +710,7 @@ class PrismAgent {
                 val metadata = if (credentialType == CredentialType.ANONCREDS_ISSUE) {
                     val plutoMetadata =
                         pluto.getCredentialMetadata(message.thid).first()
-                            ?: throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
-                                "Invalid credential metadata"
-                            )
+                            ?: throw EdgeAgentError.InvalidCredentialMetadata()
                     CredentialRequestMetadata(
                         plutoMetadata.json
                     )
@@ -732,12 +734,9 @@ class PrismAgent {
                 pluto.storeCredential(storableCredential)
                 return credential
             }
-                ?: throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
-                    "Thid should not be null"
-                )
-        } ?: throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError(
-            "Cannot find attachment base64 in message"
-        )
+                ?: throw EdgeAgentError.MissingOrNullFieldError("thid", "message")
+        }
+            ?: throw EdgeAgentError.AttachmentTypeNotSupported()
     }
 
 // Message Events
@@ -780,10 +779,10 @@ class PrismAgent {
      * Parses the given string as an invitation
      * @param str The string to parse
      * @return The parsed invitation [InvitationType]
-     * @throws [PrismAgentError.UnknownInvitationTypeError] if the invitation is not a valid Prism or OOB type
+     * @throws [EdgeAgentError.UnknownInvitationTypeError] if the invitation is not a valid Prism or OOB type
      * @throws [SerializationException] if Serialization failed
      */
-    @Throws(PrismAgentError.UnknownInvitationTypeError::class, SerializationException::class)
+    @Throws(EdgeAgentError.UnknownInvitationTypeError::class, SerializationException::class)
     suspend fun parseInvitation(str: String): InvitationType {
         Url.parse(str)?.let {
             return parseOOBInvitation(it)
@@ -800,7 +799,7 @@ class PrismAgent {
                     ProtocolType.PrismOnboarding -> parsePrismInvitation(str)
                     ProtocolType.Didcomminvitation -> parseOOBInvitation(str)
                     else ->
-                        throw PrismAgentError.UnknownInvitationTypeError(type.toString())
+                        throw EdgeAgentError.UnknownInvitationTypeError(type.toString())
                 }
 
                 return invite
@@ -864,7 +863,7 @@ class PrismAgent {
      * Parses the given URL as an Out-of-Band invitation
      * @param url The URL to parse
      * @return The parsed Out-of-Band invitation
-     * @throws [PrismAgentError.UnknownInvitationTypeError] if the URL is not a valid Out-of-Band invitation
+     * @throws [EdgeAgentError.UnknownInvitationTypeError] if the URL is not a valid Out-of-Band invitation
      */
     private suspend fun parseOOBInvitation(url: Url): OutOfBandInvitation {
         return DIDCommInvitationRunner(url).run()
@@ -873,7 +872,7 @@ class PrismAgent {
     /**
      * Accepts an Out-of-Band (DIDComm) invitation and establishes a new connection
      * @param invitation The Out-of-Band invitation to accept
-     * @throws [PrismAgentError.NoMediatorAvailableError] if there is no mediator available or other errors occur during the acceptance process
+     * @throws [EdgeAgentError.NoMediatorAvailableError] if there is no mediator available or other errors occur during the acceptance process
      */
     suspend fun acceptOutOfBandInvitation(invitation: OutOfBandInvitation) {
         val ownDID = createNewPeerDID(updateMediator = true)
@@ -884,9 +883,9 @@ class PrismAgent {
     /**
      * Accepts a Prism Onboarding invitation and performs the onboarding process
      * @param invitation The Prism Onboarding invitation to accept
-     * @throws [PrismAgentError.FailedToOnboardError] if failed to on board
+     * @throws [EdgeAgentError.FailedToOnboardError] if failed to on board
      */
-    @Throws(PrismAgentError.FailedToOnboardError::class)
+    @Throws(EdgeAgentError.FailedToOnboardError::class)
     suspend fun acceptInvitation(invitation: PrismOnboardingInvitation) {
         @Serializable
         data class SendDID(val did: String)
@@ -900,7 +899,7 @@ class PrismAgent {
         )
 
         if (response.status != 200) {
-            throw PrismAgentError.FailedToOnboardError(response.status, response.jsonString)
+            throw EdgeAgentError.FailedToOnboardError(response.status, response.jsonString)
         }
     }
 
@@ -923,76 +922,216 @@ class PrismAgent {
      * @param request Request message received.
      * @param credential Verifiable Credential to present.
      * @return Presentation message prepared to send.
-     * @throws PrismAgentError if there is a problem creating the presentation.
+     * @throws EdgeAgentError if there is a problem creating the presentation.
      **/
     @Throws(PolluxError.InvalidPrismDID::class)
     suspend fun preparePresentationForRequestProof(
         request: RequestPresentation,
         credential: Credential
     ): Presentation {
-        var mediaType: String? = null
-        var presentationString: String?
-        when (credential::class) {
-            JWTCredential::class -> {
-                val subjectDID = credential.subject?.let {
-                    DID(it)
-                } ?: DID("")
-                if (subjectDID.method != PRISM) {
-                    throw PolluxError.InvalidPrismDID()
-                }
-
-                val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
-                val keyPair =
-                    Secp256k1KeyPair.generateKeyPair(
-                        seed,
-                        KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
-                    )
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
+        val msgAttachmentDescriptor =
+            request.attachments.find { it.data::class == AttachmentBase64::class }
+                ?: throw EdgeAgentError.AttachmentTypeNotSupported()
+        val attachmentFormat = msgAttachmentDescriptor.format ?: CredentialType.Unknown.type
+        if (attachmentFormat == CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type) {
+            // Presentation Exchange
+            return handlePresentationDefinitionRequest(request, credential)
+        } else {
+            // Presentation request from agent
+            var mediaType: String? = null
+            var presentationString: String?
+            when (credential::class) {
+                JWTCredential::class -> {
+                    val subjectDID = credential.subject?.let {
+                        DID(it)
+                    } ?: DID("")
+                    if (subjectDID.method != PRISM) {
+                        throw PolluxError.InvalidPrismDID()
                     }
-                }.first()
-                val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
-                presentationString = pollux.createVerifiablePresentationJWT(
-                    subjectDID,
-                    keyPair.privateKey,
-                    credential,
-                    requestJsonObject
-                )
-                mediaType = JWT_MEDIA_TYPE
-            }
 
-            AnonCredential::class -> {
-                val format = pollux.extractCredentialFormatFromMessage(request.attachments)
-                if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
-                    throw PrismAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
+                    val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(subjectDID).first()
+                    val keyPair =
+                        Secp256k1KeyPair.generateKeyPair(
+                            seed,
+                            KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
+                        )
+                    val requestData = request.attachments.mapNotNull {
+                        when (it.data) {
+                            is AttachmentJsonData -> it.data.data
+                            else -> null
+                        }
+                    }.first()
+                    val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
+                    presentationString = pollux.createVerifiablePresentationJWT(
+                        subjectDID,
+                        keyPair.privateKey,
+                        credential,
+                        requestJsonObject
+                    )
+                    mediaType = JWT_MEDIA_TYPE
                 }
-                val linkSecret = getLinkSecret()
-                val presentation = pollux.createVerifiablePresentationAnoncred(
-                    request,
-                    credential as AnonCredential,
-                    linkSecret
-                )
-                presentationString = presentation.getJson()
+
+                AnonCredential::class -> {
+                    val format = pollux.extractCredentialFormatFromMessage(request.attachments)
+                    if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
+                        throw EdgeAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
+                    }
+                    val linkSecret = getLinkSecret()
+                    val presentation =
+                        pollux.createVerifiablePresentationAnoncred(
+                            request,
+                            credential as AnonCredential,
+                            linkSecret
+                        )
+                    presentationString = presentation.getJson()
+                }
+
+                else -> {
+                    throw EdgeAgentError.InvalidCredentialError(credential)
+                }
             }
 
-            else -> {
-                throw PrismAgentError.InvalidCredentialError(credential)
-            }
+            val attachmentDescriptor =
+                AttachmentDescriptor(
+                    mediaType = mediaType,
+                    data = AttachmentBase64(presentationString.base64UrlEncoded)
+                )
+            return Presentation(
+                from = request.to,
+                to = request.from,
+                thid = request.thid,
+                body = Presentation.Body(request.body.goalCode, request.body.comment),
+                attachments = arrayOf(attachmentDescriptor)
+            )
+        }
+    }
+
+    suspend fun initiatePresentationRequest(
+        type: CredentialType,
+        toDID: DID,
+        presentationClaims: PresentationClaims,
+        domain: String,
+        challenge: String
+    ) {
+        val didDocument = this.castor.resolveDID(toDID.toString())
+        val newPeerDID = createNewPeerDID(services = didDocument.services, updateMediator = true)
+
+        val presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
+            type = type,
+            presentationClaims = presentationClaims,
+            options = PresentationOptions(
+                jwt = arrayOf("ES256K"),
+                domain = domain,
+                challenge = challenge
+            )
+        )
+
+        val attachmentDescriptor = AttachmentDescriptor(
+            mediaType = "application/json",
+            format = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+            data = AttachmentBase64(Json.encodeToString(presentationDefinitionRequest).base64UrlEncoded)
+        )
+
+        val presentationRequest = RequestPresentation(
+            body = RequestPresentation.Body(proofTypes = emptyArray()),
+            attachments = arrayOf(attachmentDescriptor),
+            thid = UUID.randomUUID().toString(),
+            from = newPeerDID,
+            to = toDID,
+            direction = Message.Direction.SENT
+        )
+        connectionManager.sendMessage(presentationRequest.makeMessage())
+    }
+
+    private suspend fun handlePresentationDefinitionRequest(
+        requestPresentation: RequestPresentation,
+        credential: Credential
+    ): Presentation {
+        if (credential::class != JWTCredential::class) {
+            throw EdgeAgentError.InvalidCredentialError(credential)
         }
 
-        val attachmentDescriptor =
-            AttachmentDescriptor(
-                mediaType = mediaType,
-                data = AttachmentBase64(presentationString.base64UrlEncoded)
-            )
+        val msgAttachmentDescriptor =
+            requestPresentation.attachments.find { it.data::class == AttachmentBase64::class }
+                ?: throw EdgeAgentError.AttachmentTypeNotSupported()
+
+        val attachmentBase64 = msgAttachmentDescriptor.data as AttachmentBase64
+        val presentationDefinitionRequest =
+            Json.decodeFromString<PresentationDefinitionRequest>(attachmentBase64.base64.base64UrlDecoded)
+
+        val didString =
+            credential.subject ?: throw Exception("Credential must contain subject")
+
+        val privateKeyKeys = pluto.getDIDPrivateKeysByDID(DID(didString)).first()
+        val privateKey = privateKeyKeys.first()
+            ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
+
+        val presentationSubmissionProof = pollux.createPresentationSubmission(
+            presentationDefinitionRequest = presentationDefinitionRequest,
+            credential = credential,
+            privateKey = privateKey
+        )
+
+        val attachmentDescriptor = AttachmentDescriptor(
+            mediaType = "application/json",
+            format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
+            data = AttachmentBase64(Json.encodeToString(presentationSubmissionProof).base64UrlEncoded)
+        )
         return Presentation(
-            from = request.to,
-            to = request.from,
-            thid = request.thid,
-            body = Presentation.Body(request.body.goalCode, request.body.comment),
-            attachments = arrayOf(attachmentDescriptor)
+            body = Presentation.Body(),
+            attachments = arrayOf(attachmentDescriptor),
+            thid = requestPresentation.thid ?: requestPresentation.id,
+            from = requestPresentation.to,
+            to = requestPresentation.from
+        )
+    }
+
+    suspend fun handlePresentation(msg: Message): Boolean {
+        if (msg.thid == null) {
+            throw EdgeAgentError.MissingOrNullFieldError("thid", "presentation message")
+        }
+        val presentation = Presentation.fromMessage(msg)
+        val msgAttachmentDescriptor =
+            presentation.attachments.find { it.data::class == AttachmentBase64::class }
+                ?: throw EdgeAgentError.AttachmentTypeNotSupported()
+        val attachmentBase64 = msgAttachmentDescriptor.data as AttachmentBase64
+
+        val presentationSubmissionJsonObject =
+            Json.decodeFromString<JsonElement>(attachmentBase64.base64.base64UrlDecoded).jsonObject
+
+        val presentationSubmission: PresentationSubmission =
+            presentationSubmissionJsonObject["presentation_submission"]?.let { presentationSubmissionField ->
+                val submission = Json.decodeFromJsonElement<PresentationSubmission.Submission>(presentationSubmissionField)
+                var arrayStrings: Array<String> = arrayOf()
+
+                if (submission.descriptorMap.isNotEmpty()) {
+                    val firstDescriptorItem = submission.descriptorMap.first()
+                    // Assume the path denotes a direct key in the JSON and strip out JSONPath or XPath specific characters if any.
+                    val path = firstDescriptorItem.path.removePrefix("$.")
+                        .removeSuffix("[0]") // Adjust based on actual path format
+                    arrayStrings = presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
+                        ?.toTypedArray()
+                        ?: arrayOf()
+                }
+                return@let PresentationSubmission(submission, arrayStrings)
+            } ?: throw EdgeAgentError.MissingOrNullFieldError(
+                "presentation_submission",
+                "presentation submission message"
+            )
+
+        val presentationDefinitionRequest =
+            pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value).firstOrNull()
+                ?.let { message ->
+                    val requestPresentation = RequestPresentation.fromMessage(message)
+                    val attachmentDescriptor = requestPresentation.attachments.first()
+                    val base64 = (attachmentDescriptor.data as AttachmentBase64).base64
+                    Json.decodeFromString<PresentationDefinitionRequest>(base64.base64UrlDecoded)
+                } ?: throw EdgeAgentError.MissingOrNullFieldError("thid", "presentation message")
+        return pollux.verifyPresentationSubmission(
+            presentationSubmission = presentationSubmission,
+            options = PresentationSubmissionOptionsJWT(
+                presentationDefinitionRequest
+            )
         )
     }
 

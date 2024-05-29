@@ -1,14 +1,33 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.pollux.models
 
-import kotlinx.serialization.decodeFromString
+import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import java.util.Base64
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import kotlinx.serialization.builtins.ArraySerializer
+import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonTransformingSerializer
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.identus.walletsdk.domain.VC
+import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
+import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiablePresentation
 
+@Serializable
 /**
  * Represents a JSON Web Token (JWT) credential.
  *
@@ -19,61 +38,68 @@ import java.util.Base64
  * @property jwtString The JWT string representation of the credential.
  * @property jwtPayload The parsed JWT payload containing the credential information.
  */
-data class JWTCredential(val data: String) : Credential {
-    private var jwtString: String = data
-    var jwtPayload: JWTPayload
+@OptIn(ExperimentalSerializationApi::class)
+data class JWTCredential(
+    override val id: String,
+    override val iss: String,
+    override val sub: String?,
+    override val nbf: Long?,
+    override val exp: Long?,
+    override val jti: String?,
+    @Serializable(with = AudSerializer::class)
+    override val aud: Array<String>?,
+    override val originalJWTString: String?,
+    @SerialName("vp")
+    override var verifiablePresentation: JWTVerifiablePresentation? = null,
+    @SerialName(VC)
+    override var verifiableCredential: JWTVerifiableCredential? = null,
+    var nonce: String? = null
+) : Credential, JWTPayload {
 
-    init {
-        val jwtParts = jwtString.split(".")
-        require(jwtParts.size == 3) { "Invalid JWT string" }
-        val credentialString = jwtParts[1]
-        val base64Data = Base64.getUrlDecoder().decode(credentialString)
-        val jsonString = base64Data.toString(Charsets.UTF_8)
-
-        val json = Json { ignoreUnknownKeys = true }
-        this.jwtPayload = json.decodeFromString(jsonString)
-    }
-
-    override val id: String
-        get() = jwtString
-
-    override val issuer: String
-        get() = jwtPayload.iss
+    @Transient
+    override val issuer: String = iss
 
     override val subject: String?
-        get() = jwtPayload.sub
+        get() = sub
 
     override val claims: Array<Claim>
-        get() = jwtPayload.verifiableCredential.credentialSubject.map {
-            Claim(key = it.key, value = ClaimType.StringValue(it.value))
-        }.toTypedArray()
+        get() {
+            return verifiableCredential?.credentialSubject?.map {
+                Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
+            }?.toTypedArray()
+                ?: emptyArray<Claim>()
+        }
 
     override val properties: Map<String, Any?>
         get() {
             val properties = mutableMapOf<String, Any?>()
-            properties["nbf"] = jwtPayload.nbf
-            properties["jti"] = jwtPayload.jti
-            properties["type"] = jwtPayload.verifiableCredential.type
-            properties["aud"] = jwtPayload.aud
-            properties["id"] = jwtString
+            properties["nbf"] = nbf
+            properties["jti"] = jti
+            verifiableCredential?.let { verifiableCredential ->
+                properties["type"] = verifiableCredential.type
+                verifiableCredential.credentialSchema?.let {
+                    properties["schema"] = it.id
+                }
+                verifiableCredential.credentialStatus?.let {
+                    properties["credentialStatus"] = it.type
+                }
+                verifiableCredential.refreshService?.let {
+                    properties["refreshService"] = it.type
+                }
+                verifiableCredential.evidence?.let {
+                    properties["evidence"] = it.type
+                }
+                verifiableCredential.termsOfUse?.let {
+                    properties["termsOfUse"] = it.type
+                }
+            }
+            verifiablePresentation?.let { verifiablePresentation ->
+                properties["type"] = verifiablePresentation.type
+            }
+            properties["aud"] = aud
+            properties["id"] = id
 
-            jwtPayload.exp?.let { properties["exp"] = it }
-            jwtPayload.verifiableCredential.credentialSchema?.let {
-                properties["schema"] = it.id
-            }
-            jwtPayload.verifiableCredential.credentialStatus?.let {
-                properties["credentialStatus"] = it.type
-            }
-            jwtPayload.verifiableCredential.refreshService?.let {
-                properties["refreshService"] = it.type
-            }
-            jwtPayload.verifiableCredential.evidence?.let {
-                properties["evidence"] = it.type
-            }
-            jwtPayload.verifiableCredential.termsOfUse?.let {
-                properties["termsOfUse"] = it.type
-            }
-
+            exp?.let { properties["exp"] = it }
             return properties.toMap()
         }
 
@@ -88,11 +114,11 @@ data class JWTCredential(val data: String) : Credential {
         val c = this
         return object : StorableCredential {
             override val id: String
-                get() = jwtString
+                get() = c.id
             override val recoveryId: String
                 get() = "jwt+credential"
             override val credentialData: ByteArray
-                get() = c.data.toByteArray()
+                get() = c.id.toByteArray()
 
             override val issuer: String
                 get() = c.issuer
@@ -104,42 +130,47 @@ data class JWTCredential(val data: String) : Credential {
             override val credentialUpdated: String?
                 get() = null
             override val credentialSchema: String?
-                get() = c.jwtPayload.verifiableCredential.credentialSchema?.type
+                get() = verifiableCredential?.credentialSchema?.type
             override val validUntil: String?
-                get() = null
+                get() = c.exp?.toString()
             override var revoked: Boolean? = c.revoked
             override val availableClaims: Array<String>
                 get() = c.claims.map { it.key }.toTypedArray()
 
             override val claims: Array<Claim>
-                get() = jwtPayload.verifiableCredential.credentialSubject.map {
-                    Claim(key = it.key, value = ClaimType.StringValue(it.value))
-                }.toTypedArray()
+                get() = verifiableCredential?.credentialSubject?.map {
+                    Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
+                }?.toTypedArray() ?: emptyArray()
 
             override val properties: Map<String, Any?>
                 get() {
                     val properties = mutableMapOf<String, Any?>()
-                    properties["nbf"] = jwtPayload.nbf
-                    properties["jti"] = jwtPayload.jti
-                    properties["type"] = jwtPayload.verifiableCredential.type
-                    properties["aud"] = jwtPayload.aud
-                    properties["id"] = jwtString
+                    properties["nbf"] = nbf
+                    properties["jti"] = jti
+                    properties["aud"] = aud
+                    properties["id"] = id
 
-                    jwtPayload.exp?.let { properties["exp"] = it }
-                    jwtPayload.verifiableCredential.credentialSchema?.let {
-                        properties["schema"] = it.id
+                    exp?.let { properties["exp"] = it }
+                    verifiableCredential?.let { verifiableCredential ->
+                        properties["type"] = verifiableCredential.type
+                        verifiableCredential.credentialSchema?.let {
+                            properties["schema"] = it.id
+                        }
+                        verifiableCredential.credentialStatus?.let {
+                            properties["credentialStatus"] = it.type
+                        }
+                        verifiableCredential.refreshService?.let {
+                            properties["refreshService"] = it.type
+                        }
+                        verifiableCredential.evidence?.let {
+                            properties["evidence"] = it.type
+                        }
+                        verifiableCredential.termsOfUse?.let {
+                            properties["termsOfUse"] = it.type
+                        }
                     }
-                    jwtPayload.verifiableCredential.credentialStatus?.let {
-                        properties["credentialStatus"] = it.type
-                    }
-                    jwtPayload.verifiableCredential.refreshService?.let {
-                        properties["refreshService"] = it.type
-                    }
-                    jwtPayload.verifiableCredential.evidence?.let {
-                        properties["evidence"] = it.type
-                    }
-                    jwtPayload.verifiableCredential.termsOfUse?.let {
-                        properties["termsOfUse"] = it.type
+                    verifiablePresentation?.let { verifiablePresentation ->
+                        properties["type"] = verifiablePresentation.type
                     }
 
                     return properties.toMap()
@@ -153,6 +184,36 @@ data class JWTCredential(val data: String) : Credential {
             override fun fromStorableCredential(): Credential {
                 return c
             }
+        }
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    object AudSerializer : JsonTransformingSerializer<Array<String>>(ArraySerializer(String.serializer())) {
+        override fun transformDeserialize(element: JsonElement): JsonElement {
+            // Check if the element is a JSON array
+            if (element is JsonArray) {
+                return element
+            }
+            // If it's a single string, wrap it into an array
+            return Json.encodeToJsonElement(arrayOf(element.jsonPrimitive.content))
+        }
+    }
+
+    companion object {
+        @JvmStatic
+        fun fromJwtString(jwtString: String): JWTCredential {
+            val jwtParts = jwtString.split(".")
+            require(jwtParts.size == 3) { "Invalid JWT string" }
+            val credentialString = jwtParts[1]
+            val jsonString = credentialString.base64UrlDecoded
+
+            val json = Json {
+                ignoreUnknownKeys = true
+                explicitNulls = false
+            }
+
+            val jsonObject = Json.decodeFromString<JsonElement>(jsonString).jsonObject
+            return json.decodeFromJsonElement(jsonObject.plus("id" to jwtString).toJsonElement())
         }
     }
 }

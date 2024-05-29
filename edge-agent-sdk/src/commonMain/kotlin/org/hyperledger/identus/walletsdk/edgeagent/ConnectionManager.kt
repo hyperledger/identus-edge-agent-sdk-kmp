@@ -28,6 +28,27 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.jvm.Throws
 
+interface ConnectionManager : ConnectionsManager, DIDCommConnection {
+
+    val mediationHandler: MediationHandler
+
+    suspend fun startMediator()
+
+    suspend fun registerMediator(host: DID)
+
+    override suspend fun addConnection(paired: DIDPair)
+
+    override suspend fun removeConnection(pair: DIDPair): DIDPair?
+
+    override suspend fun awaitMessages(): Flow<Array<Pair<String, Message>>>
+
+    override suspend fun awaitMessageResponse(id: String): Message?
+
+    override suspend fun sendMessage(message: Message): Message?
+
+    fun startFetchingMessages(requestInterval: Int = 5)
+}
+
 /**
  * ConnectionManager is responsible for managing connections and communication between entities.
  *
@@ -38,16 +59,16 @@ import kotlin.jvm.Throws
  * @property experimentLiveModeOptIn Flag to opt in or out of the experimental feature mediator live mode, using websockets.
  * @property pairings The mutable list of DIDPair representing the connections managed by the ConnectionManager.
  */
-class ConnectionManager @JvmOverloads constructor(
+class ConnectionManagerImpl(
     private val mercury: Mercury,
     private val castor: Castor,
     private val pluto: Pluto,
-    internal val mediationHandler: MediationHandler,
+    override val mediationHandler: MediationHandler,
     private var pairings: MutableList<DIDPair>,
     private val pollux: Pollux,
     private val experimentLiveModeOptIn: Boolean = false,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
-) : ConnectionsManager, DIDCommConnection {
+) : ConnectionManager, ConnectionsManager, DIDCommConnection {
 
     var fetchingMessagesJob: Job? = null
 
@@ -58,7 +79,7 @@ class ConnectionManager @JvmOverloads constructor(
      *                        Defaults to 5 seconds if not specified.
      */
     @JvmOverloads
-    fun startFetchingMessages(requestInterval: Int = 5) {
+    override fun startFetchingMessages(requestInterval: Int) {
         // Check if the job for fetching messages is already running
         if (fetchingMessagesJob == null) {
             // Launch a coroutine in the provided scope
@@ -71,7 +92,10 @@ class ConnectionManager @JvmOverloads constructor(
                 if (experimentLiveModeOptIn) {
                     // Loop through the services in the DID document to find a WebSocket endpoint
                     mediatorDidDoc.services.forEach {
-                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
+                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains(
+                                "ws://"
+                            )
+                        ) {
                             serviceEndpoint = it.serviceEndpoint.uri
                             return@forEach // Exit loop once the WebSocket endpoint is found
                         }
@@ -109,18 +133,19 @@ class ConnectionManager @JvmOverloads constructor(
         }
     }
 
-    fun stopConnection() {
+    override fun stopConnection() {
         fetchingMessagesJob?.cancel()
     }
 
     /**
      * Suspends the current coroutine and boots the registered mediator associated with the mediator handler.
-     * If no mediator is available, a [PrismAgentError.NoMediatorAvailableError] is thrown.
+     * If no mediator is available, a [EdgeAgentError.NoMediatorAvailableError] is thrown.
      *
-     * @throws PrismAgentError.NoMediatorAvailableError if no mediator is available.
+     * @throws EdgeAgentError.NoMediatorAvailableError if no mediator is available.
      */
-    suspend fun startMediator() {
-        mediationHandler.bootRegisteredMediator() ?: throw PrismAgentError.NoMediatorAvailableError()
+    override suspend fun startMediator() {
+        mediationHandler.bootRegisteredMediator()
+            ?: throw EdgeAgentError.NoMediatorAvailableError()
     }
 
     /**
@@ -128,7 +153,7 @@ class ConnectionManager @JvmOverloads constructor(
      *
      * @param host The DID of the entity to mediate with.
      */
-    suspend fun registerMediator(host: DID) {
+    override suspend fun registerMediator(host: DID) {
         mediationHandler.achieveMediation(host).collect {
             println("Achieve mediation")
         }
@@ -140,13 +165,29 @@ class ConnectionManager @JvmOverloads constructor(
      * @param message The message to send.
      * @return The response message, if one is received.
      */
-    @Throws(PrismAgentError.NoMediatorAvailableError::class)
+    @Throws(EdgeAgentError.NoMediatorAvailableError::class)
     override suspend fun sendMessage(message: Message): Message? {
         if (mediationHandler.mediator == null) {
-            throw PrismAgentError.NoMediatorAvailableError()
+            throw EdgeAgentError.NoMediatorAvailableError()
         }
-        pluto.storeMessage(message)
-        return mercury.sendMessageParseResponse(message)
+        val msg = Message(
+            id = message.id,
+            piuri = message.piuri,
+            from = message.from,
+            to = message.to,
+            fromPrior = message.fromPrior,
+            body = message.body,
+            extraHeaders = message.extraHeaders,
+            createdTime = message.createdTime,
+            expiresTimePlus = message.expiresTimePlus,
+            attachments = message.attachments,
+            thid = message.thid,
+            pthid = message.pthid,
+            ack = message.ack,
+            direction = Message.Direction.SENT
+        )
+        pluto.storeMessage(msg)
+        return mercury.sendMessageParseResponse(msg)
     }
 
     /**

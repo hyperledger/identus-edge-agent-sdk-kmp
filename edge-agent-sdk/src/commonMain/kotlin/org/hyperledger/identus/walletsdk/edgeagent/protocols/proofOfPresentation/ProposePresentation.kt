@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
 import kotlinx.serialization.SerialName
@@ -9,9 +11,11 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
 import org.hyperledger.identus.walletsdk.edgeagent.PROOF_TYPES
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
+import kotlinx.serialization.EncodeDefault
+import kotlinx.serialization.ExperimentalSerializationApi
 
 /**
  * Class representing a proposal for a presentation.
@@ -24,7 +28,7 @@ import java.util.UUID
  * @property from The sender of the presentation.
  * @property to The recipient of the presentation.
  * @constructor Creates a ProposePresentation instance.
- * @throws PrismAgentError.InvalidMessageType If the message type is invalid.
+ * @throws EdgeAgentError.InvalidMessageType If the message type is invalid.
  */
 class ProposePresentation {
 
@@ -67,11 +71,11 @@ class ProposePresentation {
     /**
      * Constructs a ProposePresentation object by processing a Message.
      *
-     * @throws PrismAgentError.InvalidMessageType if the fromMessage does not represent the expected protocol type
+     * @throws EdgeAgentError.InvalidMessageType if the fromMessage does not represent the expected protocol type
      *
      * @param fromMessage the input Message object
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (fromMessage.piuri == ProtocolType.DidcommProposePresentation.value &&
             fromMessage.from != null &&
@@ -86,7 +90,7 @@ class ProposePresentation {
                 to = fromMessage.to
             )
         } else {
-            throw PrismAgentError.InvalidMessageType(
+            throw EdgeAgentError.InvalidMessageType(
                 type = fromMessage.piuri,
                 shouldBe = ProtocolType.DidcommProposePresentation.value
             )
@@ -116,9 +120,9 @@ class ProposePresentation {
      *
      * @param msg The request message.
      * @return The created `ProposePresentation` object.
-     * @throws PrismAgentError.InvalidMessageType If the message type does not represent the expected protocol.
+     * @throws EdgeAgentError.InvalidMessageType If the message type does not represent the expected protocol.
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     fun makeProposalFromRequest(msg: Message): ProposePresentation {
         val request = RequestPresentation.fromMessage(msg)
 
@@ -187,12 +191,15 @@ class ProposePresentation {
      * @property proofTypes An array of proof types.
      */
     @Serializable
-    data class Body @JvmOverloads constructor(
+    @OptIn(ExperimentalSerializationApi::class)
+    data class Body
+    @JvmOverloads constructor(
         @SerialName(GOAL_CODE)
         val goalCode: String? = null,
         val comment: String? = null,
+        @EncodeDefault
         @SerialName(PROOF_TYPES)
-        val proofTypes: Array<ProofTypes>
+        val proofTypes: Array<ProofTypes>? = emptyArray()
     ) {
         /**
          * Compares this [Body] object with the specified object for equality.

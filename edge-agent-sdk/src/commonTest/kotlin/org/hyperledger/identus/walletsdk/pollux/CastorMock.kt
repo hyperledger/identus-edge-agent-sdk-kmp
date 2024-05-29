@@ -1,8 +1,11 @@
-package org.hyperledger.identus.walletsdk.edgeagent
+package org.hyperledger.identus.walletsdk.pollux
 
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
+import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
+import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 
@@ -18,32 +21,34 @@ class CastorMock : Castor {
     var verifySignatureReturn: Boolean = false
 
     override fun parseDID(did: String): DID {
-        return parseDIDReturn ?: throw Exception("parseDID() not implemented in mock")
+        TODO("Not yet implemented")
     }
 
     override fun createPrismDID(
         masterPublicKey: PublicKey,
         services: Array<DIDDocument.Service>?
     ): DID {
-        return createPrismDIDReturn ?: throw Exception("createPrismDID() not implemented in mock")
+        TODO("Not yet implemented")
     }
 
     override fun createPeerDID(
         keyPairs: Array<KeyPair>,
         services: Array<DIDDocument.Service>
     ): DID {
-        return createPeerDIDReturn ?: throw Exception("createPeerDID() not implemented in mock")
+        TODO("Not yet implemented")
     }
 
     override suspend fun resolveDID(did: String): DIDDocument {
-        val coreProperty = DIDDocument.Service(
-            id = "DIDCommV2",
-            type = arrayOf(DIDCOMM_MESSAGING),
-            serviceEndpoint = DIDDocument.ServiceEndpoint(
-                uri = "localhost:8082",
-                accept = arrayOf(DIDCOMM_MESSAGING),
-                routingKeys = arrayOf()
-            )
+        val vmAuthentication = DIDDocument.VerificationMethod(
+            id = DIDUrl(DID("did", "prism", "asdfasdfasdfasdf"), fragment = "keys-1"),
+            controller = DID("2", "2", "0"),
+            type = Curve.ED25519.value,
+            publicKeyJwk = mapOf("crv" to Curve.ED25519.value, "x" to "")
+        )
+
+        val coreProperty = DIDDocument.Authentication(
+            arrayOf(),
+            arrayOf(vmAuthentication)
         )
         resolveDIDReturn = DIDDocument(
             DID(
@@ -53,10 +58,19 @@ class CastorMock : Castor {
             ),
             arrayOf(coreProperty)
         )
-        return resolveDIDReturn ?: throw Exception("resolveDID() not implemented in mock")
+        return resolveDIDReturn
+            ?: throw Exception("resolveDID() not implemented in mock")
     }
 
-    override suspend fun verifySignature(did: DID, challenge: ByteArray, signature: ByteArray): Boolean {
-        return verifySignatureReturn
+    override suspend fun verifySignature(
+        did: DID,
+        challenge: ByteArray,
+        signature: ByteArray
+    ): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun getPublicKeysFromCoreProperties(coreProperties: Array<DIDDocumentCoreProperty>): List<PublicKey> {
+        TODO("Not yet implemented")
     }
 }

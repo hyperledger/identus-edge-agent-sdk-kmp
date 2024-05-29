@@ -6,6 +6,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.AfterVersion
 import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.ktor.util.date.getTimeMillis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -547,7 +548,6 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 allDIDs.executeAsList()
                     .groupBy { allPeerDid -> allPeerDid.did }
                     .map {
-                        println("Restoration ID: ${it.value[0].restorationIdentifier}")
                         val privateKeyList: Array<PrivateKey> = it.value.map { allPeerDID ->
                             when (allPeerDID.restorationIdentifier) {
                                 "secp256k1+priv" -> {
@@ -897,6 +897,34 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    override fun getMessageByThidAndPiuri(thid: String, piuri: String): Flow<Message?> {
+        return getInstance().messageQueries.fetchMessageByThidAndPiuri(thid, piuri)
+            .asFlow()
+            .map {
+                try {
+                    val messageDb = Json.decodeFromString<Message>(it.executeAsOne().dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction
+                    )
+                } catch (e: NullPointerException) {
+                    null
+                }
+            }
+    }
+
     /**
      * Returns a Flow of lists of [Mediator] objects representing all the available mediators.
      *
@@ -927,13 +955,19 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         return getInstance().storableCredentialQueries.fetchAllCredentials()
             .asFlow()
             .map {
-                it.executeAsList().map { credential ->
-                    CredentialRecovery(
-                        restorationId = credential.recoveryId,
-                        credentialData = credential.credentialData,
-                        revoked = credential.revoked != 0
-                    )
-                }
+                it.executeAsList()
+                    .mapNotNull { credential ->
+                        // Convert timestamp in millisecond to seconds to compare with the credential timestamp
+                        if (credential.validUntil != null && credential.validUntil.toInt() > (getTimeMillis() / 1000)) {
+                            CredentialRecovery(
+                                restorationId = credential.recoveryId,
+                                credentialData = credential.credentialData,
+                                revoked = credential.revoked != 0
+                            )
+                        } else {
+                            null
+                        }
+                    }.takeIf { it.isNotEmpty() } ?: emptyList()
             }
     }
 

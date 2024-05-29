@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.connection
 
 import kotlinx.serialization.SerialName
@@ -7,7 +9,7 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
-import org.hyperledger.identus.walletsdk.edgeagent.PrismAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
 
@@ -48,12 +50,12 @@ class ConnectionAccept {
      *
      * @param fromMessage The message to decode.
      */
-    @Throws(PrismAgentError.InvalidMessageType::class)
+    @Throws(EdgeAgentError.InvalidMessageType::class)
     constructor(fromMessage: Message) {
         if (fromMessage.piuri == ProtocolType.DidcommconnectionResponse.value && fromMessage.from != null && fromMessage.to != null) {
             ConnectionAccept(from = fromMessage.from, to = fromMessage.to, body = Body(fromMessage.body))
         } else {
-            throw PrismAgentError.InvalidMessageType(
+            throw EdgeAgentError.InvalidMessageType(
                 type = fromMessage.piuri,
                 shouldBe = ProtocolType.DidcommconnectionResponse.value
             )
