@@ -2,7 +2,7 @@
 <html class="no-js">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
-    <title>AtalaPrismSDK</title>
+    <title>EdgeAgentSDK</title>
     <link href="images/logo-icon.svg" rel="icon" type="image/svg">
     <script>var pathToRoot = "";</script>
     <script>document.documentElement.classList.replace("no-js","js");</script>
@@ -41,16 +41,16 @@
             <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
             <div class="library-name">
                     <a class="library-name--link" href="index.html">
-                            AtalaPrismSDK
+                            EdgeAgentSDK
                     </a>
             </div>
             <div class="library-version">
 3.0.0            </div>
         </div>
         <div class="filter-section" id="filter-section">
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":atala-prism-sdk:dokkaHtml/androidMain">android</button>
-                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":atala-prism-sdk:dokkaHtml/commonMain">common</button>
-                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":atala-prism-sdk:dokkaHtml/jvmMain">jvm</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":edge-agent-sdk:dokkaHtml/androidMain">android</button>
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":edge-agent-sdk:dokkaHtml/commonMain">common</button>
+                <button class="platform-tag platform-selector jvm-like" data-active="" data-filter=":edge-agent-sdk:dokkaHtml/jvmMain">jvm</button>
         </div>
     </div>
     <div class="navigation-controls">
@@ -63,22 +63,22 @@
                 <div class="sidebar--inner" id="sideMenu"></div>
             </div>
             <div id="main">
-<div class="main-content" id="content" pageIds="AtalaPrismSDK::////PointingToDeclaration//386480736">
+<div class="main-content" id="content" pageIds="EdgeAgentSDK::////PointingToDeclaration//2037140448">
   <div class="breadcrumbs"></div>
   <div class="cover ">
-    <h1 class="cover"><span>Atala</span><wbr></wbr><span>Prism</span><wbr></wbr><span><span>SDK</span></span></h1>
+    <h1 class="cover"><span>Edge</span><wbr></wbr><span>Agent</span><wbr></wbr><span><span>SDK</span></span></h1>
     <div class="platform-hinted UnderCoverText with-platform-tabs" data-platform-hinted="data-platform-hinted">
-      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/androidMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/androidMain" data-active="" data-toggle=":atala-prism-sdk:dokkaHtml/androidMain">android</button><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain" data-toggle=":atala-prism-sdk:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":atala-prism-sdk:dokkaHtml/jvmMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/jvmMain" data-toggle=":atala-prism-sdk:dokkaHtml/jvmMain">jvm</button></div>
-<div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/androidMain"><p class="paragraph">Atala PRISM KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign identity) applications with Atala PRISM. This documentation will explain how to use the SDK in your project, how to prepare your development environment if you wish to contribute, and some fundamental considerations around the project.</p><h2 class=""> What is Atala PRISM?</h2><p class="paragraph">Atala PRISM is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs and verifiable credentials alongside tools and frameworks to help expand your ecosystem.</p><h2 class=""> Technical Considerations</h2><p class="paragraph">The architecture of the SDK results from a careful evaluation of different software development methodologies and patterns. We chose a modular, clean architecture based on interface/protocol-oriented programming, domain-oriented programming principles, and dependency injection for several reasons that we will explain in this document.</p><h3 class=""> Overview</h3><h4 class=""> Modular Clean Architecture</h4><p class="paragraph">Modular clean architecture is a software development methodology that emphasizes separating concerns and the creation of independent modules that can be easily tested and maintained. This approach promotes using small, reusable components that can be combined differently to create larger systems. The SDK architecture uses this approach to ensure that each module can be developed and tested independently, reducing the risk of bugs and improving the overall quality of the code.</p><h4 class=""> Interface/Protocol-Oriented Programming</h4><p class="paragraph">Protocol-oriented programming is a programming paradigm that focuses on the behaviour of objects rather than their structure. This approach promotes the use of protocols to define the behaviour of objects, allowing for more flexible and extensible code. The SDK architecture uses this approach to ensure the different modules can work together seamlessly, regardless of the underlying implementation details.</p><h4 class=""> Domain-Oriented Programming</h4><p class="paragraph">Domain-oriented programming is a programming paradigm that focuses on a system's domain-specific requirements rather than the implementation's technical details. This approach promotes the use of domain-specific models and concepts, which can simplify the development process and improve the maintainability of the code. The SDK architecture uses this approach to ensure that the different modules are designed around the specific needs of decentralized identity management, making it easier for developers to build decentralized applications that are secure and scalable.</p><h4 class=""> Dependency Injection</h4><p class="paragraph">Dependency injection is a programming pattern that promotes loose coupling between different system components. This approach encourages the use of interfaces and dependency injection containers to ensure that each element can be developed and tested independently without relying on the implementation details of other components. The SDK architecture uses this approach to ensure that each module can be developed and tested separately, making it easier for developers to add new functionality to the system without affecting the existing code.</p><h2 class=""> Building Blocks</h2><p class="paragraph">The building blocks are the core components of Atala PRISM, and they are designed to work together seamlessly to provide a comprehensive identity management solution.</p><h3 class=""> Overview</h3><p class="paragraph">Each building block serves a specific purpose, providing a solid foundation for building decentralized identity applications.</p><p class="paragraph">Let's take a closer look at each building block:</p><ul><li><p class="paragraph"><strong>Apollo</strong>: Apollo is a building block that provides a suite of cryptographic operations. This includes secure hash algorithms, digital signatures, and encryption, all essential for creating a safe and tamper-proof identity system. Apollo ensures that all data within the Atala PRISM system is securely encrypted and digitally signed, making it resistant to tampering and unauthorized access.</p></li><li><p class="paragraph"><strong>Castor</strong>: Castor is a building block that provides a suite of decentralized identifier (DID) operations in a user-controlled manner. DIDs are a vital component of decentralized identity, as they provide a way to uniquely identify individuals and entities in a decentralized manner. Castor allows users to create, manage, and control their DIDs and associated cryptographic keys.</p></li><li><p class="paragraph"><strong>Pollux</strong>: Pollux is a building block that provides a suite of credential operations in a privacy-preserving manner. Credentials are a way to prove claims about an individual or entity, and they are an essential part of decentralized identity. Pollux allows users to create, manage, and share credentials in a privacy-preserving way to ensure that sensitive information is not revealed.</p></li><li><p class="paragraph"><strong>Mercury</strong>: Mercury is a building block that provides a set of secure, standards-based communications protocols that are transport-agnostic and interoperable. Mercury allows different Atala PRISM components to communicate securely using HTTP, WebSocket, and MQTT protocols.</p></li><li><p class="paragraph"><strong>Pluto</strong>: Pluto is a building block that provides an interface for storage operations in a portable, storage-agnostic manner. Pluto allows data to be stored and retrieved in a way independent of the underlying storage technology, allowing Atala PRISM to work with various storage solutions.</p></li></ul><p class="paragraph">Together, these building blocks provide a solid foundation for building decentralized identity applications that are secure, privacy-preserving, and interoperable. Using Atala PRISM, developers can focus on creating innovative identity solutions without worrying about the underlying infrastructure.</p><h3 class=""> Prism Agent</h3><p class="paragraph">Prism Agent is a comprehensive library that combines all the Prism platform's building blocks - Apollo, Castor, Pluto, Mercury, and Pollux - to provide a seamless experience for developers working with decentralized identifiers (DIDs) on the Prism platform.</p><h2 class=""> Documentation</h2><h4 class=""> General information and articles</h4><ul><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/getting-started">Getting Started</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/what-is-identity">What is identity?</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/digital-wallets">Digital wallets</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/atala-prism/overview">Atala PRISM Overview</a></p></li></ul></div><div class="content sourceset-dependent-content" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><p class="paragraph">Atala PRISM KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign identity) applications with Atala PRISM. This documentation will explain how to use the SDK in your project, how to prepare your development environment if you wish to contribute, and some fundamental considerations around the project.</p><h2 class=""> What is Atala PRISM?</h2><p class="paragraph">Atala PRISM is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs and verifiable credentials alongside tools and frameworks to help expand your ecosystem.</p><h2 class=""> Technical Considerations</h2><p class="paragraph">The architecture of the SDK results from a careful evaluation of different software development methodologies and patterns. We chose a modular, clean architecture based on interface/protocol-oriented programming, domain-oriented programming principles, and dependency injection for several reasons that we will explain in this document.</p><h3 class=""> Overview</h3><h4 class=""> Modular Clean Architecture</h4><p class="paragraph">Modular clean architecture is a software development methodology that emphasizes separating concerns and the creation of independent modules that can be easily tested and maintained. This approach promotes using small, reusable components that can be combined differently to create larger systems. The SDK architecture uses this approach to ensure that each module can be developed and tested independently, reducing the risk of bugs and improving the overall quality of the code.</p><h4 class=""> Interface/Protocol-Oriented Programming</h4><p class="paragraph">Protocol-oriented programming is a programming paradigm that focuses on the behaviour of objects rather than their structure. This approach promotes the use of protocols to define the behaviour of objects, allowing for more flexible and extensible code. The SDK architecture uses this approach to ensure the different modules can work together seamlessly, regardless of the underlying implementation details.</p><h4 class=""> Domain-Oriented Programming</h4><p class="paragraph">Domain-oriented programming is a programming paradigm that focuses on a system's domain-specific requirements rather than the implementation's technical details. This approach promotes the use of domain-specific models and concepts, which can simplify the development process and improve the maintainability of the code. The SDK architecture uses this approach to ensure that the different modules are designed around the specific needs of decentralized identity management, making it easier for developers to build decentralized applications that are secure and scalable.</p><h4 class=""> Dependency Injection</h4><p class="paragraph">Dependency injection is a programming pattern that promotes loose coupling between different system components. This approach encourages the use of interfaces and dependency injection containers to ensure that each element can be developed and tested independently without relying on the implementation details of other components. The SDK architecture uses this approach to ensure that each module can be developed and tested separately, making it easier for developers to add new functionality to the system without affecting the existing code.</p><h2 class=""> Building Blocks</h2><p class="paragraph">The building blocks are the core components of Atala PRISM, and they are designed to work together seamlessly to provide a comprehensive identity management solution.</p><h3 class=""> Overview</h3><p class="paragraph">Each building block serves a specific purpose, providing a solid foundation for building decentralized identity applications.</p><p class="paragraph">Let's take a closer look at each building block:</p><ul><li><p class="paragraph"><strong>Apollo</strong>: Apollo is a building block that provides a suite of cryptographic operations. This includes secure hash algorithms, digital signatures, and encryption, all essential for creating a safe and tamper-proof identity system. Apollo ensures that all data within the Atala PRISM system is securely encrypted and digitally signed, making it resistant to tampering and unauthorized access.</p></li><li><p class="paragraph"><strong>Castor</strong>: Castor is a building block that provides a suite of decentralized identifier (DID) operations in a user-controlled manner. DIDs are a vital component of decentralized identity, as they provide a way to uniquely identify individuals and entities in a decentralized manner. Castor allows users to create, manage, and control their DIDs and associated cryptographic keys.</p></li><li><p class="paragraph"><strong>Pollux</strong>: Pollux is a building block that provides a suite of credential operations in a privacy-preserving manner. Credentials are a way to prove claims about an individual or entity, and they are an essential part of decentralized identity. Pollux allows users to create, manage, and share credentials in a privacy-preserving way to ensure that sensitive information is not revealed.</p></li><li><p class="paragraph"><strong>Mercury</strong>: Mercury is a building block that provides a set of secure, standards-based communications protocols that are transport-agnostic and interoperable. Mercury allows different Atala PRISM components to communicate securely using HTTP, WebSocket, and MQTT protocols.</p></li><li><p class="paragraph"><strong>Pluto</strong>: Pluto is a building block that provides an interface for storage operations in a portable, storage-agnostic manner. Pluto allows data to be stored and retrieved in a way independent of the underlying storage technology, allowing Atala PRISM to work with various storage solutions.</p></li></ul><p class="paragraph">Together, these building blocks provide a solid foundation for building decentralized identity applications that are secure, privacy-preserving, and interoperable. Using Atala PRISM, developers can focus on creating innovative identity solutions without worrying about the underlying infrastructure.</p><h3 class=""> Prism Agent</h3><p class="paragraph">Prism Agent is a comprehensive library that combines all the Prism platform's building blocks - Apollo, Castor, Pluto, Mercury, and Pollux - to provide a seamless experience for developers working with decentralized identifiers (DIDs) on the Prism platform.</p><h2 class=""> Documentation</h2><h4 class=""> General information and articles</h4><ul><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/getting-started">Getting Started</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/what-is-identity">What is identity?</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/digital-wallets">Digital wallets</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/atala-prism/overview">Atala PRISM Overview</a></p></li></ul></div><div class="content sourceset-dependent-content" data-togglable=":atala-prism-sdk:dokkaHtml/jvmMain"><p class="paragraph">Atala PRISM KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign identity) applications with Atala PRISM. This documentation will explain how to use the SDK in your project, how to prepare your development environment if you wish to contribute, and some fundamental considerations around the project.</p><h2 class=""> What is Atala PRISM?</h2><p class="paragraph">Atala PRISM is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs and verifiable credentials alongside tools and frameworks to help expand your ecosystem.</p><h2 class=""> Technical Considerations</h2><p class="paragraph">The architecture of the SDK results from a careful evaluation of different software development methodologies and patterns. We chose a modular, clean architecture based on interface/protocol-oriented programming, domain-oriented programming principles, and dependency injection for several reasons that we will explain in this document.</p><h3 class=""> Overview</h3><h4 class=""> Modular Clean Architecture</h4><p class="paragraph">Modular clean architecture is a software development methodology that emphasizes separating concerns and the creation of independent modules that can be easily tested and maintained. This approach promotes using small, reusable components that can be combined differently to create larger systems. The SDK architecture uses this approach to ensure that each module can be developed and tested independently, reducing the risk of bugs and improving the overall quality of the code.</p><h4 class=""> Interface/Protocol-Oriented Programming</h4><p class="paragraph">Protocol-oriented programming is a programming paradigm that focuses on the behaviour of objects rather than their structure. This approach promotes the use of protocols to define the behaviour of objects, allowing for more flexible and extensible code. The SDK architecture uses this approach to ensure the different modules can work together seamlessly, regardless of the underlying implementation details.</p><h4 class=""> Domain-Oriented Programming</h4><p class="paragraph">Domain-oriented programming is a programming paradigm that focuses on a system's domain-specific requirements rather than the implementation's technical details. This approach promotes the use of domain-specific models and concepts, which can simplify the development process and improve the maintainability of the code. The SDK architecture uses this approach to ensure that the different modules are designed around the specific needs of decentralized identity management, making it easier for developers to build decentralized applications that are secure and scalable.</p><h4 class=""> Dependency Injection</h4><p class="paragraph">Dependency injection is a programming pattern that promotes loose coupling between different system components. This approach encourages the use of interfaces and dependency injection containers to ensure that each element can be developed and tested independently without relying on the implementation details of other components. The SDK architecture uses this approach to ensure that each module can be developed and tested separately, making it easier for developers to add new functionality to the system without affecting the existing code.</p><h2 class=""> Building Blocks</h2><p class="paragraph">The building blocks are the core components of Atala PRISM, and they are designed to work together seamlessly to provide a comprehensive identity management solution.</p><h3 class=""> Overview</h3><p class="paragraph">Each building block serves a specific purpose, providing a solid foundation for building decentralized identity applications.</p><p class="paragraph">Let's take a closer look at each building block:</p><ul><li><p class="paragraph"><strong>Apollo</strong>: Apollo is a building block that provides a suite of cryptographic operations. This includes secure hash algorithms, digital signatures, and encryption, all essential for creating a safe and tamper-proof identity system. Apollo ensures that all data within the Atala PRISM system is securely encrypted and digitally signed, making it resistant to tampering and unauthorized access.</p></li><li><p class="paragraph"><strong>Castor</strong>: Castor is a building block that provides a suite of decentralized identifier (DID) operations in a user-controlled manner. DIDs are a vital component of decentralized identity, as they provide a way to uniquely identify individuals and entities in a decentralized manner. Castor allows users to create, manage, and control their DIDs and associated cryptographic keys.</p></li><li><p class="paragraph"><strong>Pollux</strong>: Pollux is a building block that provides a suite of credential operations in a privacy-preserving manner. Credentials are a way to prove claims about an individual or entity, and they are an essential part of decentralized identity. Pollux allows users to create, manage, and share credentials in a privacy-preserving way to ensure that sensitive information is not revealed.</p></li><li><p class="paragraph"><strong>Mercury</strong>: Mercury is a building block that provides a set of secure, standards-based communications protocols that are transport-agnostic and interoperable. Mercury allows different Atala PRISM components to communicate securely using HTTP, WebSocket, and MQTT protocols.</p></li><li><p class="paragraph"><strong>Pluto</strong>: Pluto is a building block that provides an interface for storage operations in a portable, storage-agnostic manner. Pluto allows data to be stored and retrieved in a way independent of the underlying storage technology, allowing Atala PRISM to work with various storage solutions.</p></li></ul><p class="paragraph">Together, these building blocks provide a solid foundation for building decentralized identity applications that are secure, privacy-preserving, and interoperable. Using Atala PRISM, developers can focus on creating innovative identity solutions without worrying about the underlying infrastructure.</p><h3 class=""> Prism Agent</h3><p class="paragraph">Prism Agent is a comprehensive library that combines all the Prism platform's building blocks - Apollo, Castor, Pluto, Mercury, and Pollux - to provide a seamless experience for developers working with decentralized identifiers (DIDs) on the Prism platform.</p><h2 class=""> Documentation</h2><h4 class=""> General information and articles</h4><ul><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/getting-started">Getting Started</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/what-is-identity">What is identity?</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/digital-wallets">Digital wallets</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/atala-prism/overview">Atala PRISM Overview</a></p></li></ul></div>    </div>
+      <div class="platform-bookmarks-row" data-toggle-list="data-toggle-list"><button class="platform-bookmark" data-filterable-current=":edge-agent-sdk:dokkaHtml/androidMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/androidMain" data-active="" data-toggle=":edge-agent-sdk:dokkaHtml/androidMain">android</button><button class="platform-bookmark" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain" data-toggle=":edge-agent-sdk:dokkaHtml/commonMain">common</button><button class="platform-bookmark" data-filterable-current=":edge-agent-sdk:dokkaHtml/jvmMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/jvmMain" data-toggle=":edge-agent-sdk:dokkaHtml/jvmMain">jvm</button></div>
+<div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/androidMain"><p class="paragraph">Edge Agent KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign identity) applications with Identus. This documentation will explain how to use the SDK in your project, how to prepare your development environment if you wish to contribute, and some fundamental considerations around the project.</p><h2 class="">What is Identus?</h2><p class="paragraph">Identus is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs and verifiable credentials alongside tools and frameworks to help expand your ecosystem.</p><h2 class="">Technical Considerations</h2><p class="paragraph">The architecture of the SDK results from a careful evaluation of different software development methodologies and patterns. We chose a modular, clean architecture based on interface/protocol-oriented programming, domain-oriented programming principles, and dependency injection for several reasons that we will explain in this document.</p><h3 class="">Overview</h3><h4 class="">Modular Clean Architecture</h4><p class="paragraph">Modular clean architecture is a software development methodology that emphasizes separating concerns and the creation of independent modules that can be easily tested and maintained. This approach promotes using small, reusable components that can be combined differently to create larger systems. The SDK architecture uses this approach to ensure that each module can be developed and tested independently, reducing the risk of bugs and improving the overall quality of the code.</p><h4 class="">Interface/Protocol-Oriented Programming</h4><p class="paragraph">Protocol-oriented programming is a programming paradigm that focuses on the behaviour of objects rather than their structure. This approach promotes the use of protocols to define the behaviour of objects, allowing for more flexible and extensible code. The SDK architecture uses this approach to ensure the different modules can work together seamlessly, regardless of the underlying implementation details.</p><h4 class="">Domain-Oriented Programming</h4><p class="paragraph">Domain-oriented programming is a programming paradigm that focuses on a system's domain-specific requirements rather than the implementation's technical details. This approach promotes the use of domain-specific models and concepts, which can simplify the development process and improve the maintainability of the code. The SDK architecture uses this approach to ensure that the different modules are designed around the specific needs of decentralized identity management, making it easier for developers to build decentralized applications that are secure and scalable.</p><h4 class="">Dependency Injection</h4><p class="paragraph">Dependency injection is a programming pattern that promotes loose coupling between different system components. This approach encourages the use of interfaces and dependency injection containers to ensure that each element can be developed and tested independently without relying on the implementation details of other components. The SDK architecture uses this approach to ensure that each module can be developed and tested separately, making it easier for developers to add new functionality to the system without affecting the existing code.</p><h2 class="">Building Blocks</h2><p class="paragraph">The building blocks are the core components of Identus, and they are designed to work together seamlessly to provide a comprehensive identity management solution.</p><h3 class="">Overview</h3><p class="paragraph">Each building block serves a specific purpose, providing a solid foundation for building decentralized identity applications.</p><p class="paragraph">Let's take a closer look at each building block:</p><ul><li><p class="paragraph"><strong>Apollo</strong>: Apollo is a building block that provides a suite of cryptographic operations. This includes secure hash   algorithms, digital signatures, and encryption, all essential for creating a safe and tamper-proof identity system.   Apollo ensures that all data within the Identus system is securely encrypted and digitally signed, making it   resistant to tampering and unauthorized access.</p></li><li><p class="paragraph"><strong>Castor</strong>: Castor is a building block that provides a suite of decentralized identifier (DID) operations in a   user-controlled manner. DIDs are a vital component of decentralized identity, as they provide a way to uniquely   identify individuals and entities in a decentralized manner. Castor allows users to create, manage, and control their   DIDs and associated cryptographic keys.</p></li><li><p class="paragraph"><strong>Pollux</strong>: Pollux is a building block that provides a suite of credential operations in a privacy-preserving manner.   Credentials are a way to prove claims about an individual or entity, and they are an essential part of decentralized   identity. Pollux allows users to create, manage, and share credentials in a privacy-preserving way to ensure that   sensitive information is not revealed.</p></li><li><p class="paragraph"><strong>Mercury</strong>: Mercury is a building block that provides a set of secure, standards-based communications protocols that   are transport-agnostic and interoperable. Mercury allows different Identus components to communicate securely   using HTTP, WebSocket, and MQTT protocols.</p></li><li><p class="paragraph"><strong>Pluto</strong>: Pluto is a building block that provides an interface for storage operations in a portable, storage-agnostic   manner. Pluto allows data to be stored and retrieved in a way independent of the underlying storage technology,   allowing Identus to work with various storage solutions.</p></li></ul><p class="paragraph">Together, these building blocks provide a solid foundation for building decentralized identity applications that are secure, privacy-preserving, and interoperable. Using Identus, developers can focus on creating innovative identity solutions without worrying about the underlying infrastructure.</p><h3 class="">Edge Agent</h3><p class="paragraph">Edge Agent is a comprehensive library that combines all the Prism platform's building blocks - Apollo, Castor, Pluto, Mercury, and Pollux - to provide a seamless experience for developers working with decentralized identifiers (DIDs) on the Identus platform.</p><h2 class="">Documentation</h2><h4 class="">General information and articles</h4><ul><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/getting-started">Getting Started</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/what-is-identity">What is identity?</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/digital-wallets">Digital wallets</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/atala-prism/overview">Identus Overview</a></p></li></ul></div><div class="content sourceset-dependent-content" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><p class="paragraph">Edge Agent KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign identity) applications with Identus. This documentation will explain how to use the SDK in your project, how to prepare your development environment if you wish to contribute, and some fundamental considerations around the project.</p><h2 class="">What is Identus?</h2><p class="paragraph">Identus is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs and verifiable credentials alongside tools and frameworks to help expand your ecosystem.</p><h2 class="">Technical Considerations</h2><p class="paragraph">The architecture of the SDK results from a careful evaluation of different software development methodologies and patterns. We chose a modular, clean architecture based on interface/protocol-oriented programming, domain-oriented programming principles, and dependency injection for several reasons that we will explain in this document.</p><h3 class="">Overview</h3><h4 class="">Modular Clean Architecture</h4><p class="paragraph">Modular clean architecture is a software development methodology that emphasizes separating concerns and the creation of independent modules that can be easily tested and maintained. This approach promotes using small, reusable components that can be combined differently to create larger systems. The SDK architecture uses this approach to ensure that each module can be developed and tested independently, reducing the risk of bugs and improving the overall quality of the code.</p><h4 class="">Interface/Protocol-Oriented Programming</h4><p class="paragraph">Protocol-oriented programming is a programming paradigm that focuses on the behaviour of objects rather than their structure. This approach promotes the use of protocols to define the behaviour of objects, allowing for more flexible and extensible code. The SDK architecture uses this approach to ensure the different modules can work together seamlessly, regardless of the underlying implementation details.</p><h4 class="">Domain-Oriented Programming</h4><p class="paragraph">Domain-oriented programming is a programming paradigm that focuses on a system's domain-specific requirements rather than the implementation's technical details. This approach promotes the use of domain-specific models and concepts, which can simplify the development process and improve the maintainability of the code. The SDK architecture uses this approach to ensure that the different modules are designed around the specific needs of decentralized identity management, making it easier for developers to build decentralized applications that are secure and scalable.</p><h4 class="">Dependency Injection</h4><p class="paragraph">Dependency injection is a programming pattern that promotes loose coupling between different system components. This approach encourages the use of interfaces and dependency injection containers to ensure that each element can be developed and tested independently without relying on the implementation details of other components. The SDK architecture uses this approach to ensure that each module can be developed and tested separately, making it easier for developers to add new functionality to the system without affecting the existing code.</p><h2 class="">Building Blocks</h2><p class="paragraph">The building blocks are the core components of Identus, and they are designed to work together seamlessly to provide a comprehensive identity management solution.</p><h3 class="">Overview</h3><p class="paragraph">Each building block serves a specific purpose, providing a solid foundation for building decentralized identity applications.</p><p class="paragraph">Let's take a closer look at each building block:</p><ul><li><p class="paragraph"><strong>Apollo</strong>: Apollo is a building block that provides a suite of cryptographic operations. This includes secure hash   algorithms, digital signatures, and encryption, all essential for creating a safe and tamper-proof identity system.   Apollo ensures that all data within the Identus system is securely encrypted and digitally signed, making it   resistant to tampering and unauthorized access.</p></li><li><p class="paragraph"><strong>Castor</strong>: Castor is a building block that provides a suite of decentralized identifier (DID) operations in a   user-controlled manner. DIDs are a vital component of decentralized identity, as they provide a way to uniquely   identify individuals and entities in a decentralized manner. Castor allows users to create, manage, and control their   DIDs and associated cryptographic keys.</p></li><li><p class="paragraph"><strong>Pollux</strong>: Pollux is a building block that provides a suite of credential operations in a privacy-preserving manner.   Credentials are a way to prove claims about an individual or entity, and they are an essential part of decentralized   identity. Pollux allows users to create, manage, and share credentials in a privacy-preserving way to ensure that   sensitive information is not revealed.</p></li><li><p class="paragraph"><strong>Mercury</strong>: Mercury is a building block that provides a set of secure, standards-based communications protocols that   are transport-agnostic and interoperable. Mercury allows different Identus components to communicate securely   using HTTP, WebSocket, and MQTT protocols.</p></li><li><p class="paragraph"><strong>Pluto</strong>: Pluto is a building block that provides an interface for storage operations in a portable, storage-agnostic   manner. Pluto allows data to be stored and retrieved in a way independent of the underlying storage technology,   allowing Identus to work with various storage solutions.</p></li></ul><p class="paragraph">Together, these building blocks provide a solid foundation for building decentralized identity applications that are secure, privacy-preserving, and interoperable. Using Identus, developers can focus on creating innovative identity solutions without worrying about the underlying infrastructure.</p><h3 class="">Edge Agent</h3><p class="paragraph">Edge Agent is a comprehensive library that combines all the Prism platform's building blocks - Apollo, Castor, Pluto, Mercury, and Pollux - to provide a seamless experience for developers working with decentralized identifiers (DIDs) on the Identus platform.</p><h2 class="">Documentation</h2><h4 class="">General information and articles</h4><ul><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/getting-started">Getting Started</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/what-is-identity">What is identity?</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/digital-wallets">Digital wallets</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/atala-prism/overview">Identus Overview</a></p></li></ul></div><div class="content sourceset-dependent-content" data-togglable=":edge-agent-sdk:dokkaHtml/jvmMain"><p class="paragraph">Edge Agent KMP SDK is a library and documentation that helps developers build KMM/JVM/Android SSI (self-sovereign identity) applications with Identus. This documentation will explain how to use the SDK in your project, how to prepare your development environment if you wish to contribute, and some fundamental considerations around the project.</p><h2 class="">What is Identus?</h2><p class="paragraph">Identus is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers the core infrastructure for issuing DIDs and verifiable credentials alongside tools and frameworks to help expand your ecosystem.</p><h2 class="">Technical Considerations</h2><p class="paragraph">The architecture of the SDK results from a careful evaluation of different software development methodologies and patterns. We chose a modular, clean architecture based on interface/protocol-oriented programming, domain-oriented programming principles, and dependency injection for several reasons that we will explain in this document.</p><h3 class="">Overview</h3><h4 class="">Modular Clean Architecture</h4><p class="paragraph">Modular clean architecture is a software development methodology that emphasizes separating concerns and the creation of independent modules that can be easily tested and maintained. This approach promotes using small, reusable components that can be combined differently to create larger systems. The SDK architecture uses this approach to ensure that each module can be developed and tested independently, reducing the risk of bugs and improving the overall quality of the code.</p><h4 class="">Interface/Protocol-Oriented Programming</h4><p class="paragraph">Protocol-oriented programming is a programming paradigm that focuses on the behaviour of objects rather than their structure. This approach promotes the use of protocols to define the behaviour of objects, allowing for more flexible and extensible code. The SDK architecture uses this approach to ensure the different modules can work together seamlessly, regardless of the underlying implementation details.</p><h4 class="">Domain-Oriented Programming</h4><p class="paragraph">Domain-oriented programming is a programming paradigm that focuses on a system's domain-specific requirements rather than the implementation's technical details. This approach promotes the use of domain-specific models and concepts, which can simplify the development process and improve the maintainability of the code. The SDK architecture uses this approach to ensure that the different modules are designed around the specific needs of decentralized identity management, making it easier for developers to build decentralized applications that are secure and scalable.</p><h4 class="">Dependency Injection</h4><p class="paragraph">Dependency injection is a programming pattern that promotes loose coupling between different system components. This approach encourages the use of interfaces and dependency injection containers to ensure that each element can be developed and tested independently without relying on the implementation details of other components. The SDK architecture uses this approach to ensure that each module can be developed and tested separately, making it easier for developers to add new functionality to the system without affecting the existing code.</p><h2 class="">Building Blocks</h2><p class="paragraph">The building blocks are the core components of Identus, and they are designed to work together seamlessly to provide a comprehensive identity management solution.</p><h3 class="">Overview</h3><p class="paragraph">Each building block serves a specific purpose, providing a solid foundation for building decentralized identity applications.</p><p class="paragraph">Let's take a closer look at each building block:</p><ul><li><p class="paragraph"><strong>Apollo</strong>: Apollo is a building block that provides a suite of cryptographic operations. This includes secure hash   algorithms, digital signatures, and encryption, all essential for creating a safe and tamper-proof identity system.   Apollo ensures that all data within the Identus system is securely encrypted and digitally signed, making it   resistant to tampering and unauthorized access.</p></li><li><p class="paragraph"><strong>Castor</strong>: Castor is a building block that provides a suite of decentralized identifier (DID) operations in a   user-controlled manner. DIDs are a vital component of decentralized identity, as they provide a way to uniquely   identify individuals and entities in a decentralized manner. Castor allows users to create, manage, and control their   DIDs and associated cryptographic keys.</p></li><li><p class="paragraph"><strong>Pollux</strong>: Pollux is a building block that provides a suite of credential operations in a privacy-preserving manner.   Credentials are a way to prove claims about an individual or entity, and they are an essential part of decentralized   identity. Pollux allows users to create, manage, and share credentials in a privacy-preserving way to ensure that   sensitive information is not revealed.</p></li><li><p class="paragraph"><strong>Mercury</strong>: Mercury is a building block that provides a set of secure, standards-based communications protocols that   are transport-agnostic and interoperable. Mercury allows different Identus components to communicate securely   using HTTP, WebSocket, and MQTT protocols.</p></li><li><p class="paragraph"><strong>Pluto</strong>: Pluto is a building block that provides an interface for storage operations in a portable, storage-agnostic   manner. Pluto allows data to be stored and retrieved in a way independent of the underlying storage technology,   allowing Identus to work with various storage solutions.</p></li></ul><p class="paragraph">Together, these building blocks provide a solid foundation for building decentralized identity applications that are secure, privacy-preserving, and interoperable. Using Identus, developers can focus on creating innovative identity solutions without worrying about the underlying infrastructure.</p><h3 class="">Edge Agent</h3><p class="paragraph">Edge Agent is a comprehensive library that combines all the Prism platform's building blocks - Apollo, Castor, Pluto, Mercury, and Pollux - to provide a seamless experience for developers working with decentralized identifiers (DIDs) on the Identus platform.</p><h2 class="">Documentation</h2><h4 class="">General information and articles</h4><ul><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/getting-started">Getting Started</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/what-is-identity">What is identity?</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/concepts/digital-wallets">Digital wallets</a></p></li><li><p class="paragraph"><a href="https://docs.atalaprism.io/docs/atala-prism/overview">Identus Overview</a></p></li></ul></div>    </div>
   </div>
   <h2 class="">Packages</h2>
-  <div class="table"><a data-name="126210195%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.apollo" id="126210195%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+  <div class="table"><a data-name="-1471348272%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.protos" id="-1471348272%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.apollo/index.html">io.iohk.atala.prism.walletsdk.apollo</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="126210195%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.protos/index.html">org.hyperledger.identus.protos</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1471348272%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -87,18 +87,36 @@
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="126210195%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.apollo" id="126210195%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+        <div></div>
+      </div>
+    </div>
+<a data-name="567995649%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.apollo" id="567995649%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.apollo/index.html">org.hyperledger.identus.walletsdk.apollo</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="567995649%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div><span class="brief-comment"><a data-name="567995649%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.apollo" id="567995649%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
             <p class="paragraph">Apollo is a suite of cryptographic primitives designed to ensure the integrity, authenticity, and confidentiality of stored and processed data. These primitives provide a provably secure way to protect sensitive information, and they can be used in a wide range of applications.</p>
           </span></div>
       </div>
     </div>
-<a data-name="629892353%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.apollo.config" id="629892353%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-180350765%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.apollo.config" id="-180350765%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.apollo.config/index.html">io.iohk.atala.prism.walletsdk.apollo.config</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="629892353%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.apollo.config/index.html">org.hyperledger.identus.walletsdk.apollo.config</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-180350765%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -110,13 +128,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="-153688214%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.apollo.helpers" id="-153688214%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="498578904%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.apollo.helpers" id="498578904%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.apollo.helpers/index.html">io.iohk.atala.prism.walletsdk.apollo.helpers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-153688214%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.apollo.helpers/index.html">org.hyperledger.identus.walletsdk.apollo.helpers</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="498578904%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -128,13 +146,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="341485398%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.apollo.utils" id="341485398%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="1146632516%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.apollo.utils" id="1146632516%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.apollo.utils/index.html">io.iohk.atala.prism.walletsdk.apollo.utils</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="341485398%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.apollo.utils/index.html">org.hyperledger.identus.walletsdk.apollo.utils</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1146632516%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -146,13 +164,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="2026174522%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.apollo.utils.ec" id="2026174522%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="771618700%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.apollo.utils.ec" id="771618700%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.apollo.utils.ec/index.html">io.iohk.atala.prism.walletsdk.apollo.utils.ec</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2026174522%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.apollo.utils.ec/index.html">org.hyperledger.identus.walletsdk.apollo.utils.ec</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="771618700%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -164,13 +182,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1445286042%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.castor" id="-1445286042%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-1003500588%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.castor" id="-1003500588%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.castor/index.html">io.iohk.atala.prism.walletsdk.castor</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1445286042%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.castor/index.html">org.hyperledger.identus.walletsdk.castor</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1003500588%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -179,18 +197,18 @@
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="-1445286042%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.castor" id="-1445286042%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+        <div><span class="brief-comment"><a data-name="-1003500588%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.castor" id="-1003500588%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
             <p class="paragraph">Castor is a powerful and flexible library for working with DIDs. Whether you are building a decentralised application or a more traditional system requiring secure and private identity management, Castor provides the tools and features you need to easily create, manage, and resolve DIDs.</p>
           </span></div>
       </div>
     </div>
-<a data-name="-1111066697%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.castor.did" id="-1111066697%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="909880613%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.castor.did" id="909880613%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.castor.did/index.html">io.iohk.atala.prism.walletsdk.castor.did</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1111066697%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.castor.did/index.html">org.hyperledger.identus.walletsdk.castor.did</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="909880613%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -202,13 +220,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="571908729%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.castor.did.prismdid" id="571908729%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-1992578869%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.castor.did.prismdid" id="-1992578869%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.castor.did.prismdid/index.html">io.iohk.atala.prism.walletsdk.castor.did.prismdid</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="571908729%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.castor.did.prismdid/index.html">org.hyperledger.identus.walletsdk.castor.did.prismdid</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1992578869%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -220,13 +238,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1615662491%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.castor.resolvers" id="-1615662491%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-1852187309%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.castor.resolvers" id="-1852187309%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.castor.resolvers/index.html">io.iohk.atala.prism.walletsdk.castor.resolvers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1615662491%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.castor.resolvers/index.html">org.hyperledger.identus.walletsdk.castor.resolvers</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1852187309%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -238,13 +256,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1214154680%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.domain" id="-1214154680%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-772369226%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.domain" id="-772369226%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.domain/index.html">io.iohk.atala.prism.walletsdk.domain</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1214154680%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.domain/index.html">org.hyperledger.identus.walletsdk.domain</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-772369226%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -256,13 +274,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="-1626894428%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.domain.buildingblocks" id="-1626894428%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-788248202%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.domain.buildingblocks" id="-788248202%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.domain.buildingblocks/index.html">io.iohk.atala.prism.walletsdk.domain.buildingblocks</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1626894428%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.domain.buildingblocks/index.html">org.hyperledger.identus.walletsdk.domain.buildingblocks</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-788248202%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -274,13 +292,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="731798740%2FPackages%2F386480736" anchor-label="io.iohk.atala.prism.walletsdk.domain.models" id="731798740%2FPackages%2F386480736" data-filterable-set=":atala-prism-sdk:dokkaHtml/androidMain,:atala-prism-sdk:dokkaHtml/commonMain,:atala-prism-sdk:dokkaHtml/jvmMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/androidMain,:atala-prism-sdk:dokkaHtml/commonMain,:atala-prism-sdk:dokkaHtml/jvmMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/androidMain,:atala-prism-sdk:dokkaHtml/commonMain,:atala-prism-sdk:dokkaHtml/jvmMain">
+<a data-name="-78444378%2FPackages%2F2037140448" anchor-label="org.hyperledger.identus.walletsdk.domain.models" id="-78444378%2FPackages%2F2037140448" data-filterable-set=":edge-agent-sdk:dokkaHtml/androidMain,:edge-agent-sdk:dokkaHtml/commonMain,:edge-agent-sdk:dokkaHtml/jvmMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/androidMain,:edge-agent-sdk:dokkaHtml/commonMain,:edge-agent-sdk:dokkaHtml/jvmMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/androidMain,:edge-agent-sdk:dokkaHtml/commonMain,:edge-agent-sdk:dokkaHtml/jvmMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.domain.models/index.html">io.iohk.atala.prism.walletsdk.domain.models</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="731798740%2FPackages%2F386480736"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.domain.models/index.html">org.hyperledger.identus.walletsdk.domain.models</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-78444378%2FPackages%2F2037140448"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -294,13 +312,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="608943848%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.domain.models.keyManagement" id="608943848%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-1359588550%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.domain.models.keyManagement" id="-1359588550%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.domain.models.keyManagement/index.html">io.iohk.atala.prism.walletsdk.domain.models.keyManagement</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="608943848%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.domain.models.keyManagement/index.html">org.hyperledger.identus.walletsdk.domain.models.keyManagement</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1359588550%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -312,13 +330,33 @@
         <div></div>
       </div>
     </div>
-<a data-name="251064852%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.logger" id="251064852%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-347734982%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent" id="-347734982%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.logger/index.html">io.iohk.atala.prism.walletsdk.logger</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="251064852%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent/index.html">org.hyperledger.identus.walletsdk.edgeagent</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-347734982%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div><span class="brief-comment"><a data-name="-347734982%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent" id="-347734982%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+            <p class="paragraph">Edge Agent is a powerful and flexible library for working with decentralized identifiers on the Prism platform. Whether you are building a decentralized application that requires secure and private identity management or working with a more traditional system that requires reliable and resilient communication between DIDs, Prism Agent provides the tools and features you need to do the job with ease.</p>
+          </span></div>
+      </div>
+    </div>
+<a data-name="659815536%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.connectionsmanager" id="659815536%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.connectionsmanager/index.html">org.hyperledger.identus.walletsdk.edgeagent.connectionsmanager</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="659815536%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -330,13 +368,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="-2096643373%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.mercury" id="-2096643373%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="1373666321%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.helpers" id="1373666321%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.mercury/index.html">io.iohk.atala.prism.walletsdk.mercury</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2096643373%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.helpers/index.html">org.hyperledger.identus.walletsdk.edgeagent.helpers</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1373666321%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -345,18 +383,252 @@
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="-2096643373%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.mercury" id="-2096643373%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1011926460%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.mediation" id="-1011926460%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.mediation/index.html">org.hyperledger.identus.walletsdk.edgeagent.mediation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1011926460%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1301059481%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols" id="-1301059481%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1301059481%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1855399223%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.connection" id="-1855399223%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.connection/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.connection</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1855399223%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="4769801%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential" id="4769801%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="4769801%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-566685135%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.mediation" id="-566685135%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.mediation/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.mediation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-566685135%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1423157331%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand" id="1423157331%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1423157331%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="532130151%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup" id="532130151%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="532130151%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="1320460085%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.prismOnboarding" id="1320460085%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.prismOnboarding/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.prismOnboarding</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1320460085%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-2082909394%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation" id="-2082909394%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2082909394%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1991673975%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation" id="-1991673975%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation/index.html">org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1991673975%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-2002627875%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.edgeagent.shared" id="-2002627875%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.edgeagent.shared/index.html">org.hyperledger.identus.walletsdk.edgeagent.shared</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2002627875%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="692850306%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.logger" id="692850306%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.logger/index.html">org.hyperledger.identus.walletsdk.logger</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="692850306%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div></div>
+      </div>
+    </div>
+<a data-name="-1286196187%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.mercury" id="-1286196187%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+      <div>
+        <div class="main-subrow ">
+          <div class=""><span class="inline-flex">
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.mercury/index.html">org.hyperledger.identus.walletsdk.mercury</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1286196187%2FPackages%2F1214537748"></span>
+                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+              </span></span></div>
+          <div class="pull-right">
+            <div class="platform-tags no-gutters">
+              <div class="platform-tag common-like">common</div>
+            </div>
+          </div>
+        </div>
+        <div><span class="brief-comment"><a data-name="-1286196187%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.mercury" id="-1286196187%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
             <p class="paragraph">Mercury is a powerful and flexible library for working with decentralized identifiers and secure communications protocols. Whether you are a developer looking to build a secure and private messaging app or a more complex decentralized system requiring trusted peer-to-peer connections, Mercury provides the tools and features you need to establish, manage, and secure your communications easily.</p>
           </span></div>
       </div>
     </div>
-<a data-name="-87853590%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.mercury.forward" id="-87853590%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-1342409412%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.mercury.forward" id="-1342409412%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.mercury.forward/index.html">io.iohk.atala.prism.walletsdk.mercury.forward</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-87853590%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.mercury.forward/index.html">org.hyperledger.identus.walletsdk.mercury.forward</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1342409412%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -368,13 +640,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="54813074%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.mercury.resolvers" id="54813074%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="1312478308%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.mercury.resolvers" id="1312478308%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.mercury.resolvers/index.html">io.iohk.atala.prism.walletsdk.mercury.resolvers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="54813074%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.mercury.resolvers/index.html">org.hyperledger.identus.walletsdk.mercury.resolvers</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1312478308%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -386,13 +658,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="968749620%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.pluto" id="968749620%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-818114554%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.pluto" id="-818114554%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.pluto/index.html">io.iohk.atala.prism.walletsdk.pluto</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="968749620%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.pluto/index.html">org.hyperledger.identus.walletsdk.pluto</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-818114554%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -401,18 +673,18 @@
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="968749620%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.pluto" id="968749620%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+        <div><span class="brief-comment"><a data-name="-818114554%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.pluto" id="-818114554%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
             <p class="paragraph">Pluto is a powerful and flexible data storage interface library for working with decentralized identifiers. Whether you are building a decentralized application that requires secure and private data storage or working with a more traditional system that requires reliable and redundant storage for your DID-related data, Pluto provides the tools and features you need to do the job with ease.</p>
           </span></div>
       </div>
     </div>
-<a data-name="1379634600%2FPackages%2F386480736" anchor-label="io.iohk.atala.prism.walletsdk.pluto.data" id="1379634600%2FPackages%2F386480736" data-filterable-set=":atala-prism-sdk:dokkaHtml/androidMain,:atala-prism-sdk:dokkaHtml/commonMain,:atala-prism-sdk:dokkaHtml/jvmMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/androidMain,:atala-prism-sdk:dokkaHtml/commonMain,:atala-prism-sdk:dokkaHtml/jvmMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/androidMain,:atala-prism-sdk:dokkaHtml/commonMain,:atala-prism-sdk:dokkaHtml/jvmMain">
+<a data-name="-894385386%2FPackages%2F2037140448" anchor-label="org.hyperledger.identus.walletsdk.pluto.data" id="-894385386%2FPackages%2F2037140448" data-filterable-set=":edge-agent-sdk:dokkaHtml/androidMain,:edge-agent-sdk:dokkaHtml/commonMain,:edge-agent-sdk:dokkaHtml/jvmMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/androidMain,:edge-agent-sdk:dokkaHtml/commonMain,:edge-agent-sdk:dokkaHtml/jvmMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/androidMain,:edge-agent-sdk:dokkaHtml/commonMain,:edge-agent-sdk:dokkaHtml/jvmMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.pluto.data/index.html">io.iohk.atala.prism.walletsdk.pluto.data</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1379634600%2FPackages%2F386480736"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.pluto.data/index.html">org.hyperledger.identus.walletsdk.pluto.data</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-894385386%2FPackages%2F2037140448"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -426,13 +698,13 @@
         <div></div>
       </div>
     </div>
-<a data-name="1721605286%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.pollux" id="1721605286%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-2131576556%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.pollux" id="-2131576556%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.pollux/index.html">io.iohk.atala.prism.walletsdk.pollux</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1721605286%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.pollux/index.html">org.hyperledger.identus.walletsdk.pollux</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2131576556%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">
@@ -441,254 +713,18 @@
             </div>
           </div>
         </div>
-        <div><span class="brief-comment"><a data-name="1721605286%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.pollux" id="1721605286%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+        <div><span class="brief-comment"><a data-name="-2131576556%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.pollux" id="-2131576556%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
             <p class="paragraph">A credential contains a set of claims about the subject of the credential. Those claims are made by a single authority called the credential issuer. The entity (person, organization) to whom the credential is issued, i.e., the one who keeps it in their digital wallet, is called the credential holder. Apart from claims, the credential contains the subject identifier (DID) to whom the credential is issued.</p>
           </span></div>
       </div>
     </div>
-<a data-name="-1205849418%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.pollux.models" id="-1205849418%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+<a data-name="-2016092536%2FPackages%2F1214537748" anchor-label="org.hyperledger.identus.walletsdk.pollux.models" id="-2016092536%2FPackages%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+    <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
       <div>
         <div class="main-subrow ">
           <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.pollux.models/index.html">io.iohk.atala.prism.walletsdk.pollux.models</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1205849418%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1117902104%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent" id="-1117902104%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent/index.html">io.iohk.atala.prism.walletsdk.prismagent</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1117902104%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div><span class="brief-comment"><a data-name="-1117902104%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent" id="-1117902104%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-            <p class="paragraph">Prism Agent is a powerful and flexible library for working with decentralized identifiers on the Prism platform. Whether you are building a decentralized application that requires secure and private identity management or working with a more traditional system that requires reliable and resilient communication between DIDs, Prism Agent provides the tools and features you need to do the job with ease.</p>
-          </span></div>
-      </div>
-    </div>
-<a data-name="-1295990014%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager" id="-1295990014%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager/index.html">io.iohk.atala.prism.walletsdk.prismagent.connectionsmanager</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1295990014%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1636950849%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.helpers" id="-1636950849%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.helpers/index.html">io.iohk.atala.prism.walletsdk.prismagent.helpers</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1636950849%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="592930674%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.mediation" id="592930674%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.mediation/index.html">io.iohk.atala.prism.walletsdk.prismagent.mediation</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="592930674%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="303797653%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols" id="303797653%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="303797653%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-188857125%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols.connection" id="-188857125%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols.connection/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols.connection</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-188857125%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="1786566967%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential" id="1786566967%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols.issueCredential</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1786566967%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1067115041%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation" id="-1067115041%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1067115041%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="922727425%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand" id="922727425%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols.outOfBand</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="922727425%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1838617479%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup" id="-1838617479%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols.pickup</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1838617479%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1192710045%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding" id="-1192710045%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols.prismOnboarding</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1192710045%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1507517092%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation" id="-1507517092%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation/index.html">io.iohk.atala.prism.walletsdk.prismagent.protocols.proofOfPresentation</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1507517092%2FPackages%2F-1716531196"></span>
-                <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
-              </span></span></div>
-          <div class="pull-right">
-            <div class="platform-tags no-gutters">
-              <div class="platform-tag common-like">common</div>
-            </div>
-          </div>
-        </div>
-        <div></div>
-      </div>
-    </div>
-<a data-name="-1129913233%2FPackages%2F-1716531196" anchor-label="io.iohk.atala.prism.walletsdk.prismagent.shared" id="-1129913233%2FPackages%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
-    <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
-      <div>
-        <div class="main-subrow ">
-          <div class=""><span class="inline-flex">
-              <div><a href="-atala-prism-s-d-k/io.iohk.atala.prism.walletsdk.prismagent.shared/index.html">io.iohk.atala.prism.walletsdk.prismagent.shared</a></div>
-<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1129913233%2FPackages%2F-1716531196"></span>
+              <div><a href="-edge-agent-s-d-k/org.hyperledger.identus.walletsdk.pollux.models/index.html">org.hyperledger.identus.walletsdk.pollux.models</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2016092536%2FPackages%2F1214537748"></span>
                 <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
               </span></span></div>
           <div class="pull-right">

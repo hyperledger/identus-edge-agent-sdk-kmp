@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>Pluto</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            EdgeAgentSDK
+                    </a>
+            </div>
+            <div class="library-version">
+3.0.0            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":edge-agent-sdk:dokkaHtml/commonMain">common</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="EdgeAgentSDK::org.hyperledger.identus.walletsdk.domain.buildingblocks/Pluto///PointingToDeclaration//1214537748">
+  <div class="breadcrumbs"><a href="../../../index.html">EdgeAgentSDK</a><span class="delimiter">/</span><a href="../index.html">org.hyperledger.identus.walletsdk.domain.buildingblocks</a><span class="delimiter">/</span><span class="current">Pluto</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Pluto</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">interface </span><a href="index.html">Pluto</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/tree/main/src/commonMain/kotlin/org/hyperledger/identus/walletsdk/domain/buildingblocks/Pluto.kt#L22">source</a>)</span></span></div><p class="paragraph">The <code class="lang-kotlin">Pluto</code> interface defines the contract for storing and retrieving various data related to Atala PRISM architecture.</p><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../../org.hyperledger.identus.walletsdk.pluto/-pluto-impl/index.html">PlutoImpl</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="1440473922%2FFunctions%2F1214537748" anchor-label="getAllCredentials" id="1440473922%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-credentials.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span><span>Credentials</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1440473922%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-credentials.html"><span class="token function">getAllCredentials</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.pluto/-credential-recovery/index.html">CredentialRecovery</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all credentials for credential recovery.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="117867010%2FFunctions%2F1214537748" anchor-label="getAllDidPairs" id="117867010%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-did-pairs.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Did</span><wbr></wbr><span><span>Pairs</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="117867010%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-did-pairs.html"><span class="token function">getAllDidPairs</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d-pair/index.html">DIDPair</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all the pairs of DIDs stored in the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="726274846%2FFunctions%2F1214537748" anchor-label="getAllMediators" id="726274846%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-mediators.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span><span>Mediators</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="726274846%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-mediators.html"><span class="token function">getAllMediators</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-mediator/index.html">Mediator</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a Flow of lists of <a href="../../org.hyperledger.identus.walletsdk.domain.models/-mediator/index.html">Mediator</a> objects representing all the available mediators.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1523760640%2FFunctions%2F1214537748" anchor-label="getAllMessages" id="1523760640%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-messages.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1523760640%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages.html"><span class="token function">getAllMessages</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all the messages.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages.html"><span class="token function">getAllMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all messages based on the provided DID.</p></div><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages.html"><span class="token function">getAllMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">from<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token punctuation">, </span></span><span class="parameter ">to<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all messages exchanged between the specified 'from' and 'to' DIDs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="341215472%2FFunctions%2F1214537748" anchor-label="getAllMessagesOfType" id="341215472%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-messages-of-type.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Messages</span><wbr></wbr><span>Of</span><wbr></wbr><span><span>Type</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="341215472%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages-of-type.html"><span class="token function">getAllMessagesOfType</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">type<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">relatedWithDID<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token operator">?</span></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all messages of a specific type that are related to a given DID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2097457839%2FFunctions%2F1214537748" anchor-label="getAllMessagesReceived" id="2097457839%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-messages-received.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Messages</span><wbr></wbr><span><span>Received</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2097457839%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages-received.html"><span class="token function">getAllMessagesReceived</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all messages received by the user.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1210443096%2FFunctions%2F1214537748" anchor-label="getAllMessagesReceivedFrom" id="-1210443096%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-messages-received-from.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Messages</span><wbr></wbr><span>Received</span><wbr></wbr><span><span>From</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1210443096%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages-received-from.html"><span class="token function">getAllMessagesReceivedFrom</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Returns a Flow of lists of all messages received from the specified DID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-56384936%2FFunctions%2F1214537748" anchor-label="getAllMessagesSent" id="-56384936%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-messages-sent.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Messages</span><wbr></wbr><span><span>Sent</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-56384936%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages-sent.html"><span class="token function">getAllMessagesSent</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all the messages that have been sent.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-663831696%2FFunctions%2F1214537748" anchor-label="getAllMessagesSentTo" id="-663831696%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-messages-sent-to.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Messages</span><wbr></wbr><span>Sent</span><wbr></wbr><span><span>To</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-663831696%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-messages-sent-to.html"><span class="token function">getAllMessagesSentTo</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all messages sent to the specified DID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-478473018%2FFunctions%2F1214537748" anchor-label="getAllPeerDIDs" id="-478473018%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-peer-d-i-ds.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Peer</span><wbr></wbr><span><span>DIDs</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-478473018%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-peer-d-i-ds.html"><span class="token function">getAllPeerDIDs</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-peer-d-i-d/index.html">PeerDID</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all PeerDIDs.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-30665239%2FFunctions%2F1214537748" anchor-label="getAllPrismDIDs" id="-30665239%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-all-prism-d-i-ds.html"><span>get</span><wbr></wbr><span>All</span><wbr></wbr><span>Prism</span><wbr></wbr><span><span>DIDs</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-30665239%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-all-prism-d-i-ds.html"><span class="token function">getAllPrismDIDs</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-prism-d-i-d-info/index.html">PrismDIDInfo</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves all PrismDIDs and their associated information.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1928366348%2FFunctions%2F1214537748" anchor-label="getAvailableClaimsByClaim" id="1928366348%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-available-claims-by-claim.html"><span>get</span><wbr></wbr><span>Available</span><wbr></wbr><span>Claims</span><wbr></wbr><span>By</span><wbr></wbr><span><span>Claim</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1928366348%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-available-claims-by-claim.html"><span class="token function">getAvailableClaimsByClaim</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">claim<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span data-unresolved-link="org.hyperledger.identus.walletsdk.pluto.data/AvailableClaims///PointingToDeclaration/">AvailableClaims</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the available claims for a given claim.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="823129392%2FFunctions%2F1214537748" anchor-label="getAvailableClaimsByCredentialId" id="823129392%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-available-claims-by-credential-id.html"><span>get</span><wbr></wbr><span>Available</span><wbr></wbr><span>Claims</span><wbr></wbr><span>By</span><wbr></wbr><span>Credential</span><wbr></wbr><span><span>Id</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="823129392%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-available-claims-by-credential-id.html"><span class="token function">getAvailableClaimsByCredentialId</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">credentialId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span data-unresolved-link="org.hyperledger.identus.walletsdk.pluto.data/AvailableClaims///PointingToDeclaration/">AvailableClaims</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the available claims for a given credential ID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="684775117%2FFunctions%2F1214537748" anchor-label="getCredentialMetadata" id="684775117%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-credential-metadata.html"><span>get</span><wbr></wbr><span>Credential</span><wbr></wbr><span><span>Metadata</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="684775117%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-credential-metadata.html"><span class="token function">getCredentialMetadata</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">linkSecretName<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.pollux.models/-credential-request-meta/index.html">CredentialRequestMeta</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the metadata associated with a credential request.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="500342611%2FFunctions%2F1214537748" anchor-label="getDIDInfoByAlias" id="500342611%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-d-i-d-info-by-alias.html"><span>get</span><wbr></wbr><span>DIDInfo</span><wbr></wbr><span>By</span><wbr></wbr><span><span>Alias</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="500342611%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-d-i-d-info-by-alias.html"><span class="token function">getDIDInfoByAlias</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">alias<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-prism-d-i-d-info/index.html">PrismDIDInfo</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the <a href="../../org.hyperledger.identus.walletsdk.domain.models/-prism-d-i-d-info/index.html">PrismDIDInfo</a> objects associated with a given alias.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-900928085%2FFunctions%2F1214537748" anchor-label="getDIDInfoByDID" id="-900928085%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-d-i-d-info-by-d-i-d.html"><span>get</span><wbr></wbr><span>DIDInfo</span><wbr></wbr><span>By</span><wbr></wbr><span><span>DID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-900928085%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-d-i-d-info-by-d-i-d.html"><span class="token function">getDIDInfoByDID</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-prism-d-i-d-info/index.html">PrismDIDInfo</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the <a href="../../org.hyperledger.identus.walletsdk.domain.models/-prism-d-i-d-info/index.html">PrismDIDInfo</a> associated with a given <a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a>.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="101385844%2FFunctions%2F1214537748" anchor-label="getDIDPrivateKeyByID" id="101385844%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-d-i-d-private-key-by-i-d.html"><span>get</span><wbr></wbr><span>DIDPrivate</span><wbr></wbr><span>Key</span><wbr></wbr><span>By</span><wbr></wbr><span><span>ID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="101385844%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-d-i-d-private-key-by-i-d.html"><span class="token function">getDIDPrivateKeyByID</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the private key associated with a given ID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1416656320%2FFunctions%2F1214537748" anchor-label="getDIDPrivateKeysByDID" id="-1416656320%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-d-i-d-private-keys-by-d-i-d.html"><span>get</span><wbr></wbr><span>DIDPrivate</span><wbr></wbr><span>Keys</span><wbr></wbr><span>By</span><wbr></wbr><span><span>DID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1416656320%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-d-i-d-private-keys-by-d-i-d.html"><span class="token function">getDIDPrivateKeysByDID</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a><span class="token operator">?</span><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves a list of private keys associated with a given DID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1391312525%2FFunctions%2F1214537748" anchor-label="getLinkSecret" id="-1391312525%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-link-secret.html"><span>get</span><wbr></wbr><span>Link</span><wbr></wbr><span><span>Secret</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1391312525%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-link-secret.html"><span class="token function">getLinkSecret</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the secret link associated with the current instance.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1167132434%2FFunctions%2F1214537748" anchor-label="getMessage" id="-1167132434%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-message.html"><span>get</span><wbr></wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1167132434%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-message.html"><span class="token function">getMessage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">id<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the message with the specified ID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1682276587%2FFunctions%2F1214537748" anchor-label="getMessageByThidAndPiuri" id="-1682276587%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-message-by-thid-and-piuri.html"><span>get</span><wbr></wbr><span>Message</span><wbr></wbr><span>By</span><wbr></wbr><span>Thid</span><wbr></wbr><span>And</span><wbr></wbr><span><span>Piuri</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1682276587%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-message-by-thid-and-piuri.html"><span class="token function">getMessageByThidAndPiuri</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">thid<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">piuri<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the message with the specified thid.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-389184578%2FFunctions%2F1214537748" anchor-label="getPairByDID" id="-389184578%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-pair-by-d-i-d.html"><span>get</span><wbr></wbr><span>Pair</span><wbr></wbr><span>By</span><wbr></wbr><span><span>DID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-389184578%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-pair-by-d-i-d.html"><span class="token function">getPairByDID</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d-pair/index.html">DIDPair</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves a DIDPair object using the provided DID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-874487645%2FFunctions%2F1214537748" anchor-label="getPairByName" id="-874487645%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-pair-by-name.html"><span>get</span><wbr></wbr><span>Pair</span><wbr></wbr><span>By</span><wbr></wbr><span><span>Name</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-874487645%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-pair-by-name.html"><span class="token function">getPairByName</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d-pair/index.html">DIDPair</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieve a <a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d-pair/index.html">DIDPair</a> from a flow by its name.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="184692220%2FFunctions%2F1214537748" anchor-label="getPrismDIDKeyPathIndex" id="184692220%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-prism-d-i-d-key-path-index.html"><span>get</span><wbr></wbr><span>Prism</span><wbr></wbr><span>DIDKey</span><wbr></wbr><span>Path</span><wbr></wbr><span><span>Index</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="184692220%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-prism-d-i-d-key-path-index.html"><span class="token function">getPrismDIDKeyPathIndex</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the key path index associated with a given Prism DID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1811269240%2FFunctions%2F1214537748" anchor-label="getPrismLastKeyPathIndex" id="1811269240%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="get-prism-last-key-path-index.html"><span>get</span><wbr></wbr><span>Prism</span><wbr></wbr><span>Last</span><wbr></wbr><span>Key</span><wbr></wbr><span>Path</span><wbr></wbr><span><span>Index</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1811269240%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="get-prism-last-key-path-index.html"><span class="token function">getPrismLastKeyPathIndex</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Retrieves the last key path index associated with the Prism DID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="990473358%2FFunctions%2F1214537748" anchor-label="insertAvailableClaim" id="990473358%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="insert-available-claim.html"><span>insert</span><wbr></wbr><span>Available</span><wbr></wbr><span><span>Claim</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="990473358%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="insert-available-claim.html"><span class="token function">insertAvailableClaim</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">credentialId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">claim<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Inserts an available claim for a specific credential.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="535344653%2FFunctions%2F1214537748" anchor-label="insertAvailableClaims" id="535344653%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="insert-available-claims.html"><span>insert</span><wbr></wbr><span>Available</span><wbr></wbr><span><span>Claims</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="535344653%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="insert-available-claims.html"><span class="token function">insertAvailableClaims</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">credentialId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">claims<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Inserts the available claims for a given credential ID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="364217657%2FFunctions%2F1214537748" anchor-label="observeRevokedCredentials" id="364217657%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="observe-revoked-credentials.html"><span>observe</span><wbr></wbr><span>Revoked</span><wbr></wbr><span><span>Credentials</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="364217657%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="observe-revoked-credentials.html"><span class="token function">observeRevokedCredentials</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/kotlinx.coroutines/kotlinx-coroutines-core/kotlinx.coroutines.flow/-flow/index.html">Flow</a><span class="token operator">&lt;</span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.pluto/-credential-recovery/index.html">CredentialRecovery</a><span class="token operator">&gt;</span><span class="token operator">&gt;</span></div><div class="brief "><p class="paragraph">Provides a flow to listen for revoked credentials.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1355353882%2FFunctions%2F1214537748" anchor-label="revokeCredential" id="1355353882%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="revoke-credential.html"><span>revoke</span><wbr></wbr><span><span>Credential</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1355353882%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="revoke-credential.html"><span class="token function">revokeCredential</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">credentialId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Revokes an existing credential using the credential ID.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1504500956%2FFunctions%2F1214537748" anchor-label="storeCredential" id="1504500956%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-credential.html"><span>store</span><wbr></wbr><span><span>Credential</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1504500956%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-credential.html"><span class="token function">storeCredential</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">storableCredential<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-storable-credential/index.html">StorableCredential</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores a credential in the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="445758529%2FFunctions%2F1214537748" anchor-label="storeCredentialMetadata" id="445758529%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-credential-metadata.html"><span>store</span><wbr></wbr><span>Credential</span><wbr></wbr><span><span>Metadata</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="445758529%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-credential-metadata.html"><span class="token function">storeCredentialMetadata</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">metadata<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.pollux.models/-credential-request-meta/index.html">CredentialRequestMeta</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores the metadata associated with a credential request.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2039462993%2FFunctions%2F1214537748" anchor-label="storeDIDPair" id="2039462993%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-d-i-d-pair.html"><span>store</span><wbr></wbr><span><span>DIDPair</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2039462993%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-d-i-d-pair.html"><span class="token function">storeDIDPair</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">host<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token punctuation">, </span></span><span class="parameter ">receiver<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token punctuation">, </span></span><span class="parameter ">name<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores a pair of Distributed Identifier (DID) and a receiver DID with a given name.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2087681916%2FFunctions%2F1214537748" anchor-label="storeLinkSecret" id="2087681916%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-link-secret.html"><span>store</span><wbr></wbr><span>Link</span><wbr></wbr><span><span>Secret</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2087681916%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-link-secret.html"><span class="token function">storeLinkSecret</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">linkSecret<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores a link secret in the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1638698390%2FFunctions%2F1214537748" anchor-label="storeMediator" id="-1638698390%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-mediator.html"><span>store</span><wbr></wbr><span><span>Mediator</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1638698390%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-mediator.html"><span class="token function">storeMediator</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">mediator<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token punctuation">, </span></span><span class="parameter ">host<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token punctuation">, </span></span><span class="parameter ">routing<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores a mediator in the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1863955996%2FFunctions%2F1214537748" anchor-label="storeMessage" id="-1863955996%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-message.html"><span>store</span><wbr></wbr><span><span>Message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1863955996%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-message.html"><span class="token function">storeMessage</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">message<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores a message in the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1270864945%2FFunctions%2F1214537748" anchor-label="storeMessages" id="-1270864945%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-messages.html"><span>store</span><wbr></wbr><span><span>Messages</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1270864945%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-messages.html"><span class="token function">storeMessages</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">messages<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-message/index.html">Message</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores a list of messages in the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="353280546%2FFunctions%2F1214537748" anchor-label="storePeerDID" id="353280546%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-peer-d-i-d.html"><span>store</span><wbr></wbr><span>Peer</span><wbr></wbr><span><span>DID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="353280546%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-peer-d-i-d.html"><span class="token function">storePeerDID</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores the PeerDID in the system.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1293229284%2FFunctions%2F1214537748" anchor-label="storePrismDIDAndPrivateKeys" id="-1293229284%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-prism-d-i-d-and-private-keys.html"><span>store</span><wbr></wbr><span>Prism</span><wbr></wbr><span>DIDAnd</span><wbr></wbr><span>Private</span><wbr></wbr><span><span>Keys</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1293229284%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-prism-d-i-d-and-private-keys.html"><span class="token function">storePrismDIDAndPrivateKeys</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token punctuation">, </span></span><span class="parameter ">keyPathIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">alias<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token punctuation">, </span></span><span class="parameter ">privateKeys<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a><span class="token operator">&lt;</span><a href="../../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a><span class="token operator">&gt;</span></span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores the Prism DID, key path index, alias, and private keys.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2048907189%2FFunctions%2F1214537748" anchor-label="storePrivateKeys" id="2048907189%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="store-private-keys.html"><span>store</span><wbr></wbr><span>Private</span><wbr></wbr><span><span>Keys</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2048907189%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">abstract </span><span class="token keyword">fun </span><a href="store-private-keys.html"><span class="token function">storePrivateKeys</span></a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">storableKey<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a><span class="token punctuation">, </span></span><span class="parameter ">did<span class="token operator">: </span><a href="../../org.hyperledger.identus.walletsdk.domain.models/-d-i-d/index.html">DID</a><span class="token punctuation">, </span></span><span class="parameter ">keyPathIndex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token punctuation">, </span></span><span class="parameter ">metaId<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span></div><div class="brief "><p class="paragraph">Stores the private key along with additional information.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
