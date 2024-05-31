@@ -7,6 +7,26 @@ import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
 import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.Url
+import io.ktor.serialization.kotlinx.json.json
+import java.net.UnknownHostException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onSubscription
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonObject
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
@@ -40,13 +60,6 @@ import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.logger.LogComponent
-import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLogger
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
-import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
-import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
@@ -62,37 +75,24 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBand
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.Presentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.http.ContentType
-import io.ktor.http.HttpMethod
-import io.ktor.http.Url
-import io.ktor.serialization.kotlinx.json.json
-import java.net.UnknownHostException
 import java.util.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onSubscription
-import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.logger.LogComponent
+import org.hyperledger.identus.walletsdk.logger.PrismLogger
+import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.Metadata
+import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
+import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 
 /**
  * Check if the passed URL is valid or not.
@@ -241,7 +241,15 @@ class EdgeAgent {
         this.agentOptions = agentOptions
         // Pairing will be removed in the future
         this.connectionManager =
-            ConnectionManagerImpl(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
+            ConnectionManagerImpl(
+                mercury,
+                castor,
+                pluto,
+                mediatorHandler,
+                mutableListOf(),
+                pollux,
+                agentOptions.experiments.liveMode
+            )
     }
 
     init {
@@ -478,7 +486,15 @@ class EdgeAgent {
     fun setupMediatorHandler(mediatorHandler: MediationHandler) {
         stop()
         this.connectionManager =
-            ConnectionManagerImpl(mercury, castor, pluto, mediatorHandler, mutableListOf(), pollux)
+            ConnectionManagerImpl(
+                mercury,
+                castor,
+                pluto,
+                mediatorHandler,
+                mutableListOf(),
+                pollux,
+                agentOptions.experiments.liveMode
+            )
     }
 
     /**
@@ -642,13 +658,15 @@ class EdgeAgent {
                         else -> null
                     }
                 }
-
+                if (offer.thid == null) {
+                    throw EdgeAgentError.MissingOrNullFieldError("thid", "OfferCredential")
+                }
                 val anonOffer = CredentialOffer(offerDataString.base64UrlDecoded)
                 val pair = pollux.processCredentialRequestAnoncreds(
                     did = did,
                     offer = anonOffer,
                     linkSecret = linkSecret,
-                    linkSecretName = offer.thid ?: ""
+                    linkSecretName = offer.thid
                 )
 
                 val credentialRequest = pair.first
@@ -656,9 +674,8 @@ class EdgeAgent {
 
                 val json = credentialRequest.getJson()
 
-                val metadata =
-                    CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
-                pluto.storeCredentialMetadata(metadata)
+                val metadata = CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
+                pluto.storeCredentialMetadata(offer.thid, metadata)
 
                 val attachmentDescriptor =
                     AttachmentDescriptor(
@@ -698,15 +715,12 @@ class EdgeAgent {
 
         return attachment?.let {
             val credentialData = it.base64.base64UrlDecoded
-
-            // TODO: Clean this block of code
-            message.thid?.let {
+            if (message.thid != null) {
                 val linkSecret = if (credentialType == CredentialType.ANONCREDS_ISSUE) {
                     getLinkSecret()
                 } else {
                     null
                 }
-
                 val metadata = if (credentialType == CredentialType.ANONCREDS_ISSUE) {
                     val plutoMetadata =
                         pluto.getCredentialMetadata(message.thid).first()
@@ -718,13 +732,7 @@ class EdgeAgent {
                     null
                 }
 
-                val credential =
-                    pollux.parseCredential(
-                        jsonData = credentialData,
-                        type = credentialType,
-                        linkSecret = linkSecret,
-                        credentialMetadata = metadata
-                    )
+                val credential = pollux.parseCredential(credentialData, credentialType, linkSecret, metadata)
 
                 val storableCredential =
                     pollux.credentialToStorableCredential(
@@ -733,10 +741,10 @@ class EdgeAgent {
                     )
                 pluto.storeCredential(storableCredential)
                 return credential
+            } else {
+                throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Thid should not be null")
             }
-                ?: throw EdgeAgentError.MissingOrNullFieldError("thid", "message")
-        }
-            ?: throw EdgeAgentError.AttachmentTypeNotSupported()
+        } ?: throw EdgeAgentError.AttachmentTypeNotSupported()
     }
 
 // Message Events
@@ -1101,7 +1109,8 @@ class EdgeAgent {
 
         val presentationSubmission: PresentationSubmission =
             presentationSubmissionJsonObject["presentation_submission"]?.let { presentationSubmissionField ->
-                val submission = Json.decodeFromJsonElement<PresentationSubmission.Submission>(presentationSubmissionField)
+                val submission =
+                    Json.decodeFromJsonElement<PresentationSubmission.Submission>(presentationSubmissionField)
                 var arrayStrings: Array<String> = arrayOf()
 
                 if (submission.descriptorMap.isNotEmpty()) {

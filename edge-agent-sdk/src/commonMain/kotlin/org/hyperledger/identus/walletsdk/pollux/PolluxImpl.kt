@@ -138,21 +138,30 @@ class PolluxImpl(
                 }
 
                 val cred = anoncreds_wrapper.Credential(jsonData)
+                val credentialDefinition = getCredentialDefinition(cred.getCredDefId())
+                val prover = Prover()
+                val processedCredential = prover.processCredential(
+                    credential = cred,
+                    credRequestMetadata = credentialMetadata,
+                    linkSecret = linkSecret,
+                    credDef = credentialDefinition,
+                    revRegDef = null
+                )
 
                 val values: Map<String, AnonCredential.Attribute> =
-                    cred.getValues().values.mapValues {
+                    processedCredential.getValues().values.mapValues {
                         AnonCredential.Attribute(raw = it.value.raw, encoded = it.value.encoded)
                     }
 
                 return AnonCredential(
-                    schemaID = cred.getSchemaId(),
-                    credentialDefinitionID = cred.getCredDefId(),
-                    signatureJson = cred.getSignatureJson(),
-                    signatureCorrectnessProofJson = cred.getSignatureCorrectnessProofJson(),
-                    revocationRegistryId = cred.getRevRegId(),
-                    revocationRegistryJson = cred.getRevRegJson(),
-                    witnessJson = cred.getWitnessJson() ?: "",
-                    json = cred.getJson(),
+                    schemaID = processedCredential.getSchemaId(),
+                    credentialDefinitionID = processedCredential.getCredDefId(),
+                    signatureJson = processedCredential.getSignatureJson(),
+                    signatureCorrectnessProofJson = processedCredential.getSignatureCorrectnessProofJson(),
+                    revocationRegistryId = processedCredential.getRevRegId(),
+                    revocationRegistryJson = processedCredential.getRevRegJson(),
+                    witnessJson = processedCredential.getWitnessJson() ?: "",
+                    json = processedCredential.getJson(),
                     values = values
                 )
             }
@@ -299,12 +308,17 @@ class PolluxImpl(
             requestedAttribute = requestedAttributes,
             requestedPredicate = requestedPredicate
         )
-        val schema = getSchema(credential.schemaID)
-
         val schemaId = credential.schemaID
-        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(schemaId, schema))
+        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+        // .replace("host.docker.internal", "192.168.68.114")
+        val schema = getSchema(schemaId)
 
-        val credentialDefinition = getCredentialDefinition(credential.credentialDefinitionID)
+        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(credential.schemaID, schema))
+
+        val credDefId = credential.credentialDefinitionID
+        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+        // .replace("host.docker.internal", "192.168.68.114")
+        val credentialDefinition = getCredentialDefinition(credDefId)
         val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
             Pair(credential.credentialDefinitionID, credentialDefinition)
         )

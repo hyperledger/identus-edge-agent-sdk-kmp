@@ -235,6 +235,8 @@ class PlutoMock : Pluto {
 
     override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {}
 
+    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {}
+
     override fun getLinkSecret(): Flow<String> {
         return getLinkSecretReturn
     }
