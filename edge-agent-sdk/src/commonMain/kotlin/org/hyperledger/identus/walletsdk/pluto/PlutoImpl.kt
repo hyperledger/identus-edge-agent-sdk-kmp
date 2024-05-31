@@ -370,7 +370,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      *
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
      */
-    override fun storeCredentialMetadata(name: String,metadata: CredentialRequestMeta) {
+    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
         getInstance().credentialMetadataQueries.insert(
             id = name,
             linkSecretName = metadata.linkSecretName,
