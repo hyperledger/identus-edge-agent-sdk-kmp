@@ -999,16 +999,6 @@ class EdgeAgent {
                 }
             }
 
-            val linkSecret = getLinkSecret()
-
-            val presentation = pollux.createVerifiablePresentationAnoncred(
-                request,
-                credential as AnonCredential,
-                linkSecret
-            )
-
-            presentationString = presentation.getJson()
-
             val attachmentDescriptor =
                 AttachmentDescriptor(
                     mediaType = mediaType,
