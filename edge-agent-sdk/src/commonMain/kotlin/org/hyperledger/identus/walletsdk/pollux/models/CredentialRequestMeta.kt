@@ -13,6 +13,11 @@ data class CredentialRequestMeta(
     var json: String
 ) {
 
+    /**
+     * Converts the given JSON string to a RustCredentialRequestMetadata object.
+     *
+     * @return The RustCredentialsRequestMetadata object created from the JSON string.
+     */
     fun toRustCredentialRequestMetadata(): CredentialRequestMetadata {
         return CredentialRequestMetadata(json)
     }
