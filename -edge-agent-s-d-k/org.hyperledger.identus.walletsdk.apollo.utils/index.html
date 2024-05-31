@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>org.hyperledger.identus.walletsdk.apollo.utils</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                            EdgeAgentSDK
+                    </a>
+            </div>
+            <div class="library-version">
+3.0.0            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":edge-agent-sdk:dokkaHtml/commonMain">common</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageIds="EdgeAgentSDK::org.hyperledger.identus.walletsdk.apollo.utils////PointingToDeclaration//1214537748">
+  <div class="breadcrumbs"><a href="../../index.html">EdgeAgentSDK</a><span class="delimiter">/</span><span class="current">org.hyperledger.identus.walletsdk.apollo.utils</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button><button class="section-tab" data-togglable="FUNCTION,EXTENSION_FUNCTION">Functions</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="1296281350%2FClasslikes%2F1214537748" anchor-label="Ed25519KeyPair" id="1296281350%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ed25519-key-pair/index.html"><span>Ed25519Key</span><wbr></wbr><span><span>Pair</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1296281350%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-ed25519-key-pair/index.html">Ed25519KeyPair</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">var </span>privateKey<span class="token operator">: </span><a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>publicKey<span class="token operator">: </span><a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-public-key/index.html">PublicKey</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-key-pair/index.html">KeyPair</a></div><div class="brief "><p class="paragraph">Represents a pair of Ed25519 private and public keys.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1126634631%2FClasslikes%2F1214537748" anchor-label="Ed25519PrivateKey" id="1126634631%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ed25519-private-key/index.html"><span>Ed25519Private</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1126634631%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-ed25519-private-key/index.html">Ed25519PrivateKey</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">nativeValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-signable-key/index.html">SignableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-exportable-key/index.html">ExportableKey</a></div><div class="brief "><p class="paragraph">Represents a private key for the Ed25519 algorithm.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-756198199%2FClasslikes%2F1214537748" anchor-label="Ed25519PublicKey" id="-756198199%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-ed25519-public-key/index.html"><span>Ed25519Public</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-756198199%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-ed25519-public-key/index.html">Ed25519PublicKey</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">nativeValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-public-key/index.html">PublicKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-verifiable-key/index.html">VerifiableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-exportable-key/index.html">ExportableKey</a></div><div class="brief "><p class="paragraph">Represents an Ed25519 public key.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-570351771%2FClasslikes%2F1214537748" anchor-label="Secp256k1KeyPair" id="-570351771%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-secp256k1-key-pair/index.html"><span>Secp256k1Key</span><wbr></wbr><span><span>Pair</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-570351771%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-secp256k1-key-pair/index.html">Secp256k1KeyPair</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">var </span>privateKey<span class="token operator">: </span><a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>publicKey<span class="token operator">: </span><a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-public-key/index.html">PublicKey</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-key-pair/index.html">KeyPair</a></div><div class="brief "><p class="paragraph">Represents a key pair consisting of a private key and public key.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-799091768%2FClasslikes%2F1214537748" anchor-label="Secp256k1PrivateKey" id="-799091768%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-secp256k1-private-key/index.html"><span>Secp256k1Private</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-799091768%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-secp256k1-private-key/index.html">Secp256k1PrivateKey</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">nativeValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-signable-key/index.html">SignableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-exportable-key/index.html">ExportableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-derivable-key/index.html">DerivableKey</a></div><div class="brief "><p class="paragraph">The <code class="lang-kotlin">Secp256k1PrivateKey</code> class represents a private key that uses the secp256k1 elliptic curve. It extends the <code class="lang-kotlin">PrivateKey</code> class and implements the <code class="lang-kotlin">SignableKey</code>, <code class="lang-kotlin">StorableKey</code>, <code class="lang-kotlin">ExportableKey</code>, and <code class="lang-kotlin">DerivableKey</code> interfaces.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="705702248%2FClasslikes%2F1214537748" anchor-label="Secp256k1PublicKey" id="705702248%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-secp256k1-public-key/index.html"><span>Secp256k1Public</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="705702248%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-secp256k1-public-key/index.html">Secp256k1PublicKey</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">nativeValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-public-key/index.html">PublicKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-verifiable-key/index.html">VerifiableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-exportable-key/index.html">ExportableKey</a></div><div class="brief "><p class="paragraph">Represents a public key in the Secp256k1 elliptic curve algorithm.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-102424313%2FClasslikes%2F1214537748" anchor-label="X25519KeyPair" id="-102424313%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-x25519-key-pair/index.html"><span>X25519Key</span><wbr></wbr><span><span>Pair</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-102424313%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-x25519-key-pair/index.html">X25519KeyPair</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter "><span class="token keyword">var </span>privateKey<span class="token operator">: </span><a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a><span class="token punctuation">, </span></span><span class="parameter "><span class="token keyword">var </span>publicKey<span class="token operator">: </span><a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-public-key/index.html">PublicKey</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-key-pair/index.html">KeyPair</a></div><div class="brief "><p class="paragraph">Represents a pair of X25519 private and public keys.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="2058933990%2FClasslikes%2F1214537748" anchor-label="X25519PrivateKey" id="2058933990%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-x25519-private-key/index.html"><span>X25519Private</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="2058933990%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-x25519-private-key/index.html">X25519PrivateKey</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">nativeValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-private-key/index.html">PrivateKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-exportable-key/index.html">ExportableKey</a></div><div class="brief "><p class="paragraph">Represents a private key for the X25519 elliptic curve.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-587576694%2FClasslikes%2F1214537748" anchor-label="X25519PublicKey" id="-587576694%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-x25519-public-key/index.html"><span>X25519Public</span><wbr></wbr><span><span>Key</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-587576694%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-x25519-public-key/index.html">X25519PublicKey</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">nativeValue<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></span></span><span class="token punctuation">)</span> : <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-public-key/index.html">PublicKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-exportable-key/index.html">ExportableKey</a>, <a href="../org.hyperledger.identus.walletsdk.domain.models.keyManagement/-storable-key/index.html">StorableKey</a></div><div class="brief "><p class="paragraph">Class representing a public key for the X25519 curve.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="EXTENSION_FUNCTION">
+        <h2 class="">Functions</h2>
+        <div class="table"><a data-name="-502915521%2FFunctions%2F1214537748" anchor-label="toKotlinBigInteger" id="-502915521%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-kotlin-big-integer.html"><span>to</span><wbr></wbr><span>Kotlin</span><wbr></wbr><span>Big</span><wbr></wbr><span><span>Integer</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-502915521%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token punctuation">.</span><a href="to-kotlin-big-integer.html"><span class="token function">toKotlinBigInteger</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><span data-unresolved-link="com.ionspin.kotlin.bignum.integer/BigInteger///PointingToDeclaration/">BigInteger</span></div><div class="brief "><p class="paragraph">Converts a <code class="lang-kotlin">java.math.BigInteger</code> to a <code class="lang-kotlin">com.ionspin.kotlin.bignum.integer.BigInteger</code> object.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1726901636%2FFunctions%2F1214537748" anchor-label="toUnsignedByteArray" id="-1726901636%2FFunctions%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="to-unsigned-byte-array.html"><span>to</span><wbr></wbr><span>Unsigned</span><wbr></wbr><span>Byte</span><wbr></wbr><span><span>Array</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1726901636%2FFunctions%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">fun </span><span data-unresolved-link="/&amp;lt;Error class: unknown class&amp;gt;///PointingToDeclaration/">&lt;Error class: unknown class&gt;</span><span class="token punctuation">.</span><a href="to-unsigned-byte-array.html"><span class="token function">toUnsignedByteArray</span></a><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-byte-array/index.html">ByteArray</a></div><div class="brief "><p class="paragraph">Converts a <code class="lang-kotlin">BigInteger</code> to an unsigned byte array.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

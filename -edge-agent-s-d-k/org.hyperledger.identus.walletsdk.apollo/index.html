@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>org.hyperledger.identus.walletsdk.apollo</title>
+    <link href="../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../styles/style.css" rel="Stylesheet">
+<link href="../../styles/main.css" rel="Stylesheet">
+<link href="../../styles/prism.css" rel="Stylesheet">
+<link href="../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../index.html">
+                            EdgeAgentSDK
+                    </a>
+            </div>
+            <div class="library-version">
+3.0.0            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":edge-agent-sdk:dokkaHtml/commonMain">common</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="package" id="content" pageIds="EdgeAgentSDK::org.hyperledger.identus.walletsdk.apollo////PointingToDeclaration//1214537748">
+  <div class="breadcrumbs"><a href="../../index.html">EdgeAgentSDK</a><span class="delimiter">/</span><span class="current">org.hyperledger.identus.walletsdk.apollo</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span><span>Package-level</span></span> <span><span>declarations</span></span></h1>
+    <div class="platform-hinted UnderCoverText" data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><p class="paragraph">Apollo is a suite of cryptographic primitives designed to ensure the integrity, authenticity, and confidentiality of stored and processed data. These primitives provide a provably secure way to protect sensitive information, and they can be used in a wide range of applications.</p><h2 class="">Cryptographic Primitives for Data Security</h2><h3 class="">Hashing</h3><p class="paragraph">One of the basic building blocks of cryptography is the cryptographic hash, which ensures data integrity. Hashing is frequently used to build more complex schemes, such as Merkle trees or digital signatures. Hashes can be used independently to ensure the integrity of large chunks of data or as a fundamental commitment scheme.</p><h3 class="">Digital Signatures</h3><p class="paragraph">Digital signatures are the equivalent of handwritten signatures in the digital world. Owners of private signing keys create signatures, and anyone can check their validity with the corresponding public verification key. Most credentials carry a signature by their issuer. Digital signatures are used to ensure the authenticity and integrity of data.</p><h3 class="">Symmetric Encryption</h3><p class="paragraph">Symmetric encryption allows parties to exchange information while maintaining its secrecy. Given a symmetric key shared between parties, they can communicate securely. Symmetric encryption is an essential component for building secure communication channels.</p><h3 class="">Public-Key Encryption</h3><p class="paragraph">Public-key encryption uses a public encryption key to encrypt data so that only the owner of the corresponding private key can decrypt it. Public-key encryption is mainly used to encrypt symmetric keys or other (short) cryptographic values because of the high computational costs.</p><h3 class="">Accumulators</h3><p class="paragraph">Cryptographic accumulators allow for the accumulation of multiple values into one. Merkle's trees are the most common type of accumulator used in the cryptocurrency domain. Accumulators make it possible to check (and prove) whether a given value has been accumulated.</p><h3 class="">MAC</h3><p class="paragraph">Message Authentication Codes are a type of symmetric equivalent of digital signatures. If two users share a symmetric key, they can use MAC algorithms to ensure the authenticity of their exchange messages. The main difference between MACs and digital signatures is that MACs do not provide non-repudiation.</p><h3 class="">Key Exchange</h3><p class="paragraph">Key exchange protocols enable two or more parties to securely negotiate a symmetric key, even if they only know each other’s public keys. Key exchange protocols are used to establish secure communication channels.</p><p class="paragraph">Using the Apollo suite of cryptographic primitives, developers can build secure and provably secure applications that protect sensitive data from unauthorized access, tampering, or theft.</p></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="TYPE">Types</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="423506994%2FClasslikes%2F1214537748" anchor-label="ApolloImpl" id="423506994%2FClasslikes%2F1214537748" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":edge-agent-sdk:dokkaHtml/commonMain" data-filterable-set=":edge-agent-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-apollo-impl/index.html"><span>Apollo</span><wbr></wbr><span><span>Impl</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="423506994%2FClasslikes%2F1214537748"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":edge-agent-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-apollo-impl/index.html">ApolloImpl</a> : <a href="../org.hyperledger.identus.walletsdk.domain.buildingblocks/-apollo/index.html">Apollo</a></div><div class="brief "><p class="paragraph">Apollo defines the set of cryptographic operations that are used in the Atala PRISM.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
