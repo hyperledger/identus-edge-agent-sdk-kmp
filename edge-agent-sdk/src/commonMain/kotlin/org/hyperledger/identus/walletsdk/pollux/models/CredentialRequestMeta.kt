@@ -12,6 +12,16 @@ data class CredentialRequestMeta(
     var linkSecretName: String,
     var json: String
 ) {
+
+    /**
+     * Converts the given JSON string to a RustCredentialRequestMetadata object.
+     *
+     * @return The RustCredentialsRequestMetadata object created from the JSON string.
+     */
+    fun toRustCredentialRequestMetadata(): CredentialRequestMetadata {
+        return CredentialRequestMetadata(json)
+    }
+
     companion object {
         /**
          * Converts a [CredentialRequestMetadata] object into a [CredentialRequestMeta] object.
@@ -22,7 +32,6 @@ data class CredentialRequestMeta(
         @JvmStatic
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
-                // TODO: Remove the `replace` when anoncreds-kmp 0.4.3 is published. 0.4.2 has an issue where getLinkSecretName returns a string with double quotation.
                 linkSecretName = metadata.getLinkSecretName().replace("\"", ""),
                 json = metadata.getJson()
             )

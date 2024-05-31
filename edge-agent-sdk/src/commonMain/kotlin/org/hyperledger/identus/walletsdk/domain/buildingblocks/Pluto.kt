@@ -100,11 +100,27 @@ interface Pluto {
     fun storeLinkSecret(linkSecret: String)
 
     /**
-     * Stores the metadata associated with a credential request.
+     * This method is used to store credential metadata.
      *
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     *
+     * @deprecated This method has been deprecated and should no longer be used.
+     * @see storeCredentialMetadata("", metadata) for the replacement method that should be used.
      */
+    @Deprecated(
+        "This method has been deprecated and should no longer be used.",
+        ReplaceWith("storeCredentialMetadata(\"\", metadata)"),
+        DeprecationLevel.ERROR
+    )
     fun storeCredentialMetadata(metadata: CredentialRequestMeta)
+
+    /**
+     * Stores the metadata associated with a credential request.
+     *
+     * @param name the unique name used to retrieve the stored metadata.
+     * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     */
+    fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta)
 
     /**
      * Retrieves all PrismDIDs and their associated information.

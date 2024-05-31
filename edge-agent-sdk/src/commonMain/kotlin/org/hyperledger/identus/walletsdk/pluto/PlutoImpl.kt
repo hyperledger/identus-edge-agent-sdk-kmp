@@ -366,13 +366,35 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     }
 
     /**
-     * Stores the metadata associated with a credential request.
+     * This method is used to store credential metadata.
      *
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     *
+     * @deprecated This method has been deprecated and should no longer be used.
+     * @see storeCredentialMetadata("", metadata) for the replacement method that should be used.
      */
+    @Deprecated(
+        "This method has been deprecated and should no longer be used.",
+        ReplaceWith("storeCredentialMetadata(\"\", metadata)"),
+        DeprecationLevel.ERROR
+    )
     override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
         getInstance().credentialMetadataQueries.insert(
             id = UUID.randomUUID().toString(),
+            linkSecretName = metadata.linkSecretName,
+            json = metadata.json
+        )
+    }
+
+    /**
+     * Stores the metadata associated with a credential request.
+     *
+     * @param name the unique name used to retrieve the stored metadata.
+     * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     */
+    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
+        getInstance().credentialMetadataQueries.insert(
+            id = name,
             linkSecretName = metadata.linkSecretName,
             json = metadata.json
         )
