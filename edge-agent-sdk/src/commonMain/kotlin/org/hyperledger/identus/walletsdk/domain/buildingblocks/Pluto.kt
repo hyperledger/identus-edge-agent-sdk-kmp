@@ -104,7 +104,7 @@ interface Pluto {
      *
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
      */
-    fun storeCredentialMetadata(metadata: CredentialRequestMeta)
+    fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta)
 
     /**
      * Retrieves all PrismDIDs and their associated information.
