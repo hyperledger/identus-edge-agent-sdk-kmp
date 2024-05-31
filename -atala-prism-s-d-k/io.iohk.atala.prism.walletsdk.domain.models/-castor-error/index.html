@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html class="no-js">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>CastorError</title>
+    <link href="../../../images/logo-icon.svg" rel="icon" type="image/svg">
+    <script>var pathToRoot = "../../../";</script>
+    <script>document.documentElement.classList.replace("no-js","js");</script>
+    <script>const storage = localStorage.getItem("dokka-dark-mode")
+    if (storage == null) {
+        const osDarkSchemePreferred = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+        if (osDarkSchemePreferred === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    } else {
+        const savedDarkMode = JSON.parse(storage)
+        if(savedDarkMode === true) {
+            document.getElementsByTagName("html")[0].classList.add("theme-dark")
+        }
+    }
+    </script>
+<script type="text/javascript" src="https://unpkg.com/kotlin-playground@1/dist/playground.min.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/sourceset_dependencies.js" async="async"></script>
+<link href="../../../styles/style.css" rel="Stylesheet">
+<link href="../../../styles/main.css" rel="Stylesheet">
+<link href="../../../styles/prism.css" rel="Stylesheet">
+<link href="../../../styles/logo-styles.css" rel="Stylesheet">
+<link href="../../../styles/font-jb-sans-auto.css" rel="Stylesheet">
+<script type="text/javascript" src="../../../scripts/clipboard.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/navigation-loader.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/platform-content-handler.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/main.js" defer="defer"></script>
+<script type="text/javascript" src="../../../scripts/prism.js" async="async"></script>
+<script type="text/javascript" src="../../../scripts/symbol-parameters-wrapper_deferred.js" defer="defer"></script>
+</head>
+<body>
+    <div class="root">
+<nav class="navigation" id="navigation-wrapper">
+    <div class="navigation--inner">
+        <div class="navigation-title">
+            <button class="menu-toggle" id="menu-toggle" type="button">toggle menu</button>
+            <div class="library-name">
+                    <a class="library-name--link" href="../../../index.html">
+                            AtalaPrismSDK
+                    </a>
+            </div>
+            <div class="library-version">
+2.7.0            </div>
+        </div>
+        <div class="filter-section" id="filter-section">
+                <button class="platform-tag platform-selector common-like" data-active="" data-filter=":atala-prism-sdk:dokkaHtml/commonMain">common</button>
+        </div>
+    </div>
+    <div class="navigation-controls">
+        <button class="navigation-controls--btn navigation-controls--theme" id="theme-toggle-button" type="button">switch theme</button>
+        <div class="navigation-controls--btn navigation-controls--search" id="searchBar" role="button">search in API</div>
+    </div>
+</nav>
+        <div id="container">
+            <div class="sidebar" id="leftColumn">
+                <div class="sidebar--inner" id="sideMenu"></div>
+            </div>
+            <div id="main">
+<div class="main-content" data-page-type="classlike" id="content" pageIds="AtalaPrismSDK::io.iohk.atala.prism.walletsdk.domain.models/CastorError///PointingToDeclaration//-1716531196">
+  <div class="breadcrumbs"><a href="../../../index.html">AtalaPrismSDK</a><span class="delimiter">/</span><a href="../index.html">io.iohk.atala.prism.walletsdk.domain.models</a><span class="delimiter">/</span><span class="current">CastorError</span></div>
+  <div class="cover ">
+    <h1 class="cover"><span>Castor</span><wbr></wbr><span><span>Error</span></span></h1>
+    <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">sealed </span><span class="token keyword">class </span><a href="index.html">CastorError</a> : <a href="../-known-prism-error/index.html">KnownPrismError</a><span class="clearfix"><span class="floating-right">(<a href="https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/tree/main/src/commonMain/kotlin/io/iohk/atala/prism/walletsdk/domain/models/Errors.kt#L311">source</a>)</span></span></div><p class="paragraph">A class representing a known error in a Castor.</p><h4 class="">See also</h4><div class="table"><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="../-known-prism-error/index.html"><span>Known</span><wbr></wbr><span>Prism</span><wbr></wbr><span><span>Error</span></span></a></div></span></div><div></div></div></div></div><h4 class="">Inheritors</h4><div class="table"><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-key-curve-not-supported/index.html">KeyCurveNotSupported</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-long-form-d-i-d/index.html">InvalidLongFormDID</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-method-id-is-does-not-satisfy-regex/index.html">MethodIdIsDoesNotSatisfyRegex</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-public-key-encoding/index.html">InvalidPublicKeyEncoding</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-d-i-d-string/index.html">InvalidDIDString</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-initial-state-of-d-i-d-changed/index.html">InitialStateOfDIDChanged</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-not-possible-to-resolve-d-i-d/index.html">NotPossibleToResolveDID</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-j-w-k-keys-error/index.html">InvalidJWKKeysError</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-key-error/index.html">InvalidKeyError</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-invalid-peer-d-i-d-error/index.html">InvalidPeerDIDError</a></div></span></div><div></div></div></div><div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"><div class="main-subrow keyValue "><div class=""><span class="inline-flex"><div><a href="-no-resolvers-available-for-d-i-d-method/index.html">NoResolversAvailableForDIDMethod</a></div></span></div><div></div></div></div></div></div></div>
+  </div>
+  <div class="tabbedcontent">
+    <div class="tabs-section" tabs-section="tabs-section"><button class="section-tab" data-active="" data-togglable="CONSTRUCTOR,TYPE,PROPERTY,FUNCTION">Members</button></div>
+    <div class="tabs-section-body">
+      <div data-togglable="TYPE">
+        <h2 class="">Types</h2>
+        <div class="table"><a data-name="-1729677229%2FClasslikes%2F-1716531196" anchor-label="InitialStateOfDIDChanged" id="-1729677229%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-initial-state-of-d-i-d-changed/index.html"><span>Initial</span><wbr></wbr><span>State</span><wbr></wbr><span>Of</span><wbr></wbr><span><span>DIDChanged</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1729677229%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-initial-state-of-d-i-d-changed/index.html">InitialStateOfDIDChanged</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when the initial state of a PRISM DID changes, making it invalid.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1725953235%2FClasslikes%2F-1716531196" anchor-label="InvalidDIDString" id="1725953235%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-invalid-d-i-d-string/index.html"><span>Invalid</span><wbr></wbr><span><span>DIDString</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1725953235%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-invalid-d-i-d-string/index.html">InvalidDIDString</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when trying to parse an invalid DID string.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1663814071%2FClasslikes%2F-1716531196" anchor-label="InvalidJWKKeysError" id="-1663814071%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-invalid-j-w-k-keys-error/index.html"><span>Invalid</span><wbr></wbr><span>JWKKeys</span><wbr></wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1663814071%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-invalid-j-w-k-keys-error/index.html">InvalidJWKKeysError</a> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when the JWK (JSON Web Key) keys are not in a valid format.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-2004911338%2FClasslikes%2F-1716531196" anchor-label="InvalidKeyError" id="-2004911338%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-invalid-key-error/index.html"><span>Invalid</span><wbr></wbr><span>Key</span><wbr></wbr><span><span>Error</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-2004911338%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-invalid-key-error/index.html">InvalidKeyError</a> <span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when an invalid key is encountered.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-792062556%2FClasslikes%2F-1716531196" anchor-label="InvalidLongFormDID" id="-792062556%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-invalid-long-form-d-i-d/index.html"><span>Invalid</span><wbr></wbr><span>Long</span><wbr></wbr><span>Form</span><wbr></wbr><span><span>DID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-792062556%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-invalid-long-form-d-i-d/index.html">InvalidLongFormDID</a> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when the long form PRISM DID is invalid or changed.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1753571084%2FClasslikes%2F-1716531196" anchor-label="InvalidPeerDIDError" id="-1753571084%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-invalid-peer-d-i-d-error/index.html"><span>Invalid</span><wbr></wbr><span>Peer</span><wbr></wbr><span><span>DIDError</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1753571084%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-invalid-peer-d-i-d-error/index.html">InvalidPeerDIDError</a> <span class="token keyword">constructor</span><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">message<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span><span class="token operator"> = </span>null<span class="token punctuation">, </span></span><span class="parameter ">cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">An error that occurs when the provided PeerDID is invalid.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-547443782%2FClasslikes%2F-1716531196" anchor-label="InvalidPublicKeyEncoding" id="-547443782%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-invalid-public-key-encoding/index.html"><span>Invalid</span><wbr></wbr><span>Public</span><wbr></wbr><span>Key</span><wbr></wbr><span><span>Encoding</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-547443782%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-invalid-public-key-encoding/index.html">InvalidPublicKeyEncoding</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">didMethod<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">curve<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when there is an invalid encoding or decoding of a public key.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="33905601%2FClasslikes%2F-1716531196" anchor-label="KeyCurveNotSupported" id="33905601%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-key-curve-not-supported/index.html"><span>Key</span><wbr></wbr><span>Curve</span><wbr></wbr><span>Not</span><wbr></wbr><span><span>Supported</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="33905601%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-key-curve-not-supported/index.html">KeyCurveNotSupported</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">curve<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">An error that indicates that the given key curve is not supported for a specific functionality.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1632860414%2FClasslikes%2F-1716531196" anchor-label="MethodIdIsDoesNotSatisfyRegex" id="1632860414%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-method-id-is-does-not-satisfy-regex/index.html"><span>Method</span><wbr></wbr><span>Id</span><wbr></wbr><span>Is</span><wbr></wbr><span>Does</span><wbr></wbr><span>Not</span><wbr></wbr><span>Satisfy</span><wbr></wbr><span><span>Regex</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1632860414%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-method-id-is-does-not-satisfy-regex/index.html">MethodIdIsDoesNotSatisfyRegex</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">regex<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when the provided method ID does not satisfy a given regex pattern.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-973009768%2FClasslikes%2F-1716531196" anchor-label="NoResolversAvailableForDIDMethod" id="-973009768%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-no-resolvers-available-for-d-i-d-method/index.html"><span>No</span><wbr></wbr><span>Resolvers</span><wbr></wbr><span>Available</span><wbr></wbr><span>For</span><wbr></wbr><span><span>DIDMethod</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-973009768%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-no-resolvers-available-for-d-i-d-method/index.html">NoResolversAvailableForDIDMethod</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">method<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a></span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Class representing an error thrown when no resolvers are available to resolve a given DID method.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-1089827580%2FClasslikes%2F-1716531196" anchor-label="NotPossibleToResolveDID" id="-1089827580%2FClasslikes%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="-not-possible-to-resolve-d-i-d/index.html"><span>Not</span><wbr></wbr><span>Possible</span><wbr></wbr><span>To</span><wbr></wbr><span>Resolve</span><wbr></wbr><span><span>DID</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1089827580%2FClasslikes%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">class </span><a href="-not-possible-to-resolve-d-i-d/index.html">NotPossibleToResolveDID</a><span class="token punctuation">(</span><span class="parameters "><span class="parameter ">did<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">reason<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token punctuation">, </span></span><span class="parameter ">cause<span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span><span class="token operator"> = </span>null</span></span><span class="token punctuation">)</span> : <a href="index.html">CastorError</a></div><div class="brief "><p class="paragraph">Represents an error that occurs when it is not possible to resolve a Decentralized Identifier (DID) due to a specific reason.</p></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div data-togglable="PROPERTY">
+        <h2 class="">Properties</h2>
+        <div class="table"><a data-name="-654012527%2FProperties%2F-1716531196" anchor-label="cause" id="-654012527%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/-mediation-protocol-error/-invalid-mediation-grant-error/index.html#-654012527%2FProperties%2F-1716531196"><span><span>cause</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-654012527%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../../io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/-mediation-protocol-error/-invalid-mediation-grant-error/index.html#-654012527%2FProperties%2F-1716531196">cause</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html">Throwable</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1534203150%2FProperties%2F-1716531196" anchor-label="code" id="1534203150%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-known-prism-error/code.html"><span><span>code</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1534203150%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="../-known-prism-error/code.html">code</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-int/index.html">Int</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="-128040185%2FProperties%2F-1716531196" anchor-label="errorDescription" id="-128040185%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-known-prism-error/error-description.html"><span>error</span><wbr></wbr><span><span>Description</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-128040185%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="../-known-prism-error/error-description.html">errorDescription</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="1824300659%2FProperties%2F-1716531196" anchor-label="message" id="1824300659%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../../io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/-mediation-protocol-error/-invalid-mediation-grant-error/index.html#1824300659%2FProperties%2F-1716531196"><span><span>message</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="1824300659%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword"></span><span class="token keyword">val </span><a href="../../io.iohk.atala.prism.walletsdk.prismagent.protocols.mediation/-mediation-protocol-error/-invalid-mediation-grant-error/index.html#1824300659%2FProperties%2F-1716531196">message</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-string/index.html">String</a><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+<a data-name="276522291%2FProperties%2F-1716531196" anchor-label="underlyingErrors" id="276522291%2FProperties%2F-1716531196" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain"></a>
+          <div class="table-row" data-filterable-current=":atala-prism-sdk:dokkaHtml/commonMain" data-filterable-set=":atala-prism-sdk:dokkaHtml/commonMain">
+            <div class="main-subrow keyValue ">
+              <div class=""><span class="inline-flex">
+                  <div><a href="../-known-prism-error/underlying-errors.html"><span>underlying</span><wbr></wbr><span><span>Errors</span></span></a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="276522291%2FProperties%2F-1716531196"></span>
+                    <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                  </span></span></div>
+              <div>
+                <div class="title">
+                  <div class="platform-hinted " data-platform-hinted="data-platform-hinted"><div class="content sourceset-dependent-content" data-active="" data-togglable=":atala-prism-sdk:dokkaHtml/commonMain"><div class="symbol monospace"><span class="token keyword">open </span><span class="token keyword">override </span><span class="token keyword">val </span><a href="../-known-prism-error/underlying-errors.html">underlyingErrors</a><span class="token operator">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-array/index.html">Array</a><span class="token operator">&lt;</span><span class="token keyword"></span><a href="../-error/index.html">Error</a><span class="token operator">&gt;</span><span class="token operator">?</span></div></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      <div class="footer">
+        <span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span
+                class="pull-right"><span>Generated by </span><a
+                href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span>
+      </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
