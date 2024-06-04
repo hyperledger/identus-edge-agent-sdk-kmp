@@ -978,10 +978,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             .map { list ->
                 list.executeAsList()
                     .map { credential ->
-                            CredentialRecovery(
-                                restorationId = credential.recoveryId,
-                                credentialData = credential.credentialData,
-                                revoked = credential.revoked != 0)
+                        CredentialRecovery(
+                            restorationId = credential.recoveryId,
+                            credentialData = credential.credentialData,
+                            revoked = credential.revoked != 0
+                        )
                     }.takeIf { it.isNotEmpty() } ?: emptyList()
             }
     }
