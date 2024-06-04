@@ -1,4 +1,4 @@
-package org.hyperledger.identus
+package org.hyperledger.identus.walletsdk
 
 import io.cucumber.junit.CucumberOptions
 import net.serenitybdd.cucumber.CucumberWithSerenity

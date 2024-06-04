@@ -1,4 +1,4 @@
-package org.hyperledger.identus.models
+package org.hyperledger.identus.walletsdk.models
 
 import com.google.gson.annotations.SerializedName
 

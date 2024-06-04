@@ -1,4 +1,4 @@
-package org.hyperledger.identus.workflow
+package org.hyperledger.identus.walletsdk.workflow
 
 import io.iohk.atala.automation.extensions.body
 import io.iohk.atala.automation.extensions.get
@@ -6,7 +6,7 @@ import io.iohk.atala.automation.matchers.RestAssuredJsonProperty
 import io.iohk.atala.automation.serenity.ensure.Ensure
 import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.serenity.questions.HttpRequest
-import org.hyperledger.identus.configuration.Environment
+import org.hyperledger.identus.walletsdk.configuration.Environment
 import io.iohk.atala.prism.models.AnoncredPresentationRequestV1
 import io.iohk.atala.prism.models.AnoncredRequestedAttributeV1
 import io.iohk.atala.prism.models.AnoncredRequestedPredicateV1
@@ -15,7 +15,7 @@ import io.iohk.atala.prism.models.CreateIssueCredentialRecordRequest
 import io.iohk.atala.prism.models.Options
 import io.iohk.atala.prism.models.ProofRequestAux
 import io.iohk.atala.prism.models.RequestPresentationInput
-import org.hyperledger.identus.utils.Utils
+import org.hyperledger.identus.walletsdk.utils.Utils
 import net.serenitybdd.rest.SerenityRest.lastResponse
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.rest.interactions.Post

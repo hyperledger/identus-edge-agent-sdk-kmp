@@ -1,9 +1,9 @@
-package org.hyperledger.identus.configuration
+package org.hyperledger.identus.walletsdk.configuration
 
 import io.cucumber.java.Before
 import io.cucumber.java.BeforeAll
 import io.cucumber.java.ParameterType
-import org.hyperledger.identus.abilities.UseWalletSdk
+import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.actors.Cast
 import net.serenitybdd.screenplay.actors.OnStage

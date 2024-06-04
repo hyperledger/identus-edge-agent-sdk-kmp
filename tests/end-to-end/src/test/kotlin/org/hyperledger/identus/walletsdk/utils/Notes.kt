@@ -1,4 +1,4 @@
-package org.hyperledger.identus.utils
+package org.hyperledger.identus.walletsdk.utils
 
 import io.iohk.atala.automation.utils.Logger
 import java.io.File

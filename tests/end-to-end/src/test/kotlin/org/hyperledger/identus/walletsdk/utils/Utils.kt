@@ -1,4 +1,4 @@
-package org.hyperledger.identus.utils
+package org.hyperledger.identus.walletsdk.utils
 
 import java.security.SecureRandom
 

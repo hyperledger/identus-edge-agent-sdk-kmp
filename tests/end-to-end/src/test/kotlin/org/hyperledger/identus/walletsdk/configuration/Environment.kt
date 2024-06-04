@@ -1,17 +1,17 @@
-package org.hyperledger.identus.configuration
+package org.hyperledger.identus.walletsdk.configuration
 
 import io.iohk.atala.automation.utils.Wait
 import io.iohk.atala.prism.models.*
-import org.hyperledger.identus.utils.Notes
+import org.hyperledger.identus.walletsdk.utils.Notes
 import io.restassured.RestAssured
 import io.restassured.builder.RequestSpecBuilder
 import io.restassured.response.Response
 import net.serenitybdd.rest.SerenityRest
 import org.apache.http.HttpStatus
 import org.assertj.core.api.Assertions.assertThat
-import org.hyperledger.identus.models.AnoncredSchema
-import org.hyperledger.identus.models.JwtSchema
-import org.hyperledger.identus.models.JwtSchemaProperty
+import org.hyperledger.identus.walletsdk.models.AnoncredSchema
+import org.hyperledger.identus.walletsdk.models.JwtSchema
+import org.hyperledger.identus.walletsdk.models.JwtSchemaProperty
 import java.io.File
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
@@ -71,7 +71,7 @@ object Environment {
     private fun getSdkVersion(): String {
         val file = File("build.gradle.kts")
         val input = file.readText()
-        val regex = Regex("prism-sdk:(.*)(?=\")")
+        val regex = Regex("edge-agent-sdk:(.*)(?=\")")
         return regex.find(input)!!.groups[1]!!.value
     }
 

@@ -1,11 +1,11 @@
-package org.hyperledger.identus.steps
+package org.hyperledger.identus.walletsdk.steps
 
 import io.cucumber.java.After
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import org.hyperledger.identus.abilities.UseWalletSdk
-import org.hyperledger.identus.workflow.CloudAgentWorkflow
-import org.hyperledger.identus.workflow.EdgeAgentWorkflow
+import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
+import org.hyperledger.identus.walletsdk.workflow.CloudAgentWorkflow
+import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.actors.OnStage
 import javax.inject.Inject
@@ -117,6 +117,11 @@ class EdgeAgentSteps {
     @Then("{actor} process {} issued credentials")
     fun `Edge Agent process multiple issued credentials`(edgeAgent: Actor, numberOfCredentials: Int) {
         edgeAgentWorkflow.processIssuedCredential(edgeAgent, numberOfCredentials)
+    }
+
+    @Then("{actor} should have {} credentials")
+    fun `Edge Agent should have N credential`(actor: Actor, numberOfCredentials: Int) {
+//        edgeAgentWorkflow.creden
     }
 
     @After

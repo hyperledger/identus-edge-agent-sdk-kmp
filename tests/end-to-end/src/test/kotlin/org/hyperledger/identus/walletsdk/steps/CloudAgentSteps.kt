@@ -1,10 +1,10 @@
-package org.hyperledger.identus.steps
+package org.hyperledger.identus.walletsdk.steps
 
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import org.hyperledger.identus.workflow.CloudAgentWorkflow
-import org.hyperledger.identus.workflow.EdgeAgentWorkflow
+import org.hyperledger.identus.walletsdk.workflow.CloudAgentWorkflow
+import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import net.serenitybdd.screenplay.Actor
 import javax.inject.Inject
 
