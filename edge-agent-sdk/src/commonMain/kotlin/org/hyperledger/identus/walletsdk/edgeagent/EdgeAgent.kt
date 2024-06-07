@@ -1260,9 +1260,7 @@ class EdgeAgent {
         val backupObject = Json.decodeFromString<BackupV0_0_1>(json)
 
         // 7. Restore the pluto instance
-        pluto.restore(backupObject, castor, pollux)
-
-        val restoreTask = PlutoRestoreTask(pluto, castor, pollux, backupObject)
+        val restoreTask = PlutoRestoreTask(pluto, pollux, backupObject)
         restoreTask.run()
     }
 
