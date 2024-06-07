@@ -122,7 +122,9 @@ class PlutoRestoreTask(
                 }
 
                 BackUpRestorationId.ANONCRED.value -> {
-                    Json.decodeFromString<AnonCredentialBackUp>(it.data.base64UrlDecoded)
+                    val json = it.data.base64UrlDecoded
+                        .replace("\"null\"", "null")
+                    Json.decodeFromString<AnonCredentialBackUp>(json)
                         .toAnonCredential().toStorableCredential()
                 }
 
