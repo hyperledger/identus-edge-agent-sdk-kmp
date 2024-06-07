@@ -42,7 +42,7 @@ data class AnonCredential(
     @SerialName("revocation_registry")
     val revocationRegistryJson: String?,
     @SerialName("witness")
-    val witnessJson: String,
+    val witnessJson: String?,
     private val json: String
 ) : Credential {
 
@@ -92,10 +92,16 @@ data class AnonCredential(
             properties["credentialDefinitionID"] = this.credentialDefinitionID
             properties["signatureJson"] = this.signatureJson
             properties["signatureCorrectnessProofJson"] = this.signatureCorrectnessProofJson
-            properties["witnessJson"] = this.witnessJson
 
-            revocationRegistryId?.map { properties["revocationRegistryId"] = it }
-            revocationRegistryJson?.map { properties["revocationRegistryJson"] = it }
+            witnessJson?.let {
+                properties["witnessJson"] = it
+            }
+            revocationRegistryId?.let {
+                properties["revocationRegistryId"] = it
+            }
+            revocationRegistryJson?.let {
+                properties["revocationRegistryJson"] = it
+            }
 
             return properties.toMap()
         }
