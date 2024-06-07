@@ -20,7 +20,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
  *
  * @property pluto The Pluto instance to perform backup on.
  */
-class PlutoBackupTask(private val pluto: Pluto) {
+open class PlutoBackupTask(private val pluto: Pluto) {
 
     /**
      * Executes the backup process and returns a Flow of BackupV0_0_1 objects.

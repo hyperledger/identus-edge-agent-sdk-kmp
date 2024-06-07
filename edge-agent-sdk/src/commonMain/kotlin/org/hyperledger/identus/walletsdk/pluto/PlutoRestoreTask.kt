@@ -50,7 +50,7 @@ import kotlin.time.Duration.Companion.days
  * @param pluto The Pluto instance to restore data to.
  * @param backup The Pluto backup object containing the data to be restored.
  */
-class PlutoRestoreTask(
+open class PlutoRestoreTask(
     private val pluto: Pluto,
     private val pollux: Pollux,
     private val backup: BackupV0_0_1

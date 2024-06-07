@@ -387,4 +387,6 @@ interface Pluto {
     fun observeRevokedCredentials(): Flow<List<CredentialRecovery>>
 
     fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>>
+
+    suspend fun start(context: Any? = null)
 }

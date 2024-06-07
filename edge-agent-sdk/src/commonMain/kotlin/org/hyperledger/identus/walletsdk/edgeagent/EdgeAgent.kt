@@ -1186,7 +1186,7 @@ class EdgeAgent {
      * @return the encrypted backup string.
      */
     @Throws(UnknownError.SomethingWentWrongError::class)
-    suspend fun backupWallet(): String {
+    suspend fun backupWallet(plutoBackupTask: PlutoBackupTask = PlutoBackupTask(pluto)): String {
         // 1. Get the JWK
         val masterKey = createX25519PrivateKeyFrom(this.seed)
         if (masterKey.isExportable().not()) {
@@ -1206,8 +1206,7 @@ class EdgeAgent {
         val header = JWEHeader.Builder(JWEAlgorithm.ECDH_ES_A256KW, EncryptionMethod.A256CBC_HS512)
             .build()
 
-        val backupTask = PlutoBackupTask(pluto)
-        val backup = backupTask.run().first()
+        val backup = plutoBackupTask.run().first()
 
         // 4. Create a JWE object
         val payloadString = Json.encodeToString(backup)

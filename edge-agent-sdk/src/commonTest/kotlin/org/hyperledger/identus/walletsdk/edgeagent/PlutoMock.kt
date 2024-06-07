@@ -269,4 +269,8 @@ class PlutoMock : Pluto {
     override fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>> {
         TODO("Not yet implemented")
     }
+
+    override suspend fun start(context: Any?) {
+        TODO("Not yet implemented")
+    }
 }

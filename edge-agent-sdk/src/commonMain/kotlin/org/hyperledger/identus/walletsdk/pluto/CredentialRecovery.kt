@@ -1,11 +1,14 @@
 package org.hyperledger.identus.walletsdk.pluto
 
+import kotlinx.serialization.Serializable
+
 /**
  * Class representing a credential recovery object.
  *
  * @property restorationId The restoration ID associated with the credential recovery.
  * @property credentialData The credential data as a byte array.
  */
+@Serializable
 class CredentialRecovery(val restorationId: String, val credentialData: ByteArray, val revoked: Boolean)
 
 /**
