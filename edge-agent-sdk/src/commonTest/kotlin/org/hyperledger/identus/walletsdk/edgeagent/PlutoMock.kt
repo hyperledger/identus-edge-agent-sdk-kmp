@@ -1,9 +1,7 @@
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import kotlinx.coroutines.flow.Flow
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
 import org.hyperledger.identus.walletsdk.domain.models.Mediator

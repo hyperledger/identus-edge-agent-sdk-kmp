@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
@@ -629,6 +630,7 @@ class PolluxImplTest {
         return Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1))
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<PresentationDefinitionRequest, PresentationSubmission, String> {
         val currentDate = Calendar.getInstance()
         val nextMonthDate = currentDate.clone() as Calendar

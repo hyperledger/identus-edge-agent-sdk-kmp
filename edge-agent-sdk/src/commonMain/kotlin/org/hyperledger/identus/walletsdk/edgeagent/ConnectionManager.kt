@@ -78,7 +78,6 @@ class ConnectionManagerImpl(
      * @param requestInterval The time interval (in seconds) between message fetch requests.
      *                        Defaults to 5 seconds if not specified.
      */
-    @JvmOverloads
     override fun startFetchingMessages(requestInterval: Int) {
         // Check if the job for fetching messages is already running
         if (fetchingMessagesJob == null) {

@@ -18,9 +18,7 @@ import org.hyperledger.identus.walletsdk.SdkPlutoDb
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
 import org.hyperledger.identus.walletsdk.domain.models.Mediator

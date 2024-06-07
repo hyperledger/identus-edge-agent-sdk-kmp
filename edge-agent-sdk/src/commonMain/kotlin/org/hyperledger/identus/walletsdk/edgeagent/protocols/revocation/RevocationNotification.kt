@@ -31,7 +31,7 @@ class RevocationNotification(
     }
 
     @Serializable
-    data class Body @JvmOverloads constructor(
+    data class Body(
         @SerialName("issueCredentialProtocolThreadId")
         val threadId: String,
         val comment: String?

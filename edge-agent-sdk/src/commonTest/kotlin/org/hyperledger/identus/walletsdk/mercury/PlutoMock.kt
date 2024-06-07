@@ -16,8 +16,6 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 

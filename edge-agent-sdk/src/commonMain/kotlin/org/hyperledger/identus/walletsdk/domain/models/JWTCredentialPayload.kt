@@ -9,6 +9,7 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 
 interface JWTPayload {
@@ -41,6 +42,7 @@ object MapStringAnyToStringSerializer : KSerializer<Map<String, String>> {
         // Transform each value in the JsonObject to String
         return jsonObject.mapValues { (_, value) ->
             when (value) {
+                is JsonPrimitive -> value.content
                 is JsonElement -> value.jsonPrimitive.content
                 else -> value.toString() // Default toString to handle non-primitive cases
             }
