@@ -54,7 +54,6 @@ import kotlin.time.Duration.Companion.days
  */
 class PlutoRestoreTask(
     private val pluto: Pluto,
-    private val castor: Castor,
     private val pollux: Pollux,
     private val backup: BackupV0_0_1
 ) {
@@ -177,7 +176,7 @@ class PlutoRestoreTask(
      *
      * @throws UnknownError.SomethingWentWrongError if the key is invalid, it does not have index or DID
      */
-    private suspend fun restoreKeys() {
+    private fun restoreKeys() {
         this.backup.keys.map {
             val jwkJson = it.key.base64UrlDecoded
             val jwk = Json.decodeFromString<JWK>(jwkJson)
@@ -211,7 +210,6 @@ class PlutoRestoreTask(
             if (it.third is DID) {
                 if (it.third.toString().contains("peer")) {
                     val metaId = (it.third as DID).toString()
-                    // getMetaIdFromDID(it.third as DID, it.first)
                     pluto.storePrivateKeys(
                         it.first as StorableKey,
                         it.third as DID,
@@ -231,56 +229,6 @@ class PlutoRestoreTask(
                 pluto.storePrivate(it.first as StorableKey, it.second)
             }
         }
-    }
-
-    /**
-     * Retrieves the meta ID from the given DID.
-     *
-     * @param did The decentralized identifier.
-     * @param privateKey The private key used for authentication.
-     * @return The meta ID associated with the given DID and private key.
-     * @throws UnknownError.SomethingWentWrongError If the private key curve is not supported or if the verification method is not found.
-     */
-    private suspend fun getMetaIdFromDID(did: DID, privateKey: PrivateKey): String {
-        val key = when (privateKey.getCurve()) {
-            Curve.X25519.value -> {
-                privateKey as X25519PrivateKey
-            }
-
-            Curve.ED25519.value -> {
-                privateKey as Ed25519PrivateKey
-            }
-
-            Curve.SECP256K1.value -> {
-                privateKey as Secp256k1PrivateKey
-            }
-
-            else -> {
-                throw UnknownError.SomethingWentWrongError("Key curve not supported ${privateKey.getCurve()}")
-            }
-        }
-        val document = castor.resolveDID(did.toString())
-        val listOfVerificationMethods: MutableList<DIDDocument.VerificationMethod> =
-            mutableListOf()
-        document.coreProperties.forEach {
-            if (it is DIDDocument.Authentication) {
-                listOfVerificationMethods.addAll(it.verificationMethods)
-            }
-            if (it is DIDDocument.KeyAgreement) {
-                listOfVerificationMethods.addAll(it.verificationMethods)
-            }
-        }
-        val verificationMethods =
-            DIDDocument.VerificationMethods(listOfVerificationMethods.toTypedArray())
-
-        verificationMethods.values.forEach {
-            if (it.type.contains("X25519") && key is X25519PrivateKey) {
-                return it.id.toString()
-            } else if (it.type.contains("Ed25519") && key is Ed25519PrivateKey) {
-                return it.id.toString()
-            }
-        }
-        throw UnknownError.SomethingWentWrongError("Unsupported private key")
     }
 
     /**
@@ -439,7 +387,7 @@ class PlutoRestoreTask(
                 signatureCorrectnessProofJson = Json.encodeToString(signatureCorrectnessProof),
                 revocationRegistryId = revocationRegistryId,
                 revocationRegistryJson = revocationRegistry,
-                witnessJson ?: "",
+                witnessJson = witnessJson,
                 Json.encodeToString(this)
             )
         }
