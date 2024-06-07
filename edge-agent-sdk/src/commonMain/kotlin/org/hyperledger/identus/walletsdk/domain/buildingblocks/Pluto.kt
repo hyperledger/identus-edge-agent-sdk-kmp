@@ -77,6 +77,12 @@ interface Pluto {
      */
     fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String? = null)
 
+    /**
+     * Stores a private key with its recovery ID.
+     *
+     * @param storableKey The private key to store. Must implement the [StorableKey] interface.
+     * @param recoveryId String that identifies the type of key used on recovery process.
+     */
     fun storePrivate(sorableKey: StorableKey, recoveryId: String)
 
     /**
@@ -380,19 +386,5 @@ interface Pluto {
      */
     fun observeRevokedCredentials(): Flow<List<CredentialRecovery>>
 
-    /**
-     * Create a Backup object from the stored data.
-     */
-    suspend fun backup(): Flow<BackupV0_0_1>
-
-    /**
-     * Load the given data into the store.
-     *
-     * @param backup The backup object to be restored.
-     */
-    suspend fun restore(backup: BackupV0_0_1, castor: Castor, pollux: Pollux): Flow<Unit>
-
     fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>>
-
-    // Top-level class to encapsulate the backup structure
 }

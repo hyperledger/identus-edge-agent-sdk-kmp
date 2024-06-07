@@ -1,4 +1,4 @@
-/*@file:Suppress("ktlint:standard:import-ordering")
+@file:Suppress("ktlint:standard:import-ordering")
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
@@ -185,4 +185,4 @@ class AnoncredsTests {
             }
         }
     }
-}*/
+}

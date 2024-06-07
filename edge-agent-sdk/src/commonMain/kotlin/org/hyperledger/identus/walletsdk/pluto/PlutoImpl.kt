@@ -606,6 +606,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all DIDs.
+     *
+     * @return A flow of lists of DIDs.
+     */
     override fun getAllDIDs(): Flow<List<DID>> {
         return getInstance().dIDQueries.fetchAllDIDs()
             .asFlow()
@@ -707,6 +712,12 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
     }
 
+    /**
+     * Retrieves all the messages of the provided type.
+     *
+     * @param type The message type as a string
+     * @return a Flow of List of Message objects representing all the messages of the type
+     */
     override fun getAllMessagesByType(type: String): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessagesByType(type)
             .asFlow()
@@ -1221,23 +1232,5 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
         val keys = keysWithDID + keysWithNoDID
         return flowOf(keys)
-    }
-
-    /**
-     * Create a Backup object from the stored data.
-     */
-    override suspend fun backup(): Flow<BackupV0_0_1> {
-        val backupTask = PlutoBackupTask(this)
-        return backupTask.run()
-    }
-
-    /**
-     * Load the given data into the store.
-     *
-     * @param backup The backup object to be restored.
-     */
-    override suspend fun restore(backup: BackupV0_0_1, castor: Castor, pollux: Pollux): Flow<Unit> {
-        val restoreTask = PlutoRestoreTask(this, castor, pollux, backup)
-        return flowOf(restoreTask.run())
     }
 }

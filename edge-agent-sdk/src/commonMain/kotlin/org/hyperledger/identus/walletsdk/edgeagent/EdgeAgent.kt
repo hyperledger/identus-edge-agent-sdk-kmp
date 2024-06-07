@@ -108,6 +108,8 @@ import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -1204,7 +1206,8 @@ class EdgeAgent {
         val header = JWEHeader.Builder(JWEAlgorithm.ECDH_ES_A256KW, EncryptionMethod.A256CBC_HS512)
             .build()
 
-        val backup = pluto.backup().first()
+        val backupTask = PlutoBackupTask(pluto)
+        val backup = backupTask.run().first()
 
         // 4. Create a JWE object
         val payloadString = Json.encodeToString(backup)
@@ -1258,6 +1261,9 @@ class EdgeAgent {
 
         // 7. Restore the pluto instance
         pluto.restore(backupObject, castor, pollux)
+
+        val restoreTask = PlutoRestoreTask(pluto, castor, pollux, backupObject)
+        restoreTask.run()
     }
 
     /**
