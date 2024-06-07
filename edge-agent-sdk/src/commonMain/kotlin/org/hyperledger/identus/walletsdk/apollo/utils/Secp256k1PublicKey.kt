@@ -76,7 +76,7 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey, S
      */
     override fun getJwk(): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             crv = getProperty(CurveKey().property),
             x = getProperty(CurvePointXKey().property),
             y = getProperty(CurvePointYKey().property)
@@ -91,7 +91,7 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey, S
      */
     override fun jwkWithKid(kid: String): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             kid = kid,
             crv = getProperty(CurveKey().property),
             x = getProperty(CurvePointXKey().property),

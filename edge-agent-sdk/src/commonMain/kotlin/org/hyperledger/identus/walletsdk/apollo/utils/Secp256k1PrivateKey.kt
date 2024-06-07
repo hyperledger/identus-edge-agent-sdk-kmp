@@ -100,7 +100,7 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
      */
     override fun getJwk(): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             crv = getProperty(CurveKey().property),
             d = raw.base64UrlEncoded,
             x = getProperty(CurvePointXKey().property),
@@ -116,7 +116,7 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
      */
     override fun jwkWithKid(kid: String): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             kid = kid,
             d = raw.base64UrlEncoded,
             x = getProperty(CurvePointXKey().property),
