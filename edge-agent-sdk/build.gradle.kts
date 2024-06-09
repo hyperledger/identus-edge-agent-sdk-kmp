@@ -80,9 +80,6 @@ kotlin {
                 jvmTarget = "17"
             }
         }
-        testRuns["test"].executionTask.configure {
-            useJUnitPlatform()
-        }
         publishing {
             publications {
                 withType<MavenPublication> {
