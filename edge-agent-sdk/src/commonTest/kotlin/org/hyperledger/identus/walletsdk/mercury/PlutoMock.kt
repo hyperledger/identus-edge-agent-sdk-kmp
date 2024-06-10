@@ -32,7 +32,7 @@ class PlutoMock : Pluto {
 
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
-        keyPathIndex: Int,
+        keyPathIndex: Int?,
         alias: String?,
         privateKeys: List<StorableKey>
     ) {
@@ -55,7 +55,7 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int?, metaId: String?) {
         TODO("Not yet implemented")
     }
 
