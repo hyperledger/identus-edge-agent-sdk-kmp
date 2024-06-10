@@ -3,6 +3,7 @@ package org.hyperledger.identus.walletsdk.pluto
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.LinkSecret
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
@@ -84,8 +85,8 @@ open class PlutoRestoreTask(
      * @throws IllegalArgumentException if the credential format is not ANONCREDS_OFFER
      */
     private suspend fun processCredentialForCredentialMetadata() {
-        pluto.getAllMessagesByType(ProtocolType.DidcommOfferCredential.value).first()
-            .forEach { offer ->
+        pluto.getAllMessagesByType(ProtocolType.DidcommOfferCredential.value)?.firstOrNull()?.let {
+            it.forEach { offer ->
                 val type = pollux.extractCredentialFormatFromMessage(offer.attachments)
                 if (type == CredentialType.ANONCREDS_OFFER) {
                     val linkSecret = pluto.getLinkSecret().first()
@@ -103,6 +104,7 @@ open class PlutoRestoreTask(
                     pluto.storeCredentialMetadata(offer.thid!!, metadata)
                 }
             }
+        }
     }
 
     /**
