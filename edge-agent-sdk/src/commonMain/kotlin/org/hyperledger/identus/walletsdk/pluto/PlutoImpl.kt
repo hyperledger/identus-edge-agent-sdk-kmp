@@ -94,7 +94,6 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * @throws PlutoError.DatabaseServiceAlreadyRunning if the database service is already running.
      */
     @Throws(PlutoError.DatabaseServiceAlreadyRunning::class)
-    @JvmOverloads
     override suspend fun start(context: Any?) {
         if (this.db != null) {
             throw PlutoError.DatabaseServiceAlreadyRunning()

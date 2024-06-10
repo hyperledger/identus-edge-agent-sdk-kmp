@@ -238,7 +238,8 @@ tasks.withType<DokkaTask>().configureEach {
                 "docs/Mercury.md",
                 "docs/Pluto.md",
                 "docs/Pollux.md",
-                "docs/EdgeAgent.md"
+                "docs/EdgeAgent.md",
+                "docs/BackUp.md"
             )
             sourceLink {
                 localDirectory.set(projectDir.resolve("src"))

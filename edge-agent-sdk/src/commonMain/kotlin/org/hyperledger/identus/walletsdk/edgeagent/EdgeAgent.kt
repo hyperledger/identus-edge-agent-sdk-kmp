@@ -729,7 +729,7 @@ class EdgeAgent {
      * @return The parsed verifiable credential.
      * @throws org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError if there is a problem parsing the credential.
      */
-    @Throws(org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
+    @Throws(UnknownError.SomethingWentWrongError::class)
     suspend fun processIssuedCredentialMessage(message: IssueCredential): Credential {
         val credentialType = pollux.extractCredentialFormatFromMessage(message.attachments)
         val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
@@ -763,7 +763,7 @@ class EdgeAgent {
                 pluto.storeCredential(storableCredential)
                 return credential
             } else {
-                throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Thid should not be null")
+                throw UnknownError.SomethingWentWrongError("Thid should not be null")
             }
         } ?: throw EdgeAgentError.AttachmentTypeNotSupported()
     }
@@ -844,7 +844,7 @@ class EdgeAgent {
      * @return The parsed Prism Onboarding invitation
      * @throws [org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError] if the string is not a valid Prism Onboarding invitation
      */
-    @Throws(org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
+    @Throws(UnknownError.SomethingWentWrongError::class)
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
         try {
             val prismOnboarding = PrismOnboardingInvitation.fromJsonString(str)
@@ -1290,7 +1290,7 @@ class EdgeAgent {
                 )
             ) as X25519PrivateKey
         } catch (ex: Exception) {
-            throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError(ex.localizedMessage, ex)
+            throw UnknownError.SomethingWentWrongError(ex.localizedMessage, ex)
         }
     }
 
