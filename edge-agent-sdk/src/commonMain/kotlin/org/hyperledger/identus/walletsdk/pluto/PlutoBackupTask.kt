@@ -150,7 +150,7 @@ open class PlutoBackupTask(private val pluto: Pluto) {
      * @return The backup link secret, or null if it does not exist.
      */
     private suspend fun getLinkSecretBackup(): String? {
-        return pluto.getLinkSecret().firstOrNull()?.base64UrlEncoded
+        return pluto.getLinkSecret().firstOrNull()
     }
 
     /**
