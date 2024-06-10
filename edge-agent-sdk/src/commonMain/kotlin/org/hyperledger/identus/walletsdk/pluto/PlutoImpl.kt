@@ -170,7 +170,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      */
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
-        keyPathIndex: Int,
+        keyPathIndex: Int?,
         alias: String?,
         privateKeys: List<StorableKey>
     ) {
@@ -254,7 +254,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun storePrivateKeys(
         storableKey: StorableKey,
         did: DID,
-        keyPathIndex: Int,
+        keyPathIndex: Int?,
         metaId: String?
     ) {
         val id = metaId ?: did.toString()

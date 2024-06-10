@@ -1,9 +1,6 @@
 package org.hyperledger.identus.walletsdk.pluto
 
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.LinkSecret
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
@@ -25,21 +22,18 @@ import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.DID.Companion.getSchemaFromString
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
-import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import java.util.*
 import kotlin.jvm.Throws
@@ -215,14 +209,14 @@ open class PlutoRestoreTask(
                     pluto.storePrivateKeys(
                         it.first as StorableKey,
                         it.third as DID,
-                        (it.first.keySpecification[IndexKey().property])?.toInt() ?: 0,
+                        (it.first.keySpecification[IndexKey().property])?.toInt(),
                         metaId
                     )
                     pluto.storePeerDID(it.third as DID)
                 } else {
                     pluto.storePrismDIDAndPrivateKeys(
                         it.third as DID,
-                        (it.first.keySpecification[IndexKey().property])?.toInt() ?: 0,
+                        (it.first.keySpecification[IndexKey().property])?.toInt(),
                         null,
                         listOf(it.first as StorableKey)
                     )

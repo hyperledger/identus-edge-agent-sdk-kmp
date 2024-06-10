@@ -32,7 +32,7 @@ interface Pluto {
      */
     fun storePrismDIDAndPrivateKeys(
         did: DID,
-        keyPathIndex: Int,
+        keyPathIndex: Int?,
         alias: String?,
         privateKeys: List<StorableKey>
     )
@@ -75,7 +75,7 @@ interface Pluto {
      * @param keyPathIndex The key path index.
      * @param metaId The optional metadata ID.
      */
-    fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String? = null)
+    fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int? = null, metaId: String? = null)
 
     /**
      * Stores a private key with its recovery ID.
