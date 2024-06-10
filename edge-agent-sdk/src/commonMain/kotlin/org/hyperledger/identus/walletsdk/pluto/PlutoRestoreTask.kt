@@ -62,43 +62,7 @@ open class PlutoRestoreTask(
         restoreKeys()
         restoreLinkSecret()
         restoreMessages()
-        processCredentialForCredentialMetadata()
         restoreMediators()
-    }
-
-    /**
-     * Process a credential for credential metadata.
-     *
-     * This method retrieves the first message of type DidcommOfferCredential from Pluto.
-     * For each offer received, it checks the credential format extracted from the message attachments.
-     * If the credential format is ANONCREDS_OFFER, it proceeds to process the credential request anonymously.
-     * After processing the credential request, it converts the resulting metadata into a CredentialRequestMeta object
-     * and stores it using Pluto's storeCredentialMetadata method.
-     *
-     * @throws NoSuchElementException if no message of type DidcommOfferCredential is found
-     * @throws IllegalArgumentException if the credential format is not ANONCREDS_OFFER
-     */
-    private suspend fun processCredentialForCredentialMetadata() {
-        pluto.getAllMessagesByType(ProtocolType.DidcommOfferCredential.value)?.firstOrNull()?.let {
-            it.forEach { offer ->
-                val type = pollux.extractCredentialFormatFromMessage(offer.attachments)
-                if (type == CredentialType.ANONCREDS_OFFER) {
-                    val linkSecret = pluto.getLinkSecret().first()
-                    val offerDataString =
-                        (offer.attachments.first().data as AttachmentBase64).base64
-                    val anonOffer = CredentialOffer(offerDataString.base64UrlDecoded)
-                    val pair = pollux.processCredentialRequestAnoncreds(
-                        did = offer.to!!,
-                        offer = anonOffer,
-                        linkSecret = LinkSecret.newFromValue(linkSecret!!),
-                        linkSecretName = offer.thid ?: ""
-                    )
-                    val metadata =
-                        CredentialRequestMeta.fromCredentialRequestMetadata(pair.second)
-                    pluto.storeCredentialMetadata(offer.thid!!, metadata)
-                }
-            }
-        }
     }
 
     /**
