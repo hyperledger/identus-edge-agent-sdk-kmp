@@ -24,6 +24,8 @@ import org.hyperledger.identus.walletsdk.domain.models.SeedWords
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.Key
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
@@ -122,16 +124,17 @@ class ApolloImpl : Apollo {
                             return Ed25519PrivateKey(it)
                         } ?: run {
                             val seed = properties[SeedKey().property] as String?
-                            if (seed.isNullOrBlank()) {
+                            val derivationParam = properties[DerivationPathKey().property] as String?
+                            if (seed == null && derivationParam == null) {
                                 val keyPair = Ed25519KeyPair.generateKeyPair()
                                 return keyPair.privateKey
+                            } else if (seed.isNullOrBlank() || derivationParam.isNullOrBlank()) {
+                                throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` must also be sent")
                             } else {
-                                val derivationParam: String = (properties[DerivationPathKey().property] as String?) ?: "m/0'/0'/0'"
                                 val derivationPath = DerivationPath.fromPath(derivationParam)
                                 val seedBytes = seed.base64UrlDecodedBytes
                                 val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
                                 val edkey = Ed25519PrivateKey(hdKey.privateKey)
-
                                 return edkey
                             }
                         }
@@ -143,32 +146,33 @@ class ApolloImpl : Apollo {
                                 throw Exception("KeyData must be a ByteArray")
                             }
                             return Secp256k1PrivateKey(it)
-                        }
-                        val index = properties[IndexKey().property] ?: 0
-                        if (index !is Int) {
-                            throw ApolloError.InvalidIndex("Index must be an integer")
-                        }
-                        val derivationPath =
-                            if (properties[DerivationPathKey().property] != null && properties[DerivationPathKey().property] !is String) {
-                                throw ApolloError.InvalidDerivationPath("Derivation path must be a string")
-                            } else {
-                                "m/$index'/0'/0'"
+                        } ?: run {
+                            val index = properties[IndexKey().property] ?: 0
+                            if (index !is Int) {
+                                throw ApolloError.InvalidIndex("Index must be an integer")
+                            }
+                            val derivationPath =
+                                if (properties[DerivationPathKey().property] != null && properties[DerivationPathKey().property] !is String) {
+                                    throw ApolloError.InvalidDerivationPath("Derivation path must be a string")
+                                } else {
+                                    "m/$index'/0'/0'"
+                                }
+
+                            val seed = properties[SeedKey().property] ?: throw Exception("Seed must provide a seed")
+                            if (seed !is String) {
+                                throw ApolloError.InvalidSeed("Seed must be a string")
                             }
 
-                        val seed = properties[SeedKey().property] ?: throw Exception("Seed must provide a seed")
-                        if (seed !is String) {
-                            throw ApolloError.InvalidSeed("Seed must be a string")
+                            val seedByteArray = BytesOps.hexToBytes(seed)
+
+                            val hdKey = HDKey(seedByteArray, 0, 0)
+                            val derivedHdKey = hdKey.derive(derivationPath)
+                            val private = Secp256k1PrivateKey(derivedHdKey.getKMMSecp256k1PrivateKey().raw)
+                            private.keySpecification[SeedKey().property] = seed
+                            private.keySpecification[DerivationPathKey().property] = derivationPath
+                            private.keySpecification[IndexKey().property] = "0"
+                            return private
                         }
-
-                        val seedByteArray = BytesOps.hexToBytes(seed)
-
-                        val hdKey = HDKey(seedByteArray, 0, 0)
-                        val derivedHdKey = hdKey.derive(derivationPath)
-                        val private = Secp256k1PrivateKey(derivedHdKey.getKMMSecp256k1PrivateKey().raw)
-                        private.keySpecification[SeedKey().property] = seed
-                        private.keySpecification[DerivationPathKey().property] = derivationPath
-                        private.keySpecification[IndexKey().property] = "0"
-                        return private
                     }
                 }
             }
@@ -183,11 +187,13 @@ class ApolloImpl : Apollo {
                             return X25519PrivateKey(it)
                         } ?: run {
                             val seed = properties[SeedKey().property] as String?
-                            if (seed.isNullOrBlank()) {
+                            val derivationParam = properties[DerivationPathKey().property] as String?
+                            if (seed == null && derivationParam == null) {
                                 val keyPair = X25519KeyPair.generateKeyPair()
                                 return keyPair.privateKey
+                            } else if (seed.isNullOrBlank() || derivationParam.isNullOrBlank()) {
+                                throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` must also be sent")
                             } else {
-                                val derivationParam: String = (properties[DerivationPathKey().property] as String?) ?: "m/0'/0'/0'"
                                 val derivationPath = DerivationPath.fromPath(derivationParam)
                                 val seedBytes = seed.base64UrlDecodedBytes
                                 val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
