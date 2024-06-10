@@ -285,4 +285,65 @@ class ApolloImpl : Apollo {
             }
         }
     }
+
+    /**
+     * Restores a key from a JWK (JSON Web Key).
+     *
+     * @param key The JWK to restore the key from.
+     * @param index The index of the key to restore, if it is a key with multiple sub-keys. Default is null.
+     * @return The restored Key object.
+     */
+    override fun restoreKey(key: JWK, index: Int?): Key {
+        return when (key.kty) {
+            "EC" -> {
+                when (key.crv?.lowercase()) {
+                    "secp256k1" -> {
+                        if (key.d != null) {
+                            Secp256k1PrivateKey(key.d.base64UrlDecodedBytes)
+                        } else if (key.x != null && key.y != null) {
+                            Secp256k1PublicKey(key.x.base64UrlDecodedBytes + key.y.base64UrlDecodedBytes)
+                        } else {
+                            throw ApolloError.InvalidJWKError()
+                        }
+                    }
+
+                    else -> {
+                        throw ApolloError.InvalidKeyCurve(key.crv ?: "")
+                    }
+                }
+            }
+
+            "OKP" -> {
+                when (key.crv?.lowercase()) {
+                    "ed25519" -> {
+                        if (key.d != null) {
+                            Ed25519PrivateKey(key.d.base64UrlDecodedBytes)
+                        } else if (key.x != null) {
+                            Ed25519PublicKey(key.x.base64UrlDecodedBytes)
+                        } else {
+                            throw ApolloError.InvalidJWKError()
+                        }
+                    }
+
+                    "x25519" -> {
+                        if (key.d != null) {
+                            X25519PrivateKey(key.d.base64UrlDecodedBytes)
+                        } else if (key.x != null) {
+                            X25519PublicKey(key.x.base64UrlDecodedBytes)
+                        } else {
+                            throw ApolloError.InvalidJWKError()
+                        }
+                    }
+
+                    else -> {
+                        throw ApolloError.InvalidKeyCurve(key.crv ?: "")
+                    }
+                }
+            }
+
+            else -> {
+                throw ApolloError.InvalidKeyType(key.kty)
+            }
+        }
+    }
 }
