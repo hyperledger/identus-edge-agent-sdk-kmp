@@ -323,11 +323,12 @@ open class PlutoRestoreTask(
         @SerialName("signature_correctness_proof")
         val signatureCorrectnessProof: SignatureCorrectnessProof,
         @SerialName("rev_reg_id")
-        val revocationRegistryId: String?,
+        val revocationRegistryId: String? = null,
         @SerialName("rev_reg")
-        val revocationRegistry: String?,
+        val revocationRegistry: String? = null,
         @SerialName("witness")
-        val witnessJson: String?
+        val witnessJson: String? = null,
+        val revoked: Boolean? = null
     ) {
         /**
          * Converts the object to an instance of AnonCredential.
@@ -335,7 +336,7 @@ open class PlutoRestoreTask(
          * @return An instance of AnonCredential.
          */
         fun toAnonCredential(): AnonCredential {
-            return AnonCredential(
+            val credential = AnonCredential(
                 schemaID = schemaID,
                 credentialDefinitionID = credentialDefinitionID,
                 values = values,
@@ -346,6 +347,8 @@ open class PlutoRestoreTask(
                 witnessJson = witnessJson,
                 Json.encodeToString(this)
             )
+            credential.revoked = this.revoked
+            return credential
         }
 
         /**
@@ -359,7 +362,7 @@ open class PlutoRestoreTask(
             @SerialName("p_credential")
             val pCredential: PCredential,
             @SerialName("r_credential")
-            val rCredential: String?
+            val rCredential: String? = null
         ) {
             /**
              * Represents a serializable class for storing user credentials.

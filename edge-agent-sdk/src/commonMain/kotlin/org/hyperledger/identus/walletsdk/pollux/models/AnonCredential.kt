@@ -55,7 +55,8 @@ data class AnonCredential(
             signatureCorrectnessProof = Json.decodeFromString(this.signatureCorrectnessProofJson),
             revocationRegistryId = this.revocationRegistryId,
             revocationRegistry = this.revocationRegistryJson,
-            witnessJson = this.witnessJson
+            witnessJson = this.witnessJson,
+            revoked = this.revoked
         )
     }
 
