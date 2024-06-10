@@ -583,11 +583,7 @@ open class PlutoRestoreTask(
              * @return The deserialized value as a String.
              */
             override fun deserialize(decoder: Decoder): String {
-                try {
-                    return decoder.decodeString()
-                } catch (ex: Exception) {
-                    return decoder.decodeLong().toString()
-                }
+                return decoder.decodeLong().toString()
             }
         }
 
