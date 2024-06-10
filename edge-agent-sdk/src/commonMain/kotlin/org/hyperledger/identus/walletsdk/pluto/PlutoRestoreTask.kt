@@ -314,11 +314,7 @@ open class PlutoRestoreTask(
      */
     @Throws(IndexOutOfBoundsException::class)
     private fun String.toDID(alias: String? = null): DID {
-        val split = this.split(":").toList()
-        if (split.size < 3) {
-            throw IndexOutOfBoundsException("Invalid DID format: $this")
-        }
-        return DID(split[0], split[1], split.subList(2, split.size).joinToString(":"), alias)
+        return DID(DID.getSchemaFromString(this), DID.getMethodFromString(this), DID.getMethodIdFromString(this), alias)
     }
 
     /**
