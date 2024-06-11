@@ -1,4 +1,4 @@
-package io.iohk.atala.prism.utils
+package org.hyperledger.identus.walletsdk.utils
 
 import java.security.SecureRandom
 

@@ -1,23 +1,22 @@
-package io.iohk.atala.prism.configuration
+package org.hyperledger.identus.walletsdk.configuration
 
-import io.cucumber.java.BeforeAll
-import io.iohk.atala.automation.utils.Logger
 import io.iohk.atala.automation.utils.Wait
 import io.iohk.atala.prism.models.*
-import io.iohk.atala.prism.utils.Notes
+import org.hyperledger.identus.walletsdk.utils.Notes
 import io.restassured.RestAssured
 import io.restassured.builder.RequestSpecBuilder
 import io.restassured.response.Response
 import net.serenitybdd.rest.SerenityRest
 import org.apache.http.HttpStatus
 import org.assertj.core.api.Assertions.assertThat
+import org.hyperledger.identus.walletsdk.models.AnoncredSchema
+import org.hyperledger.identus.walletsdk.models.JwtSchema
+import org.hyperledger.identus.walletsdk.models.JwtSchemaProperty
 import java.io.File
 import java.util.*
 import kotlin.time.Duration.Companion.seconds
 
 object Environment {
-    private val logger = Logger.get<Environment>()
-
     lateinit var agentUrl: String
     lateinit var mediatorOobUrl: String
     lateinit var publishedDid: String
@@ -43,7 +42,7 @@ object Environment {
         properties.putAll(System.getenv())
 
         mediatorOobUrl = properties.getProperty("MEDIATOR_OOB_URL")
-        agentUrl = properties.getProperty("PRISM_AGENT_URL")
+        agentUrl = properties.getProperty("AGENT_URL")
 
         // set base uri for rest assured
         RestAssured.baseURI = agentUrl
@@ -72,12 +71,12 @@ object Environment {
     private fun getSdkVersion(): String {
         val file = File("build.gradle.kts")
         val input = file.readText()
-        val regex = Regex("prism-sdk:(.*)(?=\")")
+        val regex = Regex("edge-agent-sdk:(.*)(?=\")")
         return regex.find(input)!!.groups[1]!!.value
     }
 
     /**
-     * Checks if the environment PUBLISHED_DID variable exists in prism-agent, otherwise it creates a new one.
+     * Checks if the environment PUBLISHED_DID variable exists in cloud-agent, otherwise it creates a new one.
      */
     private fun preparePublishedDid(publishedDid: String?) {
         try {
@@ -85,7 +84,7 @@ object Environment {
             RestAssured
                 .given().get("did-registrar/dids/$publishedDid")
                 .then().assertThat().statusCode(200)
-            this.publishedDid = publishedDid!!
+            Environment.publishedDid = publishedDid!!
             return
         } catch (e: AssertionError) {
             Notes.appendMessage("DID [${publishedDid}] not found. Creating a new one.")
@@ -124,11 +123,11 @@ object Environment {
                 .thenReturn()
             response.body.jsonPath().getString("status") == "PUBLISHED"
         }
-        this.publishedDid = response.body.jsonPath().getString("did")
+        Environment.publishedDid = response.body.jsonPath().getString("did")
     }
 
     /**
-     * Checks if the environment variable exists in prism-agent, otherwise it creates a new one.
+     * Checks if the environment variable exists in cloud-agent, otherwise it creates a new one.
      */
     private fun checkJwtSchema(schemaGuid: String?) {
         try {
@@ -136,7 +135,7 @@ object Environment {
             RestAssured
                 .given().get("schema-registry/schemas/$schemaGuid")
                 .then().assertThat().statusCode(200)
-            this.jwtSchemaGuid = schemaGuid!!
+            jwtSchemaGuid = schemaGuid!!
             return
         } catch (e: AssertionError) {
             Notes.appendMessage("JWT schema [${schemaGuid}] not found. Creating a new one.")
@@ -154,7 +153,7 @@ object Environment {
         jwtSchema.properties["automation-optional"] = JwtSchemaProperty("string")
 
         val credentialSchemaInput = CredentialSchemaInput(
-            author = this.publishedDid,
+            author = publishedDid,
             description = "Some description to automation generated schema",
             name = schemaName,
             tags = listOf("automation"),
@@ -168,7 +167,7 @@ object Environment {
             .post("/schema-registry/schemas")
             .thenReturn()
 
-        this.jwtSchemaGuid = schemaCreationResponse.body.jsonPath().getString("guid")
+        jwtSchemaGuid = schemaCreationResponse.body.jsonPath().getString("guid")
     }
 
     private fun checkAnonCredSchema(definitionId: String?) {
@@ -178,7 +177,7 @@ object Environment {
                 .given().get("credential-definition-registry/definitions/${definitionId}")
                 .then().assertThat().statusCode(200)
 
-            this.anoncredDefinitionId = definitionId!!
+            anoncredDefinitionId = definitionId!!
             return
         } catch (e: AssertionError) {
             Notes.appendMessage("Anoncred Definition not found for [${definitionId}]. Creating a new one.")
@@ -189,11 +188,11 @@ object Environment {
         val anoncredSchema = AnoncredSchema()
         anoncredSchema.name = "Automation Anoncred"
         anoncredSchema.version = "1.0"
-        anoncredSchema.issuerId = this.publishedDid
+        anoncredSchema.issuerId = publishedDid
         anoncredSchema.attrNames = mutableListOf("name", "age", "gender")
 
         val credentialSchemaInput = CredentialSchemaInput(
-            author = this.publishedDid,
+            author = publishedDid,
             description = "Some description to automation generated schema",
             name = schemaName,
             tags = listOf("automation"),
@@ -217,7 +216,7 @@ object Environment {
             version = "1.0.0",
             tag = "automation-test",
             author = publishedDid,
-            schemaId = "${agentUrl}/schema-registry/schemas/${newSchemaGuid}/schema",
+            schemaId = "$agentUrl/schema-registry/schemas/${newSchemaGuid}/schema",
             signatureType = "CL",
             supportRevocation = false,
             description = "Test Automation Auto-Generated"
@@ -228,6 +227,6 @@ object Environment {
             .then().assertThat().statusCode(201)
             .extract().`as`(CredentialDefinitionResponse::class.java)
 
-        this.anoncredDefinitionId = credentialDefinition.guid.toString()
+        anoncredDefinitionId = credentialDefinition.guid.toString()
     }
 }

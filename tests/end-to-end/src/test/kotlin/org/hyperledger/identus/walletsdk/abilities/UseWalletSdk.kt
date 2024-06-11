@@ -1,23 +1,10 @@
-package io.iohk.atala.prism.abilities
+package org.hyperledger.identus.walletsdk.abilities
 
 import com.jayway.jsonpath.JsonPath
 import io.iohk.atala.automation.utils.Logger
-import io.iohk.atala.prism.configuration.Environment
-import io.iohk.atala.prism.walletsdk.apollo.ApolloImpl
-import io.iohk.atala.prism.walletsdk.castor.CastorImpl
-import io.iohk.atala.prism.walletsdk.domain.models.ApiImpl
-import io.iohk.atala.prism.walletsdk.domain.models.DID
-import io.iohk.atala.prism.walletsdk.domain.models.Message
-import io.iohk.atala.prism.walletsdk.domain.models.httpClient
-import io.iohk.atala.prism.walletsdk.mercury.MercuryImpl
-import io.iohk.atala.prism.walletsdk.mercury.resolvers.DIDCommWrapper
-import io.iohk.atala.prism.walletsdk.pluto.PlutoImpl
-import io.iohk.atala.prism.walletsdk.pluto.data.DbConnection
-import io.iohk.atala.prism.walletsdk.pollux.PolluxImpl
-import io.iohk.atala.prism.walletsdk.prismagent.PrismAgent
-import io.iohk.atala.prism.walletsdk.prismagent.mediation.BasicMediatorHandler
-import io.iohk.atala.prism.walletsdk.prismagent.protocols.ProtocolType
-import io.iohk.atala.prism.workflow.EdgeAgentWorkflow
+import org.hyperledger.identus.walletsdk.configuration.Environment
+
+import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import io.restassured.RestAssured
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,6 +14,20 @@ import net.serenitybdd.screenplay.Ability
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.Question
 import net.serenitybdd.screenplay.SilentInteraction
+import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
+import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
+import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
+import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
+import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
+import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
+import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
+import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
+import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import java.util.*
 
 
@@ -104,7 +105,7 @@ class UseWalletSdk : Ability {
         val handler = BasicMediatorHandler(mediatorDid, mercury, store)
         val seed = apollo.createRandomSeed().seed
 
-        val sdk = PrismAgent(
+        val sdk = EdgeAgent(
             apollo,
             castor,
             pluto,
@@ -153,7 +154,7 @@ class UseWalletSdk : Ability {
 }
 
 data class SdkContext(
-    val sdk: PrismAgent,
+    val sdk: EdgeAgent,
     val credentialOfferStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val proofRequestStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),

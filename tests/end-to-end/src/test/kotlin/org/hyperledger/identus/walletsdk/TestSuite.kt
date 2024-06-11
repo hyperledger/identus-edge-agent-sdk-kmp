@@ -1,4 +1,4 @@
-package io.iohk.atala.prism
+package org.hyperledger.identus.walletsdk
 
 import io.cucumber.junit.CucumberOptions
 import net.serenitybdd.cucumber.CucumberWithSerenity
