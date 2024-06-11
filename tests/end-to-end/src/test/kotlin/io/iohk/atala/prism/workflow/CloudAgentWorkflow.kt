@@ -18,6 +18,7 @@ import io.iohk.atala.prism.models.RequestPresentationInput
 import io.iohk.atala.prism.utils.Utils
 import net.serenitybdd.rest.SerenityRest.lastResponse
 import net.serenitybdd.screenplay.Actor
+import net.serenitybdd.screenplay.rest.interactions.Patch
 import net.serenitybdd.screenplay.rest.interactions.Post
 import org.apache.http.HttpStatus
 import java.util.UUID
@@ -178,4 +179,23 @@ class CloudAgentWorkflow {
             )
         )
     }
+
+    fun revokeCredential(cloudAgent: Actor, numberOfRevokedCredentials: Int) {
+        val revokedRecordIdList = mutableListOf<String>()
+        val recordIdList = cloudAgent.recall<MutableList<String>>("recordIdList")
+
+        repeat(numberOfRevokedCredentials) {
+            val recordId = recordIdList.removeAt(0)
+
+            cloudAgent.attemptsTo(
+                Patch.to("credential-status/revoke-credential/$recordId"),
+                Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_OK)
+            )
+            revokedRecordIdList.add(recordId)
+        }
+
+        cloudAgent.remember("recordIdList", recordIdList)
+        cloudAgent.remember("revokedRecordIdList", revokedRecordIdList)
+    }
+
 }

@@ -23,7 +23,7 @@ class EdgeAgentSteps {
         edgeAgentWorkflow.connect(edgeAgent)
     }
 
-    @When("{actor} has '{}' credentials issued by {actor}")
+    @When("{actor} has '{}' jwt credentials issued by {actor}")
     fun `Edge Agent has {} issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
         repeat(numberOfCredentialsIssued) {
             cloudAgentWorkflow.offerCredential(cloudAgent)
@@ -37,14 +37,18 @@ class EdgeAgentSteps {
 
     @When("{actor} has '{}' anonymous credentials issued by {actor}")
     fun `Edge Agent has {} anonymous issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+        val recordIdList = mutableListOf<String>()
         repeat(numberOfCredentialsIssued) {
             cloudAgentWorkflow.offerAnonymousCredential(cloudAgent)
             edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
             edgeAgentWorkflow.acceptCredential(edgeAgent)
-            cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")
+            val recordId = cloudAgent.recall<String>("recordId")
+            recordIdList.add(recordId)
+            cloudAgentWorkflow.verifyCredentialState(cloudAgent, recordId, "CredentialSent")
             edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, 1)
-            edgeAgentWorkflow.processIssuedCredential(edgeAgent, 1)
+            edgeAgentWorkflow.processSpecificIssuedCred(edgeAgent, recordId)
         }
+        cloudAgent.remember("recordIdList", recordIdList)
     }
 
     @When("{actor} accepts {} credential offer sequentially from {actor}")
@@ -118,6 +122,13 @@ class EdgeAgentSteps {
     fun `Edge Agent process multiple issued credentials`(edgeAgent: Actor, numberOfCredentials: Int) {
         edgeAgentWorkflow.processIssuedCredential(edgeAgent, numberOfCredentials)
     }
+
+    @Then("{actor} waits to receive the revocation notifications from {actor}")
+    fun `Edge Agent waits to receive the revocation notifications from Cloud Agent`(edgeAgent: Actor, cloudAgent: Actor) {
+        val revokedRecordIdList = cloudAgent.recall<MutableList<String>>("revokedRecordIdList")
+        edgeAgentWorkflow.waitForCredentialRevocationMessage(edgeAgent, revokedRecordIdList.size)
+    }
+
 
     @After
     fun stopAgent() {

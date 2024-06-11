@@ -103,4 +103,24 @@ class EdgeAgentWorkflow {
             }
         )
     }
+
+    fun processSpecificIssuedCred(edgeAgent: Actor, recordId: String) {
+        edgeAgent.attemptsTo(
+            UseWalletSdk.execute { sdkContext ->
+                val issuedCredentialMessage = sdkContext.issuedCredentialStack.removeFirst()
+                val issuedCredential = IssueCredential.fromMessage(issuedCredentialMessage)
+                val credential = sdkContext.sdk.processIssuedCredentialMessage(issuedCredential)
+                edgeAgent.remember(recordId, credential.id)
+            }
+        )
+    }
+
+    fun waitForCredentialRevocationMessage(edgeAgent: Actor, numberOfRevocation: Int) {
+        edgeAgent.attemptsTo(
+            PollingWait.until(
+                UseWalletSdk.revocationStackSize(),
+                equalTo(numberOfRevocation)
+            )
+        )
+    }
 }

@@ -54,6 +54,12 @@ class UseWalletSdk : Ability {
             }
         }
 
+        fun revocationStackSize(): Question<Int> {
+            return Question.about("revocation messages stack").answeredBy {
+                `as`(it).context.revocationStack.size
+            }
+        }
+
         fun execute(callback: suspend (sdk: SdkContext) -> Unit): SilentInteraction {
             return object : SilentInteraction() {
                 override fun <T : Actor> performAs(actor: T) {
@@ -128,6 +134,7 @@ class UseWalletSdk : Ability {
                         ProtocolType.DidcommOfferCredential.value -> context.credentialOfferStack.add(message)
                         ProtocolType.DidcommIssueCredential.value -> context.issuedCredentialStack.add(message)
                         ProtocolType.DidcommRequestPresentation.value -> context.proofRequestStack.add(message)
+                        //ProtocolType.re
                         else -> logger.debug("other message: ${message.piuri}")
                     }
                 }
@@ -149,7 +156,8 @@ data class SdkContext(
     val sdk: PrismAgent,
     val credentialOfferStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val proofRequestStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
-    val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
+    val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
+    val revocationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
 )
 
 class ActorCannotUseWalletSdk(actor: Actor) :

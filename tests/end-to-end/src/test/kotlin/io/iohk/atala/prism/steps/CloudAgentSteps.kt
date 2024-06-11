@@ -63,6 +63,11 @@ class CloudAgentSteps {
         cloudAgentWorkflow.askForPresentProofForAnoncred(cloudAgent)
     }
 
+    @When("{actor} revokes '{int}' credentials")
+    fun `Cloud Agent revokes {} credentials`(cloudAgent: Actor, numberOfRevokedCredentials: Int) {
+        cloudAgentWorkflow.revokeCredential(cloudAgent, numberOfRevokedCredentials)
+    }
+
     @Then("{actor} should have the connection status updated to '{}'")
     fun `Cloud Agent should have the connection status updated`(cloudAgent: Actor, expectedState: String) {
         cloudAgentWorkflow.waitForConnectionState(cloudAgent, expectedState)
