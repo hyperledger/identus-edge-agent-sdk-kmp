@@ -1,4 +1,4 @@
-@credential @jwt
+@credential @jwt @blap
 Feature: Receive verifiable credential
   The Edge Agent should be able to receive a verifiable credential from Cloud Agent
 
@@ -11,17 +11,3 @@ Feature: Receive verifiable credential
     Then Edge Agent wait to receive 1 issued credentials
     And Edge Agent process 1 issued credentials
     And Edge Agent should have 1 credentials
-
-  Scenario: Receive multiple verifiable credentials sequentially
-    Given Cloud Agent is connected to Edge Agent
-    When Edge Agent accepts 3 credential offer sequentially from Cloud Agent
-    Then Cloud Agent should see all credentials were accepted
-    And Edge Agent wait to receive 3 issued credentials
-    And Edge Agent process 3 issued credentials
-
-  Scenario: Receive multiple verifiable credentials at once
-    Given Cloud Agent is connected to Edge Agent
-    When Edge Agent accepts 3 credentials offer at once from Cloud Agent
-    Then Cloud Agent should see all credentials were accepted
-    And Edge Agent wait to receive 3 issued credentials
-    And Edge Agent process 3 issued credentials

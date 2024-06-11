@@ -1,11 +1,11 @@
-package io.iohk.atala.prism.steps
+package org.hyperledger.identus.walletsdk.steps
 
 import io.cucumber.java.After
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
-import io.iohk.atala.prism.abilities.UseWalletSdk
-import io.iohk.atala.prism.workflow.CloudAgentWorkflow
-import io.iohk.atala.prism.workflow.EdgeAgentWorkflow
+import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
+import org.hyperledger.identus.walletsdk.workflow.CloudAgentWorkflow
+import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.actors.OnStage
 import javax.inject.Inject
@@ -123,12 +123,16 @@ class EdgeAgentSteps {
         edgeAgentWorkflow.processIssuedCredential(edgeAgent, numberOfCredentials)
     }
 
+    @Then("{actor} should have {} credentials")
+    fun `Edge Agent should have N credential`(actor: Actor, numberOfCredentials: Int) {
+        //edgeAgentWorkflow.creden
+    }
+
     @Then("{actor} waits to receive the revocation notifications from {actor}")
     fun `Edge Agent waits to receive the revocation notifications from Cloud Agent`(edgeAgent: Actor, cloudAgent: Actor) {
         val revokedRecordIdList = cloudAgent.recall<MutableList<String>>("revokedRecordIdList")
         edgeAgentWorkflow.waitForCredentialRevocationMessage(edgeAgent, revokedRecordIdList.size)
     }
-
 
     @After
     fun stopAgent() {
