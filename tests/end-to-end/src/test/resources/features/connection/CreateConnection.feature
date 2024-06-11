@@ -1,6 +1,6 @@
 @connection
 Feature: Create connection
-  The Edge Agent should be able to create a connection to prism-agent
+  The Edge Agent should be able to create a connection to Cloud Agent
 
   Scenario Outline: Create connection
     Given Cloud Agent has a connection invitation with '<label>', '<goalCode>' and '<goal>' parameters
