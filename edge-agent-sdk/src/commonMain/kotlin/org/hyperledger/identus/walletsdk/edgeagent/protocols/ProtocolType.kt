@@ -45,7 +45,7 @@ enum class ProtocolType(val value: String) {
     companion object {
         @JvmStatic
         fun findProtocolType(type: String, default: ProtocolType): ProtocolType {
-            return ProtocolType.values().find { it.value == type } ?: default
+            return entries.find { it.value == type } ?: default
         }
     }
 }
@@ -75,7 +75,7 @@ object ProtocolTypeSerializer : KSerializer<ProtocolType> {
  */
 @Throws(EdgeAgentError.UnknownInvitationTypeError::class)
 fun findProtocolTypeByValue(string: String): ProtocolType {
-    val it = ProtocolType.values().iterator()
+    val it = ProtocolType.entries.iterator()
     while (it.hasNext()) {
         val internalType = it.next()
         if (internalType.value == string) {

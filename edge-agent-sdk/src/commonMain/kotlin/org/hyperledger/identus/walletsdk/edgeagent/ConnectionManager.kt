@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.jvm.Throws
+import kotlinx.coroutines.flow.firstOrNull
 
 interface ConnectionManager : ConnectionsManager, DIDCommConnection {
 
@@ -269,15 +270,7 @@ class ConnectionManagerImpl(
      * @return The response message, if one is received.
      */
     override suspend fun awaitMessageResponse(id: String): Message? {
-        return try {
-            awaitMessages().first().map {
-                it.second
-            }.first {
-                it.thid == id
-            }
-        } catch (e: NoSuchElementException) {
-            null
-        }
+        return awaitMessages().firstOrNull()?.firstOrNull { it.second.thid == id }?.second
     }
 
     companion object {
