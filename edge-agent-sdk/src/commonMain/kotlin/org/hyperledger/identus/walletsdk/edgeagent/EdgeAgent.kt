@@ -95,6 +95,7 @@ import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
@@ -623,11 +624,11 @@ class EdgeAgent {
      * @param offer Received offer credential.
      * @return Created request credential.
      * @throws [PolluxError.InvalidPrismDID] if there is a problem creating the request credential.
-     * @throws [org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError] if credential type is not supported
+     * @throws [UnknownError.SomethingWentWrongError] if credential type is not supported
      **/
     @Throws(
         PolluxError.InvalidPrismDID::class,
-        org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class
+        UnknownError.SomethingWentWrongError::class
     )
     suspend fun prepareRequestCredentialWithIssuer(
         did: DID,
@@ -1286,7 +1287,8 @@ class EdgeAgent {
                     TypeKey().property to KeyTypes.Curve25519,
                     CurveKey().property to Curve.X25519.value,
                     SeedKey().property to seed.value.base64UrlEncoded,
-                    IndexKey().property to 0
+                    IndexKey().property to 0,
+                    DerivationPathKey().property to "m/0`/0`/0`"
                 )
             ) as X25519PrivateKey
         } catch (ex: Exception) {
