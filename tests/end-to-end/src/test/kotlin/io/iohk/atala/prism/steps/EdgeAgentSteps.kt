@@ -24,9 +24,25 @@ class EdgeAgentSteps {
     }
 
     @When("{actor} has '{}' jwt credentials issued by {actor}")
-    fun `Edge Agent has {} issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+    fun `Edge Agent has {} issued JWT credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+        val recordIdList = mutableListOf<String>()
         repeat(numberOfCredentialsIssued) {
-            cloudAgentWorkflow.offerCredential(cloudAgent)
+            cloudAgentWorkflow.offerJwtCredential(cloudAgent)
+            edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
+            edgeAgentWorkflow.acceptCredential(edgeAgent)
+            val recordId = cloudAgent.recall<String>("recordId")
+            recordIdList.add(recordId)
+            cloudAgentWorkflow.verifyCredentialState(cloudAgent, recordId, "CredentialSent")
+            edgeAgentWorkflow.processSpecificIssuedCred(edgeAgent, recordId)
+            edgeAgentWorkflow.processIssuedCredential(edgeAgent, 1)
+        }
+        cloudAgent.remember("recordIdList", recordIdList)
+    }
+
+    @When("{actor} has '{}' anonymous credentials issued by {actor}")
+    fun `Edge Agent has {} anonymous issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+        repeat(numberOfCredentialsIssued) {
+            cloudAgentWorkflow.offerAnonymousCredential(cloudAgent)
             edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
             edgeAgentWorkflow.acceptCredential(edgeAgent)
             cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")
@@ -35,23 +51,7 @@ class EdgeAgentSteps {
         }
     }
 
-    @When("{actor} has '{}' anonymous credentials issued by {actor}")
-    fun `Edge Agent has {} anonymous issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
-        val recordIdList = mutableListOf<String>()
-        repeat(numberOfCredentialsIssued) {
-            cloudAgentWorkflow.offerAnonymousCredential(cloudAgent)
-            edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
-            edgeAgentWorkflow.acceptCredential(edgeAgent)
-            val recordId = cloudAgent.recall<String>("recordId")
-            recordIdList.add(recordId)
-            cloudAgentWorkflow.verifyCredentialState(cloudAgent, recordId, "CredentialSent")
-            edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, 1)
-            edgeAgentWorkflow.processSpecificIssuedCred(edgeAgent, recordId)
-        }
-        cloudAgent.remember("recordIdList", recordIdList)
-    }
-
-    @When("{actor} accepts {} credential offer sequentially from {actor}")
+    @When("{actor} accepts {} JWT credential offer sequentially from {actor}")
     fun `Edge Agent accepts multiple credentials offer sequentially from Cloud Agent`(
         edgeAgent: Actor,
         numberOfCredentials: Int,
@@ -59,7 +59,7 @@ class EdgeAgentSteps {
     ) {
         val recordIdList = mutableListOf<String>()
         repeat(numberOfCredentials) {
-            cloudAgentWorkflow.offerCredential(cloudAgent)
+            cloudAgentWorkflow.offerJwtCredential(cloudAgent)
             edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
             edgeAgentWorkflow.acceptCredential(edgeAgent)
             cloudAgentWorkflow.verifyCredentialState(cloudAgent, cloudAgent.recall("recordId"), "CredentialSent")
@@ -68,7 +68,7 @@ class EdgeAgentSteps {
         cloudAgent.remember("recordIdList", recordIdList)
     }
 
-    @When("{actor} accepts {} credentials offer at once from {actor}")
+    @When("{actor} accepts {} JWT credentials offer at once from {actor}")
     fun `Edge Agent accepts multiple credentials offer at once from Cloud Agent`(
         edgeAgent: Actor,
         numberOfCredentials: Int,
@@ -78,7 +78,7 @@ class EdgeAgentSteps {
 
         // offer multiple credentials
         repeat(numberOfCredentials) {
-            cloudAgentWorkflow.offerCredential(cloudAgent)
+            cloudAgentWorkflow.offerJwtCredential(cloudAgent)
             recordIdList.add(cloudAgent.recall("recordId"))
         }
         cloudAgent.remember("recordIdList", recordIdList)

@@ -55,7 +55,7 @@ class CloudAgentWorkflow {
         )
     }
 
-    fun offerCredential(cloudAgent: Actor) {
+    fun offerJwtCredential(cloudAgent: Actor) {
         val connectionId = cloudAgent.recall<String>("connectionId")
         val credential = CreateIssueCredentialRecordRequest(
             claims = mapOf(Pair("automation-required", UUID.randomUUID())),
@@ -67,7 +67,8 @@ class CloudAgentWorkflow {
             Post.to("/issue-credentials/credential-offers").body(credential),
             Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
         )
-        cloudAgent.remember("recordId", lastResponse().get<String>("recordId"))
+        val recordId = lastResponse().get<String>("recordId")
+        cloudAgent.remember("recordId", recordId)
     }
 
     fun offerAnonymousCredential(cloudAgent: Actor) {
@@ -168,6 +169,9 @@ class CloudAgentWorkflow {
                 RestAssuredJsonProperty.toBe("protocolState", state)
             )
         )
+
+        val condition = HttpRequest.get("/issue-credentials/records/$recordId")
+        println("Passed")
     }
 
     fun verifyPresentProof(cloudAgent: Actor, state: String) {

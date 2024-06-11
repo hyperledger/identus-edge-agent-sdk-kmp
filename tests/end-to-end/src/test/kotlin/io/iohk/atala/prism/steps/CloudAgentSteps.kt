@@ -39,7 +39,7 @@ class CloudAgentSteps {
 
     @When("{actor} offers a credential")
     fun `Cloud Agent offers a credential`(cloudAgent: Actor) {
-        cloudAgentWorkflow.offerCredential(cloudAgent)
+        cloudAgentWorkflow.offerJwtCredential(cloudAgent)
     }
 
     @When("{actor} offers an anonymous credential")

@@ -38,7 +38,8 @@ class EdgeAgentWorkflow {
             UseWalletSdk.execute {
                 val message = OfferCredential.fromMessage(it.credentialOfferStack.removeFirst())
                 val requestCredential = it.sdk.prepareRequestCredentialWithIssuer(it.sdk.createNewPrismDID(), message)
-                it.sdk.sendMessage(requestCredential.makeMessage())
+                val formattedMessage = requestCredential.makeMessage()
+                it.sdk.sendMessage(formattedMessage)
             }
         )
     }
@@ -72,6 +73,9 @@ class EdgeAgentWorkflow {
                 equalTo(numberOfCredentialOffer)
             )
         )
+
+        val condition = UseWalletSdk.credentialOfferStackSize()
+        println("Passed")
     }
 
     fun waitToReceiveAnonymousCredential(edgeAgent: Actor, numberOfCredentialOffer: Int) {
@@ -90,6 +94,9 @@ class EdgeAgentWorkflow {
                 equalTo(expectedNumberOfCredentials)
             )
         )
+
+        val condition = UseWalletSdk.issuedCredentialStackSize()
+        println("Passed")
     }
 
     fun processIssuedCredential(edgeAgent: Actor, numberOfCredentials: Int) {
@@ -102,6 +109,9 @@ class EdgeAgentWorkflow {
                 }
             }
         )
+
+        //val condition = issuedCredentialMessage
+        println("Passed")
     }
 
     fun processSpecificIssuedCred(edgeAgent: Actor, recordId: String) {
