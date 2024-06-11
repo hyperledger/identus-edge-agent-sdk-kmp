@@ -10,6 +10,7 @@ Feature: Receive verifiable credential
     And Cloud Agent should see the credential was accepted
     Then Edge Agent wait to receive 1 issued credentials
     And Edge Agent process 1 issued credentials
+    And Edge Agent should have 1 credentials
 
   Scenario: Receive multiple verifiable credentials sequentially
     Given Cloud Agent is connected to Edge Agent

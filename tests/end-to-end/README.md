@@ -7,9 +7,9 @@ Duplicate `local.properties.example` file from `test/resources` and rename the c
 Setup properties:
 
 | Property                 | Explanation                        |
-|--------------------------|------------------------------------|
+| ------------------------ | ---------------------------------- |
 | MEDIATOR_OOB_URL         | Mediator OOB url invitation        |
-| PRISM_AGENT_URL          | Open enterprise agent url          |
+| AGENT_URL                | Agent url                          |
 | PUBLISHED_DID            | Existing published DID             |
 | JWT_SCHEMA_GUID          | Existing JWT schema guid           |
 | ANONCRED_DEFINITION_GUID | Existing Anoncred definition guid  |
