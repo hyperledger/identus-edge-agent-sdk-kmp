@@ -3,13 +3,15 @@ import kotlin.Int;
 -- Create the new DIDKeyLink table
 CREATE TABLE DIDKeyLink (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    didId TEXT NOT NULL UNIQUE,
-    keyId TEXT NOT NULL UNIQUE,
-    alias TEXT
+    didId TEXT NOT NULL,
+    keyId TEXT NOT NULL,
+    alias TEXT,
+    FOREIGN KEY (keyId) REFERENCES PrivateKey(id),
+    FOREIGN KEY (didId) REFERENCES DID(did)
 );
 
 -- Populate the DIDKeyLink table
-INSERT INTO DIDKeyLink (didId, keyId)
+INSERT INTO DIDKeyLink (didId, keyId, alias)
 SELECT PrivateKey.didId, PrivateKey.id, DID.alias
 FROM PrivateKey
 JOIN DID ON DID.did = PrivateKey.didId;
@@ -22,9 +24,8 @@ CREATE TABLE PrivateKey (
     id TEXT NOT NULL UNIQUE,
     restorationIdentifier TEXT NOT NULL,
     data TEXT NOT NULL,
-    keyPathIndex INTEGER AS Int DEFAULT 0,
-    PRIMARY KEY (id),
-    FOREIGN KEY (id) REFERENCES DIDKeyLink(keyId)
+    keyPathIndex INTEGER AS Int,
+    PRIMARY KEY (id)
 );
 
 -- Populate new PrivateKey table with the data from the old table
@@ -40,8 +41,7 @@ CREATE TABLE DID (
     methodId TEXT NOT NULL ,
     schema TEXT NOT NULL ,
     alias TEXT,
-    PRIMARY KEY (did),
-    FOREIGN KEY (did) REFERENCES DIDKeyLink(didId)
+    PRIMARY KEY (did)
 );
 
 -- Populate new DID table with the data from the old table
