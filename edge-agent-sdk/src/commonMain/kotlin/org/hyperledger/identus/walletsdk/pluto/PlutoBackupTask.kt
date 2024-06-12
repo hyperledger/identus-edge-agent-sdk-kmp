@@ -73,8 +73,7 @@ open class PlutoBackupTask(private val pluto: Pluto) {
      * @return a list of [BackupV0_0_1.Credential] objects representing the backups.
      */
     private suspend fun getCredentialBackups(): List<BackupV0_0_1.Credential> {
-        val credentialRecoveryModels = pluto.getAllCredentials().first()
-        return credentialRecoveryModels.map { credentialRecovery ->
+        return pluto.getAllCredentials().first().map { credentialRecovery ->
             val backUpRestorationId = when (credentialRecovery.restorationId) {
                 RestorationID.JWT.value -> {
                     PlutoRestoreTask.BackUpRestorationId.JWT

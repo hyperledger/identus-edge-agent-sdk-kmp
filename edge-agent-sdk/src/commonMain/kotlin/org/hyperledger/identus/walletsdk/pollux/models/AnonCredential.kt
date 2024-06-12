@@ -1,9 +1,11 @@
 package org.hyperledger.identus.walletsdk.pollux.models
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNames
 import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -26,22 +28,30 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
  * @param witnessJson The JSON representation of the credential's witness.
  * @param json The JSON representation of the credential.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class AnonCredential(
+data class AnonCredential constructor(
     @SerialName("schema_id")
+    @JsonNames("schema_id", "schemaID")
     val schemaID: String,
     @SerialName("cred_def_id")
+    @JsonNames("cred_def_id", "credentialDefinitionID")
     val credentialDefinitionID: String,
     val values: Map<String, Attribute>,
     @SerialName("signature")
+    @JsonNames("signature", "signatureJson")
     val signatureJson: String,
     @SerialName("signature_correctness_proof")
+    @JsonNames("signature_correctness_proof", "signatureCorrectnessProofJson")
     val signatureCorrectnessProofJson: String,
-    @SerialName("revocation_registry_id")
+    @SerialName("rev_reg_id")
+    @JsonNames("revocation_registry_id", "revocationRegistryId", "rev_reg_id")
     val revocationRegistryId: String?,
-    @SerialName("revocation_registry")
+    @SerialName("rev_reg")
+    @JsonNames("revocation_registry", "revocationRegistryJson", "rev_reg")
     val revocationRegistryJson: String?,
     @SerialName("witness")
+    @JsonNames("witness", "witnessJson")
     val witnessJson: String?,
     private val json: String
 ) : Credential {

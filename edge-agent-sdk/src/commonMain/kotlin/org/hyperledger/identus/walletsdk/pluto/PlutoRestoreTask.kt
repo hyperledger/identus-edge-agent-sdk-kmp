@@ -15,6 +15,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNames
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -311,22 +312,30 @@ open class PlutoRestoreTask(
      * @property revocationRegistry The revocation registry.
      * @property witnessJson The witness JSON string.
      */
+    @OptIn(ExperimentalSerializationApi::class)
     @Serializable
     class AnonCredentialBackUp(
         @SerialName("schema_id")
+        @JsonNames("schema_id", "schemaID")
         val schemaID: String,
         @SerialName("cred_def_id")
+        @JsonNames("cred_def_id", "credentialDefinitionID")
         val credentialDefinitionID: String,
         val values: Map<String, AnonCredential.Attribute>,
         @SerialName("signature")
+        @JsonNames("signature", "signatureJson")
         val signature: Signature,
         @SerialName("signature_correctness_proof")
+        @JsonNames("signature_correctness_proof", "signatureCorrectnessProofJson")
         val signatureCorrectnessProof: SignatureCorrectnessProof,
         @SerialName("rev_reg_id")
+        @JsonNames("revocation_registry_id", "revocationRegistryId")
         val revocationRegistryId: String? = null,
         @SerialName("rev_reg")
+        @JsonNames("revocation_registry", "revocationRegistryJson")
         val revocationRegistry: String? = null,
         @SerialName("witness")
+        @JsonNames("witness", "witnessJson")
         val witnessJson: String? = null,
         val revoked: Boolean? = null
     ) {
