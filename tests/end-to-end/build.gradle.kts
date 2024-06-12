@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.hyperledger.identus:edge-agent-sdk:3.0.0")
+    testImplementation("org.hyperledger.identus:edge-agent-sdk:3.0.0-todor")
     testImplementation("io.iohk.atala.prism:prism-kotlin-client:1.31.0")
     testImplementation("io.iohk.atala:atala-automation:0.3.2")
 }
