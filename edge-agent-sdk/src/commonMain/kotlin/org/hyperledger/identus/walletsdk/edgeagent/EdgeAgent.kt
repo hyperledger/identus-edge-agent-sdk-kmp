@@ -1288,7 +1288,7 @@ class EdgeAgent {
                     CurveKey().property to Curve.X25519.value,
                     SeedKey().property to seed.value.base64UrlEncoded,
                     IndexKey().property to 0,
-                    DerivationPathKey().property to "m/0`/0`/0`"
+                    DerivationPathKey().property to "m/0'/0'/0'"
                 )
             ) as X25519PrivateKey
         } catch (ex: Exception) {
