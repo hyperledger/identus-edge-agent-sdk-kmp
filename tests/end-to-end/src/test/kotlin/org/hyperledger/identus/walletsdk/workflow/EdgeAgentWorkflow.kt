@@ -6,12 +6,15 @@ import io.iohk.atala.automation.utils.Logger
 import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
 import kotlinx.coroutines.flow.first
 import net.serenitybdd.screenplay.Actor
+import net.serenitybdd.screenplay.rest.interactions.Ensure
+import org.assertj.core.api.Assertions.assertThat
 import org.hamcrest.CoreMatchers.equalTo
 import org.hyperledger.identus.walletsdk.domain.models.CastorError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
+import java.util.function.Consumer
 
 class EdgeAgentWorkflow {
     private val logger = Logger.get<EdgeAgentWorkflow>()
@@ -133,4 +136,28 @@ class EdgeAgentWorkflow {
             )
         )
     }
+
+    fun waitUntilCredentialIsRevoked(edgeAgent: Actor, revokedRecordIdList: List<String>) {
+        val revokedIdList = revokedRecordIdList.map { recordId ->
+            edgeAgent.recall<String>(recordId)
+        }
+
+        edgeAgent.attemptsTo(
+            UseWalletSdk.execute { sdkContext ->
+                val credentials = sdkContext.sdk.getAllCredentials().first()
+                val revokedCredentials = credentials.filter { credential ->
+                    credential.revoked == true && revokedIdList.contains(credential.id)
+                }
+                edgeAgent.attemptsTo(
+                    Ensure.that(
+                        "The number of revoked credentials matches the expected number",
+                        Consumer { context ->
+                            assertThat(revokedCredentials.size).isEqualTo(revokedRecordIdList.size)
+                        }
+                    )
+                )
+            }
+        )
+    }
+
 }

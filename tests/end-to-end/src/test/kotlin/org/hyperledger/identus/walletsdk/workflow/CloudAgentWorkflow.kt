@@ -170,7 +170,7 @@ class CloudAgentWorkflow {
             )
         )
 
-        val condition = HttpRequest.get("/issue-credentials/records/$recordId")
+        //val condition = RestAssuredJsonProperty.toBe("protocolState", state)
         println("Passed")
     }
 
@@ -192,7 +192,7 @@ class CloudAgentWorkflow {
             val recordId = recordIdList.removeAt(0)
 
             cloudAgent.attemptsTo(
-                Patch.to("credential-status/revoke-credential/$recordId"),
+                Patch.to("/credential-status/revoke-credential/$recordId"),
                 Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_OK)
             )
             revokedRecordIdList.add(recordId)

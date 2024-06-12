@@ -33,8 +33,8 @@ class EdgeAgentSteps {
             val recordId = cloudAgent.recall<String>("recordId")
             recordIdList.add(recordId)
             cloudAgentWorkflow.verifyCredentialState(cloudAgent, recordId, "CredentialSent")
+            edgeAgentWorkflow.waitToReceiveCredentialIssuance(edgeAgent, 1)
             edgeAgentWorkflow.processSpecificIssuedCred(edgeAgent, recordId)
-            edgeAgentWorkflow.processIssuedCredential(edgeAgent, 1)
         }
         cloudAgent.remember("recordIdList", recordIdList)
     }
@@ -133,6 +133,13 @@ class EdgeAgentSteps {
         val revokedRecordIdList = cloudAgent.recall<MutableList<String>>("revokedRecordIdList")
         edgeAgentWorkflow.waitForCredentialRevocationMessage(edgeAgent, revokedRecordIdList.size)
     }
+
+    @Then("{actor} should see the credentials were revoked by {actor}")
+    fun `Edge Agent should see the credentials were revoked by Cloud Agent`(edgeAgent: Actor, cloudAgent: Actor) {
+        val revokedRecordIdList = cloudAgent.recall<MutableList<String>>("revokedRecordIdList")
+        edgeAgentWorkflow.waitUntilCredentialIsRevoked(edgeAgent, revokedRecordIdList)
+    }
+
 
     @After
     fun stopAgent() {

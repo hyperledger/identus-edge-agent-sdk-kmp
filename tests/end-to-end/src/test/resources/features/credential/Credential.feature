@@ -1,4 +1,4 @@
-@credential @jwt @blap
+@credential @jwt
 Feature: Receive verifiable credential
   The Edge Agent should be able to receive a verifiable credential from Cloud Agent
 
