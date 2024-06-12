@@ -186,27 +186,61 @@ data class JWTCredential @JvmOverloads constructor(
     }
 
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
+        if (this === other) {
+            return true
+        }
+        if (javaClass != other?.javaClass) {
+            return false
+        }
 
         other as JWTCredential
 
-        if (id != other.id) return false
-        if (iss != other.iss) return false
-        if (sub != other.sub) return false
-        if (nbf != other.nbf) return false
-        if (exp != other.exp) return false
-        if (jti != other.jti) return false
+        if (id != other.id) {
+            return false
+        }
+        if (iss != other.iss) {
+            return false
+        }
+        if (sub != other.sub) {
+            return false
+        }
+        if (nbf != other.nbf) {
+            return false
+        }
+        if (exp != other.exp) {
+            return false
+        }
+        if (jti != other.jti) {
+            return false
+        }
         if (aud != null) {
-            if (other.aud == null) return false
-            if (!aud.contentEquals(other.aud)) return false
-        } else if (other.aud != null) return false
-        if (originalJWTString != other.originalJWTString) return false
-        if (verifiablePresentation != other.verifiablePresentation) return false
-        if (verifiableCredential != other.verifiableCredential) return false
-        if (nonce != other.nonce) return false
-        if (issuer != other.issuer) return false
-        if (revoked != other.revoked) return false
+            if (other.aud == null) {
+                return false
+            }
+            if (!aud.contentEquals(other.aud)) {
+                return false
+            }
+        } else if (other.aud != null) {
+            return false
+        }
+        if (originalJWTString != other.originalJWTString) {
+            return false
+        }
+        if (verifiablePresentation != other.verifiablePresentation) {
+            return false
+        }
+        if (verifiableCredential != other.verifiableCredential) {
+            return false
+        }
+        if (nonce != other.nonce) {
+            return false
+        }
+        if (issuer != other.issuer) {
+            return false
+        }
+        if (revoked != other.revoked) {
+            return false
+        }
 
         return true
     }
@@ -229,7 +263,8 @@ data class JWTCredential @JvmOverloads constructor(
     }
 
     @OptIn(ExperimentalSerializationApi::class)
-    object AudSerializer : JsonTransformingSerializer<Array<String>>(ArraySerializer(String.serializer())) {
+    object AudSerializer :
+        JsonTransformingSerializer<Array<String>>(ArraySerializer(String.serializer())) {
         override fun transformDeserialize(element: JsonElement): JsonElement {
             // Check if the element is a JSON array
             if (element is JsonArray) {

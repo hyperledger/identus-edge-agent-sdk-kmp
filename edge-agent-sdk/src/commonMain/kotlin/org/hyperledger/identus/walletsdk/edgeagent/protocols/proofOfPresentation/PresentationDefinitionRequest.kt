@@ -63,17 +63,33 @@ data class PresentationDefinitionRequest(
                     )
 
                     override fun equals(other: Any?): Boolean {
-                        if (this === other) return true
-                        if (javaClass != other?.javaClass) return false
+                        if (this === other) {
+                            return true
+                        }
+                        if (javaClass != other?.javaClass) {
+                            return false
+                        }
 
                         other as Field
 
-                        if (!path.contentEquals(other.path)) return false
-                        if (id != other.id) return false
-                        if (purpose != other.purpose) return false
-                        if (name != other.name) return false
-                        if (filter != other.filter) return false
-                        if (optional != other.optional) return false
+                        if (!path.contentEquals(other.path)) {
+                            return false
+                        }
+                        if (id != other.id) {
+                            return false
+                        }
+                        if (purpose != other.purpose) {
+                            return false
+                        }
+                        if (name != other.name) {
+                            return false
+                        }
+                        if (filter != other.filter) {
+                            return false
+                        }
+                        if (optional != other.optional) {
+                            return false
+                        }
 
                         return true
                     }
@@ -96,7 +112,8 @@ data class PresentationDefinitionRequest(
 
                     // Custom serializer for the enum
                     object LimitDisclosureSerializer : KSerializer<LimitDisclosure> {
-                        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("LimitDisclosure", PrimitiveKind.STRING)
+                        override val descriptor: SerialDescriptor =
+                            PrimitiveSerialDescriptor("LimitDisclosure", PrimitiveKind.STRING)
 
                         override fun serialize(encoder: Encoder, value: LimitDisclosure) {
                             encoder.encodeString(value.value)
@@ -111,16 +128,28 @@ data class PresentationDefinitionRequest(
                 }
 
                 override fun equals(other: Any?): Boolean {
-                    if (this === other) return true
-                    if (javaClass != other?.javaClass) return false
+                    if (this === other) {
+                        return true
+                    }
+                    if (javaClass != other?.javaClass) {
+                        return false
+                    }
 
                     other as Constraints
 
                     if (fields != null) {
-                        if (other.fields == null) return false
-                        if (!fields.contentEquals(other.fields)) return false
-                    } else if (other.fields != null) return false
-                    if (limitDisclosure != other.limitDisclosure) return false
+                        if (other.fields == null) {
+                            return false
+                        }
+                        if (!fields.contentEquals(other.fields)) {
+                            return false
+                        }
+                    } else if (other.fields != null) {
+                        return false
+                    }
+                    if (limitDisclosure != other.limitDisclosure) {
+                        return false
+                    }
 
                     return true
                 }
@@ -145,13 +174,21 @@ data class PresentationDefinitionRequest(
         }
 
         override fun equals(other: Any?): Boolean {
-            if (this === other) return true
-            if (other == null || this::class != other::class) return false
+            if (this === other) {
+                return true
+            }
+            if (other == null || this::class != other::class) {
+                return false
+            }
 
             other as PresentationDefinition
 
-            if (id != other.id) return false
-            if (!inputDescriptors.contentEquals(other.inputDescriptors)) return false
+            if (id != other.id) {
+                return false
+            }
+            if (!inputDescriptors.contentEquals(other.inputDescriptors)) {
+                return false
+            }
             return format == other.format
         }
 
