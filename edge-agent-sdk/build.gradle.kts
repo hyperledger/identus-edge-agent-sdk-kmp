@@ -159,6 +159,7 @@ kotlin {
         }
         val androidInstrumentedTest by getting {
             dependencies {
+                dependsOn(commonTest)
                 implementation(kotlin("test"))
                 implementation("androidx.test.espresso:espresso-core:3.5.1")
                 implementation("androidx.test.ext:junit:1.1.5")
