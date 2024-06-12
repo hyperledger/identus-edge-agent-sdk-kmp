@@ -224,7 +224,7 @@ class BackupRestorationTests {
         `when`(pluto.getAllMediators()).thenReturn(flow { emit(Json.decodeFromString<List<Mediator>>(getMediator)) })
 
         val jwe = edgeAgent.backupWallet(plutoBackupTask = PlutoBackupTask(pluto))
-
+        println(jwe)
         edgeAgent.recoverWallet(jwe = jwe)
 
         // Validates credentials are backed up and restored properly, and passed to pluto for storage

@@ -452,7 +452,7 @@ open class PlutoRestoreTask(
         val createdTime: Long,
         @Serializable(with = EpochSecondsSerializer::class)
         @SerialName("expires_time_plus")
-        @JsonNames("expires_time_plus", "expiresTime")
+        @JsonNames("expires_time_plus", "expiresTime", "expiresTimePlus")
         val expiresTime: Long,
         val attachments: Array<AttachmentDescriptor> = arrayOf(),
         val thid: String? = null,
@@ -542,13 +542,13 @@ open class PlutoRestoreTask(
          *
          * @see KSerializer
          */
-        private object EpochSecondsSerializer : KSerializer<String> {
+        private object EpochSecondsSerializer : KSerializer<Long> {
             /**
              * Variable descriptor for storing a serialized representation of epoch seconds as a string.
              * The descriptor is used for serializing and deserializing objects.
              */
             override val descriptor: SerialDescriptor =
-                PrimitiveSerialDescriptor("EpochSecondsString", PrimitiveKind.STRING)
+                PrimitiveSerialDescriptor("EpochSecondsString", PrimitiveKind.LONG)
 
             /**
              * Serializes a string value.
@@ -556,13 +556,8 @@ open class PlutoRestoreTask(
              * @param encoder the encoder to use for serialization
              * @param value the string value to be serialized
              */
-            override fun serialize(encoder: Encoder, value: String) {
-                try {
-                    encoder.encodeLong(value.toLong())
-                } catch (e: Exception) {
-                    val time = Instant.parse(value).epochSeconds
-                    encoder.encodeLong(time)
-                }
+            override fun serialize(encoder: Encoder, value: Long) {
+                encoder.encodeLong(value)
             }
 
             /**
@@ -571,8 +566,8 @@ open class PlutoRestoreTask(
              * @param decoder The decoder used to deserialize the value.
              * @return The deserialized value as a String.
              */
-            override fun deserialize(decoder: Decoder): String {
-                return decoder.decodeLong().toString()
+            override fun deserialize(decoder: Decoder): Long {
+                return decoder.decodeLong()
             }
         }
 

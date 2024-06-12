@@ -11,6 +11,8 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import java.util.UUID
 import kotlin.jvm.JvmOverloads
 import kotlin.time.Duration.Companion.days
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.json.JsonNames
 
 /**
  * The [Message] data class represents a DIDComm message, which is used for secure, decentralized communication in the
@@ -32,8 +34,14 @@ constructor(
     @EncodeDefault
     val fromPrior: String? = null,
     val body: String,
+    @SerialName("extra_headers")
+    @JsonNames("extra_headers", "extraHeaders")
     val extraHeaders: Map<String, String> = emptyMap(),
+    @SerialName("created_time")
+    @JsonNames("created_time", "createdTime")
     val createdTime: String = Clock.System.now().toString(),
+    @SerialName("expires_time_plus")
+    @JsonNames("expires_time_plus", "expiresTime", "expiresTimePlus")
     val expiresTimePlus: String = Clock.System.now().plus(1.days).toString(),
     val attachments: Array<AttachmentDescriptor> = arrayOf(),
     val thid: String? = null,
@@ -48,23 +56,51 @@ constructor(
      * @return `true` if the objects are equal, `false` otherwise.
      */
     override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (other == null || this::class != other::class) return false
+        if (this === other) {
+            return true
+        }
+        if (other == null || this::class != other::class) {
+            return false
+        }
 
         other as Message
 
-        if (id != other.id) return false
-        if (piuri != other.piuri) return false
-        if (from != other.from) return false
-        if (to != other.to) return false
-        if (fromPrior != other.fromPrior) return false
-        if (body != other.body) return false
-        if (createdTime != other.createdTime) return false
-        if (expiresTimePlus != other.expiresTimePlus) return false
-        if (!attachments.contentEquals(other.attachments)) return false
-        if (thid != other.thid) return false
-        if (pthid != other.pthid) return false
-        if (!ack.contentEquals(other.ack)) return false
+        if (id != other.id) {
+            return false
+        }
+        if (piuri != other.piuri) {
+            return false
+        }
+        if (from != other.from) {
+            return false
+        }
+        if (to != other.to) {
+            return false
+        }
+        if (fromPrior != other.fromPrior) {
+            return false
+        }
+        if (body != other.body) {
+            return false
+        }
+        if (createdTime != other.createdTime) {
+            return false
+        }
+        if (expiresTimePlus != other.expiresTimePlus) {
+            return false
+        }
+        if (!attachments.contentEquals(other.attachments)) {
+            return false
+        }
+        if (thid != other.thid) {
+            return false
+        }
+        if (pthid != other.pthid) {
+            return false
+        }
+        if (!ack.contentEquals(other.ack)) {
+            return false
+        }
 
         return true
     }
