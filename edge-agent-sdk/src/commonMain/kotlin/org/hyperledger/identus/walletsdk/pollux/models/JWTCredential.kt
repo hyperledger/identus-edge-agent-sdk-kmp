@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.pollux.models
 
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
@@ -39,7 +37,7 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
  * @property jwtPayload The parsed JWT payload containing the credential information.
  */
 @OptIn(ExperimentalSerializationApi::class)
-data class JWTCredential(
+data class JWTCredential @JvmOverloads constructor(
     override val id: String,
     override val iss: String,
     override val sub: String?,
@@ -65,7 +63,7 @@ data class JWTCredential(
     override val claims: Array<Claim>
         get() {
             return verifiableCredential?.credentialSubject?.map {
-                Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
+                Claim(key = it.key, value = ClaimType.StringValue(it.value))
             }?.toTypedArray()
                 ?: emptyArray<Claim>()
         }
@@ -139,7 +137,7 @@ data class JWTCredential(
 
             override val claims: Array<Claim>
                 get() = verifiableCredential?.credentialSubject?.map {
-                    Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
+                    Claim(key = it.key, value = ClaimType.StringValue(it.value))
                 }?.toTypedArray() ?: emptyArray()
 
             override val properties: Map<String, Any?>
@@ -185,6 +183,49 @@ data class JWTCredential(
                 return c
             }
         }
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as JWTCredential
+
+        if (id != other.id) return false
+        if (iss != other.iss) return false
+        if (sub != other.sub) return false
+        if (nbf != other.nbf) return false
+        if (exp != other.exp) return false
+        if (jti != other.jti) return false
+        if (aud != null) {
+            if (other.aud == null) return false
+            if (!aud.contentEquals(other.aud)) return false
+        } else if (other.aud != null) return false
+        if (originalJWTString != other.originalJWTString) return false
+        if (verifiablePresentation != other.verifiablePresentation) return false
+        if (verifiableCredential != other.verifiableCredential) return false
+        if (nonce != other.nonce) return false
+        if (issuer != other.issuer) return false
+        if (revoked != other.revoked) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + iss.hashCode()
+        result = 31 * result + (sub?.hashCode() ?: 0)
+        result = 31 * result + (nbf?.hashCode() ?: 0)
+        result = 31 * result + (exp?.hashCode() ?: 0)
+        result = 31 * result + (jti?.hashCode() ?: 0)
+        result = 31 * result + (aud?.contentHashCode() ?: 0)
+        result = 31 * result + (originalJWTString?.hashCode() ?: 0)
+        result = 31 * result + (verifiablePresentation?.hashCode() ?: 0)
+        result = 31 * result + (verifiableCredential?.hashCode() ?: 0)
+        result = 31 * result + (nonce?.hashCode() ?: 0)
+        result = 31 * result + issuer.hashCode()
+        result = 31 * result + (revoked?.hashCode() ?: 0)
+        return result
     }
 
     @OptIn(ExperimentalSerializationApi::class)

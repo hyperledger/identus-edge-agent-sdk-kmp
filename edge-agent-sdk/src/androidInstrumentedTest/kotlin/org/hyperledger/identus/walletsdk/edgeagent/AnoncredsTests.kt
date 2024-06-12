@@ -1,22 +1,7 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import anoncreds_wrapper.LinkSecret
-import org.hyperledger.identus.walletsdk.domain.models.Api
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.ClaimType
-import org.hyperledger.identus.walletsdk.domain.models.CredentialType
-import org.hyperledger.identus.walletsdk.domain.models.DID
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
-import org.hyperledger.identus.walletsdk.mercury.ApiMock
-import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
-import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import io.ktor.http.HttpStatusCode
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
@@ -27,6 +12,19 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
+import org.hyperledger.identus.walletsdk.domain.models.ClaimType
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
+import org.hyperledger.identus.walletsdk.mercury.ApiMock
+import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
+import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

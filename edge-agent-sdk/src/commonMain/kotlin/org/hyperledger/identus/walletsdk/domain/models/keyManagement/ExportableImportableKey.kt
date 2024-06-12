@@ -175,7 +175,7 @@ enum class PEMKeyType(val value: Pair<String, String>) {
          */
         @JvmStatic
         fun fromString(value: String): PEMKeyType? {
-            return values().firstOrNull { it.value.first == value || it.value.second == value }
+            return entries.firstOrNull { it.value.first == value || it.value.second == value }
         }
     }
 }

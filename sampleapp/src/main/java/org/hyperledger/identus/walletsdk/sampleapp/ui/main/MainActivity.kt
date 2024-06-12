@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.sampleapp.ui.main
 
 import android.os.Bundle
@@ -8,13 +6,13 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager.widget.ViewPager
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
-import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.ActivityMainBinding
 import org.hyperledger.identus.walletsdk.sampleapp.db.Message

@@ -79,7 +79,7 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
      *
      * @return An array of pairs containing attachment IDs and unpacked messages.
      */
-    suspend fun run(): Array<Pair<String, Message>> {
+    fun run(): Array<Pair<String, Message>> {
         return if (message.type == PickupResponseType.DELIVERY) {
             message.message.attachments
                 .mapNotNull { processAttachment(it) }

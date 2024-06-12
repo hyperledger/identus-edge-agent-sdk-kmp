@@ -98,8 +98,8 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").layout.buildDirectory.asFile.get()}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
                 implementation("io.ktor:ktor-client-core:2.3.11")
@@ -134,7 +134,7 @@ kotlin {
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
                 implementation("io.ktor:ktor-client-mock:2.3.11")
                 implementation("junit:junit:4.13.2")
                 implementation("org.mockito:mockito-core:4.4.0")

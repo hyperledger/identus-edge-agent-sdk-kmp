@@ -84,7 +84,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Failed to onboard.\nStatus code: $statusCode\nResponse: $response"
     }
 
-    class InvalidCredentialError constructor(
+    class InvalidCredentialError(
         private val credential: Credential? = null,
         private val type: CredentialType? = null
     ) :
@@ -100,7 +100,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             }
     }
 
-    class InvalidCredentialFormatError constructor(private val expectedFormat: CredentialType) :
+    class InvalidCredentialFormatError(private val expectedFormat: CredentialType) :
         EdgeAgentError() {
         override val code: Int
             get() = 121
@@ -141,7 +141,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Invalid or null credential metadata"
     }
 
-    class MissingOrNullFieldError constructor(private val field: String, private val parent: String) :
+    class MissingOrNullFieldError(private val field: String, private val parent: String) :
         EdgeAgentError() {
         override val code: Int
             get() = 126

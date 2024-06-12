@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.CredentialOffer
@@ -7,9 +5,6 @@ import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
 import anoncreds_wrapper.Presentation
 import anoncreds_wrapper.Schema
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import java.security.interfaces.ECPublicKey
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -21,11 +16,14 @@ import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
+import java.security.interfaces.ECPublicKey
 
 class PolluxMock : Pollux {
 

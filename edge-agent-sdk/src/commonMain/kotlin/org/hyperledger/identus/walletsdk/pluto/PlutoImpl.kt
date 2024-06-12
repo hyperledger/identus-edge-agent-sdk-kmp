@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.pluto
 
 import app.cash.sqldelight.ColumnAdapter
@@ -9,8 +7,10 @@ import app.cash.sqldelight.db.AfterVersion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
@@ -36,8 +36,6 @@ import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pluto.data.isConnected
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import java.util.UUID
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.serialization.encodeToString
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import org.hyperledger.identus.walletsdk.pluto.data.DID as DIDDB
 import org.hyperledger.identus.walletsdk.pluto.data.DIDPair as DIDPairDB

@@ -1,6 +1,5 @@
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlin.test.Test
 import kotlin.test.assertEquals

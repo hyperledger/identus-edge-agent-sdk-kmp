@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
 import kotlinx.coroutines.flow.Flow
@@ -80,7 +78,7 @@ interface Pluto {
     /**
      * Stores a private key with its recovery ID.
      *
-     * @param storableKey The private key to store. Must implement the [StorableKey] interface.
+     * @param sorableKey The private key to store. Must implement the [StorableKey] interface.
      * @param recoveryId String that identifies the type of key used on recovery process.
      */
     fun storePrivate(sorableKey: StorableKey, recoveryId: String)

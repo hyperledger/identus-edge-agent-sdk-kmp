@@ -17,7 +17,7 @@ class InvitationRunner(private val mercury: Mercury, private val url: Url) {
      *
      * @return The unpacked [Message] object.
      */
-    suspend fun run(): Message {
+    fun run(): Message {
         val messageString = OutOfBandParser().parseMessage(url)
         return mercury.unpackMessage(messageString)
     }

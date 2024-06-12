@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.sampleapp.ui.messages
 
 import android.app.Application
@@ -7,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,7 +26,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
-import kotlinx.coroutines.CoroutineExceptionHandler
 import org.hyperledger.identus.walletsdk.sampleapp.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -47,7 +45,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private suspend fun insertMessages(list: List<Message>) {
+    private fun insertMessages(list: List<Message>) {
         list.forEach { msg ->
             db.messageDao()
                 .insertMessage(MessageEntity(messageId = msg.id, isRead = false))

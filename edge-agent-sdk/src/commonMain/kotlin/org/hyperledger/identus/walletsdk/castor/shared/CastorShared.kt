@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.castor.shared
 
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
@@ -153,7 +151,7 @@ internal class CastorShared {
          */
         @JvmStatic
         @Throws(CastorError.InvalidPeerDIDError::class, CastorError.NotPossibleToResolveDID::class)
-        internal suspend fun resolvePeerDID(didString: String): DIDDocument {
+        internal fun resolvePeerDID(didString: String): DIDDocument {
             val peerDIDDocument = try {
                 DIDDocPeerDID.fromJson(mercuryPeerDIDResolve(didString))
             } catch (e: MalformedPeerDIDException) {
@@ -294,7 +292,7 @@ internal class CastorShared {
          */
         @JvmStatic
         @Throws(CastorError.InitialStateOfDIDChanged::class)
-        internal suspend fun resolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
+        internal fun resolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
             val did = DIDParser.parse(didString)
             val prismDID = LongFormPrismDID(did)
 

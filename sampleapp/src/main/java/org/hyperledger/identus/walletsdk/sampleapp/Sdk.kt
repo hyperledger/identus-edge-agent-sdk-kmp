@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.sampleapp
 
 import android.app.Application
@@ -10,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
@@ -29,7 +28,6 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import java.net.UnknownHostException
-import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 
 class Sdk {
     private val apollo: Apollo = createApollo()

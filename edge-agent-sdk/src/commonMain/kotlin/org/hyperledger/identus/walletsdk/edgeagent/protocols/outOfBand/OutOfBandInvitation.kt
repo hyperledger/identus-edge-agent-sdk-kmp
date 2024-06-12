@@ -31,7 +31,7 @@ constructor(
      */
     @OptIn(ExperimentalSerializationApi::class)
     @Serializable
-    data class Body constructor(
+    data class Body(
         @SerialName(GOAL_CODE)
         @EncodeDefault
         val goalCode: String? = null,

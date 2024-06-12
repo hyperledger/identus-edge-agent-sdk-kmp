@@ -1,7 +1,7 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.mercury
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
@@ -10,14 +10,12 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
+import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 
 class PlutoMock : Pluto {
     var privateKeys = mutableListOf<PrivateKey>()

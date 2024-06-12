@@ -1,6 +1,5 @@
 package org.hyperledger.identus.walletsdk.pluto
 
-import kotlinx.coroutines.flow.first
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -15,9 +14,6 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNames
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonArray
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -28,7 +24,6 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
-import org.hyperledger.identus.walletsdk.domain.models.DID.Companion.getSchemaFromString
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
@@ -57,7 +52,7 @@ open class PlutoRestoreTask(
      * Restores various credentials, DIDs, key pairs, link secrets, and messages.
      * This method should be called to initialize or restore the necessary components.
      */
-    suspend fun run() {
+    fun run() {
         restoreCredentials()
         restoreDids()
         restoreDidPairs()

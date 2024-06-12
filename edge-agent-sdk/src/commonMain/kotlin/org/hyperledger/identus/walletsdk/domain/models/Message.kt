@@ -153,10 +153,10 @@ constructor(
 
     companion object {
         /**
-         * Checks if the given [AttachmentData] is of type [AttachmentBase64].
+         * Checks if the given [AttachmentData] is of type [AttachmentData.AttachmentBase64].
          *
          * @param data The [AttachmentData] object to check.
-         * @return `true` if the [AttachmentData] is of type [AttachmentBase64], `false` otherwise.
+         * @return `true` if the [AttachmentData] is of type [AttachmentData.AttachmentBase64], `false` otherwise.
          */
         @JvmStatic
         fun isBase64Attachment(data: AttachmentData): Boolean {
@@ -164,10 +164,10 @@ constructor(
         }
 
         /**
-         * Checks if the given [AttachmentData] is of type [AttachmentJsonData].
+         * Checks if the given [AttachmentData] is of type [AttachmentData.AttachmentJsonData].
          *
          * @param data The attachment data to check.
-         * @return `true` if the attachment data is of type [AttachmentJsonData], `false` otherwise.
+         * @return `true` if the attachment data is of type [AttachmentData.AttachmentJsonData], `false` otherwise.
          */
         @JvmStatic
         fun isJsonAttachment(data: AttachmentData): Boolean {

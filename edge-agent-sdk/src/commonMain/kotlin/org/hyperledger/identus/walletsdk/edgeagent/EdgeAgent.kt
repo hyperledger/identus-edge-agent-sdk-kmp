@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.CredentialOffer
@@ -20,7 +18,6 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
-import java.net.UnknownHostException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -32,14 +29,22 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
+import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
@@ -48,9 +53,10 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
@@ -61,14 +67,22 @@ import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
-import org.hyperledger.identus.walletsdk.domain.models.httpClient
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
+import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
@@ -83,29 +97,11 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.Invitatio
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.Presentation
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import java.util.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
-import org.hyperledger.identus.apollo.base64.base64UrlDecoded
-import org.hyperledger.identus.apollo.base64.base64UrlEncoded
-import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
-import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
@@ -116,6 +112,8 @@ import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import java.net.UnknownHostException
+import java.util.*
 
 /**
  * Check if the passed URL is valid or not.
@@ -123,10 +121,10 @@ import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
  * @return [Url] if valid, null if not valid
  */
 private fun Url.Companion.parse(str: String): Url? {
-    try {
-        return Url(str)
+    return try {
+        Url(str)
     } catch (e: Throwable) {
-        return null
+        null
     }
 }
 
@@ -525,7 +523,7 @@ class EdgeAgent {
      *
      * @param did The DID of the mediator to set up.
      */
-    suspend fun setupMediatorDID(did: DID) {
+    fun setupMediatorDID(did: DID) {
         val tmpMediatorHandler = BasicMediatorHandler(
             mediatorDID = did,
             mercury = mercury,
@@ -882,7 +880,7 @@ class EdgeAgent {
      * @throws [SerializationException] if Serialization failed
      */
     @Throws(SerializationException::class)
-    private suspend fun parseOOBInvitation(str: String): OutOfBandInvitation {
+    private fun parseOOBInvitation(str: String): OutOfBandInvitation {
         return try {
             Json.decodeFromString(str)
         } catch (ex: SerializationException) {
@@ -937,7 +935,7 @@ class EdgeAgent {
     /**
      * This method returns a list of all the VerifiableCredentials stored locally.
      */
-    suspend fun getAllCredentials(): Flow<List<Credential>> {
+    fun getAllCredentials(): Flow<List<Credential>> {
         return pluto.getAllCredentials()
             .map { list ->
                 list.map {
@@ -986,12 +984,12 @@ class EdgeAgent {
                             seed,
                             KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                         )
-                    val requestData = request.attachments.mapNotNull {
+                    val requestData = request.attachments.firstNotNullOf {
                         when (it.data) {
                             is AttachmentJsonData -> it.data.data
                             else -> null
                         }
-                    }.first()
+                    }
                     val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
                     presentationString = pollux.createVerifiablePresentationJWT(
                         subjectDID,

@@ -1,6 +1,5 @@
 package org.hyperledger.identus.walletsdk.edgeagent.protocols
 
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.mediation.MediationKeysUpdateList
