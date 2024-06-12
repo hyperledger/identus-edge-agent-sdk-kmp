@@ -14,7 +14,6 @@ import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import org.hyperledger.identus.walletsdk.pollux.models.LinkSecretBlindingData
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
@@ -23,7 +22,11 @@ import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,7 +55,14 @@ class AnoncredsTests {
         polluxMock = PolluxMock()
         mediationHandlerMock = MediationHandlerMock()
         // Pairing will be removed in the future
-        connectionManager = ConnectionManagerImpl(mercuryMock, castorMock, plutoMock, mediationHandlerMock, mutableListOf())
+        connectionManager = ConnectionManagerImpl(
+            mercuryMock,
+            castorMock,
+            plutoMock,
+            mediationHandlerMock,
+            mutableListOf(),
+            polluxMock
+        )
         json = Json {
             ignoreUnknownKeys = true
             prettyPrint = true
@@ -97,7 +107,11 @@ class AnoncredsTests {
             body = OfferCredential.Body(
                 credentialPreview = CredentialPreview(
                     attributes = arrayOf(
-                        CredentialPreview.Attribute(name = "Name", value = "Value", mediaType = "application/json")
+                        CredentialPreview.Attribute(
+                            name = "Name",
+                            value = "Value",
+                            mediaType = "application/json"
+                        )
                     )
                 )
             ),
@@ -106,7 +120,8 @@ class AnoncredsTests {
             from = fromDID,
             to = toDID
         )
-        val requestCredential = agent.prepareRequestCredentialWithIssuer(did = toDID, offer = offerCredential)
+        val requestCredential =
+            agent.prepareRequestCredentialWithIssuer(did = toDID, offer = offerCredential)
 
         assertEquals(offerCredential.from, requestCredential.to)
         assertEquals(offerCredential.to, requestCredential.from)
@@ -127,12 +142,21 @@ class AnoncredsTests {
         val pollux = PolluxImpl(castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
         val meta = CredentialRequestMeta(
-            linkSecretBlindingData = LinkSecretBlindingData(
-                vPrime = "25640768589781180388780947458530942508097609060195936083325202836425537796105863532996457182896416190370043209557677698887790935151362153536943154068082466343529339252470449056527102073900035205398743827912718037139005903291819127500631482122295491777147526837712271367909449810555177615439256541701422814752128559601153332207720895418174855363389532697304935246097129194680107532713993463598420823365761867328806906368762890406604820633668919158697683127114469035627228895027952792675790305070772499052052690434104276748788760647551842035459213572765697025729553350526825112536685989553872204362324245819081933885546131268965572563884162204",
-                vrPrime = null
-            ),
             linkSecretName = "1",
-            nonce = "519571990522308752875135"
+            json = Json.encodeToString(
+                JsonObject(
+                    mapOf(
+                        "linkSecretBlindingData" to JsonObject(
+                            mapOf(
+                                "vPrime" to JsonPrimitive("25640768589781180388780947458530942508097609060195936083325202836425537796105863532996457182896416190370043209557677698887790935151362153536943154068082466343529339252470449056527102073900035205398743827912718037139005903291819127500631482122295491777147526837712271367909449810555177615439256541701422814752128559601153332207720895418174855363389532697304935246097129194680107532713993463598420823365761867328806906368762890406604820633668919158697683127114469035627228895027952792675790305070772499052052690434104276748788760647551842035459213572765697025729553350526825112536685989553872204362324245819081933885546131268965572563884162204"),
+                                "vrPrime" to JsonNull
+                            )
+                        ),
+                        "linkSecretName" to JsonPrimitive("1"),
+                        "nonce" to JsonPrimitive("519571990522308752875135")
+                    )
+                )
+            )
         )
         plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
 
