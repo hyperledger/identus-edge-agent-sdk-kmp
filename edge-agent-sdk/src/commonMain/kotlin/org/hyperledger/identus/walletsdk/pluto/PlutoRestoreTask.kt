@@ -1,7 +1,6 @@
 package org.hyperledger.identus.walletsdk.pluto
 
 import kotlinx.coroutines.flow.first
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -16,6 +15,9 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonNames
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonArray
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -38,7 +40,6 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import java.util.*
 import kotlin.jvm.Throws
-import kotlin.time.Duration.Companion.days
 
 /**
  * Represents a task for restoring data in Pluto.
@@ -273,7 +274,12 @@ open class PlutoRestoreTask(
      */
     @Throws(IndexOutOfBoundsException::class)
     private fun String.toDID(alias: String? = null): DID {
-        return DID(DID.getSchemaFromString(this), DID.getMethodFromString(this), DID.getMethodIdFromString(this), alias)
+        return DID(
+            DID.getSchemaFromString(this),
+            DID.getMethodFromString(this),
+            DID.getMethodIdFromString(this),
+            alias
+        )
     }
 
     /**
@@ -441,12 +447,18 @@ open class PlutoRestoreTask(
         val to: DID? = null,
         @EncodeDefault
         val fromPrior: String? = null,
-        val body: String,
+        val body: Body,
+        @SerialName("extra_headers")
+        @JsonNames("extra_headers", "extraHeaders")
         val extraHeaders: Map<String, String> = emptyMap(),
         @Serializable(with = EpochSecondsSerializer::class)
-        val createdTime: String = Clock.System.now().toString(),
+        @SerialName("created_time")
+        @JsonNames("created_time", "createdTime")
+        val createdTime: Long,
         @Serializable(with = EpochSecondsSerializer::class)
-        val expiresTime: String = Clock.System.now().plus(1.days).toString(),
+        @SerialName("expires_time_plus")
+        @JsonNames("expires_time_plus", "expiresTime")
+        val expiresTime: Long,
         val attachments: Array<AttachmentDescriptor> = arrayOf(),
         val thid: String? = null,
         val pthid: String? = null,
@@ -467,10 +479,10 @@ open class PlutoRestoreTask(
                 from,
                 to,
                 fromPrior,
-                body,
+                Json.encodeToString(body),
                 extraHeaders,
-                createdTime,
-                expiresTime,
+                createdTime.toString(),
+                expiresTime.toString(),
                 attachments,
                 thid,
                 pthid,
@@ -478,6 +490,12 @@ open class PlutoRestoreTask(
                 direction
             )
         }
+
+        @Serializable
+        data class Body(
+            @SerialName("goal_code")
+            val goalCode: String
+        )
 
         /**
          * Serializer for the [Message.Direction] enum class.

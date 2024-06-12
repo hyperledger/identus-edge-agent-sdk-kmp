@@ -30,7 +30,7 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
  */
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable
-data class AnonCredential constructor(
+data class AnonCredential(
     @SerialName("schema_id")
     @JsonNames("schema_id", "schemaID")
     val schemaID: String,

@@ -134,7 +134,20 @@ constructor(
      */
     fun toBackUpMessage(): PlutoRestoreTask.BackUpMessage {
         return PlutoRestoreTask.BackUpMessage(
-            id, piuri, from, to, fromPrior, body, extraHeaders, createdTime, expiresTimePlus, attachments, thid, pthid, ack, direction
+            id,
+            piuri,
+            from,
+            to,
+            fromPrior,
+            Json.decodeFromString(body),
+            extraHeaders,
+            createdTime.toLong(),
+            expiresTimePlus.toLong(),
+            attachments,
+            thid,
+            pthid,
+            ack,
+            direction
         )
     }
 
@@ -147,7 +160,7 @@ constructor(
          */
         @JvmStatic
         fun isBase64Attachment(data: AttachmentData): Boolean {
-            return data is AttachmentBase64
+            return data is AttachmentData.AttachmentBase64
         }
 
         /**
@@ -158,7 +171,7 @@ constructor(
          */
         @JvmStatic
         fun isJsonAttachment(data: AttachmentData): Boolean {
-            return data is AttachmentJsonData
+            return data is AttachmentData.AttachmentJsonData
         }
     }
 }

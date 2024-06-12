@@ -25,11 +25,11 @@ import org.didcommx.didcomm.utils.fromJsonToMap
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentLinkData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentLinkData
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.MercuryError
 import org.hyperledger.identus.walletsdk.domain.models.Message
