@@ -74,9 +74,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
@@ -695,7 +693,8 @@ class EdgeAgent {
 
                 val json = credentialRequest.getJson()
 
-                val metadata = CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
+                val metadata =
+                    CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
                 pluto.storeCredentialMetadata(offer.thid, metadata)
 
                 val attachmentDescriptor =
@@ -753,7 +752,8 @@ class EdgeAgent {
                     null
                 }
 
-                val credential = pollux.parseCredential(credentialData, credentialType, linkSecret, metadata)
+                val credential =
+                    pollux.parseCredential(credentialData, credentialType, linkSecret, metadata)
 
                 val storableCredential =
                     pollux.credentialToStorableCredential(
@@ -1131,7 +1131,9 @@ class EdgeAgent {
         val presentationSubmission: PresentationSubmission =
             presentationSubmissionJsonObject["presentation_submission"]?.let { presentationSubmissionField ->
                 val submission =
-                    Json.decodeFromJsonElement<PresentationSubmission.Submission>(presentationSubmissionField)
+                    Json.decodeFromJsonElement<PresentationSubmission.Submission>(
+                        presentationSubmissionField
+                    )
                 var arrayStrings: Array<String> = arrayOf()
 
                 if (submission.descriptorMap.isNotEmpty()) {
@@ -1139,9 +1141,10 @@ class EdgeAgent {
                     // Assume the path denotes a direct key in the JSON and strip out JSONPath or XPath specific characters if any.
                     val path = firstDescriptorItem.path.removePrefix("$.")
                         .removeSuffix("[0]") // Adjust based on actual path format
-                    arrayStrings = presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
-                        ?.toTypedArray()
-                        ?: arrayOf()
+                    arrayStrings =
+                        presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
+                            ?.toTypedArray()
+                            ?: arrayOf()
                 }
                 return@let PresentationSubmission(submission, arrayStrings)
             } ?: throw EdgeAgentError.MissingOrNullFieldError(
@@ -1150,7 +1153,8 @@ class EdgeAgent {
             )
 
         val presentationDefinitionRequest =
-            pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value).firstOrNull()
+            pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value)
+                .firstOrNull()
                 ?.let { message ->
                     val requestPresentation = RequestPresentation.fromMessage(message)
                     val attachmentDescriptor = requestPresentation.attachments.first()
@@ -1264,15 +1268,6 @@ class EdgeAgent {
     }
 
     /**
-     * Converts a JWK to a Nimbus JWK.
-     *
-     * @return The converted Nimbus JWK.
-     */
-    private fun JWK.toNimbusJwk(): com.nimbusds.jose.jwk.JWK {
-        return com.nimbusds.jose.jwk.JWK.parse(Json.encodeToString(this))
-    }
-
-    /**
      * Creates an X25519 private key from a given seed.
      *
      * @param seed The seed to generate the private key from.
@@ -1286,8 +1281,7 @@ class EdgeAgent {
                     TypeKey().property to KeyTypes.Curve25519,
                     CurveKey().property to Curve.X25519.value,
                     SeedKey().property to seed.value.base64UrlEncoded,
-                    IndexKey().property to 0,
-                    DerivationPathKey().property to "m/0'/0'/0'"
+                    IndexKey().property to 0
                 )
             ) as X25519PrivateKey
         } catch (ex: Exception) {

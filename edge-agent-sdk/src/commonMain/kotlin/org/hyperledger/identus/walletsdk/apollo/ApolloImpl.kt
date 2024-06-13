@@ -7,10 +7,12 @@ import org.hyperledger.identus.apollo.derivation.HDKey
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.apollo.derivation.MnemonicLengthException
 import org.hyperledger.identus.apollo.utils.KMMEdPrivateKey
-import org.hyperledger.identus.walletsdk.apollo.helpers.BytesOps
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
+import org.hyperledger.identus.walletsdk.apollo.utils.KeyUsage
+import org.hyperledger.identus.walletsdk.apollo.utils.PrismDerivationPath
+import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
@@ -125,17 +127,29 @@ class ApolloImpl : Apollo {
                         } ?: run {
                             val seed = properties[SeedKey().property] as String?
                             val derivationParam = properties[DerivationPathKey().property] as String?
-                            if (seed == null && derivationParam == null) {
-                                val keyPair = Ed25519KeyPair.generateKeyPair()
-                                return keyPair.privateKey
-                            } else if (seed.isNullOrBlank() || derivationParam.isNullOrBlank()) {
-                                throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` must also be sent")
-                            } else {
-                                val derivationPath = DerivationPath.fromPath(derivationParam)
+                            val index = properties[IndexKey().property] as Int?
+
+                            if (seed != null) {
+                                val derivationPath = if (derivationParam != null) {
+                                    DerivationPath.fromPath(derivationParam)
+                                } else if (index is Int) {
+                                    PrismDerivationPath(
+                                        keyPurpose = KeyUsage.MASTER_KEY,
+                                        keyIndex = index
+                                    ).toString().let(DerivationPath::fromPath)
+                                } else {
+                                    throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` or `Index` must also be sent")
+                                }
                                 val seedBytes = seed.base64UrlDecodedBytes
                                 val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
-                                val edkey = Ed25519PrivateKey(hdKey.privateKey)
-                                return edkey
+                                val key = Ed25519PrivateKey(hdKey.privateKey)
+                                return key
+                            } else {
+                                if (derivationParam.isNullOrBlank() && index == null) {
+                                    throw IllegalArgumentException("When creating a key using `DerivationPath` or `Index`, `Seed` must also be sent")
+                                }
+                                val keyPair = Ed25519KeyPair.generateKeyPair()
+                                return keyPair.privateKey
                             }
                         }
                     }
@@ -147,31 +161,32 @@ class ApolloImpl : Apollo {
                             }
                             return Secp256k1PrivateKey(it)
                         } ?: run {
-                            val index = properties[IndexKey().property] ?: 0
-                            if (index !is Int) {
-                                throw ApolloError.InvalidIndex("Index must be an integer")
-                            }
-                            val derivationPath =
-                                if (properties[DerivationPathKey().property] != null && properties[DerivationPathKey().property] !is String) {
-                                    throw ApolloError.InvalidDerivationPath("Derivation path must be a string")
+                            val seed = properties[SeedKey().property] as String?
+                            val derivationParam = properties[DerivationPathKey().property] as String?
+                            val index = properties[IndexKey().property] as Int?
+
+                            if (seed != null) {
+                                val derivationPath = if (derivationParam != null) {
+                                    DerivationPath.fromPath(derivationParam)
+                                } else if (index is Int) {
+                                    PrismDerivationPath(
+                                        keyPurpose = KeyUsage.MASTER_KEY,
+                                        keyIndex = index
+                                    ).toString().let(DerivationPath::fromPath)
                                 } else {
-                                    "m/$index'/0'/0'"
+                                    throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` or `Index` must also be sent")
                                 }
-
-                            val seed = properties[SeedKey().property] ?: throw Exception("Seed must provide a seed")
-                            if (seed !is String) {
-                                throw ApolloError.InvalidSeed("Seed must be a string")
+                                val seedBytes = seed.base64UrlDecodedBytes
+                                val hdKey = HDKey(seedBytes, 0, 0).derive(derivationPath.toString())
+                                val key = Secp256k1PrivateKey(hdKey.getKMMSecp256k1PrivateKey().raw)
+                                return key
+                            } else {
+                                if (derivationParam.isNullOrBlank() && index == null) {
+                                    throw IllegalArgumentException("When creating a key using `DerivationPath` or `Index`, `Seed` must also be sent")
+                                }
+                                val keyPair = Secp256k1KeyPair.generateKeyPair()
+                                return keyPair.privateKey
                             }
-
-                            val seedByteArray = BytesOps.hexToBytes(seed)
-
-                            val hdKey = HDKey(seedByteArray, 0, 0)
-                            val derivedHdKey = hdKey.derive(derivationPath)
-                            val private = Secp256k1PrivateKey(derivedHdKey.getKMMSecp256k1PrivateKey().raw)
-                            private.keySpecification[SeedKey().property] = seed
-                            private.keySpecification[DerivationPathKey().property] = derivationPath
-                            private.keySpecification[IndexKey().property] = "0"
-                            return private
                         }
                     }
                 }
@@ -188,19 +203,30 @@ class ApolloImpl : Apollo {
                         } ?: run {
                             val seed = properties[SeedKey().property] as String?
                             val derivationParam = properties[DerivationPathKey().property] as String?
-                            if (seed == null && derivationParam == null) {
-                                val keyPair = X25519KeyPair.generateKeyPair()
-                                return keyPair.privateKey
-                            } else if (seed.isNullOrBlank() || derivationParam.isNullOrBlank()) {
-                                throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` must also be sent")
-                            } else {
-                                val derivationPath = DerivationPath.fromPath(derivationParam)
+                            val index = properties[IndexKey().property] as Int?
+
+                            if (seed != null) {
+                                val derivationPath = if (derivationParam != null) {
+                                    DerivationPath.fromPath(derivationParam)
+                                } else if (index is Int) {
+                                    PrismDerivationPath(
+                                        keyPurpose = KeyUsage.KEY_AGREEMENT_KEY,
+                                        keyIndex = index
+                                    ).toString().let(DerivationPath::fromPath)
+                                } else {
+                                    throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` or `Index` must also be sent")
+                                }
                                 val seedBytes = seed.base64UrlDecodedBytes
                                 val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
                                 val edkey = KMMEdPrivateKey(hdKey.privateKey)
                                 val xKey = edkey.x25519PrivateKey()
-
                                 return X25519PrivateKey(xKey.raw)
+                            } else {
+                                if (derivationParam.isNullOrBlank() && index == null) {
+                                    throw IllegalArgumentException("When creating a key using `DerivationPath` or `Index`, `Seed` must also be sent")
+                                }
+                                val keyPair = X25519KeyPair.generateKeyPair()
+                                return keyPair.privateKey
                             }
                         }
                     }

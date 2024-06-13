@@ -1,6 +1,8 @@
 package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64PadEncoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 
@@ -73,7 +75,16 @@ data class JWK(
 
     // Symmetric key parameters
     val k: String? = null
-)
+) {
+    /**
+     * Converts a JWK to a Nimbus JWK.
+     *
+     * @return The converted Nimbus JWK.
+     */
+    fun toNimbusJwk(): com.nimbusds.jose.jwk.JWK {
+        return com.nimbusds.jose.jwk.JWK.parse(Json.encodeToString(this))
+    }
+}
 
 /**
  * Representation of a cryptographic key in PEM format.

@@ -1,6 +1,5 @@
 package org.hyperledger.identus.walletsdk.pluto
 
-import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer

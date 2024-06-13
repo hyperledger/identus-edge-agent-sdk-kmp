@@ -3,16 +3,16 @@ package org.hyperledger.identus.walletsdk.domain.models
 import kotlinx.datetime.Clock
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNames
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import java.util.UUID
 import kotlin.jvm.JvmOverloads
 import kotlin.time.Duration.Companion.days
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.json.JsonNames
 
 /**
  * The [Message] data class represents a DIDComm message, which is used for secure, decentralized communication in the
