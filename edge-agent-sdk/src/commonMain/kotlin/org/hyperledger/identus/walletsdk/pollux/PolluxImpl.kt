@@ -308,14 +308,14 @@ class PolluxImpl(
             requestedAttribute = requestedAttributes,
             requestedPredicate = requestedPredicate
         )
-        val schemaId = credential.schemaID
+        val schemaId = credential.schemaID.replace("host.docker.internal", "192.168.68.113")
         // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
         // .replace("host.docker.internal", "192.168.68.114")
         val schema = getSchema(schemaId)
 
         val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(credential.schemaID, schema))
 
-        val credDefId = credential.credentialDefinitionID
+        val credDefId = credential.credentialDefinitionID.replace("host.docker.internal", "192.168.68.113")
         // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
         // .replace("host.docker.internal", "192.168.68.114")
         val credentialDefinition = getCredentialDefinition(credDefId)
