@@ -1,4 +1,4 @@
-@proof @jwt @blap
+@proof @jwt
 Feature: Respond to request proof
   The Edge Agent should be able to respond to a proof-of-request
 
