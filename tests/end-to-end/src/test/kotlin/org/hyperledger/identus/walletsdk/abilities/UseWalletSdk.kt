@@ -3,7 +3,6 @@ package org.hyperledger.identus.walletsdk.abilities
 import com.jayway.jsonpath.JsonPath
 import io.iohk.atala.automation.utils.Logger
 import org.hyperledger.identus.walletsdk.configuration.Environment
-
 import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import io.restassured.RestAssured
 import kotlinx.coroutines.CoroutineScope
@@ -52,6 +51,12 @@ class UseWalletSdk : Ability {
         fun proofOfRequestStackSize(): Question<Int> {
             return Question.about("proof of request stack").answeredBy {
                 `as`(it).context.proofRequestStack.size
+            }
+        }
+
+        fun revocationStackSize(): Question<Int> {
+            return Question.about("revocation messages stack").answeredBy {
+                `as`(it).context.revocationNotificationStack.size
             }
         }
 
@@ -129,6 +134,7 @@ class UseWalletSdk : Ability {
                         ProtocolType.DidcommOfferCredential.value -> context.credentialOfferStack.add(message)
                         ProtocolType.DidcommIssueCredential.value -> context.issuedCredentialStack.add(message)
                         ProtocolType.DidcommRequestPresentation.value -> context.proofRequestStack.add(message)
+                        ProtocolType.PrismRevocation.value -> context.revocationNotificationStack.add(message)
                         else -> logger.debug("other message: ${message.piuri}")
                     }
                 }
@@ -150,7 +156,8 @@ data class SdkContext(
     val sdk: EdgeAgent,
     val credentialOfferStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val proofRequestStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
-    val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
+    val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
+    val revocationNotificationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
 )
 
 class ActorCannotUseWalletSdk(actor: Actor) :

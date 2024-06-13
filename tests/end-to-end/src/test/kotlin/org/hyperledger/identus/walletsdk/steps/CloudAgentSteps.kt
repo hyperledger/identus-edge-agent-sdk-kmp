@@ -39,7 +39,7 @@ class CloudAgentSteps {
 
     @When("{actor} offers a credential")
     fun `Cloud Agent offers a credential`(cloudAgent: Actor) {
-        cloudAgentWorkflow.offerCredential(cloudAgent)
+        cloudAgentWorkflow.offerJwtCredential(cloudAgent)
     }
 
     @When("{actor} offers an anonymous credential")
@@ -61,6 +61,11 @@ class CloudAgentSteps {
     @When("{actor} asks for present-proof for anoncred")
     fun `Cloud Agent asks for present-proof for anoncred`(cloudAgent: Actor) {
         cloudAgentWorkflow.askForPresentProofForAnoncred(cloudAgent)
+    }
+
+    @When("{actor} revokes '{int}' credentials")
+    fun `Cloud Agent revokes {} credentials`(cloudAgent: Actor, numberOfRevokedCredentials: Int) {
+        cloudAgentWorkflow.revokeCredential(cloudAgent, numberOfRevokedCredentials)
     }
 
     @Then("{actor} should have the connection status updated to '{}'")
