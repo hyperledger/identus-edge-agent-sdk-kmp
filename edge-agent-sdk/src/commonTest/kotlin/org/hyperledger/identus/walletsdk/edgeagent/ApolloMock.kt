@@ -38,6 +38,10 @@ class ApolloMock : Apollo {
         return createPrivateKey ?: Secp256k1PrivateKey(ByteArray(0))
     }
 
+    override fun createPublicKey(properties: Map<String, Any>): PublicKey {
+        TODO("Not yet implemented")
+    }
+
     override fun isPrivateKeyData(identifier: String, data: ByteArray): Boolean {
         TODO("Not yet implemented")
     }

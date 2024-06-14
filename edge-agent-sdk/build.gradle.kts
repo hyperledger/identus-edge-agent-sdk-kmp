@@ -128,7 +128,7 @@ kotlin {
                 implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.6")
                 implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
-                implementation(kotlin("reflect"))
+                implementation("com.github.jsonld-java:jsonld-java:0.13.5")
             }
         }
         val commonTest by getting {

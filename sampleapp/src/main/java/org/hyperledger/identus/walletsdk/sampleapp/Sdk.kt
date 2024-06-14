@@ -111,7 +111,7 @@ class Sdk {
     }
 
     private fun createPollux(): PolluxImpl {
-        return PolluxImpl(castor)
+        return PolluxImpl(apollo, castor)
     }
 
     private fun createSeed(): Seed {

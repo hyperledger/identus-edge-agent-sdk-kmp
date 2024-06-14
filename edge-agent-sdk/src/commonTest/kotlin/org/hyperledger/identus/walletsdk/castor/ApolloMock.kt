@@ -45,6 +45,10 @@ class ApolloMock : Apollo {
         TODO("Not yet implemented")
     }
 
+    override fun createPublicKey(properties: Map<String, Any>): PublicKey {
+        TODO("Not yet implemented")
+    }
+
     override fun isPrivateKeyData(identifier: String, data: ByteArray): Boolean {
         TODO("Not yet implemented")
     }

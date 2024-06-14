@@ -5,6 +5,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.SeedWords
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyRestoration
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import kotlin.jvm.Throws
 
 /**
@@ -50,4 +51,16 @@ interface Apollo : KeyRestoration {
      * @return A PrivateKey object representing the created private key.
      */
     fun createPrivateKey(properties: Map<String, Any>): PrivateKey
+
+    /**
+     * Creates a public key using the provided properties.
+     *
+     * @param properties A map containing the properties of the public key.
+     *                   The supported properties are:
+     *                   - "type": The type of the private key. Use KeyTypes.EC for elliptic curve keys.
+     *                   - "raw": The raw data used.
+     *                   - "curve": The key curve. Use Curve.SECP256K1 for secp256k1 curve.
+     * @return A PrivateKey object representing the created private key.
+     */
+    fun createPublicKey(properties: Map<String, Any>): PublicKey
 }

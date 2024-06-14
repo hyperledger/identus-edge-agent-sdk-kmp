@@ -17,6 +17,9 @@ import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
@@ -48,6 +51,7 @@ import kotlin.test.assertNotNull
 class PolluxImplTest {
 
     lateinit var pollux: PolluxImpl
+    lateinit var apollo: Apollo
 
     @Mock
     lateinit var castorMock: Castor
@@ -58,7 +62,8 @@ class PolluxImplTest {
     @BeforeTest
     fun setup() {
         MockitoAnnotations.openMocks(this)
-        pollux = PolluxImpl(castorMock, apiMock)
+        apollo = ApolloImpl()
+        pollux = PolluxImpl(apollo, castorMock, apiMock)
     }
 
     @Test
@@ -713,32 +718,30 @@ class PolluxImplTest {
 
     fun testIsCredentialRevoked_when_then() = runTest {
         val response = """{
-            "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-                "https://w3id.org/vc/status-list/2021/v1"
-            ],
-            "type": [
-                "VerifiableCredential",
-                "StatusList2021Credential"
-            ],
-            "issuer": "did:prism:e02e8099d50351345c5dd831a9e9112b394a85d0064a2eb59429080734a159b6",
-            "id": "http://192.168.68.103:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464",
-            "issuanceDate": 1716556379,
-            "credentialSubject": {
-                "id": "",
-                "type": "StatusList2021",
-                "statusPurpose": "Revocation",
-                "encodedList": "H4sIAAAAAAAA_-3BMQEAAAwCoDWz2bIbwwf4HAAAAAAAAAAAAAAAAAAAADBWR7wnPABAAAA="
-            },
-            "proof": {
-                "type": "DataIntegrityProof",
-                "proofPurpose": "assertionMethod",
-                "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L211bHRpa2V5L3YxIl0sInR5cGUiOiJNdWx0aWtleSIsInB1YmxpY0tleU11bHRpYmFzZSI6InVNRll3RUFZSEtvWkl6ajBDQVFZRks0RUVBQW9EUWdBRXdydlRaN2FycVFZX3REUW5UQU8tYzBYZ1hzbWdpVHRXaG1Iai1BVEVCMVJFLTJocGRrZk1oSmZNYTZzVUhzRzhYaUlna1VSeEhpWWdHZllnRTgybGlBPT0ifQ==",
-                "created": "2024-05-24T13:12:59.526328551Z",
-                "proofValue": "zAN1rKvtJ78oBwfBD2GMuGNymuCZjoevdJBHZPKT2CrBCkiS8ohov18XPvx9joFMc2NqGAs6g4KPrQVNekagyj17LbHEgAu8zr",
-                "cryptoSuite": "eddsa-jcs-2022"
-            }
-            }"""
+        "proof": {
+          "type": "EcdsaSecp256k1Signature2019",
+          "proofPurpose": "assertionMethod",
+          "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L3YxIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiQ1hJRmwyUjE4YW1lTEQteWtTT0dLUW9DQlZiRk01b3Vsa2MydklySnRTND0iLCJ5IjoiRDJRWU5pNi1BOXoxbHhwUmpLYm9jS1NUdk5BSXNOVnNsQmpsemVnWXlVQT0ifX0=",
+          "created": "2024-06-06T22:47:27.987035Z",
+          "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..ERDKKRukFs3UZiBdlH-e9r3rS9n05XDaR3yh-7jtmuZhY40b1CTMELHHRRfnfTv6XJ2ROziN4dj_nU_9W8qi5Q"
+        },
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://w3id.org/vc/status-list/2021/v1"
+        ],
+        "type": [
+          "VerifiableCredential",
+          "StatusList2021Credential"
+        ],
+        "id": "http://localhost:8085/credential-status/575092c2-7eb0-40ae-8f41-3b499f45f3dc",
+        "issuer": "did:prism:462c4811bf61d7de25b3baf86c5d2f0609b4debe53792d297bf612269bf8593a",
+        "issuanceDate": 1717714047,
+        "credentialSubject": {
+          "type": "StatusList2021",
+          "statusPurpose": "Revocation",
+          "encodedList": "H4sIAAAAAAAA_-3BMQ0AAAACIGf_0MbwARoAAAAAAAAAAAAAAAAAAADgbbmHB0sAQAAA"
+        }
+      }"""
         val httpResponse = HttpResponse(status = HttpStatusCode.OK.value, response)
 
         `when`(
