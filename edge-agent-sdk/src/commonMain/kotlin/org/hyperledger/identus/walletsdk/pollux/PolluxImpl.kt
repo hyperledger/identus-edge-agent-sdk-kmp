@@ -44,7 +44,6 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.MediaType
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
@@ -61,7 +60,6 @@ import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.Attachment
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
-import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
@@ -103,6 +101,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pluto.RestorationID
 import java.util.zip.GZIPInputStream
+import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -521,15 +520,12 @@ open class PolluxImpl(
         if (credential !is JWTCredential) {
             throw PolluxError.InvalidCredentialError()
         }
-        if (credential.jwtPayload.verifiableCredential.credentialStatus == null) {
+        if (credential.verifiableCredential?.credentialStatus == null) {
             throw PolluxError.InvalidJWTCredential("Credential must contain credential status")
         }
-        credential.jwtPayload.verifiableCredential.credentialStatus?.let { credentialStatus ->
+        credential.verifiableCredential!!.credentialStatus?.let { credentialStatus ->
             val revocationRegistryJson = fetchRevocationRegistry(credentialStatus)
-            val validProof = validateProof(revocationRegistryJson)
-            if (!validProof) {
-                throw Exception("Pumba!")
-            }
+            validateProof(revocationRegistryJson)
             return checkEncodedListRevoked(revocationRegistryJson, credentialStatus.statusListIndex)
         }
         return false
@@ -549,50 +545,61 @@ open class PolluxImpl(
         EcdsaSecp256k1VerificationKey2019("EcdsaSecp256k1VerificationKey2019")
     }
 
-    suspend fun validateProof(revocationRegistryJson: String): Boolean {
+    private fun validateProof(revocationRegistryJson: String): Boolean {
         val jsonObject = (Json.parseToJsonElement(revocationRegistryJson) as JsonObject)
         if (!jsonObject.containsKey("proof")) {
-            throw Exception("") // TODO: Custom exception
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("proof")
         }
         val proof = jsonObject["proof"]!!.jsonObject
-        if (!proof.containsKey("verificationMethod") && !proof.containsKey("type")) {
-            throw Exception("") // TODO: Custom exception
+        if (!proof.containsKey("verificationMethod")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("Proof->verificationMethod")
+        }
+        if (!proof.containsKey("type")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("Proof->type")
         }
         val verificationMethod = proof["verificationMethod"]
         val proofType = proof["type"]?.jsonPrimitive?.content
-        val base64VerificationMethod = verificationMethod?.jsonPrimitive?.content?.split(",")?.get(1)
-            ?: throw Exception() // TODO: Custom exception
+        val base64VerificationMethod = verificationMethod!!.jsonPrimitive.content.split(",")[1]
         val decodedVerificationMethod =
             Json.parseToJsonElement(base64VerificationMethod.base64UrlDecoded) as JsonObject
         if (proofType != JWTProofType.ECDSASECP256K1Signature2019.value) {
-            throw Exception("") // TODO: Custom exception
+            throw PolluxError.UnsupportedTypeError(proofType.toString())
         }
-        if (!decodedVerificationMethod.containsKey("type") && !decodedVerificationMethod.containsKey("publicKeyJwk")) {
-            throw Exception("") // TODO: Custom exception
+        if (!decodedVerificationMethod.containsKey("type")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("DecodedVerificationMethod->type")
+        }
+        if (!decodedVerificationMethod.containsKey("publicKeyJwk")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("DecodedVerificationMethod->publicKeyJwk")
         }
         val verificationMethodType = decodedVerificationMethod["type"]?.jsonPrimitive?.content
         val publicKeyJwk = decodedVerificationMethod["publicKeyJwk"]?.jsonObject
 
         if (verificationMethodType != VerificationKeyType.EcdsaSecp256k1VerificationKey2019.value) {
-            throw Exception("") // TODO: Custom exception
+            throw PolluxError.UnsupportedTypeError(verificationMethodType.toString())
         }
-        if (!publicKeyJwk!!.containsKey("x") &&
-            !publicKeyJwk.containsKey("y") &&
-            !publicKeyJwk.containsKey("kty") &&
-            !publicKeyJwk.containsKey("crv")
-        ) {
-            throw Exception("") // TODO: Custom exception
+        if (!publicKeyJwk!!.containsKey("x")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("x")
         }
+        if (!publicKeyJwk.containsKey("y")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("y")
+        }
+        if (!publicKeyJwk.containsKey("kty")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("kty")
+        }
+        if (!publicKeyJwk.containsKey("crv")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("crv")
+        }
+
         val x = publicKeyJwk["x"]?.jsonPrimitive?.content
         val y = publicKeyJwk["y"]?.jsonPrimitive?.content
         val kty = publicKeyJwk["kty"]?.jsonPrimitive?.content
         val crv = publicKeyJwk["crv"]?.jsonPrimitive?.content
         if (x == null || y == null || kty == null || crv == null) {
-            throw Exception() // TODO: custom throw exception
+            throw PolluxError.NonNullableError("$x, $y, $kty, $crv")
         }
 
         if (kty != KeyTypes.EC.type || crv != Curve.SECP256K1.value.lowercase()) {
-            throw Exception() // TODO: custom throw exception
+            throw PolluxError.UnsupportedTypeError(kty)
         }
 
         val publicKey = apollo.createPublicKey(
@@ -604,13 +611,13 @@ open class PolluxImpl(
             )
         )
         if (!publicKey.canVerify()) {
-            throw Exception() // TODO: custom throw exception
+            throw PolluxError.VerifyProofError()
         }
 
         if (!proof.containsKey("jws")) {
-            throw Exception("") // TODO: Custom exception
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("Proof->jws")
         }
-        val jwsArray = proof["jws"]?.jsonPrimitive?.content?.split(".") ?: throw Exception("")
+        val jwsArray = proof["jws"]?.jsonPrimitive?.content?.split(".") ?: throw PolluxError.InvalidJWTString()
         if (jwsArray.size != 3) {
             throw PolluxError.InvalidJWTString()
         }
@@ -625,7 +632,7 @@ open class PolluxImpl(
             signature
         )
         if (!verified) {
-            throw Exception() // TODO: Custom exception
+            throw PolluxError.VerifyProofError()
         }
         return true
     }
@@ -675,7 +682,7 @@ open class PolluxImpl(
         if (result.status == 200) {
             return result.jsonString
         }
-        throw Exception() // TODO: Custom exception
+        throw UnknownError.SomethingWentWrongError("Fetch revocation registry failed: ${result.jsonString}")
     }
 
     /**

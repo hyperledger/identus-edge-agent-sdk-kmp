@@ -823,7 +823,7 @@ constructor(
      */
     class VerificationUnsuccessful(reason: String) : PolluxError(reason) {
         override val code: Int
-            get() = 56
+            get() = 60
     }
 
     /**
@@ -834,7 +834,7 @@ constructor(
     class WrongKeyProvided(expected: String?, actual: String?) :
         PolluxError("Provided key is: $actual but should be $expected") {
         override val code: Int
-            get() = 57
+            get() = 61
     }
 
     /**
@@ -844,7 +844,7 @@ constructor(
      */
     class NullField(field: String) : PolluxError("Field $field must not be null") {
         override val code: Int
-            get() = 58
+            get() = 62
     }
 
     /**
@@ -854,7 +854,7 @@ constructor(
      */
     class RequestPresentationHasWrongAttachments(reason: String) : PolluxError(reason) {
         override val code: Int
-            get() = 59
+            get() = 63
     }
 
     /*
@@ -862,6 +862,38 @@ constructor(
      */
     class StatusListOutOfBoundIndex : PolluxError("Status list index is out of bound") {
         override val code: Int
-            get() = 57
+            get() = 64
+    }
+
+    /**
+     * Represents an error that occurs when a revocation registry json is missing a field.
+     */
+    class RevocationRegistryJsonMissingFieldError(val field: String) : PolluxError("Revocation registry json missing: $field") {
+        override val code: Int
+            get() = 65
+    }
+
+    /**
+     * Represents an error that occurs when a revocation registry json is missing a field.
+     */
+    class UnsupportedTypeError(val type: String) : PolluxError("Unsupported type: $type") {
+        override val code: Int
+            get() = 66
+    }
+
+    /**
+     * Represents an error that occurs when a field is null but should not be.
+     */
+    class NonNullableError(val field: String) : PolluxError("Field $field are non nullable.") {
+        override val code: Int
+            get() = 67
+    }
+
+    /**
+     * Represents an error that occurs when a proof cannot be verified.
+     */
+    class VerifyProofError() : PolluxError("The verification failed.") {
+        override val code: Int
+            get() = 68
     }
 }
