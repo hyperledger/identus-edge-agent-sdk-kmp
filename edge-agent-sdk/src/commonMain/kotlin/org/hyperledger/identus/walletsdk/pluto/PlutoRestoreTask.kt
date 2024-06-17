@@ -12,7 +12,9 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonNames
+import kotlinx.serialization.json.jsonObject
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -441,7 +443,8 @@ open class PlutoRestoreTask(
         val to: DID? = null,
         @EncodeDefault
         val fromPrior: String? = null,
-        val body: Body,
+        @Serializable(with = JsonAsStringSerializer::class)
+        val body: String,
         @SerialName("extra_headers")
         @JsonNames("extra_headers", "extraHeaders")
         val extraHeaders: Map<String, String> = emptyMap(),
@@ -452,7 +455,7 @@ open class PlutoRestoreTask(
         @Serializable(with = EpochSecondsSerializer::class)
         @SerialName("expires_time_plus")
         @JsonNames("expires_time_plus", "expiresTime", "expiresTimePlus")
-        val expiresTime: Long,
+        val expiresTime: Long? = null,
         val attachments: Array<AttachmentDescriptor> = arrayOf(),
         val thid: String? = null,
         val pthid: String? = null,
@@ -473,7 +476,7 @@ open class PlutoRestoreTask(
                 from,
                 to,
                 fromPrior,
-                Json.encodeToString(body),
+                body,
                 extraHeaders,
                 createdTime.toString(),
                 expiresTime.toString(),
@@ -484,12 +487,6 @@ open class PlutoRestoreTask(
                 direction
             )
         }
-
-        @Serializable
-        data class Body(
-            @SerialName("goal_code")
-            val goalCode: String
-        )
 
         /**
          * Serializer for the [Message.Direction] enum class.
@@ -525,6 +522,22 @@ open class PlutoRestoreTask(
              */
             override fun deserialize(decoder: Decoder): Message.Direction {
                 return Message.Direction.fromValue(decoder.decodeInt())
+            }
+        }
+
+        private object JsonAsStringSerializer : KSerializer<String> {
+            override val descriptor: SerialDescriptor =
+                PrimitiveSerialDescriptor("JsonAsString", PrimitiveKind.STRING)
+
+            override fun serialize(encoder: Encoder, value: String) {
+                val jsonObject = Json.parseToJsonElement(value).jsonObject
+                encoder.encodeString(Json.encodeToString(jsonObject))
+            }
+
+            override fun deserialize(decoder: Decoder): String {
+                val jsonDecoder = decoder as JsonDecoder
+                val jsonObject = jsonDecoder.decodeJsonElement().jsonObject
+                return Json.encodeToString(jsonObject)
             }
         }
 
