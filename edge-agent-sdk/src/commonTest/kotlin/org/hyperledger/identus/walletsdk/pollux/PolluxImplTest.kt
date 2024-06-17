@@ -7,6 +7,13 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
 import io.ktor.http.HttpStatusCode
+import java.text.SimpleDateFormat
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.HttpStatusCode
+import io.ktor.serialization.kotlinx.json.json
+import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -42,6 +49,17 @@ import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.mockito.kotlin.mock
 import java.text.SimpleDateFormat
 import java.util.*
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
+import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
+import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
+import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.spy
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -718,45 +736,64 @@ class PolluxImplTest {
 
     fun testIsCredentialRevoked_when_then() = runTest {
         val response = """{
-        "proof": {
-          "type": "EcdsaSecp256k1Signature2019",
-          "proofPurpose": "assertionMethod",
-          "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L3YxIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiQ1hJRmwyUjE4YW1lTEQteWtTT0dLUW9DQlZiRk01b3Vsa2MydklySnRTND0iLCJ5IjoiRDJRWU5pNi1BOXoxbHhwUmpLYm9jS1NUdk5BSXNOVnNsQmpsemVnWXlVQT0ifX0=",
-          "created": "2024-06-06T22:47:27.987035Z",
-          "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..ERDKKRukFs3UZiBdlH-e9r3rS9n05XDaR3yh-7jtmuZhY40b1CTMELHHRRfnfTv6XJ2ROziN4dj_nU_9W8qi5Q"
-        },
-        "@context": [
-          "https://www.w3.org/2018/credentials/v1",
-          "https://w3id.org/vc/status-list/2021/v1"
-        ],
-        "type": [
-          "VerifiableCredential",
-          "StatusList2021Credential"
-        ],
-        "id": "http://localhost:8085/credential-status/575092c2-7eb0-40ae-8f41-3b499f45f3dc",
-        "issuer": "did:prism:462c4811bf61d7de25b3baf86c5d2f0609b4debe53792d297bf612269bf8593a",
-        "issuanceDate": 1717714047,
-        "credentialSubject": {
-          "type": "StatusList2021",
-          "statusPurpose": "Revocation",
-          "encodedList": "H4sIAAAAAAAA_-3BMQ0AAAACIGf_0MbwARoAAAAAAAAAAAAAAAAAAADgbbmHB0sAQAAA"
-        }
-      }"""
+                "proof": {
+                    "type": "EcdsaSecp256k1Signature2019",
+                    "proofPurpose": "assertionMethod",
+                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L3YxIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiVFlCZ21sM1RpUWRSX1lRRDFoSXVOTzhiUnluU0otcmxQcWFVd3JXa3EtRT0iLCJ5IjoiVjBnVFlBM0xhbFd3Q3hPZHlqb2ZoR2JkYVFEd3EwQXdCblNodFJLXzNYZz0ifX0=",
+                    "created": "2024-06-14T10:56:59.948091Z",
+                    "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..Q1mj3jMf5DWK83E55r6vNUPpsYYgclgwYoNFBSYBzA5x6fI_2cPHJsXECnQlG1XMj2ifldngpJXegTpwe3Fgwg"
+                },
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://w3id.org/vc/status-list/2021/v1"
+                ],
+                "type": [
+                    "VerifiableCredential",
+                    "StatusList2021Credential"
+                ],
+                "id": "http://localhost:8085/credential-status/575092c2-7eb0-40ae-8f41-3b499f45f3dc",
+                "issuer": "did:prism:462c4811bf61d7de25b3baf86c5d2f0609b4debe53792d297bf612269bf8593a",
+                "issuanceDate": 1717714047,
+                "credentialSubject": {
+                    "type": "StatusList2021",
+                    "statusPurpose": "Revocation",
+                    "encodedList": "H4sIAAAAAAAA_-3BMQ0AAAACIGf_0MbwARoAAAAAAAAAAAAAAAAAAADgbbmHB0sAQAAA"
+                }
+            }"""
         val httpResponse = HttpResponse(status = HttpStatusCode.OK.value, response)
 
-        `when`(
-            apiMock.request(
-                httpMethod = HttpMethod.Get.value,
-                url = "http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464",
-                urlParameters = emptyArray(),
-                httpHeaders = arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
-                body = null
+        apollo = ApolloImpl()
+        val api = spy(
+            ApiImpl(
+                httpClient {
+                    install(ContentNegotiation) {
+                        json(
+                            Json {
+                                ignoreUnknownKeys = true
+                                prettyPrint = true
+                                isLenient = true
+                            }
+                        )
+                    }
+                }
             )
-        ).thenReturn(httpResponse)
+        )
+
+        pollux = PolluxImpl(apollo, castorMock, api)
+
+        doReturn(httpResponse)
+            .`when`(api).request(
+                HttpMethod.Get.value,
+                "http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464",
+                emptyArray(),
+                arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+                null
+            )
 
         val credential = JWTCredential(
             "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206ZTAyZTgwOTlkNTAzNTEzNDVjNWRkODMxYTllOTExMmIzOTRhODVkMDA2NGEyZWI1OTQyOTA4MDczNGExNTliNjpDcmtCQ3JZQkVqb0tCbUYxZEdndE1SQUVTaTRLQ1hObFkzQXlOVFpyTVJJaEF1Vlljb3JmV25MMGZZdEE1dmdKSzRfLW9iM2JVRGMtdzJVT0hkTzNRRXZxRWpzS0IybHpjM1ZsTFRFUUFrb3VDZ2x6WldOd01qVTJhekVTSVFMQ3U5Tm50cXVwQmotME5DZE1BNzV6UmVCZXlhQ0pPMWFHWWVQNEJNUUhWQkk3Q2dkdFlYTjBaWEl3RUFGS0xnb0pjMlZqY0RJMU5tc3hFaUVET1dndlF4NnZSdTZ3VWI0RlljSnVhRUNqOUJqUE1KdlJwOEx3TTYxaEVUNCIsInN1YiI6ImRpZDpwcmlzbTpiZDgxZmY1NDQzNDJjMTAwNDZkZmE0YmEyOTVkNWIzNmU0Y2ZlNWE3ZWIxMjBlMTBlZTVjMjQ4NzAwNjUxMDA5OkNvVUJDb0lCRWpzS0IyMWhjM1JsY2pBUUFVb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQkpEQ2c5aGRYUm9aVzUwYVdOaGRHbHZiakFRQkVvdUNnbHpaV053TWpVMmF6RVNJUVB2NVA1eXlnclp3YUpsWXpsNTltMkhBREtUWFVMUHNSZTBrZ2VFSHZ0TGdBIiwibmJmIjoxNzE1MDAwNjc0LCJleHAiOjE3MTg2MDA2NzQsInZjIjp7ImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImVtYWlsQWRkcmVzcyI6ImNyaXN0aWFuLmNhc3Ryb0Bpb2hrLmlvIiwiaWQiOiJkaWQ6cHJpc206YmQ4MWZmNTQ0MzQyYzEwMDQ2ZGZhNGJhMjk1ZDViMzZlNGNmZTVhN2ViMTIwZTEwZWU1YzI0ODcwMDY1MTAwOTpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRUHY1UDV5eWdyWndhSmxZemw1OW0ySEFES1RYVUxQc1JlMGtnZUVIdnRMZ0JKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQSJ9LCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sIkBjb250ZXh0IjpbImh0dHBzOlwvXC93d3cudzMub3JnXC8yMDE4XC9jcmVkZW50aWFsc1wvdjEiXSwiY3JlZGVudGlhbFN0YXR1cyI6eyJzdGF0dXNQdXJwb3NlIjoiUmV2b2NhdGlvbiIsInN0YXR1c0xpc3RJbmRleCI6MjUsImlkIjoiaHR0cDpcL1wvMTAuOTEuMTAwLjEyNjo4MDAwXC9wcmlzbS1hZ2VudFwvY3JlZGVudGlhbC1zdGF0dXNcLzUxNGU4NTI4LTRiMzgtNDc3YS1iMGU0LTMyNGJiZTIyMDQ2NCMyNSIsInR5cGUiOiJTdGF0dXNMaXN0MjAyMUVudHJ5Iiwic3RhdHVzTGlzdENyZWRlbnRpYWwiOiJodHRwOlwvXC8xMC45MS4xMDAuMTI2OjgwMDBcL3ByaXNtLWFnZW50XC9jcmVkZW50aWFsLXN0YXR1c1wvNTE0ZTg1MjgtNGIzOC00NzdhLWIwZTQtMzI0YmJlMjIwNDY0In19fQ.5OmmL5tdcRKugiHVt01PJUhp9r22zgMPPALUOB41g_1_BPHE3ezqJ2QhSmScU_EOGYcKksHftdrvfoND65nSjw"
         )
+        // TODO:  Add usage of this to presentation request
         assertFalse(pollux.isCredentialRevoked(credential))
     }
 

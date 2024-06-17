@@ -128,7 +128,17 @@ kotlin {
                 implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.6")
                 implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
-                implementation("com.github.jsonld-java:jsonld-java:0.13.5")
+
+                implementation("com.apicatalog:titanium-json-ld-jre8:1.4.0")
+                implementation("org.glassfish:jakarta.json:2.0.1")
+                implementation("io.setl:rdf-urdna:1.3")
+
+//                implementation("com.github.jsonld-java:jsonld-java:0.13.5")
+//                implementation("org.apache.jena:jena-arq:4.3.2")
+//                implementation("org.apache.jena:jena-core:4.3.2")
+//                implementation("org.apache.jena:jena-iri:4.3.2")
+//                implementation("org.apache.jena:jena-base:4.3.2")
+//                implementation("org.apache.jena:jena-tdb:4.3.2")
             }
         }
         val commonTest by getting {

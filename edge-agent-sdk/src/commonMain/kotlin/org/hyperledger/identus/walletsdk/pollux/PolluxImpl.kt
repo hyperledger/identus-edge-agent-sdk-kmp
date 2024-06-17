@@ -16,10 +16,9 @@ import anoncreds_wrapper.RequestedAttribute
 import anoncreds_wrapper.RequestedPredicate
 import anoncreds_wrapper.Schema
 import anoncreds_wrapper.SchemaId
-import com.github.jsonldjava.core.DocumentLoader
-import com.github.jsonldjava.core.JsonLdOptions
-import com.github.jsonldjava.core.JsonLdProcessor
-import com.github.jsonldjava.utils.JsonUtils
+import com.apicatalog.jsonld.JsonLd
+import com.apicatalog.jsonld.document.JsonDocument
+import com.apicatalog.rdf.Rdf
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
@@ -37,6 +36,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.setl.rdf.normalization.RdfNormalize
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -44,6 +44,7 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import okhttp3.MediaType
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
@@ -81,6 +82,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
 import java.io.ByteArrayInputStream
+import java.io.StringWriter
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
@@ -108,7 +110,7 @@ import java.util.zip.GZIPInputStream
  * @property castor An API object for interacting with the Castor system.
  */
 @Suppress("LABEL_NAME_CLASH")
-class PolluxImpl(
+open class PolluxImpl(
     val apollo: Apollo,
     val castor: Castor,
     private val api: Api = ApiImpl(httpClient())
@@ -547,85 +549,97 @@ class PolluxImpl(
         EcdsaSecp256k1VerificationKey2019("EcdsaSecp256k1VerificationKey2019")
     }
 
-    fun validateProof(revocationRegistryJson: String): Boolean {
+    suspend fun validateProof(revocationRegistryJson: String): Boolean {
         val jsonObject = (Json.parseToJsonElement(revocationRegistryJson) as JsonObject)
-        if (jsonObject.containsKey("proof")) {
-            val proof = jsonObject["proof"]!!.jsonObject
-            if (proof.containsKey("verificationMethod") && proof.containsKey("type")) {
-                val verificationMethod = proof["verificationMethod"]
-                val proofType = proof["type"]?.jsonPrimitive?.content
-                val base64VerificationMethod = verificationMethod?.jsonPrimitive?.content?.split(",")?.get(1)
-                    ?: throw Exception() // TODO: Custom exception
-                val decodedVerificationMethod =
-                    Json.parseToJsonElement(base64VerificationMethod.base64UrlDecoded) as JsonObject
-                if (proofType == JWTProofType.ECDSASECP256K1Signature2019.value) {
-                    if (decodedVerificationMethod.containsKey("type") && decodedVerificationMethod.containsKey("publicKeyJwk")) {
-                        val verificationMethodType = decodedVerificationMethod["type"]?.jsonPrimitive?.content
-                        val publicKeyJwk = decodedVerificationMethod["publicKeyJwk"]?.jsonObject
+        if (!jsonObject.containsKey("proof")) {
+            throw Exception("") // TODO: Custom exception
+        }
+        val proof = jsonObject["proof"]!!.jsonObject
+        if (!proof.containsKey("verificationMethod") && !proof.containsKey("type")) {
+            throw Exception("") // TODO: Custom exception
+        }
+        val verificationMethod = proof["verificationMethod"]
+        val proofType = proof["type"]?.jsonPrimitive?.content
+        val base64VerificationMethod = verificationMethod?.jsonPrimitive?.content?.split(",")?.get(1)
+            ?: throw Exception() // TODO: Custom exception
+        val decodedVerificationMethod =
+            Json.parseToJsonElement(base64VerificationMethod.base64UrlDecoded) as JsonObject
+        if (proofType != JWTProofType.ECDSASECP256K1Signature2019.value) {
+            throw Exception("") // TODO: Custom exception
+        }
+        if (!decodedVerificationMethod.containsKey("type") && !decodedVerificationMethod.containsKey("publicKeyJwk")) {
+            throw Exception("") // TODO: Custom exception
+        }
+        val verificationMethodType = decodedVerificationMethod["type"]?.jsonPrimitive?.content
+        val publicKeyJwk = decodedVerificationMethod["publicKeyJwk"]?.jsonObject
 
-                        if (verificationMethodType != VerificationKeyType.EcdsaSecp256k1VerificationKey2019.value) {
-                            // TODO: throw exception
-                        }
-                        if (publicKeyJwk!!.containsKey("x") &&
-                            publicKeyJwk.containsKey("y") &&
-                            publicKeyJwk.containsKey("kty") &&
-                            publicKeyJwk.containsKey("crv")
-                        ) {
-                            val x = publicKeyJwk["x"]?.jsonPrimitive?.content
-                            val y = publicKeyJwk["y"]?.jsonPrimitive?.content
-                            val kty = publicKeyJwk["kty"]?.jsonPrimitive?.content
-                            val crv = publicKeyJwk["crv"]?.jsonPrimitive?.content
-                            if (x == null || y == null || kty == null || crv == null) {
-                                throw Exception() // TODO: custom throw exception
-                            }
+        if (verificationMethodType != VerificationKeyType.EcdsaSecp256k1VerificationKey2019.value) {
+            throw Exception("") // TODO: Custom exception
+        }
+        if (!publicKeyJwk!!.containsKey("x") &&
+            !publicKeyJwk.containsKey("y") &&
+            !publicKeyJwk.containsKey("kty") &&
+            !publicKeyJwk.containsKey("crv")
+        ) {
+            throw Exception("") // TODO: Custom exception
+        }
+        val x = publicKeyJwk["x"]?.jsonPrimitive?.content
+        val y = publicKeyJwk["y"]?.jsonPrimitive?.content
+        val kty = publicKeyJwk["kty"]?.jsonPrimitive?.content
+        val crv = publicKeyJwk["crv"]?.jsonPrimitive?.content
+        if (x == null || y == null || kty == null || crv == null) {
+            throw Exception() // TODO: custom throw exception
+        }
 
-                            if (kty != KeyTypes.EC.type || crv != Curve.SECP256K1.value.lowercase()) {
-                                throw Exception() // TODO: custom throw exception
-                            }
+        if (kty != KeyTypes.EC.type || crv != Curve.SECP256K1.value.lowercase()) {
+            throw Exception() // TODO: custom throw exception
+        }
 
-                            val publicKey = apollo.createPublicKey(
-                                mapOf(
-                                    TypeKey().property to KeyTypes.EC,
-                                    CurveKey().property to crv,
-                                    CurvePointXKey().property to x,
-                                    CurvePointYKey().property to y
-                                )
-                            )
-                            if (!publicKey.canVerify()) {
-                                throw Exception() // TODO: custom throw exception
-                            }
+        val publicKey = apollo.createPublicKey(
+            mapOf(
+                TypeKey().property to KeyTypes.EC,
+                CurveKey().property to crv,
+                CurvePointXKey().property to x,
+                CurvePointYKey().property to y
+            )
+        )
+        if (!publicKey.canVerify()) {
+            throw Exception() // TODO: custom throw exception
+        }
 
-                            if (proof.containsKey("jws")) {
-                                val jwsArray = proof["jws"]?.jsonPrimitive?.content?.split(".") ?: throw Exception("")
-                                if (jwsArray.size != 3) {
-                                    throw PolluxError.InvalidJWTString()
-                                }
+        if (!proof.containsKey("jws")) {
+            throw Exception("") // TODO: Custom exception
+        }
+        val jwsArray = proof["jws"]?.jsonPrimitive?.content?.split(".") ?: throw Exception("")
+        if (jwsArray.size != 3) {
+            throw PolluxError.InvalidJWTString()
+        }
 
-                                val payload = JsonObject(jsonObject.filterKeys { it != "proof" })
-                                val encodedPayload = encode(Json.encodeToString(payload))
+        val payload = JsonObject(jsonObject.filterKeys { it != "proof" })
+        val encoded = encode(Json.encodeToString(payload))
+        val signaturePayload = "${jwsArray[0]}.$encoded"
+        val signature = jwsArray[2].base64UrlDecodedBytes
 
-                                val signature = jwsArray[2].base64UrlDecodedBytes
-                                return (publicKey as VerifiableKey).verify(encodedPayload.toByteArray(), signature)
-                            } // TODO: custom throw exception
-                        } // TODO: throw exception
-                    } // TODO: throw exception
-                } // TODO: throw exception
-            } // TODO: throw exception
-        } // TODO: throw exception
-        throw Exception("")
+        val verified = (publicKey as VerifiableKey).verify(
+            signaturePayload.toByteArray(),
+            signature
+        )
+        if (!verified) {
+            throw Exception() // TODO: Custom exception
+        }
+        return true
     }
 
-    fun encode(payload: String): String {
-        val obj = JsonUtils.fromString(payload)
-        val normalized = JsonLdProcessor.
-        val options = JsonLdOptions()
-        val documentLoader = DocumentLoader()
-        val httpClient = JsonUtils.getDefaultHttpClient()
+    private fun encode(data: String): String {
+        val inputStream = ByteArrayInputStream(data.toByteArray())
+        val document = JsonDocument.of(inputStream)
+        val rdfDataset = JsonLd.toRdf(document).get()
+        val normalized = RdfNormalize.normalize(rdfDataset)
+        val writer = StringWriter()
+        val rdfWriter = Rdf.createWriter(com.apicatalog.jsonld.http.media.MediaType.N_QUADS, writer)
+        rdfWriter.write(normalized)
 
-        documentLoader.httpClient = httpClient
-        options.documentLoader = documentLoader
-
-        return JsonLdProcessor.toRDF(normalized).toString()
+        return writer.toString()
     }
 
     fun checkEncodedListRevoked(revocationRegistryJson: String, statusListIndex: Int): Boolean {
