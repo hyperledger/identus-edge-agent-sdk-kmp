@@ -52,8 +52,11 @@ import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.spy
 import kotlin.test.BeforeTest
@@ -72,11 +75,18 @@ class PolluxImplTest {
     @Mock
     lateinit var castorMock: Castor
 
+    @Mock
+    lateinit var loggerMock: PrismLogger
+
     @BeforeTest
     fun setup() {
         MockitoAnnotations.openMocks(this)
         apollo = ApolloImpl()
-        castor = CastorImpl(apollo)
+
+        castor = CastorImpl(apollo, loggerMock)
+
+        doNothing()
+            .`when`(loggerMock).debug(anyString(), any())
 
         api = spy(
             ApiImpl(
@@ -318,7 +328,7 @@ class PolluxImplTest {
             val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
             val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
-            pollux = PolluxImpl(apollo, castor, api)
+            pollux = spy(PolluxImpl(apollo, castor, api))
 
             val vtc = createVerificationTestCase(
                 VerificationTestCase(
@@ -385,7 +395,7 @@ class PolluxImplTest {
                 null
             )
 
-        pollux = PolluxImpl(apollo, castor, api)
+        pollux = spy(PolluxImpl(apollo, castor, api))
 
         val vtc = createVerificationTestCase(
             VerificationTestCase(
@@ -439,7 +449,7 @@ class PolluxImplTest {
                     null
                 )
 
-            pollux = PolluxImpl(apollo, castor, api)
+            pollux = spy(PolluxImpl(apollo, castor, api))
 
             val vtc = createVerificationTestCase(
                 VerificationTestCase(
@@ -495,7 +505,7 @@ class PolluxImplTest {
                 null
             )
 
-        pollux = PolluxImpl(apollo, castor, api)
+        pollux = spy(PolluxImpl(apollo, castor, api))
 
         val vtc = createVerificationTestCase(
             VerificationTestCase(
@@ -537,7 +547,7 @@ class PolluxImplTest {
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
-        pollux = PolluxImpl(apollo, castor, api)
+        pollux = spy(PolluxImpl(apollo, castor, api))
 
         val vtc = createVerificationTestCase(
             VerificationTestCase(
@@ -594,7 +604,7 @@ class PolluxImplTest {
                 null
             )
 
-        pollux = PolluxImpl(apollo, castor, api)
+        pollux = spy(PolluxImpl(apollo, castor, api))
 
         val vtc = createVerificationTestCase(
             VerificationTestCase(
@@ -647,7 +657,7 @@ class PolluxImplTest {
                 null
             )
 
-        pollux = PolluxImpl(apollo, castor, api)
+        pollux = spy(PolluxImpl(apollo, castor, api))
 
         val vtc = createVerificationTestCase(
             VerificationTestCase(
@@ -700,7 +710,7 @@ class PolluxImplTest {
         val issuerDID = castor.createPrismDID(issuerKeyPair.publicKey, emptyArray())
         val holderDID = castor.createPrismDID(holderKeyPair.publicKey, emptyArray())
 
-        pollux = PolluxImpl(apollo, castor, api)
+        pollux = spy(PolluxImpl(apollo, castor, api))
 
         val vtc = createVerificationTestCase(
             VerificationTestCase(
@@ -989,6 +999,9 @@ class PolluxImplTest {
             ),
             options = PresentationOptions(domain = "domain", challenge = testCaseOptions.challenge)
         )
+
+        doReturn(false)
+            .`when`(pollux).isCredentialRevoked(any())
 
         val presentationSubmission = pollux.createPresentationSubmission(
             presentationDefinitionRequest = presentationDefinition,
