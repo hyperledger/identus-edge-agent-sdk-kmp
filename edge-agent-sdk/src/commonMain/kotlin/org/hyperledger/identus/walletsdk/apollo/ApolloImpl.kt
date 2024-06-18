@@ -281,7 +281,7 @@ class ApolloImpl : Apollo {
                                 throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
                             }
                             return Ed25519PublicKey(it)
-                        } // TODO: Throw exception
+                        }
                     }
 
                     Curve.SECP256K1.value -> {
@@ -298,7 +298,7 @@ class ApolloImpl : Apollo {
                                     throw Exception("KeyData must be a ByteArray")
                                 }
                                 return Secp256k1PublicKey(data)
-                            } // TODO: Throw exception
+                            }
                         }
                     }
                 }
@@ -310,7 +310,7 @@ class ApolloImpl : Apollo {
                         throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
                     }
                     return X25519PublicKey(it)
-                }  // TODO: Throw exception
+                }
             }
         }
         throw ApolloError.InvalidKeyType(keyType.toString())

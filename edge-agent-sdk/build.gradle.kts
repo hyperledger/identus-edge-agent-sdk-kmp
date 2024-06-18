@@ -154,7 +154,6 @@ kotlin {
         val jvmTest by getting
         val androidMain by getting {
             dependencies {
-//                implementation(kotlin("test-junit"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
                 implementation("io.ktor:ktor-client-okhttp:2.3.11")
                 implementation("io.ktor:ktor-client-android:2.3.11")
