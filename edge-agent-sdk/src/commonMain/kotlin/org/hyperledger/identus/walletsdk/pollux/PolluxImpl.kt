@@ -101,6 +101,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pluto.RestorationID
 import java.util.zip.GZIPInputStream
+import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 
 /**
@@ -671,7 +672,7 @@ open class PolluxImpl(
         return false
     }
 
-    suspend fun fetchRevocationRegistry(credentialStatus: JWTPayload.JWTVerifiableCredential.CredentialStatus): String {
+    suspend fun fetchRevocationRegistry(credentialStatus: JWTVerifiableCredential.CredentialStatus): String {
         val result = api.request(
             HttpMethod.Get.value,
             credentialStatus.statusListCredential,
@@ -1000,6 +1001,13 @@ open class PolluxImpl(
                     val value = verifiableCredentialMapper.getValue(pathNested.path)
                     value?.let { vc ->
                         val verifiableCredential = JWTCredential.fromJwtString(vc as String)
+
+                        val isRevoked = isCredentialRevoked(verifiableCredential)
+
+                        if (isRevoked) {
+                            throw PolluxError.VerificationUnsuccessful("Provided credential is revoked")
+                        }
+
                         if (verifiableCredential.subject != issuer) {
                             throw PolluxError.VerificationUnsuccessful("Invalid submission,")
                         }

@@ -468,7 +468,7 @@ class EdgeAgentTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(castorMock, apiMock)
+        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
         val agent = EdgeAgent(
@@ -529,7 +529,7 @@ class EdgeAgentTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(castorMock, apiMock)
+        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
         val meta = CredentialRequestMeta(
             linkSecretName = "1",

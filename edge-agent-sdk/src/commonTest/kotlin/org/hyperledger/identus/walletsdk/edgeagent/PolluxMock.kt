@@ -118,6 +118,7 @@ class PolluxMock : Pollux {
     }
 
     override suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun isCredentialRevoked(credential: Credential): Boolean {
