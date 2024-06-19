@@ -654,7 +654,8 @@ class EdgeAgent {
                     pollux.processCredentialRequestJWT(did, keyPair.privateKey, offerJsonObject)
                 val attachmentDescriptor =
                     AttachmentDescriptor(
-                        mediaType = JWT_MEDIA_TYPE,
+                        mediaType = ContentType.Application.Json.toString(),
+                        format = CredentialType.JWT.type,
                         data = AttachmentBase64(jwtString.base64UrlEncoded)
                     )
                 return RequestCredential(
@@ -958,11 +959,10 @@ class EdgeAgent {
         request: RequestPresentation,
         credential: Credential
     ): Presentation {
-        val msgAttachmentDescriptor =
+        val attachmentFormat = request.attachments.first().format ?: CredentialType.Unknown.type
+        if (attachmentFormat == CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type) {
             request.attachments.find { it.data::class == AttachmentBase64::class }
                 ?: throw EdgeAgentError.AttachmentTypeNotSupported()
-        val attachmentFormat = msgAttachmentDescriptor.format ?: CredentialType.Unknown.type
-        if (attachmentFormat == CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type) {
             // Presentation Exchange
             return handlePresentationDefinitionRequest(request, credential)
         } else {
@@ -1006,12 +1006,11 @@ class EdgeAgent {
                         throw EdgeAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
                     }
                     val linkSecret = getLinkSecret()
-                    val presentation =
-                        pollux.createVerifiablePresentationAnoncred(
-                            request,
-                            credential as AnonCredential,
-                            linkSecret
-                        )
+                    val presentation = pollux.createVerifiablePresentationAnoncred(
+                        request,
+                        credential as AnonCredential,
+                        linkSecret
+                    )
                     presentationString = presentation.getJson()
                 }
 
