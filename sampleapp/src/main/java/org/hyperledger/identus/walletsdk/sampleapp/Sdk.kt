@@ -3,6 +3,7 @@ package org.hyperledger.identus.walletsdk.sampleapp
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import io.ktor.util.decodeBase64Bytes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -140,7 +141,7 @@ class Sdk {
             "admit",
             "peanut"
         )
-        return Seed(byteArrayOf(69, -65, 35, -24, -43, 102, 3, 93, -76, 106, -32, -112, 79, -85, 79, -33, -102, -39, -21, -24, 96, 30, -8, 92, 100, 38, 38, 42, 101, 53, 2, -9, 56, 111, -108, -36, -19, 122, 15, 120, 55, 82, 89, -106, 35, 45, 123, -121, -97, -116, 52, 127, -17, -108, -106, 109, 86, -111, 77, 109, 47, 60, 20, 16))
+        return Seed("Rb8j6NVmA120auCQT6tP35rZ6_hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f__Ulm1WkU1tLzwUEA".decodeBase64Bytes())
 //        return apollo.createSeed(words, "")
     }
 

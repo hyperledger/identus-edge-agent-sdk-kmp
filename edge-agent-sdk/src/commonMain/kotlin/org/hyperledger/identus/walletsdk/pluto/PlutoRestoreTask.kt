@@ -14,6 +14,8 @@ import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonNames
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
@@ -21,7 +23,6 @@ import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
@@ -36,6 +37,8 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import java.util.*
 import kotlin.jvm.Throws
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
 
 /**
  * Represents a task for restoring data in Pluto.
@@ -45,7 +48,6 @@ import kotlin.jvm.Throws
  */
 open class PlutoRestoreTask(
     private val pluto: Pluto,
-    private val pollux: Pollux,
     private val backup: BackupV0_0_1
 ) {
 
@@ -334,11 +336,11 @@ open class PlutoRestoreTask(
         @JsonNames("revocation_registry_id", "revocationRegistryId")
         val revocationRegistryId: String? = null,
         @SerialName("rev_reg")
-        @JsonNames("revocation_registry", "revocationRegistryJson")
-        val revocationRegistry: String? = null,
+        @JsonNames("revocation_registry", "revocationRegistryJson", "rev_reg")
+        val revocationRegistry: RevocationRegistry? = null,
         @SerialName("witness")
         @JsonNames("witness", "witnessJson")
-        val witnessJson: String? = null,
+        val witnessJson: Witness? = null,
         val revoked: Boolean? = null
     ) {
         /**
@@ -354,8 +356,8 @@ open class PlutoRestoreTask(
                 signatureJson = Json.encodeToString(signature),
                 signatureCorrectnessProofJson = Json.encodeToString(signatureCorrectnessProof),
                 revocationRegistryId = revocationRegistryId,
-                revocationRegistryJson = revocationRegistry,
-                witnessJson = witnessJson,
+                revocationRegistryJson = Json.encodeToString(revocationRegistry),
+                witnessJson = Json.encodeToString(witnessJson),
                 Json.encodeToString(this)
             )
             credential.revoked = this.revoked
@@ -365,15 +367,15 @@ open class PlutoRestoreTask(
         /**
          * Represents a signature object.
          *
-         * @property pCredential The P Credential object.
-         * @property rCredential The R Credential string.
+         * @property primaryCredential The P Credential object.
+         * @property revocationCredential The R Credential string.
          */
         @Serializable
         class Signature(
             @SerialName("p_credential")
-            val pCredential: PCredential,
+            val primaryCredential: PrimaryCredential,
             @SerialName("r_credential")
-            val rCredential: String? = null
+            val revocationCredential: RevocationCredential? = null
         ) {
             /**
              * Represents a serializable class for storing user credentials.
@@ -384,13 +386,37 @@ open class PlutoRestoreTask(
              * @param v The v property of the credential.
              */
             @Serializable
-            class PCredential(
+            class PrimaryCredential(
                 @SerialName("m_2")
                 val m2: String,
                 val a: String,
                 val e: String,
                 val v: String
             )
+
+            @Serializable
+            class RevocationCredential(
+                val sigma: String,
+                val c: String,
+                @SerialName("vr_prime_prime")
+                val vrPrimePrime: String,
+                @SerialName("witness_signature")
+                val witnessSignature: WitnessSignature,
+                @SerialName("g_i")
+                val gI: String,
+                val i: Int,
+                val m2: String,
+            ) {
+                @Serializable
+                class WitnessSignature(
+                    @SerialName("sigma_i")
+                    val sigmaI: String,
+                    @SerialName("u_i")
+                    val uI: String,
+                    @SerialName("g_i")
+                    val gI: String
+                )
+            }
         }
 
         /**
@@ -404,6 +430,31 @@ open class PlutoRestoreTask(
             val se: String,
             val c: String
         )
+
+        @Serializable
+        class RevocationRegistry(
+            val accum: String? = null
+        )
+
+        @Serializable
+        class Witness(
+            val omega: String? = null
+        )
+
+        companion object {
+            /**
+             * Converts a byte array of storable credential data to an [AnonCredentialBackUp] object.
+             *
+             * @param data The byte array containing the storable credential data.
+             * @return The converted [AnonCredentialBackUp] object.
+             */
+            @JvmStatic
+            fun fromStorableData(data: ByteArray): AnonCredentialBackUp {
+                val dataString = data.decodeToString()
+                val cred = Json.decodeFromString<AnonCredentialBackUp>(dataString)
+                return cred
+            }
+        }
     }
 
     /**
@@ -451,7 +502,7 @@ open class PlutoRestoreTask(
         @Serializable(with = EpochSecondsSerializer::class)
         @SerialName("created_time")
         @JsonNames("created_time", "createdTime")
-        val createdTime: Long,
+        val createdTime: Long? = null,
         @Serializable(with = EpochSecondsSerializer::class)
         @SerialName("expires_time_plus")
         @JsonNames("expires_time_plus", "expiresTime", "expiresTimePlus")
@@ -536,8 +587,15 @@ open class PlutoRestoreTask(
 
             override fun deserialize(decoder: Decoder): String {
                 val jsonDecoder = decoder as JsonDecoder
-                val jsonObject = jsonDecoder.decodeJsonElement().jsonObject
-                return Json.encodeToString(jsonObject)
+                val jsonElement = jsonDecoder.decodeJsonElement()
+                if (jsonElement is JsonPrimitive && jsonElement.isString) {
+                    return jsonElement.content
+                } else if (jsonElement is JsonObject) {
+                    val jsonObject = jsonElement.jsonObject
+                    return Json.encodeToString(jsonObject)
+                } else {
+                    throw UnknownError.SomethingWentWrongError("Invalid JSON string: $jsonElement")
+                }
             }
         }
 
@@ -562,6 +620,10 @@ open class PlutoRestoreTask(
             override val descriptor: SerialDescriptor =
                 PrimitiveSerialDescriptor("EpochSecondsString", PrimitiveKind.LONG)
 
+            private fun isEpochTimeLikelySeconds(epochTime: String): Boolean {
+                return epochTime.length <= 10 // Epoch in seconds has up to 10 digits
+            }
+
             /**
              * Serializes a string value.
              *
@@ -569,7 +631,11 @@ open class PlutoRestoreTask(
              * @param value the string value to be serialized
              */
             override fun serialize(encoder: Encoder, value: Long) {
-                encoder.encodeLong(value)
+                if (isEpochTimeLikelySeconds(value.toString())) {
+                    encoder.encodeLong(value)
+                } else {
+                    encoder.encodeLong(value.toDuration(DurationUnit.MILLISECONDS).inWholeSeconds)
+                }
             }
 
             /**
@@ -579,7 +645,18 @@ open class PlutoRestoreTask(
              * @return The deserialized value as a String.
              */
             override fun deserialize(decoder: Decoder): Long {
-                return decoder.decodeLong()
+                val jsonDecoder = decoder as JsonDecoder
+                val jsonElement = jsonDecoder.decodeJsonElement()
+                if (jsonElement is JsonPrimitive) {
+                    try {
+                        return jsonElement.content.toLong()
+                    } catch (ex: Exception) {
+                        ex.printStackTrace()
+                        throw ex
+                    }
+                } else {
+                    throw UnknownError.SomethingWentWrongError("Invalid JSON string: $jsonElement")
+                }
             }
         }
 

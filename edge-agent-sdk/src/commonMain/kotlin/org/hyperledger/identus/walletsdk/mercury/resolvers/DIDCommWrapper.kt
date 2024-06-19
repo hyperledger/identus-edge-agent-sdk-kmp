@@ -134,6 +134,15 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
         }
     }
 
+    private fun String.canBeConvertedToLong(): Boolean {
+        return try {
+            this.toLong()
+            true
+        } catch (e: NumberFormatException) {
+            false
+        }
+    }
+
     /**
      * Packs a [Message] object into an encrypted string message.
      *
@@ -160,7 +169,7 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
             fromPrior = null,
             fromPriorJwt = message.fromPrior,
             attachments = parseAttachments(message.attachments),
-            createdTime = if (message.createdTime == "") Clock.System.now().epochSeconds else Instant.parse(message.createdTime).epochSeconds,
+            createdTime = if (message.createdTime == "") Clock.System.now().epochSeconds else if (message.createdTime.canBeConvertedToLong()) message.createdTime.toLong() else Instant.parse(message.createdTime).epochSeconds,
             expiresTime = null,
             thid = message.thid,
             pthid = message.pthid,

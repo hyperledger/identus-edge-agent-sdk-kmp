@@ -74,7 +74,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
@@ -547,7 +547,7 @@ class EdgeAgent {
      * @param pair The DIDPair to be stored
      */
     fun registerDIDPair(pair: DIDPair) {
-        pluto.storeDIDPair(pair.host, pair.receiver, pair.name ?: "")
+        pluto.storeDIDPair(pair.holder, pair.receiver, pair.name ?: "")
     }
 
     /**
@@ -1234,11 +1234,11 @@ class EdgeAgent {
     @Throws(UnknownError.SomethingWentWrongError::class)
     suspend fun recoverWallet(jwe: String) {
         // 1. Get the JWK
-        val privateKey = createX25519PrivateKeyFrom(this.seed)
-        if (privateKey.isExportable().not()) {
+        val masterKey = createX25519PrivateKeyFrom(this.seed)
+        if (masterKey.isExportable().not()) {
             throw UnknownError.SomethingWentWrongError("Key is not exportable")
         }
-        val jwk = privateKey.getJwk().toNimbusJwk()
+        val jwk = masterKey.getJwk().toNimbusJwk()
 
         // 2. Parse the JWE string
         val jweObject = JWEObject.parse(jwe)
@@ -1263,7 +1263,7 @@ class EdgeAgent {
         val backupObject = Json.decodeFromString<BackupV0_0_1>(json)
 
         // 7. Restore the pluto instance
-        val restoreTask = PlutoRestoreTask(pluto, pollux, backupObject)
+        val restoreTask = PlutoRestoreTask(pluto, backupObject)
         restoreTask.run()
     }
 
@@ -1274,14 +1274,14 @@ class EdgeAgent {
      * @return The generated X25519 private key.
      * @throws UnknownError.SomethingWentWrongError If something goes wrong during the key generation process.
      */
-    private fun createX25519PrivateKeyFrom(seed: Seed): X25519PrivateKey {
+    private fun createX25519PrivateKeyFrom(seed: Seed, derivationPath: String = "m/0'/0'/0'"): X25519PrivateKey {
         return try {
             apollo.createPrivateKey(
                 mapOf(
                     TypeKey().property to KeyTypes.Curve25519,
                     CurveKey().property to Curve.X25519.value,
                     SeedKey().property to seed.value.base64UrlEncoded,
-                    IndexKey().property to 0
+                    DerivationPathKey().property to derivationPath
                 )
             ) as X25519PrivateKey
         } catch (ex: Exception) {

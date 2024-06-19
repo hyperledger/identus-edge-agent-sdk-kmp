@@ -11,6 +11,7 @@ import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.AnonCredentialBackUp.RevocationRegistry
 
 /**
  * Represents an anonymous verifiable credential that contains information about an entity or identity.
@@ -64,8 +65,8 @@ data class AnonCredential(
             signature = Json.decodeFromString(this.signatureJson),
             signatureCorrectnessProof = Json.decodeFromString(this.signatureCorrectnessProofJson),
             revocationRegistryId = this.revocationRegistryId,
-            revocationRegistry = this.revocationRegistryJson,
-            witnessJson = this.witnessJson,
+            revocationRegistry = if (this.revocationRegistryJson != null) Json.decodeFromString(this.revocationRegistryJson) else RevocationRegistry(),
+            witnessJson = if (this.witnessJson != null) Json.decodeFromString(this.witnessJson) else PlutoRestoreTask.AnonCredentialBackUp.Witness(),
             revoked = this.revoked
         )
     }

@@ -21,6 +21,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
@@ -106,16 +107,18 @@ class ApolloTests {
 
     @Test
     fun testDerivePrivateKey_whenSecp256k1_thenWorksAsExpected() {
-        val path = "m/0'/0'/0'"
+        val path = "m/1'/0'/0'"
 
         val seed = Seed(MnemonicHelper.createRandomSeed())
 
         val properties: MutableMap<String, Any> = mutableMapOf()
         properties[TypeKey().property] = KeyTypes.EC
-        properties[SeedKey().property] = BytesOps.bytesToHex(seed.value)
+        properties[SeedKey().property] = seed.value.base64UrlEncoded
         properties[CurveKey().property] = Curve.SECP256K1.value
+        properties[IndexKey().property] = 0
 
         val privateKey = apollo.createPrivateKey(properties) as Secp256k1PrivateKey
+        privateKey.keySpecification[SeedKey().property] = seed.value.base64UrlEncoded
         privateKey.derive(DerivationPath.fromPath(path))
         assertTrue(privateKey.isDerivable())
 

@@ -23,7 +23,7 @@ class ContactsAdapter(private var data: MutableList<DIDPair> = mutableListOf()) 
             }
 
             override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                return data[oldItemPosition].host == updatedContacts[newItemPosition].host &&
+                return data[oldItemPosition].holder == updatedContacts[newItemPosition].holder &&
                     data[oldItemPosition].receiver == updatedContacts[newItemPosition].receiver
             }
 
@@ -57,7 +57,7 @@ class ContactsAdapter(private var data: MutableList<DIDPair> = mutableListOf()) 
         private val receiver: TextView = itemView.findViewById(R.id.contact_receiver)
 
         fun bind(contact: DIDPair) {
-            host.text = contact.host.toString()
+            host.text = contact.holder.toString()
             receiver.text = contact.receiver.toString()
         }
     }

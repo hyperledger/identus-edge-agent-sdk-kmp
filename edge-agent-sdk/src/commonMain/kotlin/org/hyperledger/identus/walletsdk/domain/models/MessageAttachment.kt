@@ -202,28 +202,30 @@ object AttachmentDataSerializer : KSerializer<AttachmentData> {
     }
 
     override fun deserialize(decoder: Decoder): AttachmentData {
-        val jsonDecoder = decoder as? JsonDecoder ?: throw SerializationException("This class can be loaded only by Json")
+        val jsonDecoder = decoder as JsonDecoder
         val json = jsonDecoder.decodeJsonElement().jsonObject
+
+        val jsonSerializable = Json { this.ignoreUnknownKeys = true }
 
         return when {
             json.containsKey("children") -> {
-                Json.decodeFromJsonElement(AttachmentData.AttachmentHeader.serializer(), json)
+                jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentHeader.serializer(), json)
             }
             json.containsKey("protected") && json.containsKey("signature") -> {
-                Json.decodeFromJsonElement(AttachmentData.AttachmentJws.serializer(), json)
+                jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentJws.serializer(), json)
             }
             json.containsKey("base64") -> {
                 if (json.containsKey("jws")) {
-                    Json.decodeFromJsonElement(AttachmentData.AttachmentJwsData.serializer(), json)
+                    jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentJwsData.serializer(), json)
                 } else {
-                    Json.decodeFromJsonElement(AttachmentData.AttachmentBase64.serializer(), json)
+                    jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentBase64.serializer(), json)
                 }
             }
             json.containsKey("links") && json.containsKey("hash") -> {
-                Json.decodeFromJsonElement(AttachmentData.AttachmentLinkData.serializer(), json)
+                jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentLinkData.serializer(), json)
             }
             json.containsKey("data") -> {
-                Json.decodeFromJsonElement(AttachmentData.AttachmentJsonData.serializer(), json)
+                jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentJsonData.serializer(), json)
             }
             else -> throw SerializationException("Unknown AttachmentData type")
         }

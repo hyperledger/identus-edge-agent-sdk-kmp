@@ -1,6 +1,7 @@
 package org.hyperledger.identus.walletsdk.domain.models
 
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -39,10 +40,10 @@ constructor(
     val extraHeaders: Map<String, String> = emptyMap(),
     @SerialName("created_time")
     @JsonNames("created_time", "createdTime")
-    val createdTime: String = Clock.System.now().toString(),
+    val createdTime: String = Clock.System.now().epochSeconds.toString(),
     @SerialName("expires_time_plus")
     @JsonNames("expires_time_plus", "expiresTime", "expiresTimePlus")
-    val expiresTimePlus: String = Clock.System.now().plus(1.days).toString(),
+    val expiresTimePlus: String = Clock.System.now().plus(1.days).epochSeconds.toString(),
     val attachments: Array<AttachmentDescriptor> = arrayOf(),
     val thid: String? = null,
     val pthid: String? = null,
@@ -169,16 +170,30 @@ constructor(
      * @return The backup message object.
      */
     fun toBackUpMessage(): PlutoRestoreTask.BackUpMessage {
+        fun isValidTimestamp(timestamp: String): Boolean {
+            val regex = Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$") // Note the escaped backslashes
+            return regex.matches(timestamp)
+        }
+
+        var createdTimeTemp: String? = this.createdTime
+        if (isValidTimestamp(this.createdTime)) {
+            createdTimeTemp = Instant.parse(this.createdTime).epochSeconds.toString()
+        }
+        var expiresTimePlusTemp: String? = this.expiresTimePlus
+        if (isValidTimestamp(this.expiresTimePlus)) {
+            expiresTimePlusTemp = Instant.parse(this.expiresTimePlus).epochSeconds.toString()
+        }
+
         return PlutoRestoreTask.BackUpMessage(
             id,
             piuri,
             from,
             to,
             fromPrior,
-            Json.decodeFromString(body),
+            body,
             extraHeaders,
-            createdTime.toLong(),
-            expiresTimePlus.toLong(),
+            createdTimeTemp?.toLong(),
+            expiresTimePlusTemp?.toLong(),
             attachments,
             thid,
             pthid,

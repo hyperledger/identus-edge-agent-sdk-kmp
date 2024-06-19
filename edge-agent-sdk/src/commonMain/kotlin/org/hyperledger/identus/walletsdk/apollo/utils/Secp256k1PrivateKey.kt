@@ -1,10 +1,10 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.derivation.DerivationPath
 import org.hyperledger.identus.apollo.derivation.HDKey
 import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PrivateKey
-import org.hyperledger.identus.walletsdk.apollo.helpers.BytesOps
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
@@ -153,7 +153,7 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
     override fun derive(derivationPath: DerivationPath): PrivateKey {
         val seed = getProperty(SeedKey().property)
 
-        val seedByteArray = BytesOps.hexToBytes(seed)
+        val seedByteArray = seed.base64UrlDecodedBytes
 
         val hdKey = HDKey(seedByteArray, 0, 0)
         val derivedHdKey = hdKey.derive(derivationPath.toString())

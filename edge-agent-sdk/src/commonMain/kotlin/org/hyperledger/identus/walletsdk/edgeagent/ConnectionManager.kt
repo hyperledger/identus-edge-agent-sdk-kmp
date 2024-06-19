@@ -201,7 +201,7 @@ class ConnectionManagerImpl(
      */
     override suspend fun addConnection(paired: DIDPair) {
         if (pairings.contains(paired)) return
-        pluto.storeDIDPair(paired.host, paired.receiver, paired.name ?: "")
+        pluto.storeDIDPair(paired.holder, paired.receiver, paired.name ?: "")
         pairings.add(paired)
     }
 

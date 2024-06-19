@@ -94,7 +94,6 @@ open class PlutoBackupTask(private val pluto: Pluto) {
 
             if (backUpRestorationId == PlutoRestoreTask.BackUpRestorationId.ANONCRED) {
                 val anonCredential = AnonCredential.fromStorableData(credentialRecovery.credentialData)
-                anonCredential.toAnonCredentialBackUp()
 
                 BackupV0_0_1.Credential(
                     recoveryId = backUpRestorationId.value,
@@ -118,7 +117,7 @@ open class PlutoBackupTask(private val pluto: Pluto) {
         val pairs = pluto.getAllDidPairs().first()
         return pairs.map { didPair ->
             BackupV0_0_1.DIDPair(
-                holder = didPair.host.toString(),
+                holder = didPair.holder.toString(),
                 recipient = didPair.receiver.toString(),
                 alias = didPair.name ?: ""
             )
