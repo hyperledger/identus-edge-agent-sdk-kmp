@@ -13,6 +13,7 @@ import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.X25519Decrypter
 import com.nimbusds.jose.crypto.X25519Encrypter
 import com.nimbusds.jose.jwk.OctetKeyPair
+import com.nimbusds.jose.util.Base64URL
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
@@ -112,6 +113,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import java.net.UnknownHostException
 import java.util.*
+import org.kotlincrypto.hash.sha2.SHA256
 
 /**
  * Check if the passed URL is valid or not.
@@ -1206,7 +1208,11 @@ class EdgeAgent {
         }
 
         // 3. Set the JWE header (algorithm and encryption)
+        val backupText = "backup"
+        val apv = SHA256().digest(backupText.encodeToByteArray())
+
         val header = JWEHeader.Builder(JWEAlgorithm.ECDH_ES_A256KW, EncryptionMethod.A256CBC_HS512)
+            .agreementPartyVInfo(Base64URL(apv.base64UrlEncoded))
             .build()
 
         val backup = plutoBackupTask.run().first()

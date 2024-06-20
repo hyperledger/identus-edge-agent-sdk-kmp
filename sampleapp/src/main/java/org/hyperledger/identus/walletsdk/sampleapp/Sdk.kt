@@ -29,6 +29,7 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import java.net.UnknownHostException
+import java.util.Base64
 
 class Sdk {
     private val apollo: Apollo = createApollo()
@@ -141,7 +142,7 @@ class Sdk {
             "admit",
             "peanut"
         )
-        return Seed("Rb8j6NVmA120auCQT6tP35rZ6_hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f__Ulm1WkU1tLzwUEA".decodeBase64Bytes())
+        return Seed(Base64.getUrlDecoder().decode("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA"))
 //        return apollo.createSeed(words, "")
     }
 
