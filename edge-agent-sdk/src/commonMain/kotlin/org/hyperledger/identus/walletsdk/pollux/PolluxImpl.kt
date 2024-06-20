@@ -99,9 +99,12 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.DescriptorItemFormat
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pluto.RestorationID
-import java.util.zip.GZIPInputStream
+import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
+import org.hyperledger.identus.walletsdk.pollux.models.JWTProofType
+import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
+import org.hyperledger.identus.walletsdk.pollux.utils.Bitstring
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -531,21 +534,7 @@ open class PolluxImpl(
         return false
     }
 
-    enum class JWTProofType(val value: String) {
-        ECDSASECP256K1Signature2019("EcdsaSecp256k1Signature2019"),
-        DataIntegrityProof("DataIntegrityProof"),
-        Unknown("Unknown")
-    }
-
-    enum class VerificationKeyType(val value: String) {
-        Ed25519VerificationKey2018("Ed25519VerificationKey2018"),
-        Ed25519VerificationKey2020("Ed25519VerificationKey2020"),
-        X25519KeyAgreementKey2019("X25519KeyAgreementKey2019"),
-        X25519KeyAgreementKey2020("X25519KeyAgreementKey2020"),
-        EcdsaSecp256k1VerificationKey2019("EcdsaSecp256k1VerificationKey2019")
-    }
-
-    private fun validateProof(revocationRegistryJson: String): Boolean {
+    private suspend fun validateProof(revocationRegistryJson: String): Boolean {
         val jsonObject = (Json.parseToJsonElement(revocationRegistryJson) as JsonObject)
         if (!jsonObject.containsKey("proof")) {
             throw PolluxError.RevocationRegistryJsonMissingFieldError("proof")
@@ -657,20 +646,18 @@ open class PolluxImpl(
                 val encodedList = credentialSubject["encodedList"]?.jsonPrimitive?.content
                 if (encodedList != null) {
                     val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
+                    val decompressedBytes = decodedBytes.gunzip()
+                    val bitString = Bitstring(decompressedBytes)
 
-                    val byteArrayInputStream = ByteArrayInputStream(decodedBytes)
-                    val gzipInputStream = GZIPInputStream(byteArrayInputStream)
-                    val decompressedBytes = gzipInputStream.readBytes()
                     if (statusListIndex > decompressedBytes.size) {
                         throw PolluxError.StatusListOutOfBoundIndex()
                     }
-                    return decompressedBytes[statusListIndex].toInt() == 1
+                    return bitString.get(statusListIndex)
                 }
             }
         }
         return false
     }
-
     suspend fun fetchRevocationRegistry(credentialStatus: JWTVerifiableCredential.CredentialStatus): String {
         val result = api.request(
             HttpMethod.Get.value,
