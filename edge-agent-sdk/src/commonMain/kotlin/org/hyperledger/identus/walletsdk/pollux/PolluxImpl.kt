@@ -27,10 +27,10 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
-import io.iohk.atala.prism.apollo.utils.KMMEllipticCurve
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT

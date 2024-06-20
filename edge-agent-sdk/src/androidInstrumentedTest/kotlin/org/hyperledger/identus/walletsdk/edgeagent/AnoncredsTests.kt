@@ -2,8 +2,8 @@ package org.hyperledger.identus.walletsdk.edgeagent
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
