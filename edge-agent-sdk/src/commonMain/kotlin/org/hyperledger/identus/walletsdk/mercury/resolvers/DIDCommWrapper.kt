@@ -169,7 +169,15 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
             fromPrior = null,
             fromPriorJwt = message.fromPrior,
             attachments = parseAttachments(message.attachments),
-            createdTime = if (message.createdTime == "") Clock.System.now().epochSeconds else if (message.createdTime.canBeConvertedToLong()) message.createdTime.toLong() else Instant.parse(message.createdTime).epochSeconds,
+            createdTime = if (message.createdTime == "") {
+                Clock.System.now().epochSeconds
+            } else if (message.createdTime.canBeConvertedToLong()) {
+                message.createdTime.toLong()
+            } else {
+                Instant.parse(
+                    message.createdTime
+                ).epochSeconds
+            },
             expiresTime = null,
             thid = message.thid,
             pthid = message.pthid,
@@ -177,14 +185,23 @@ class DIDCommWrapper(castor: Castor, pluto: Pluto, apollo: Apollo) : DIDCommProt
             pleaseAck = null,
             customHeaders = message.extraHeaders
         )
-        val builder = PackEncryptedParams.builder(didCommMsg, toString).forward(false).protectSenderId(false)
+        val builder =
+            PackEncryptedParams.builder(didCommMsg, toString).forward(false).protectSenderId(false)
         didCommMsg.from?.let { builder.from(it) }
         val params = builder.build()
         logger.debug(
             message = "Packing message ${message.piuri}",
             metadata = arrayOf(
-                Metadata.MaskedMetadataByLevel(key = "Sender", value = message.from.toString(), LogLevel.DEBUG),
-                Metadata.MaskedMetadataByLevel(key = "Receiver", value = message.to.toString(), LogLevel.DEBUG)
+                Metadata.MaskedMetadataByLevel(
+                    key = "Sender",
+                    value = message.from.toString(),
+                    LogLevel.DEBUG
+                ),
+                Metadata.MaskedMetadataByLevel(
+                    key = "Receiver",
+                    value = message.to.toString(),
+                    LogLevel.DEBUG
+                )
             )
         )
         val result = didComm.packEncrypted(params)

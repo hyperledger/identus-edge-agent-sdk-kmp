@@ -111,9 +111,9 @@ import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.kotlincrypto.hash.sha2.SHA256
 import java.net.UnknownHostException
 import java.util.*
-import org.kotlincrypto.hash.sha2.SHA256
 
 /**
  * Check if the passed URL is valid or not.
