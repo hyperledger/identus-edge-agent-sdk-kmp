@@ -21,6 +21,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 class BackupV0_0_1
 @OptIn(ExperimentalSerializationApi::class)
+@JvmOverloads
 constructor(
     @EncodeDefault
     val version: String = "0.0.1",

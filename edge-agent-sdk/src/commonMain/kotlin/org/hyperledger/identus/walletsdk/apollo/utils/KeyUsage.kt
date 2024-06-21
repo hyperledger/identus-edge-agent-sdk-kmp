@@ -1,5 +1,10 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
+/**
+ * Enumeration class representing different key usages.
+ *
+ * Each key usage is assigned a unique integer value.
+ */
 enum class KeyUsage(val value: Int) {
     UNKNOWN_KEY(0),
     MASTER_KEY(1),

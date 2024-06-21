@@ -318,7 +318,7 @@ open class PlutoRestoreTask(
      */
     @OptIn(ExperimentalSerializationApi::class)
     @Serializable
-    class AnonCredentialBackUp(
+    class AnonCredentialBackUp @JvmOverloads constructor(
         @SerialName("schema_id")
         @JsonNames("schema_id", "schemaID")
         val schemaID: String,
@@ -371,7 +371,7 @@ open class PlutoRestoreTask(
          * @property revocationCredential The R Credential string.
          */
         @Serializable
-        class Signature(
+        class Signature @JvmOverloads constructor(
             @SerialName("p_credential")
             val primaryCredential: PrimaryCredential,
             @SerialName("r_credential")
@@ -576,15 +576,41 @@ open class PlutoRestoreTask(
             }
         }
 
+        /**
+         * A serializer for converting JSON strings to Kotlin strings and vice versa.
+         *
+         * This serializer is used to encode a JSON string into a Kotlin string using [serialize] method,
+         * and decode a JSON string into a Kotlin string using [deserialize] method.
+         *
+         * @property descriptor The serial descriptor associated with this serializer.
+         */
         private object JsonAsStringSerializer : KSerializer<String> {
+            /**
+             * Provides the descriptor for a JSON value represented as a string.
+             *
+             * @return The serial descriptor.
+             */
             override val descriptor: SerialDescriptor =
                 PrimitiveSerialDescriptor("JsonAsString", PrimitiveKind.STRING)
 
+            /**
+             * Serializes a string value into an encoded format using the provided encoder.
+             *
+             * @param encoder the encoder to use for encoding the value
+             * @param value the string value to be serialized
+             */
             override fun serialize(encoder: Encoder, value: String) {
                 val jsonObject = Json.parseToJsonElement(value).jsonObject
                 encoder.encodeString(Json.encodeToString(jsonObject))
             }
 
+            /**
+             * Deserializes a JSON string into a String object.
+             *
+             * @param decoder The decoder used to decode the JSON string.
+             * @return The deserialized String object.
+             * @throws UnknownError.SomethingWentWrongError if the JSON string is invalid.
+             */
             override fun deserialize(decoder: Decoder): String {
                 val jsonDecoder = decoder as JsonDecoder
                 val jsonElement = jsonDecoder.decodeJsonElement()
@@ -620,6 +646,12 @@ open class PlutoRestoreTask(
             override val descriptor: SerialDescriptor =
                 PrimitiveSerialDescriptor("EpochSecondsString", PrimitiveKind.LONG)
 
+            /**
+             * Checks if the given epoch time is likely to be in seconds.
+             *
+             * @param epochTime The epoch time to be checked.
+             * @return true if the epoch time is likely in seconds, false otherwise.
+             */
             private fun isEpochTimeLikelySeconds(epochTime: String): Boolean {
                 return epochTime.length <= 10 // Epoch in seconds has up to 10 digits
             }

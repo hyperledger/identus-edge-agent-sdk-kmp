@@ -125,7 +125,6 @@ constructor(
     val data: AttachmentData,
     val filename: Array<String>? = null,
     val format: String? = null,
-    // TODO(Date format)
     @SerialName("lastmod_time")
     @JsonNames("lastmod_time", "lastModTime")
     val lastModTime: String? = null,
@@ -187,9 +186,47 @@ constructor(
     }
 }
 
+/**
+ * The `AttachmentDataSerializer` is responsible for serializing and deserializing instances of `AttachmentData`.
+ *
+ * To serialize an `AttachmentData` object, use the `serialize` function. This function takes an `Encoder` and the
+ * `AttachmentData` object to be serialized as parameters. It delegates the serialization to the appropriate serializer
+ * based on the type of the `AttachmentData` object. The supported types are:
+ * - `AttachmentData.AttachmentHeader`
+ * - `AttachmentData.AttachmentJws`
+ * - `AttachmentData.AttachmentJwsData`
+ * - `AttachmentData.AttachmentBase64`
+ * - `AttachmentData.AttachmentLinkData`
+ * - `AttachmentData.AttachmentJsonData`
+ *
+ * To deserialize an `AttachmentData` object, use the `deserialize` function. This function takes a `Decoder` as a
+ * parameter. It first checks the JSON object read from the decoder to determine the type of the `AttachmentData`
+ * object. It then uses the appropriate deserializer to deserialize the JSON object into the corresponding
+ * `AttachmentData` subclass. The supported JSON object structures are:
+ * - `{ "children": ... }` for `AttachmentData.AttachmentHeader` objects
+ * - `{ "protected": ..., "signature": ... }` for `AttachmentData.AttachmentJws` objects
+ * - `{ "base64": ..., "jws": ... }` for `AttachmentData.AttachmentJwsData` objects
+ * - `{ "base64": ... }` for `AttachmentData.AttachmentBase64` objects
+ * - `{ "links": ..., "hash": ... }` for `AttachmentData.AttachmentLinkData` objects
+ * - `{ "data": ... }` for `AttachmentData.AttachmentJsonData` objects
+ *
+ * If the JSON object does not match any of the supported structures, a `SerializationException` is thrown.
+ */
 object AttachmentDataSerializer : KSerializer<AttachmentData> {
+    /**
+     * This variable represents the descriptor for the `AttachmentData` class when it is serialized and deserialized.
+     * It is an instance of the `SerialDescriptor` class.
+     *
+     * @see SerialDescriptor
+     */
     override val descriptor: SerialDescriptor = buildClassSerialDescriptor("AttachmentData")
 
+    /**
+     * Serializes the given [AttachmentData] object using the provided [Encoder].
+     *
+     * @param encoder The encoder used for serialization.
+     * @param value The [AttachmentData] object to be serialized.
+     */
     override fun serialize(encoder: Encoder, value: AttachmentData) {
         when (value) {
             is AttachmentData.AttachmentHeader -> encoder.encodeSerializableValue(AttachmentData.AttachmentHeader.serializer(), value)
@@ -201,6 +238,13 @@ object AttachmentDataSerializer : KSerializer<AttachmentData> {
         }
     }
 
+    /**
+     * Deserializes a JSON representation of AttachmentData into an AttachmentData object.
+     *
+     * @param decoder The decoder used to decode the JSON representation.
+     * @return The deserialized AttachmentData object.
+     * @throws SerializationException if the JSON representation is of an unknown AttachmentData type.
+     */
     override fun deserialize(decoder: Decoder): AttachmentData {
         val jsonDecoder = decoder as JsonDecoder
         val json = jsonDecoder.decodeJsonElement().jsonObject

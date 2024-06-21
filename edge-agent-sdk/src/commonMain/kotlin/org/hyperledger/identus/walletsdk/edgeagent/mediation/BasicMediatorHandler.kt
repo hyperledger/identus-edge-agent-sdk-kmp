@@ -236,6 +236,15 @@ class BasicMediatorHandler(
         }
     }
 
+    /**
+     * Handles received messages from sockets.
+     *
+     * @param text The received message as a string.
+     * @return An array of pairs, where each pair consists of a string and a Message object. If the decryptedMessage's
+     * `piuri` value is equal to either ProtocolType.PickupStatus.value or ProtocolType.PickupDelivery.value, the
+     * result is obtained by calling the PickupRunner's run() method with the decryptedMessage and mercury as arguments.
+     * Otherwise, an empty array is returned.
+     */
     private suspend fun handleReceivedMessagesFromSockets(text: String): Array<Pair<String, Message>> {
         val decryptedMessage = mercury.unpackMessage(text)
         return if (decryptedMessage.piuri == ProtocolType.PickupStatus.value ||
@@ -248,6 +257,11 @@ class BasicMediatorHandler(
     }
 }
 
+/**
+ * Represents a callback function for handling messages.
+ *
+ * This interface defines a single method [onMessage] that is invoked when messages are received.
+ */
 fun interface OnMessageCallback {
     fun onMessage(messages: Array<Pair<String, Message>>)
 }

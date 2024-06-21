@@ -57,6 +57,11 @@ data class AnonCredential(
     private val json: String
 ) : Credential {
 
+    /**
+     * Converts the current object to a [PlutoRestoreTask.AnonCredentialBackUp] object.
+     *
+     * @return The converted [PlutoRestoreTask.AnonCredentialBackUp] object.
+     */
     fun toAnonCredentialBackUp(): PlutoRestoreTask.AnonCredentialBackUp {
         return PlutoRestoreTask.AnonCredentialBackUp(
             schemaID = this.schemaID,

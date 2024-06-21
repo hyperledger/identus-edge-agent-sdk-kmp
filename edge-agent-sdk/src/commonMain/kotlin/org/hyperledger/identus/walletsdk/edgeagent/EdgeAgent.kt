@@ -1208,6 +1208,7 @@ class EdgeAgent {
         }
 
         // 3. Set the JWE header (algorithm and encryption)
+        // The following two line are needed because of a constrain in TS SDK
         val backupText = "backup"
         val apv = SHA256().digest(backupText.encodeToByteArray())
 
@@ -1273,11 +1274,12 @@ class EdgeAgent {
     }
 
     /**
-     * Creates an X25519 private key from a given seed.
+     * Creates a X25519PrivateKey using the provided seed and derivation path.
      *
-     * @param seed The seed to generate the private key from.
-     * @return The generated X25519 private key.
-     * @throws UnknownError.SomethingWentWrongError If something goes wrong during the key generation process.
+     * @param seed The seed used to generate the private key.
+     * @param derivationPath The derivation path used to derive the private key with a default value of "m/0'/0'/0'"
+     * @return The generated X25519PrivateKey.
+     * @throws UnknownError.SomethingWentWrongError if an exception occurs during the private key generation.
      */
     private fun createX25519PrivateKeyFrom(seed: Seed, derivationPath: String = "m/0'/0'/0'"): X25519PrivateKey {
         return try {

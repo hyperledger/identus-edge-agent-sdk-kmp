@@ -85,22 +85,21 @@ class ApolloImpl : Apollo {
     /**
      * Creates a private key based on the provided properties.
      *
-     * @param properties A map of properties used to create the private key. The map should contain the following keys:
-     *     - "type" (String): The type of the key ("EC" or "Curve25519").
-     *     - "curve" (String): The curve of the key.
-     *     - "rawKey" (ByteArray): The raw key data (optional).
-     *     - "index" (Int): The index for the key (only applicable for EC keys with curve "secp256k1").
-     *     - "derivationPath" (String): The derivation path for the key (only applicable for EC keys with curve "secp256k1").
-     *     - "seed" (String): The seed for the key (only applicable for EC keys with curve "secp256k1").
+     * @param properties The map of properties used to create the private key.
+     *                   The properties should include the following keys:
+     *                   - `Type`: The type of the key (e.g., "EC", "Curve25519").
+     *                   - `Curve`: The curve of the key (e.g., "ED25519", "SECP256K1", "X25519").
+     *                   - `RawKey`: The raw key data (optional).
+     *                   - `Seed`: The seed used to derive the key (optional).
+     *                   - `DerivationPath`: The derivation path used to derive the key (optional, required if seed is provided).
+     *                   - `Index`: The index used in the derivation path (optional, required if seed is provided).
      *
      * @return The created private key.
      *
-     * @throws ApolloError.InvalidKeyType If the provided key type is invalid.
-     * @throws ApolloError.InvalidKeyCurve If the provided key curve is invalid.
+     * @throws IllegalArgumentException If the provided properties are invalid or insufficient to create the key.
+     * @throws ApolloError.InvalidKeyType If the provided key type is invalid or not supported.
+     * @throws ApolloError.InvalidKeyCurve If the provided key curve is invalid or not supported.
      * @throws ApolloError.InvalidRawData If the provided raw key data is invalid.
-     * @throws ApolloError.InvalidIndex If the provided index is invalid.
-     * @throws ApolloError.InvalidDerivationPath If the provided derivation path is invalid.
-     * @throws ApolloError.InvalidSeed If the provided seed is invalid.
      */
     override fun createPrivateKey(properties: Map<String, Any>): PrivateKey {
         if (!properties.containsKey(TypeKey().property)) {

@@ -1194,6 +1194,11 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         }
     }
 
+    /**
+     * Retrieves all the keys for backup.
+     *
+     * @return A flow that emits a list of [BackupV0_0_1.Key] objects.
+     */
     override fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>> {
         val keysWithDID = getInstance().privateKeyQueries.fetchAllPrivateKeyWithDID()
             .executeAsList()

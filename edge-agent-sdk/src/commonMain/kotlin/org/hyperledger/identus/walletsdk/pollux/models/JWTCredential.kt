@@ -185,6 +185,12 @@ data class JWTCredential @JvmOverloads constructor(
         }
     }
 
+    /**
+     * Compares this JWTCredential with the specified object for equality.
+     *
+     * @param other The object to compare with this JWTCredential.
+     * @return true if the specified object is equal to this JWTCredential, false otherwise.
+     */
     override fun equals(other: Any?): Boolean {
         if (this === other) {
             return true
@@ -245,6 +251,11 @@ data class JWTCredential @JvmOverloads constructor(
         return true
     }
 
+    /**
+     * Calculates the hash code value for the object.
+     *
+     * @return The hash code value.
+     */
     override fun hashCode(): Int {
         var result = id.hashCode()
         result = 31 * result + iss.hashCode()
@@ -262,9 +273,24 @@ data class JWTCredential @JvmOverloads constructor(
         return result
     }
 
+    /**
+     * AudSerializer is a custom serializer for serializing and deserializing JSON arrays of strings.
+     *
+     * This class extends the JsonTransformingSerializer class from the kotlinx.serialization.json package,
+     * with a type parameter of Array<String>. It transforms the serialization and deserialization process
+     * of JSON elements into arrays of strings.
+     *
+     * @OptIn annotation indicates that this class makes use of experimental serialization API.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     object AudSerializer :
         JsonTransformingSerializer<Array<String>>(ArraySerializer(String.serializer())) {
+        /**
+         * Transforms a given [element] into a serialized form.
+         *
+         * @param element the [JsonElement] to be transformed
+         * @return the transformed [JsonElement]
+         */
         override fun transformDeserialize(element: JsonElement): JsonElement {
             // Check if the element is a JSON array
             if (element is JsonArray) {
@@ -276,6 +302,13 @@ data class JWTCredential @JvmOverloads constructor(
     }
 
     companion object {
+        /**
+         * Converts a JWT string into a JWTCredential object.
+         *
+         * @param jwtString The JWT string to convert.
+         * @return The JWTCredential object extracted from the JWT string.
+         * @throws IllegalArgumentException If the JWT string is invalid.
+         */
         @JvmStatic
         fun fromJwtString(jwtString: String): JWTCredential {
             val jwtParts = jwtString.split(".")
