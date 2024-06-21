@@ -22,6 +22,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
@@ -60,6 +61,7 @@ import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
+import java.lang.Exception
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -930,16 +932,6 @@ class PolluxImplTest {
     }
 
     @Test
-    fun test() {
-        val credential = JWTCredential.fromJwtString(
-            "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206ZTAyZTgwOTlkNTAzNTEzNDVjNWRkODMxYTllOTExMmIzOTRhODVkMDA2NGEyZWI1OTQyOTA4MDczNGExNTliNjpDcmtCQ3JZQkVqb0tCbUYxZEdndE1SQUVTaTRLQ1hObFkzQXlOVFpyTVJJaEF1Vlljb3JmV25MMGZZdEE1dmdKSzRfLW9iM2JVRGMtdzJVT0hkTzNRRXZxRWpzS0IybHpjM1ZsTFRFUUFrb3VDZ2x6WldOd01qVTJhekVTSVFMQ3U5Tm50cXVwQmotME5DZE1BNzV6UmVCZXlhQ0pPMWFHWWVQNEJNUUhWQkk3Q2dkdFlYTjBaWEl3RUFGS0xnb0pjMlZqY0RJMU5tc3hFaUVET1dndlF4NnZSdTZ3VWI0RlljSnVhRUNqOUJqUE1KdlJwOEx3TTYxaEVUNCIsInN1YiI6ImRpZDpwcmlzbTpiZDgxZmY1NDQzNDJjMTAwNDZkZmE0YmEyOTVkNWIzNmU0Y2ZlNWE3ZWIxMjBlMTBlZTVjMjQ4NzAwNjUxMDA5OkNvVUJDb0lCRWpzS0IyMWhjM1JsY2pBUUFVb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQkpEQ2c5aGRYUm9aVzUwYVdOaGRHbHZiakFRQkVvdUNnbHpaV053TWpVMmF6RVNJUVB2NVA1eXlnclp3YUpsWXpsNTltMkhBREtUWFVMUHNSZTBrZ2VFSHZ0TGdBIiwibmJmIjoxNzE1MDAwNjc0LCJleHAiOjE3MTg2MDA2NzQsInZjIjp7ImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImVtYWlsQWRkcmVzcyI6ImNyaXN0aWFuLmNhc3Ryb0Bpb2hrLmlvIiwiaWQiOiJkaWQ6cHJpc206YmQ4MWZmNTQ0MzQyYzEwMDQ2ZGZhNGJhMjk1ZDViMzZlNGNmZTVhN2ViMTIwZTEwZWU1YzI0ODcwMDY1MTAwOTpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRUHY1UDV5eWdyWndhSmxZemw1OW0ySEFES1RYVUxQc1JlMGtnZUVIdnRMZ0JKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQSJ9LCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sIkBjb250ZXh0IjpbImh0dHBzOlwvXC93d3cudzMub3JnXC8yMDE4XC9jcmVkZW50aWFsc1wvdjEiXSwiY3JlZGVudGlhbFN0YXR1cyI6eyJzdGF0dXNQdXJwb3NlIjoiUmV2b2NhdGlvbiIsInN0YXR1c0xpc3RJbmRleCI6MjUsImlkIjoiaHR0cDpcL1wvMTAuOTEuMTAwLjEyNjo4MDAwXC9wcmlzbS1hZ2VudFwvY3JlZGVudGlhbC1zdGF0dXNcLzUxNGU4NTI4LTRiMzgtNDc3YS1iMGU0LTMyNGJiZTIyMDQ2NCMyNSIsInR5cGUiOiJTdGF0dXNMaXN0MjAyMUVudHJ5Iiwic3RhdHVzTGlzdENyZWRlbnRpYWwiOiJodHRwOlwvXC8xMC45MS4xMDAuMTI2OjgwMDBcL3ByaXNtLWFnZW50XC9jcmVkZW50aWFsLXN0YXR1c1wvNTE0ZTg1MjgtNGIzOC00NzdhLWIwZTQtMzI0YmJlMjIwNDY0In19fQ.5OmmL5tdcRKugiHVt01PJUhp9r22zgMPPALUOB41g_1_BPHE3ezqJ2QhSmScU_EOGYcKksHftdrvfoND65nSjw"
-        )
-        val storableCredential = credential.toStorableCredential()
-
-        val fromStorable = storableCredential.fromStorableCredential()
-    }
-
-    @Test
     fun testEncodedListUnGzip_whenNotRevoked_thenReturnFalse() = runTest {
         val httpResponse = correctHttpResponseFetchRevocationRegistry()
 
@@ -981,23 +973,6 @@ class PolluxImplTest {
         pollux = PolluxImpl(apollo, castorMock, api)
 
         assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 1))
-    }
-
-    @Test
-    fun testDecodeUnzip() {
-        val notRevoked = "H4sIAAAAAAAA_-3BIQEAAAACIJP_JzvDAjQAAAAAAAAAAAAAAAAAAADA2wCGK9BQAEAAAA=="
-        val revoked = "H4sIAAAAAAAA_-3BMQ0AAAACIGf_0MbwARoAAAAAAAAAAAAAAAAAAADgbbmHB0sAQAAA"
-
-        val notRevokedDecoded = notRevoked.base64UrlDecodedBytes
-        val revokedDecoded = revoked.base64UrlDecodedBytes
-
-        val notRevokedUnzip = notRevokedDecoded.gunzip()
-        val revokedUnzip = revokedDecoded.gunzip()
-
-        val bitStringNotRevoked = Bitstring(notRevokedUnzip)
-        val bitStringRevoked = Bitstring(revokedUnzip)
-        assertFalse(bitStringNotRevoked.get(3))
-        assertTrue(bitStringRevoked.get(1))
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<PresentationDefinitionRequest, PresentationSubmission, String> {
@@ -1086,31 +1061,33 @@ class PolluxImplTest {
     )
 
     private fun correctHttpResponseFetchRevocationRegistry(): HttpResponse {
-        val response = """{
-            "@context": [
-                "https://www.w3.org/2018/credentials/v1",
-                "https://w3id.org/vc/status-list/2021/v1"
-            ],
-            "type": [
-                "VerifiableCredential",
-                "StatusList2021Credential"
-            ],
-            "issuer": "did:prism:f3a762b1f9741f82791fbdafd0ea2bbc7b8720fcc4fba66f9fac8f896fac35d9",
-            "id": "http://192.168.68.113:8000/cloud-agent/credential-status/6c67b6c0-1bd9-47a1-85ee-f88edaa5a894",
-            "issuanceDate": 1718893018,
-            "credentialSubject": {
-                "type": "StatusList2021",
-                "statusPurpose": "Revocation",
-                "encodedList": "H4sIAAAAAAAA_-3BIQEAAAACIJP_JzvDAjQAAAAAAAAAAAAAAAAAAADA2wCGK9BQAEAAAA=="
-            },
-            "proof": {
-                "type": "EcdsaSecp256k1Signature2019",
-                "proofPurpose": "assertionMethod",
-                "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L3YxIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiQU5xNHdCZS1QdlY4UXEzN214THl0RnVxTFJlbG51X251SVMyMEhoZTZsYmsiLCJ5IjoiQU9nWkZmQnBmWlZuNWVuLTFBVEV2YnNyOHExMVpUWTZodEJtTC1xbXFRd3cifX0=",
-                "created": "2024-06-20T14:16:59.061409794Z",
-                "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..aZXI4DGkme7JcZ4Fl_oq84pSkNtzpaec6fghpIf3NKvSvNPLCA2_YUxq5yAZEk6K9sj5XbzlZf5eUDIDoMUfQg"
+        val response = """
+            {
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://w3id.org/vc/status-list/2021/v1"
+                ],
+                "type": [
+                    "VerifiableCredential",
+                    "StatusList2021Credential"
+                ],
+                "issuer": "did:prism:d6407754370022455313c4d870de48d38d638b905f3efa665fe917ba9c2a73c6",
+                "id": "http://192.168.68.113:8000/cloud-agent/credential-status/f054ca9e-34f1-4231-a52f-1a3221f023c3",
+                "issuanceDate": 1718988530,
+                "credentialSubject": {
+                    "type": "StatusList2021",
+                    "statusPurpose": "Revocation",
+                    "encodedList": "H4sIAAAAAAAA_-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA"
+                },
+                "proof": {
+                    "type": "EcdsaSecp256k1Signature2019",
+                    "proofPurpose": "assertionMethod",
+                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L3YxIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiSmNQS2xyc0dwU3NLb0RmOExpNzMwUVZMcUltOThmN211Rnc3d25fZ0pnbz0iLCJ5IjoiR3ZtWjJ4eE1vT1Y0cU9VajZXV3Fael9Kd2M4NEk5Rzlpc2hxMHAyVE83TT0ifX0=",
+                    "created": "2024-06-21T16:48:50.744054087Z",
+                    "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..5duK6WkHqGEFIlbu-CfFrkHR-ALu6LfpADFwQT7OXWhcFVjpCgfOHC5plJuQ7IBwCVJo0myfRHSS15O1-7c9Gw"
+                }
             }
-        }"""
+            """
         return HttpResponse(status = HttpStatusCode.OK.value, response)
     }
 }
