@@ -48,9 +48,6 @@ import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.didcommx.didcomm.common.Typ
-import org.hyperledger.identus.apollo.base64.base64UrlDecoded
-import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
-import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux

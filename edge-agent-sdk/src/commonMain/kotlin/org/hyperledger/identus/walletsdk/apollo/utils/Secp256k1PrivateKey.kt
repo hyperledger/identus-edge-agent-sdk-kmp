@@ -1,5 +1,6 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.derivation.DerivationPath
 import org.hyperledger.identus.apollo.derivation.HDKey

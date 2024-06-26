@@ -1,6 +1,7 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
 import org.hyperledger.identus.apollo.derivation.HDKey
+import org.hyperledger.identus.apollo.securerandom.SecureRandom
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair

@@ -6,6 +6,7 @@ import org.hyperledger.identus.apollo.derivation.EdHDKey
 import org.hyperledger.identus.apollo.derivation.HDKey
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.apollo.derivation.MnemonicLengthException
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
 import org.hyperledger.identus.apollo.utils.KMMEdPrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey

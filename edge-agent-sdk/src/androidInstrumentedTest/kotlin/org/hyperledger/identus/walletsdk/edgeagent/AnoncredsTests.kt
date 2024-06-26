@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -96,7 +98,7 @@ class AnoncredsTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(castorMock, apiMock)
+        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
         val agent = EdgeAgent(
@@ -156,7 +158,7 @@ class AnoncredsTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(castorMock, apiMock)
+        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
         val meta = CredentialRequestMeta(
             linkSecretName = "1",
@@ -237,7 +239,7 @@ class AnoncredsTests {
         val castorMock = mock<Castor>()
         val plutoMock = mock<Pluto>()
         val mercuryMock = mock<Mercury>()
-        val polluxMock: Pollux = PolluxImpl(castorMock, apiMock)
+        val polluxMock: Pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         val connectionManagerMock = mock<ConnectionManager>()
         val seed = Seed(MnemonicHelper.createRandomSeed())
 
