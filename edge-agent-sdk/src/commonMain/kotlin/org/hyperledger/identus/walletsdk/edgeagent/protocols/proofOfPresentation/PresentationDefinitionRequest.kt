@@ -13,13 +13,29 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
+import org.hyperledger.identus.walletsdk.domain.models.RequestedPredicates
 
 @Serializable
-data class PresentationDefinitionRequest(
+sealed interface PresentationDefinitionRequest
+
+@Serializable
+data class AnoncredsPresentationDefinitionRequest(
+    val nonce: String,
+    val name: String,
+    val version: String,
+    @SerialName("requested_predicates")
+    val requestedPredicates: Map<String, RequestedPredicates>,
+    @SerialName("requested_attributes")
+    val requestedAttributes: Map<String, RequestedAttributes>
+) : PresentationDefinitionRequest
+
+@Serializable
+data class JWTPresentationDefinitionRequest(
     @SerialName("presentation_definition")
     val presentationDefinition: PresentationDefinition,
     val options: PresentationDefinitionOptions
-) {
+) : PresentationDefinitionRequest {
 
     @Serializable
     data class PresentationDefinitionOptions(
@@ -72,7 +88,8 @@ data class PresentationDefinitionRequest(
 
                     // Custom serializer for the enum
                     object LimitDisclosureSerializer : KSerializer<LimitDisclosure> {
-                        override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("LimitDisclosure", PrimitiveKind.STRING)
+                        override val descriptor: SerialDescriptor =
+                            PrimitiveSerialDescriptor("LimitDisclosure", PrimitiveKind.STRING)
 
                         override fun serialize(encoder: Encoder, value: LimitDisclosure) {
                             encoder.encodeString(value.value)

@@ -2,18 +2,26 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
-data class PresentationOptions(
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+
+sealed interface PresentationOptions {
+    val type: CredentialType
+}
+
+data class JWTPresentationOptions(
     val name: String? = "Presentation",
     val purpose: String = "Presentation definition",
     val jwt: Array<String> = arrayOf("ES256K"),
     val domain: String,
     val challenge: String
-) {
+) : PresentationOptions {
+    override val type: CredentialType = CredentialType.JWT
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other == null || this::class != other::class) return false
 
-        other as PresentationOptions
+        other as JWTPresentationOptions
 
         if (name != other.name) return false
         if (purpose != other.purpose) return false
@@ -30,4 +38,11 @@ data class PresentationOptions(
         result = 31 * result + challenge.hashCode()
         return result
     }
+}
+
+data class AnoncredsPresentationOptions(
+    // TODO: This should be a nonce from the anoncred wrapper
+    val nonce: String
+) : PresentationOptions {
+    override val type: CredentialType = CredentialType.ANONCREDS_PROOF_REQUEST
 }
