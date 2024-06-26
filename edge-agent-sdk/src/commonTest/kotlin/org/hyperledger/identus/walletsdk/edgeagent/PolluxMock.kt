@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.CredentialOffer
@@ -22,10 +20,12 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
+import java.security.interfaces.ECPublicKey
 
 class PolluxMock : Pollux {
 
@@ -62,7 +62,11 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun restoreCredential(restorationIdentifier: String, credentialData: ByteArray, revoked: Boolean): Credential {
+    override fun restoreCredential(
+        restorationIdentifier: String,
+        credentialData: ByteArray,
+        revoked: Boolean
+    ): Credential {
         TODO("Not yet implemented")
     }
 
@@ -116,6 +120,10 @@ class PolluxMock : Pollux {
     }
 
     override suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun isCredentialRevoked(credential: Credential): Boolean {
         TODO("Not yet implemented")
     }
 }

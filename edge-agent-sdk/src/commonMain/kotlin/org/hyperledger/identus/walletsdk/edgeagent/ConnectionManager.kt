@@ -1,13 +1,19 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.launch
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
@@ -19,13 +25,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation.RevocationNotification
 import java.time.Duration
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlin.jvm.Throws
 
 interface ConnectionManager : ConnectionsManager, DIDCommConnection {
@@ -78,7 +77,6 @@ class ConnectionManagerImpl(
      * @param requestInterval The time interval (in seconds) between message fetch requests.
      *                        Defaults to 5 seconds if not specified.
      */
-    @JvmOverloads
     override fun startFetchingMessages(requestInterval: Int) {
         // Check if the job for fetching messages is already running
         if (fetchingMessagesJob == null) {
@@ -92,10 +90,7 @@ class ConnectionManagerImpl(
                 if (experimentLiveModeOptIn) {
                     // Loop through the services in the DID document to find a WebSocket endpoint
                     mediatorDidDoc.services.forEach {
-                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains(
-                                "ws://"
-                            )
-                        ) {
+                        if (it.serviceEndpoint.uri.contains("wss://") || it.serviceEndpoint.uri.contains("ws://")) {
                             serviceEndpoint = it.serviceEndpoint.uri
                             return@forEach // Exit loop once the WebSocket endpoint is found
                         }
@@ -206,7 +201,7 @@ class ConnectionManagerImpl(
      */
     override suspend fun addConnection(paired: DIDPair) {
         if (pairings.contains(paired)) return
-        pluto.storeDIDPair(paired.host, paired.receiver, paired.name ?: "")
+        pluto.storeDIDPair(paired.holder, paired.receiver, paired.name ?: "")
         pairings.add(paired)
     }
 
@@ -273,15 +268,7 @@ class ConnectionManagerImpl(
      * @return The response message, if one is received.
      */
     override suspend fun awaitMessageResponse(id: String): Message? {
-        return try {
-            awaitMessages().first().map {
-                it.second
-            }.first {
-                it.thid == id
-            }
-        } catch (e: NoSuchElementException) {
-            null
-        }
+        return awaitMessages().firstOrNull()?.firstOrNull { it.second.thid == id }?.second
     }
 
     companion object {

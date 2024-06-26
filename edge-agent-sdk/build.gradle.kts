@@ -98,8 +98,8 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").layout.buildDirectory.asFile.get()}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
                 implementation("io.ktor:ktor-client-core:2.3.11")
@@ -128,13 +128,16 @@ kotlin {
                 implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.6")
                 implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
-                implementation(kotlin("reflect"))
+
+                implementation("com.apicatalog:titanium-json-ld-jre8:1.4.0")
+                implementation("org.glassfish:jakarta.json:2.0.1")
+                implementation("io.setl:rdf-urdna:1.3")
             }
         }
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
                 implementation("io.ktor:ktor-client-mock:2.3.11")
                 implementation("junit:junit:4.13.2")
                 implementation("org.mockito:mockito-core:4.4.0")
@@ -239,7 +242,8 @@ tasks.withType<DokkaTask>().configureEach {
                 "docs/Mercury.md",
                 "docs/Pluto.md",
                 "docs/Pollux.md",
-                "docs/EdgeAgent.md"
+                "docs/EdgeAgent.md",
+                "docs/BackUp.md"
             )
             sourceLink {
                 localDirectory.set(projectDir.resolve("src"))

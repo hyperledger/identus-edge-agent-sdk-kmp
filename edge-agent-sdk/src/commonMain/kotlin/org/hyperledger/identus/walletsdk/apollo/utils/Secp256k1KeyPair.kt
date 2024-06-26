@@ -1,6 +1,7 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
-import io.iohk.atala.prism.apollo.derivation.HDKey
+import org.hyperledger.identus.apollo.derivation.HDKey
+import org.hyperledger.identus.apollo.securerandom.SecureRandom
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
@@ -15,6 +16,13 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
  */
 class Secp256k1KeyPair(override var privateKey: PrivateKey, override var publicKey: PublicKey) : KeyPair() {
     companion object {
+        @JvmStatic
+        fun generateKeyPair(): Secp256k1KeyPair {
+            val privateKeyRaw = SecureRandom().nextBytes(32)
+            val privateKey = Secp256k1PrivateKey(privateKeyRaw)
+            return Secp256k1KeyPair(privateKey, privateKey.publicKey())
+        }
+
         /**
          * Generates a key pair using a given seed and key curve.
          *

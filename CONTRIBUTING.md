@@ -7,7 +7,7 @@ The following is a set of guidelines for contributing to Edge Agent SDK KMP. The
 
 [What should I know before I get started?](#what-should-i-know-before-i-get-started)
   * [Identus](#Identus)
-  * [Edge Agent SDK KMP](#edge-agent-kmp)
+  * [Edge Agent SDK KMP](#edge-agent-sdk-kmp)
 
 [How Can I Contribute?](#how-can-i-contribute)
   * [Your First Code Contribution](#your-first-code-contribution)
@@ -127,12 +127,12 @@ Each commit message consists of a **header**, a **body**, and a **footer**.
 <footer>
 ```
 
-The `header` is mandatory and must conform to the [Commit Message Header](#commit-header) format.
+The `header` is mandatory and must conform to the [Commit Message Header](#commit-message-header) format.
 
 The `body` is mandatory for all commits except for those of type "docs".
 When the body is present, it must be at least 20 characters long and must conform to the [Commit Message Body](#commit-body) format.
 
-The `footer` is optional. The [Commit Message Footer](#commit-footer) format describes what the footer is used for and the structure it must have.
+The `footer` is optional. The [Commit Message Footer](#commit-message-footer) format describes what the footer is used for and the structure it must have.
 
 
 #### Commit Message Header
@@ -186,7 +186,7 @@ Use the summary field to provide a succinct description of the change:
 * no dot (.) at the end
 
 
-#### <a name="commit-body"></a>Commit Message Body
+#### Commit Message Body
 
 Just as in the summary, use the imperative, present tense: "fix" not "fixed" nor "fixes".
 
@@ -194,7 +194,7 @@ Explain the motivation for the change in the commit message body. This commit me
 You can include a comparison of the previous behaviour with the new behaviour to illustrate the impact of the change.
 
 
-#### <a name="commit-footer"></a>Commit Message Footer
+#### Commit Message Footer
 
 The footer can contain information about breaking changes and deprecations and is also the place to reference GitHub issues, Jira tickets, and other PRs that this commit closes or is related to.
 For example:

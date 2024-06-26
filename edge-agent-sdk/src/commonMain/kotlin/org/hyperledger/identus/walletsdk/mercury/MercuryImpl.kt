@@ -238,6 +238,8 @@ constructor(
                     Metadata.PrivateMetadata("body", message)
                 )
             )
+        } else {
+            logger.info("Calling api result in ${result.status} success")
         }
 
         return result.jsonString.toByteArray()
@@ -273,6 +275,8 @@ constructor(
                     Metadata.PrivateMetadata("body", message)
                 )
             )
+        } else {
+            logger.info("Calling api result in ${result.status} success")
         }
         return result.jsonString.toByteArray()
     }

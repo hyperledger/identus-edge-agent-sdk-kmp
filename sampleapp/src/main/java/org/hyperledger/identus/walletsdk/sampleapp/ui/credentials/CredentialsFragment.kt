@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentCredentialsBinding
 
 class CredentialsFragment : Fragment() {
@@ -14,7 +15,7 @@ class CredentialsFragment : Fragment() {
     private val viewModel: CredentialsViewModel by viewModels()
 
     private val binding get() = _binding!!
-    private val adapter = CredentialsAdapter()
+    private lateinit var adapter: CredentialsAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -22,6 +23,12 @@ class CredentialsFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentCredentialsBinding.inflate(inflater, container, false)
+        val isRevoked = object : CredentialsAdapter.OnItemClickListener {
+            override fun onItemClick(credential: Credential) {
+                viewModel.isCredentialRevoked(credential)
+            }
+        }
+        adapter = CredentialsAdapter(itemClickListener = isRevoked)
         binding.credentials.adapter = adapter
         return binding.root
     }

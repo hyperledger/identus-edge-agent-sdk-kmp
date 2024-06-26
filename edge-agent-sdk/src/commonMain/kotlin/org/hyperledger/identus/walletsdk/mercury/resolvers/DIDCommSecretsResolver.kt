@@ -1,6 +1,7 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.mercury.resolvers
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -10,6 +11,7 @@ import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
 import org.didcommx.didcomm.secret.Secret
 import org.didcommx.didcomm.secret.SecretResolver
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.OctetPrivateKey

@@ -3,12 +3,21 @@ package org.hyperledger.identus.walletsdk.domain.models
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.MapSerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.descriptors.element
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.encoding.encodeStructure
+import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 interface JWTPayload {
@@ -41,6 +50,7 @@ object MapStringAnyToStringSerializer : KSerializer<Map<String, String>> {
         // Transform each value in the JsonObject to String
         return jsonObject.mapValues { (_, value) ->
             when (value) {
+                is JsonPrimitive -> value.content
                 is JsonElement -> value.jsonPrimitive.content
                 else -> value.toString() // Default toString to handle non-primitive cases
             }
@@ -59,7 +69,7 @@ data class JWTVerifiableCredential @JvmOverloads constructor(
     val credentialSchema: VerifiableCredentialTypeContainer? = null,
     @Serializable(with = MapStringAnyToStringSerializer::class)
     val credentialSubject: Map<String, String>,
-    val credentialStatus: VerifiableCredentialTypeContainer? = null,
+    val credentialStatus: CredentialStatus? = null,
     val refreshService: VerifiableCredentialTypeContainer? = null,
     val evidence: VerifiableCredentialTypeContainer? = null,
     val termsOfUse: VerifiableCredentialTypeContainer? = null
@@ -105,6 +115,87 @@ data class JWTVerifiableCredential @JvmOverloads constructor(
         result = 31 * result + (termsOfUse?.hashCode() ?: 0)
         return result
     }
+
+    @Serializable(with = CredentialStatusSerializer::class)
+    data class CredentialStatus(
+        val id: String,
+        val type: CredentialStatusListType,
+        val statusPurpose: CredentialStatusPurpose,
+        val statusListIndex: Int,
+        val statusListCredential: String
+    )
+
+    enum class CredentialStatusListType(val type: String) {
+        // The naming does not follow the proper kotlin format, but it is required to work around a
+        // situation when serializing an object containing an instance of this enum from nimbus library
+        // using java serialization instead of kotlin x.
+        StatusList2021Entry("StatusList2021Entry");
+
+        companion object {
+            fun fromString(type: String): CredentialStatusListType {
+                return entries.first { it.type.lowercase() == type.lowercase() }
+            }
+        }
+    }
+
+    enum class CredentialStatusPurpose(val purpose: String) {
+        REVOCATION("revocation"),
+        SUSPENSION("suspension");
+
+        companion object {
+            fun fromString(purpose: String): CredentialStatusPurpose {
+                return entries.first { it.purpose.lowercase() == purpose.lowercase() }
+            }
+        }
+    }
+
+    object CredentialStatusSerializer : KSerializer<CredentialStatus> {
+        override val descriptor: SerialDescriptor = buildClassSerialDescriptor("credentialStatus") {
+            element<String>("id")
+            element<String>("type")
+            element<String>("statusPurpose")
+            element<Int>("statusListIndex")
+            element<String>("statusListCredential")
+        }
+
+        override fun serialize(encoder: Encoder, value: CredentialStatus) {
+            encoder.encodeStructure(descriptor) {
+                encodeStringElement(descriptor, 0, value.id)
+                encodeStringElement(descriptor, 1, value.type.type)
+                encodeStringElement(descriptor, 2, value.statusPurpose.purpose)
+                encodeIntElement(descriptor, 3, value.statusListIndex)
+                encodeStringElement(descriptor, 4, value.statusListCredential)
+            }
+        }
+
+        override fun deserialize(decoder: Decoder): CredentialStatus {
+            require(decoder is JsonDecoder)
+            val jsonObject = decoder.decodeJsonElement().jsonObject
+
+            val id = jsonObject["id"]?.jsonPrimitive?.content ?: throw SerializationException("Missing 'id'")
+            val type = CredentialStatusListType.fromString(
+                jsonObject["type"]?.jsonPrimitive?.content ?: throw SerializationException("Missing 'type'")
+            )
+
+            val statusPurpose = CredentialStatusPurpose.fromString(
+                jsonObject["statusPurpose"]?.jsonPrimitive?.content
+                    ?: throw SerializationException("Missing 'statusPurpose'")
+            )
+            val statusListIndex = jsonObject["statusListIndex"]?.jsonPrimitive?.int ?: throw SerializationException(
+                "Missing 'statusListIndex'"
+            )
+            val statusListCredential = jsonObject["statusListCredential"]?.jsonPrimitive?.content
+                ?: throw SerializationException("Missing 'statusListCredential'")
+
+            return CredentialStatus(
+                id = id,
+                type = type,
+                statusPurpose = statusPurpose,
+                statusListIndex = statusListIndex,
+                statusListCredential = statusListCredential
+            )
+        }
+    }
 }
 
 @Serializable
@@ -113,4 +204,38 @@ data class JWTVerifiablePresentation(
     val context: Array<String>,
     val type: Array<String>,
     val verifiableCredential: Array<String>
-)
+) {
+    /**
+     * This method is used to check if the current object is equal to the given object.
+     *
+     * @param other The object to compare with.
+     * @return True if the two objects are equal, false otherwise.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as JWTVerifiablePresentation
+
+        if (!context.contentEquals(other.context)) return false
+        if (!type.contentEquals(other.type)) return false
+        if (!verifiableCredential.contentEquals(other.verifiableCredential)) return false
+
+        return true
+    }
+
+    /**
+     * Computes the hash code value of this object.
+     *
+     * The hash code is generated by applying the 31 * result + contentHashCode() formula to each property,
+     * where result is initialized with the contentHashCode() of the context property.
+     *
+     * @return the computed hash code value of this object.
+     */
+    override fun hashCode(): Int {
+        var result = context.contentHashCode()
+        result = 31 * result + type.contentHashCode()
+        result = 31 * result + verifiableCredential.contentHashCode()
+        return result
+    }
+}

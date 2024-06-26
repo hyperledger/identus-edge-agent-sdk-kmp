@@ -1,7 +1,7 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.config.ECConfig
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
@@ -36,6 +36,9 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey, S
             keySpecification[CustomKey("compressed").property] = "false"
         }
         keySpecification[CurveKey().property] = Curve.SECP256K1.value
+        val point = KMMECSecp256k1PublicKey.secp256k1FromBytes(raw).getCurvePoint()
+        keySpecification[CurvePointXKey().property] = point.x.base64UrlEncoded
+        keySpecification[CurvePointYKey().property] = point.y.base64UrlEncoded
     }
 
     /**
@@ -73,10 +76,10 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey, S
      */
     override fun getJwk(): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             crv = getProperty(CurveKey().property),
-            x = getProperty(CurvePointXKey().property).base64UrlEncoded,
-            y = getProperty(CurvePointYKey().property).base64UrlEncoded
+            x = getProperty(CurvePointXKey().property),
+            y = getProperty(CurvePointYKey().property)
         )
     }
 
@@ -88,11 +91,11 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey, S
      */
     override fun jwkWithKid(kid: String): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             kid = kid,
             crv = getProperty(CurveKey().property),
-            x = getProperty(CurvePointXKey().property).base64UrlEncoded,
-            y = getProperty(CurvePointYKey().property).base64UrlEncoded
+            x = getProperty(CurvePointXKey().property),
+            y = getProperty(CurvePointYKey().property)
         )
     }
 

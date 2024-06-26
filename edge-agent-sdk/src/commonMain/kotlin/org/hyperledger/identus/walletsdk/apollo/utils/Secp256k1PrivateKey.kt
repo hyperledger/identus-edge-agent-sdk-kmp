@@ -1,10 +1,10 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.derivation.DerivationPath
-import io.iohk.atala.prism.apollo.derivation.HDKey
-import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PrivateKey
-import org.hyperledger.identus.walletsdk.apollo.helpers.BytesOps
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.apollo.derivation.DerivationPath
+import org.hyperledger.identus.apollo.derivation.HDKey
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
@@ -56,6 +56,9 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
     init {
         size = raw.size
         keySpecification[CurveKey().property] = Curve.SECP256K1.value
+        val point = KMMECSecp256k1PrivateKey.secp256k1FromByteArray(raw).getPublicKey().getCurvePoint()
+        keySpecification[CurvePointXKey().property] = point.x.base64UrlEncoded
+        keySpecification[CurvePointYKey().property] = point.y.base64UrlEncoded
     }
 
     /**
@@ -97,10 +100,11 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
      */
     override fun getJwk(): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             crv = getProperty(CurveKey().property),
-            x = getProperty(CurvePointXKey().property).base64UrlEncoded,
-            y = getProperty(CurvePointYKey().property).base64UrlEncoded
+            d = raw.base64UrlEncoded,
+            x = getProperty(CurvePointXKey().property),
+            y = getProperty(CurvePointYKey().property)
         )
     }
 
@@ -112,11 +116,11 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
      */
     override fun jwkWithKid(kid: String): JWK {
         return JWK(
-            kty = "OKP",
+            kty = "EC",
             kid = kid,
-            crv = getProperty(CurveKey().property),
-            x = getProperty(CurvePointXKey().property).base64UrlEncoded,
-            y = getProperty(CurvePointYKey().property).base64UrlEncoded
+            d = raw.base64UrlEncoded,
+            x = getProperty(CurvePointXKey().property),
+            y = getProperty(CurvePointYKey().property)
         )
     }
 
@@ -149,7 +153,7 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
     override fun derive(derivationPath: DerivationPath): PrivateKey {
         val seed = getProperty(SeedKey().property)
 
-        val seedByteArray = BytesOps.hexToBytes(seed)
+        val seedByteArray = seed.base64UrlDecodedBytes
 
         val hdKey = HDKey(seedByteArray, 0, 0)
         val derivedHdKey = hdKey.derive(derivationPath.toString())

@@ -34,4 +34,13 @@ interface KeyRestoration {
      * @return a PublicKey
      */
     fun restorePublicKey(key: StorableKey): PublicKey
+
+    /**
+     * Restores a key from a JWK (JSON Web Key).
+     *
+     * @param key The JWK to restore the key from.
+     * @param index The index of the key to restore, if it is a key with multiple sub-keys. Default is null.
+     * @return The restored Key object.
+     */
+    fun restoreKey(key: JWK, index: Int? = null): Key
 }

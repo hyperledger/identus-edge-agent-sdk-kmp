@@ -1,8 +1,10 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.castor
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
-import io.iohk.atala.prism.apollo.utils.KMMECSecp256k1PublicKey
 import io.ipfs.multibase.Multibase
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PublicKey
@@ -24,7 +26,6 @@ import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
-import kotlin.jvm.Throws
 
 /**
  * Castor is a powerful and flexible library for working with DIDs. Whether you are building a decentralised application
@@ -204,7 +205,10 @@ constructor(
                 Curve.SECP256K1 -> {
                     if (jwk.containsKey("y")) {
                         val y = jwk["y"]
-                        val kmmSecp = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(x!!.base64UrlDecodedBytes, y!!.base64UrlDecodedBytes)
+                        val kmmSecp = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(
+                            x!!.base64UrlDecodedBytes,
+                            y!!.base64UrlDecodedBytes
+                        )
                         Secp256k1PublicKey(kmmSecp.raw)
                     } else {
                         Secp256k1PublicKey(x!!.base64UrlDecodedBytes)

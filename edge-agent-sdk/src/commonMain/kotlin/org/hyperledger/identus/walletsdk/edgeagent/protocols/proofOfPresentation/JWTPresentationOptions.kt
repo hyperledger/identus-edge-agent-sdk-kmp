@@ -33,7 +33,7 @@ data class JWTPresentationOptions(
     override fun hashCode(): Int {
         var result = name?.hashCode() ?: 0
         result = 31 * result + purpose.hashCode()
-        result = 31 * result + (jwt.contentHashCode() ?: 0)
+        result = 31 * result + (jwt.contentHashCode())
         result = 31 * result + domain.hashCode()
         result = 31 * result + challenge.hashCode()
         return result

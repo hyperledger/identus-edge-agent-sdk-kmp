@@ -1,7 +1,15 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent.mediation
 
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.plugins.websocket.webSocket
+import io.ktor.websocket.Frame
+import io.ktor.websocket.readText
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.isActive
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.DID
@@ -16,17 +24,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.mediation.Mediation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup.PickupReceived
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup.PickupRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup.PickupRunner
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.plugins.websocket.webSocket
-import io.ktor.websocket.Frame
-import io.ktor.websocket.readText
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import java.util.UUID
-import kotlinx.coroutines.isActive
 
 /**
  * A class that provides an implementation of [MediationHandler] using a Pluto instance and a Mercury instance. It can
@@ -238,18 +236,32 @@ class BasicMediatorHandler(
         }
     }
 
+    /**
+     * Handles received messages from sockets.
+     *
+     * @param text The received message as a string.
+     * @return An array of pairs, where each pair consists of a string and a Message object. If the decryptedMessage's
+     * `piuri` value is equal to either ProtocolType.PickupStatus.value or ProtocolType.PickupDelivery.value, the
+     * result is obtained by calling the PickupRunner's run() method with the decryptedMessage and mercury as arguments.
+     * Otherwise, an empty array is returned.
+     */
     private suspend fun handleReceivedMessagesFromSockets(text: String): Array<Pair<String, Message>> {
         val decryptedMessage = mercury.unpackMessage(text)
-        if (decryptedMessage.piuri == ProtocolType.PickupStatus.value ||
+        return if (decryptedMessage.piuri == ProtocolType.PickupStatus.value ||
             decryptedMessage.piuri == ProtocolType.PickupDelivery.value
         ) {
-            return PickupRunner(decryptedMessage, mercury).run()
+            PickupRunner(decryptedMessage, mercury).run()
         } else {
-            return emptyArray()
+            emptyArray()
         }
     }
 }
 
+/**
+ * Represents a callback function for handling messages.
+ *
+ * This interface defines a single method [onMessage] that is invoked when messages are received.
+ */
 fun interface OnMessageCallback {
     fun onMessage(messages: Array<Pair<String, Message>>)
 }

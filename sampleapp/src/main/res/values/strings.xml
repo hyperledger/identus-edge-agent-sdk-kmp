@@ -36,4 +36,5 @@
     <string name="credentials_label">Credentials</string>
     <string name="host_label">Host:</string>
     <string name="receiver_label">Receiver:</string>
+    <string name="to_did">To DID</string>
 </resources>

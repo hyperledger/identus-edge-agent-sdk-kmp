@@ -23,4 +23,10 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
         }
         return credentials
     }
+
+    fun isCredentialRevoked(credential: Credential) {
+        viewModelScope.launch {
+            Sdk.getInstance().agent.isCredentialRevoked(credential)
+        }
+    }
 }

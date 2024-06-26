@@ -6,8 +6,8 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import java.util.UUID

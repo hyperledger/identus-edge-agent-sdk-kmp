@@ -1,59 +1,85 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.main.MainActivity">
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".ui.main.MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/Theme.Walletsdk.AppBarOverlay">
-
-<!--        <androidx.constraintlayout.widget.ConstraintLayout-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent">-->
-
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:minHeight="?actionBarSize"
-            android:padding="@dimen/appbar_padding"
-            android:text="@string/app_name"
-            android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title" />
-
-<!--        <TextView-->
-<!--            android:id="@+id/agent_status"-->
-<!--            android:layout_width="wrap_content"-->
-<!--            android:layout_height="wrap_content"-->
-<!--            android:gravity="center"-->
-<!--            android:minHeight="?actionBarSize"-->
-<!--            android:padding="@dimen/appbar_padding"-->
-<!--            android:text="@string/agent_status"-->
-<!--            android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title" />-->
-<!--        </androidx.constraintlayout.widget.ConstraintLayout>-->
-
-        <com.google.android.material.tabs.TabLayout
-            android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:tabMode="fixed" />
+            android:theme="@style/Theme.Walletsdk.AppBarOverlay">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+            <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:minHeight="?actionBarSize"
+                    android:padding="@dimen/appbar_padding"
+                    android:text="@string/app_name"
+                    android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+            <ImageButton
+                    android:id="@+id/pluto_restore"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    tools:ignore="ContentDescription"
+                    android:gravity="center"
+                    android:layout_margin="4dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toStartOf="@id/pluto_backup"
+                    android:background="@android:color/transparent"
+                    android:src="@android:drawable/stat_sys_upload" />
+
+            <ImageButton
+                    android:id="@+id/pluto_backup"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    tools:ignore="ContentDescription"
+                    android:gravity="center"
+                    android:layout_margin="4dp"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:background="@android:color/transparent"
+                    android:src="@android:drawable/stat_sys_download" />
+
+            <!--        <TextView-->
+            <!--            android:id="@+id/agent_status"-->
+            <!--            android:layout_width="wrap_content"-->
+            <!--            android:layout_height="wrap_content"-->
+            <!--            android:gravity="center"-->
+            <!--            android:minHeight="?actionBarSize"-->
+            <!--            android:padding="@dimen/appbar_padding"-->
+            <!--            android:text="@string/agent_status"-->
+            <!--            android:textAppearance="@style/TextAppearance.Widget.AppCompat.Toolbar.Title" />-->
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tabs"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:tabMode="fixed" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/agent_view"
-        android:name="org.hyperledger.identus.walletsdk.ui.agent.AgentFragment"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+            android:id="@+id/agent_view"
+            android:name="org.hyperledger.identus.walletsdk.ui.agent.AgentFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
 
     <androidx.viewpager.widget.ViewPager
-        android:id="@+id/view_pager"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+            android:id="@+id/view_pager"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

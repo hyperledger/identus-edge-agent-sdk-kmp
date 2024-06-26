@@ -1,12 +1,17 @@
 package org.hyperledger.identus.walletsdk.pollux.models
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNames
 import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.AnonCredentialBackUp.RevocationRegistry
 
 /**
  * Represents an anonymous verifiable credential that contains information about an entity or identity.
@@ -24,18 +29,52 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
  * @param witnessJson The JSON representation of the credential's witness.
  * @param json The JSON representation of the credential.
  */
+@OptIn(ExperimentalSerializationApi::class)
 @Serializable
 data class AnonCredential(
+    @SerialName("schema_id")
+    @JsonNames("schema_id", "schemaID")
     val schemaID: String,
+    @SerialName("cred_def_id")
+    @JsonNames("cred_def_id", "credentialDefinitionID")
     val credentialDefinitionID: String,
     val values: Map<String, Attribute>,
+    @SerialName("signature")
+    @JsonNames("signature", "signatureJson")
     val signatureJson: String,
+    @SerialName("signature_correctness_proof")
+    @JsonNames("signature_correctness_proof", "signatureCorrectnessProofJson")
     val signatureCorrectnessProofJson: String,
+    @SerialName("rev_reg_id")
+    @JsonNames("revocation_registry_id", "revocationRegistryId", "rev_reg_id")
     val revocationRegistryId: String?,
+    @SerialName("rev_reg")
+    @JsonNames("revocation_registry", "revocationRegistryJson", "rev_reg")
     val revocationRegistryJson: String?,
-    val witnessJson: String,
+    @SerialName("witness")
+    @JsonNames("witness", "witnessJson")
+    val witnessJson: String?,
     private val json: String
 ) : Credential {
+
+    /**
+     * Converts the current object to a [PlutoRestoreTask.AnonCredentialBackUp] object.
+     *
+     * @return The converted [PlutoRestoreTask.AnonCredentialBackUp] object.
+     */
+    fun toAnonCredentialBackUp(): PlutoRestoreTask.AnonCredentialBackUp {
+        return PlutoRestoreTask.AnonCredentialBackUp(
+            schemaID = this.schemaID,
+            credentialDefinitionID = this.credentialDefinitionID,
+            values = this.values,
+            signature = Json.decodeFromString(this.signatureJson),
+            signatureCorrectnessProof = Json.decodeFromString(this.signatureCorrectnessProofJson),
+            revocationRegistryId = this.revocationRegistryId,
+            revocationRegistry = if (this.revocationRegistryJson != null) Json.decodeFromString(this.revocationRegistryJson) else RevocationRegistry(),
+            witnessJson = if (this.witnessJson != null) Json.decodeFromString(this.witnessJson) else PlutoRestoreTask.AnonCredentialBackUp.Witness(),
+            revoked = this.revoked
+        )
+    }
 
     /**
      * Represents an attribute in a verifiable credential.
@@ -70,10 +109,16 @@ data class AnonCredential(
             properties["credentialDefinitionID"] = this.credentialDefinitionID
             properties["signatureJson"] = this.signatureJson
             properties["signatureCorrectnessProofJson"] = this.signatureCorrectnessProofJson
-            properties["witnessJson"] = this.witnessJson
 
-            revocationRegistryId?.map { properties["revocationRegistryId"] = it }
-            revocationRegistryJson?.map { properties["revocationRegistryJson"] = it }
+            witnessJson?.let {
+                properties["witnessJson"] = it
+            }
+            revocationRegistryId?.let {
+                properties["revocationRegistryId"] = it
+            }
+            revocationRegistryJson?.let {
+                properties["revocationRegistryJson"] = it
+            }
 
             return properties.toMap()
         }

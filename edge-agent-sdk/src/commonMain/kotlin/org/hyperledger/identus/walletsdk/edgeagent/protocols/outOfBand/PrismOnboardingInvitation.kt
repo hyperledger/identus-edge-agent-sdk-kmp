@@ -3,7 +3,6 @@ package org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.edgeagent.FROM

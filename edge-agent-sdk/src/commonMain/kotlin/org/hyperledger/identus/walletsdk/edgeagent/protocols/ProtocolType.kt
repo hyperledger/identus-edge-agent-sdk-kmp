@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent.protocols
 
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -11,8 +9,8 @@ import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
-import org.hyperledger.identus.walletsdk.edgeagent.PROTOCOL_TYPE
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.PROTOCOL_TYPE
 
 @Serializable(with = ProtocolTypeSerializer::class)
 enum class ProtocolType(val value: String) {
@@ -45,7 +43,7 @@ enum class ProtocolType(val value: String) {
     companion object {
         @JvmStatic
         fun findProtocolType(type: String, default: ProtocolType): ProtocolType {
-            return ProtocolType.values().find { it.value == type } ?: default
+            return entries.find { it.value == type } ?: default
         }
     }
 }
@@ -75,7 +73,7 @@ object ProtocolTypeSerializer : KSerializer<ProtocolType> {
  */
 @Throws(EdgeAgentError.UnknownInvitationTypeError::class)
 fun findProtocolTypeByValue(string: String): ProtocolType {
-    val it = ProtocolType.values().iterator()
+    val it = ProtocolType.entries.iterator()
     while (it.hasNext()) {
         val internalType = it.next()
         if (internalType.value == string) {

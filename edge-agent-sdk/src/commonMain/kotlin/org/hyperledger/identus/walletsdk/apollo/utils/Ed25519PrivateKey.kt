@@ -1,7 +1,7 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.utils.KMMEdPrivateKey
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.apollo.utils.KMMEdPrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.ExportableKey
@@ -83,7 +83,8 @@ class Ed25519PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey, Sto
         return JWK(
             kty = "OKP",
             crv = getProperty(CurveKey().property),
-            x = raw.base64UrlEncoded
+            d = raw.base64UrlEncoded,
+            x = publicKey().raw.base64UrlEncoded
         )
     }
 
@@ -98,7 +99,8 @@ class Ed25519PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey, Sto
             kty = "OKP",
             kid = kid,
             crv = getProperty(CurveKey().property),
-            x = raw.base64UrlEncoded
+            d = raw.base64UrlEncoded,
+            x = publicKey().raw.base64UrlEncoded
         )
     }
 

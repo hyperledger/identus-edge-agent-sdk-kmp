@@ -172,6 +172,13 @@ object InputFieldFilterSerializer : KSerializer<InputFieldFilter> {
         element("value", PolymorphicSerializer(Any::class).descriptor, isOptional = true)
     }
 
+    /**
+     * Deserializes the input data from the provided decoder into an instance of the InputFieldFilter class.
+     *
+     * @param decoder The decoder used to decode the input data.
+     * @return An instance of the InputFieldFilter class.
+     * @throws SerializationException if an unknown index is encountered during deserialization or if the "type" property is missing.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     override fun deserialize(decoder: Decoder): InputFieldFilter {
         val dec: CompositeDecoder = decoder.beginStructure(descriptor)
@@ -279,6 +286,12 @@ object InputFieldFilterSerializer : KSerializer<InputFieldFilter> {
         )
     }
 
+    /**
+     * Serializes an [InputFieldFilter] object using the provided [Encoder].
+     *
+     * @param encoder The encoder used for serialization.
+     * @param value The [InputFieldFilter] object to be serialized.
+     */
     @OptIn(ExperimentalSerializationApi::class)
     override fun serialize(encoder: Encoder, value: InputFieldFilter) {
         val compositeOutput = encoder.beginStructure(descriptor)

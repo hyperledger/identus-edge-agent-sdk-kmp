@@ -1,18 +1,24 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import com.nimbusds.jose.EncryptionMethod
+import com.nimbusds.jose.JWEAlgorithm
+import com.nimbusds.jose.JWEDecrypter
+import com.nimbusds.jose.JWEEncrypter
+import com.nimbusds.jose.JWEHeader
+import com.nimbusds.jose.JWEObject
+import com.nimbusds.jose.Payload
+import com.nimbusds.jose.crypto.X25519Decrypter
+import com.nimbusds.jose.crypto.X25519Encrypter
+import com.nimbusds.jose.jwk.OctetKeyPair
+import com.nimbusds.jose.util.Base64URL
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
-import java.net.UnknownHostException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -24,14 +30,22 @@ import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
+import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
@@ -40,9 +54,10 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
@@ -53,13 +68,20 @@ import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
+import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
@@ -76,12 +98,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnbo
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.Presentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import java.util.*
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.decodeFromJsonElement
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonPrimitive
-import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
@@ -90,12 +106,18 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import org.hyperledger.identus.walletsdk.logger.LogComponent
+import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
-import org.hyperledger.identus.walletsdk.logger.Metadata
+import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
+import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.kotlincrypto.hash.sha2.SHA256
+import java.net.UnknownHostException
+import java.util.*
 
 /**
  * Check if the passed URL is valid or not.
@@ -103,10 +125,10 @@ import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
  * @return [Url] if valid, null if not valid
  */
 private fun Url.Companion.parse(str: String): Url? {
-    try {
-        return Url(str)
+    return try {
+        Url(str)
     } catch (e: Throwable) {
-        return null
+        null
     }
 }
 
@@ -366,7 +388,7 @@ class EdgeAgent {
         pluto.storePrismDIDAndPrivateKeys(
             did = did,
             keyPathIndex = keyPathIndex,
-            alias = alias,
+            alias = alias ?: did.alias,
             listOf(privateKey as StorableKey)
         )
     }
@@ -505,7 +527,7 @@ class EdgeAgent {
      *
      * @param did The DID of the mediator to set up.
      */
-    suspend fun setupMediatorDID(did: DID) {
+    fun setupMediatorDID(did: DID) {
         val tmpMediatorHandler = BasicMediatorHandler(
             mediatorDID = did,
             mercury = mercury,
@@ -531,7 +553,7 @@ class EdgeAgent {
      * @param pair The DIDPair to be stored
      */
     fun registerDIDPair(pair: DIDPair) {
-        pluto.storeDIDPair(pair.host, pair.receiver, pair.name ?: "")
+        pluto.storeDIDPair(pair.holder, pair.receiver, pair.name ?: "")
     }
 
     /**
@@ -605,11 +627,11 @@ class EdgeAgent {
      * @param offer Received offer credential.
      * @return Created request credential.
      * @throws [PolluxError.InvalidPrismDID] if there is a problem creating the request credential.
-     * @throws [org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError] if credential type is not supported
+     * @throws [UnknownError.SomethingWentWrongError] if credential type is not supported
      **/
     @Throws(
         PolluxError.InvalidPrismDID::class,
-        org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class
+        UnknownError.SomethingWentWrongError::class
     )
     suspend fun prepareRequestCredentialWithIssuer(
         did: DID,
@@ -658,7 +680,7 @@ class EdgeAgent {
                 val linkSecret = getLinkSecret()
                 val offerDataString = offer.attachments.firstNotNullOf {
                     when (it.data) {
-                        is AttachmentBase64 -> it.data.base64
+                        is AttachmentData.AttachmentBase64 -> it.data.base64
                         else -> null
                     }
                 }
@@ -678,7 +700,8 @@ class EdgeAgent {
 
                 val json = credentialRequest.getJson()
 
-                val metadata = CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
+                val metadata =
+                    CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
                 pluto.storeCredentialMetadata(offer.thid, metadata)
 
                 val attachmentDescriptor =
@@ -712,7 +735,7 @@ class EdgeAgent {
      * @return The parsed verifiable credential.
      * @throws org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError if there is a problem parsing the credential.
      */
-    @Throws(org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
+    @Throws(UnknownError.SomethingWentWrongError::class)
     suspend fun processIssuedCredentialMessage(message: IssueCredential): Credential {
         val credentialType = pollux.extractCredentialFormatFromMessage(message.attachments)
         val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
@@ -736,7 +759,8 @@ class EdgeAgent {
                     null
                 }
 
-                val credential = pollux.parseCredential(credentialData, credentialType, linkSecret, metadata)
+                val credential =
+                    pollux.parseCredential(credentialData, credentialType, linkSecret, metadata)
 
                 val storableCredential =
                     pollux.credentialToStorableCredential(
@@ -746,7 +770,7 @@ class EdgeAgent {
                 pluto.storeCredential(storableCredential)
                 return credential
             } else {
-                throw org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError("Thid should not be null")
+                throw UnknownError.SomethingWentWrongError("Thid should not be null")
             }
         } ?: throw EdgeAgentError.AttachmentTypeNotSupported()
     }
@@ -827,7 +851,7 @@ class EdgeAgent {
      * @return The parsed Prism Onboarding invitation
      * @throws [org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError] if the string is not a valid Prism Onboarding invitation
      */
-    @Throws(org.hyperledger.identus.walletsdk.domain.models.UnknownError.SomethingWentWrongError::class)
+    @Throws(UnknownError.SomethingWentWrongError::class)
     private suspend fun parsePrismInvitation(str: String): PrismOnboardingInvitation {
         try {
             val prismOnboarding = PrismOnboardingInvitation.fromJsonString(str)
@@ -863,7 +887,7 @@ class EdgeAgent {
      * @throws [SerializationException] if Serialization failed
      */
     @Throws(SerializationException::class)
-    private suspend fun parseOOBInvitation(str: String): OutOfBandInvitation {
+    private fun parseOOBInvitation(str: String): OutOfBandInvitation {
         return try {
             Json.decodeFromString(str)
         } catch (ex: SerializationException) {
@@ -918,7 +942,7 @@ class EdgeAgent {
     /**
      * This method returns a list of all the VerifiableCredentials stored locally.
      */
-    suspend fun getAllCredentials(): Flow<List<Credential>> {
+    fun getAllCredentials(): Flow<List<Credential>> {
         return pluto.getAllCredentials()
             .map { list ->
                 list.map {
@@ -966,12 +990,12 @@ class EdgeAgent {
                             seed,
                             KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                         )
-                    val requestData = request.attachments.mapNotNull {
+                    val requestData = request.attachments.firstNotNullOf {
                         when (it.data) {
                             is AttachmentJsonData -> it.data.data
                             else -> null
                         }
-                    }.first()
+                    }
                     val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
                     presentationString = pollux.createVerifiablePresentationJWT(
                         subjectDID,
@@ -1172,7 +1196,9 @@ class EdgeAgent {
         val presentationSubmission: PresentationSubmission =
             presentationSubmissionJsonObject["presentation_submission"]?.let { presentationSubmissionField ->
                 val submission =
-                    Json.decodeFromJsonElement<PresentationSubmission.Submission>(presentationSubmissionField)
+                    Json.decodeFromJsonElement<PresentationSubmission.Submission>(
+                        presentationSubmissionField
+                    )
                 var arrayStrings: Array<String> = arrayOf()
 
                 if (submission.descriptorMap.isNotEmpty()) {
@@ -1180,9 +1206,10 @@ class EdgeAgent {
                     // Assume the path denotes a direct key in the JSON and strip out JSONPath or XPath specific characters if any.
                     val path = firstDescriptorItem.path.removePrefix("$.")
                         .removeSuffix("[0]") // Adjust based on actual path format
-                    arrayStrings = presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
-                        ?.toTypedArray()
-                        ?: arrayOf()
+                    arrayStrings =
+                        presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
+                            ?.toTypedArray()
+                            ?: arrayOf()
                 }
                 return@let PresentationSubmission(submission, arrayStrings)
             } ?: throw EdgeAgentError.MissingOrNullFieldError(
@@ -1191,7 +1218,8 @@ class EdgeAgent {
             )
 
         val presentationDefinitionRequest =
-            pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value).firstOrNull()
+            pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value)
+                .firstOrNull()
                 ?.let { message ->
                     val requestPresentation = RequestPresentation.fromMessage(message)
                     val attachmentDescriptor = requestPresentation.attachments.first()
@@ -1217,6 +1245,128 @@ class EdgeAgent {
                     pollux.restoreCredential(it.restorationId, it.credentialData, it.revoked)
                 }
             }
+    }
+
+    suspend fun isCredentialRevoked(credential: Credential) {
+        edgeAgentScope.launch {
+            val isRevoked = pollux.isCredentialRevoked(credential)
+            if (isRevoked) {
+                pluto.revokeCredential(credential.id)
+            }
+        }
+    }
+
+    /**
+     * Performs a backup operation.
+     *
+     * @throws UnknownError.SomethingWentWrongError if something unexpected happens during the backup process.
+     *
+     * @return the encrypted backup string.
+     */
+    @Throws(UnknownError.SomethingWentWrongError::class)
+    suspend fun backupWallet(plutoBackupTask: PlutoBackupTask = PlutoBackupTask(pluto)): String {
+        // 1. Get the JWK
+        val masterKey = createX25519PrivateKeyFrom(this.seed)
+        if (masterKey.isExportable().not()) {
+            throw UnknownError.SomethingWentWrongError("Key is not exportable")
+        }
+        val jwk = masterKey.getJwk().toNimbusJwk()
+
+        // 2. Create an encrypter
+        val encrypter: JWEEncrypter
+        if (jwk is OctetKeyPair) {
+            encrypter = X25519Encrypter(jwk.toPublicJWK())
+        } else {
+            throw UnknownError.SomethingWentWrongError("Unsupported JWK type for ECDH-ES encryption")
+        }
+
+        // 3. Set the JWE header (algorithm and encryption)
+        // The following two line are needed because of a constrain in TS SDK
+        val backupText = "backup"
+        val apv = SHA256().digest(backupText.encodeToByteArray())
+
+        val header = JWEHeader.Builder(JWEAlgorithm.ECDH_ES_A256KW, EncryptionMethod.A256CBC_HS512)
+            .agreementPartyVInfo(Base64URL(apv.base64UrlEncoded))
+            .build()
+
+        val backup = plutoBackupTask.run().first()
+
+        // 4. Create a JWE object
+        val payloadString = Json.encodeToString(backup)
+        val jweObject = JWEObject(header, Payload(payloadString))
+
+        // 5. Perform the encryption
+        jweObject.encrypt(encrypter)
+
+        // 6. Serialize the JWE to a string
+        val jweString = jweObject.serialize()
+
+        return jweString
+    }
+
+    /**
+     * Restores a Pluto instance from a JWE (JSON Web Encryption) string.
+     *
+     * @param jwe The JWE string that contains the encrypted backup.
+     * @throws UnknownError.SomethingWentWrongError if the JWE algorithm or key type is unsupported.
+     */
+    @Throws(UnknownError.SomethingWentWrongError::class)
+    suspend fun recoverWallet(jwe: String) {
+        // 1. Get the JWK
+        val masterKey = createX25519PrivateKeyFrom(this.seed)
+        if (masterKey.isExportable().not()) {
+            throw UnknownError.SomethingWentWrongError("Key is not exportable")
+        }
+        val jwk = masterKey.getJwk().toNimbusJwk()
+
+        // 2. Parse the JWE string
+        val jweObject = JWEObject.parse(jwe)
+
+        // 3. Determine the algorithm and create a decrypter
+        val alg = jweObject.header.algorithm
+        val enc = jweObject.header.encryptionMethod
+        val decrypter: JWEDecrypter
+        if (alg == JWEAlgorithm.ECDH_ES_A256KW && enc == EncryptionMethod.A256CBC_HS512 && jwk is OctetKeyPair) {
+            decrypter = X25519Decrypter(jwk) // ECDH decrypter for key agreement
+        } else {
+            throw UnknownError.SomethingWentWrongError("Unsupported JWE algorithm or key type")
+        }
+
+        // 4. Decrypt the JWE
+        jweObject.decrypt(decrypter)
+
+        // 5. Get the decrypted payload
+        val json = jweObject.payload.toString()
+
+        // 6. Parse the decrypted payload
+        val backupObject = Json.decodeFromString<BackupV0_0_1>(json)
+
+        // 7. Restore the pluto instance
+        val restoreTask = PlutoRestoreTask(pluto, backupObject)
+        restoreTask.run()
+    }
+
+    /**
+     * Creates a X25519PrivateKey using the provided seed and derivation path.
+     *
+     * @param seed The seed used to generate the private key.
+     * @param derivationPath The derivation path used to derive the private key with a default value of "m/0'/0'/0'"
+     * @return The generated X25519PrivateKey.
+     * @throws UnknownError.SomethingWentWrongError if an exception occurs during the private key generation.
+     */
+    private fun createX25519PrivateKeyFrom(seed: Seed, derivationPath: String = "m/0'/0'/0'"): X25519PrivateKey {
+        return try {
+            apollo.createPrivateKey(
+                mapOf(
+                    TypeKey().property to KeyTypes.Curve25519,
+                    CurveKey().property to Curve.X25519.value,
+                    SeedKey().property to seed.value.base64UrlEncoded,
+                    DerivationPathKey().property to derivationPath
+                )
+            ) as X25519PrivateKey
+        } catch (ex: Exception) {
+            throw UnknownError.SomethingWentWrongError(ex.localizedMessage, ex)
+        }
     }
 
     /**

@@ -1,10 +1,8 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 
-import java.util.UUID
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.util.UUID
 
 enum class DescriptorItemFormat(val value: String) {
     JWT_VC("jwt_vc"),
@@ -54,10 +52,10 @@ data class PresentationSubmission(
                     val start = originalPath.indexOf("$.")
                     val end = originalPath.indexOf("[")
 
-                    if (start != -1 && end != -1 && start < end) {
-                        return originalPath.substring(0, start + 2) + "verifiablePresentation" + originalPath.substring(end)
+                    return if (start != -1 && end != -1 && start < end) {
+                        originalPath.substring(0, start + 2) + "verifiablePresentation" + originalPath.substring(end)
                     } else {
-                        return originalPath // or handle error
+                        originalPath // or handle error
                     }
                 }
             }

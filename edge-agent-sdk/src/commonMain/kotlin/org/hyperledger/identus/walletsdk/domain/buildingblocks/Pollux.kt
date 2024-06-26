@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
 import anoncreds_wrapper.CredentialDefinition
@@ -115,10 +113,7 @@ interface Pollux {
      * @param credential The [Credential] object to be converted.
      * @return The converted [StorableCredential].
      */
-    fun credentialToStorableCredential(
-        type: CredentialType,
-        credential: Credential
-    ): StorableCredential
+    fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential
 
     /**
      * Extracts the credential format from the given array of attachment descriptors.
@@ -156,4 +151,6 @@ interface Pollux {
     ): Boolean
 
     suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey>
+
+    suspend fun isCredentialRevoked(credential: Credential): Boolean
 }

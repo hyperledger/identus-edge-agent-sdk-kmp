@@ -4,23 +4,10 @@ package org.hyperledger.identus.walletsdk.edgeagent
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
-import org.hyperledger.identus.walletsdk.domain.models.Api
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.ClaimType
-import org.hyperledger.identus.walletsdk.domain.models.CredentialType
-import org.hyperledger.identus.walletsdk.domain.models.DID
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
-import org.hyperledger.identus.walletsdk.mercury.ApiMock
-import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
-import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import io.ktor.http.HttpStatusCode
 import junit.framework.TestCase.assertEquals
 import junit.framework.TestCase.assertTrue
@@ -37,11 +24,24 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
+import org.hyperledger.identus.walletsdk.domain.models.ClaimType
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
 import org.hyperledger.identus.walletsdk.domain.models.Seed
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
+import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
+import org.hyperledger.identus.walletsdk.mercury.ApiMock
+import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -98,7 +98,7 @@ class AnoncredsTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(castorMock, apiMock)
+        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
         val agent = EdgeAgent(
@@ -158,7 +158,7 @@ class AnoncredsTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(castorMock, apiMock)
+        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
         val meta = CredentialRequestMeta(
             linkSecretName = "1",
@@ -239,7 +239,7 @@ class AnoncredsTests {
         val castorMock = mock<Castor>()
         val plutoMock = mock<Pluto>()
         val mercuryMock = mock<Mercury>()
-        val polluxMock: Pollux = PolluxImpl(castorMock, apiMock)
+        val polluxMock: Pollux = PolluxImpl(apolloMock, castorMock, apiMock)
         val connectionManagerMock = mock<ConnectionManager>()
         val seed = Seed(MnemonicHelper.createRandomSeed())
 
