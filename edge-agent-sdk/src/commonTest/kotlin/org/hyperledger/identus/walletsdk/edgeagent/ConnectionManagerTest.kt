@@ -1,13 +1,17 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.test.TestCoroutineDispatcher
+import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
@@ -17,25 +21,19 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.test.TestCoroutineDispatcher
-import kotlinx.coroutines.test.runBlockingTest
-import kotlinx.coroutines.test.runTest
 import org.mockito.Mock
+import org.mockito.Mockito.anyList
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
-import java.util.UUID
-import kotlinx.coroutines.flow.Flow
-import org.mockito.Mockito.anyList
 import org.mockito.kotlin.anyArray
 import org.mockito.kotlin.argumentCaptor
-import kotlin.test.assertNotNull
+import java.util.UUID
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ConnectionManagerTest {
 

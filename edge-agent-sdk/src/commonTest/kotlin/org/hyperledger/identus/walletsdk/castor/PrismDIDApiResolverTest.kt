@@ -1,12 +1,10 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.castor
 
-import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import kotlinx.coroutines.test.runTest
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument

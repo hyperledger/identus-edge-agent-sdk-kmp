@@ -20,7 +20,7 @@ internal class DIDCommInvitationRunner(private val url: Url) {
      * @throws EdgeAgentError.UnknownInvitationTypeError If the type of the invitation is unknown or unsupported.
      */
     @Throws(EdgeAgentError.UnknownInvitationTypeError::class)
-    internal suspend fun run(): OutOfBandInvitation {
+    internal fun run(): OutOfBandInvitation {
         val messageString = OutOfBandParser().parseMessage(url)
         val message: OutOfBandInvitation = Json.decodeFromString(messageString)
         if (message.type != ProtocolType.Didcomminvitation) {

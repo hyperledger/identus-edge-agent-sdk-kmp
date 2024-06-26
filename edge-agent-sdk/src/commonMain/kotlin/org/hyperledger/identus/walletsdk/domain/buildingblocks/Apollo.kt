@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
-import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
+import org.hyperledger.identus.apollo.derivation.MnemonicLengthException
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.SeedWords
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyRestoration

@@ -1,12 +1,18 @@
 package org.hyperledger.identus.walletsdk.apollo
 
-import io.iohk.atala.prism.apollo.derivation.HDKey
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
-import io.iohk.atala.prism.apollo.derivation.MnemonicLengthException
-import org.hyperledger.identus.walletsdk.apollo.helpers.BytesOps
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.derivation.DerivationPath
+import org.hyperledger.identus.apollo.derivation.EdHDKey
+import org.hyperledger.identus.apollo.derivation.HDKey
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
+import org.hyperledger.identus.apollo.derivation.MnemonicLengthException
+import org.hyperledger.identus.apollo.utils.KMMEdPrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
+import org.hyperledger.identus.walletsdk.apollo.utils.KeyUsage
+import org.hyperledger.identus.walletsdk.apollo.utils.PrismDerivationPath
+import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
@@ -20,6 +26,8 @@ import org.hyperledger.identus.walletsdk.domain.models.SeedWords
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.Key
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
@@ -77,22 +85,21 @@ class ApolloImpl : Apollo {
     /**
      * Creates a private key based on the provided properties.
      *
-     * @param properties A map of properties used to create the private key. The map should contain the following keys:
-     *     - "type" (String): The type of the key ("EC" or "Curve25519").
-     *     - "curve" (String): The curve of the key.
-     *     - "rawKey" (ByteArray): The raw key data (optional).
-     *     - "index" (Int): The index for the key (only applicable for EC keys with curve "secp256k1").
-     *     - "derivationPath" (String): The derivation path for the key (only applicable for EC keys with curve "secp256k1").
-     *     - "seed" (String): The seed for the key (only applicable for EC keys with curve "secp256k1").
+     * @param properties The map of properties used to create the private key.
+     *                   The properties should include the following keys:
+     *                   - `Type`: The type of the key (e.g., "EC", "Curve25519").
+     *                   - `Curve`: The curve of the key (e.g., "ED25519", "SECP256K1", "X25519").
+     *                   - `RawKey`: The raw key data (optional).
+     *                   - `Seed`: The seed used to derive the key (optional).
+     *                   - `DerivationPath`: The derivation path used to derive the key (optional, required if seed is provided).
+     *                   - `Index`: The index used in the derivation path (optional, required if seed is provided).
      *
      * @return The created private key.
      *
-     * @throws ApolloError.InvalidKeyType If the provided key type is invalid.
-     * @throws ApolloError.InvalidKeyCurve If the provided key curve is invalid.
+     * @throws IllegalArgumentException If the provided properties are invalid or insufficient to create the key.
+     * @throws ApolloError.InvalidKeyType If the provided key type is invalid or not supported.
+     * @throws ApolloError.InvalidKeyCurve If the provided key curve is invalid or not supported.
      * @throws ApolloError.InvalidRawData If the provided raw key data is invalid.
-     * @throws ApolloError.InvalidIndex If the provided index is invalid.
-     * @throws ApolloError.InvalidDerivationPath If the provided derivation path is invalid.
-     * @throws ApolloError.InvalidSeed If the provided seed is invalid.
      */
     override fun createPrivateKey(properties: Map<String, Any>): PrivateKey {
         if (!properties.containsKey(TypeKey().property)) {
@@ -116,9 +123,34 @@ class ApolloImpl : Apollo {
                                 throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
                             }
                             return Ed25519PrivateKey(it)
+                        } ?: run {
+                            val seed = properties[SeedKey().property] as String?
+                            val derivationParam = properties[DerivationPathKey().property] as String?
+                            val index = properties[IndexKey().property] as Int?
+
+                            if (seed != null) {
+                                val derivationPath = if (derivationParam != null) {
+                                    DerivationPath.fromPath(derivationParam)
+                                } else if (index is Int) {
+                                    PrismDerivationPath(
+                                        keyPurpose = KeyUsage.MASTER_KEY,
+                                        keyIndex = index
+                                    ).toString().let(DerivationPath::fromPath)
+                                } else {
+                                    throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` or `Index` must also be sent")
+                                }
+                                val seedBytes = seed.base64UrlDecodedBytes
+                                val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
+                                val key = Ed25519PrivateKey(hdKey.privateKey)
+                                return key
+                            } else {
+                                if (derivationParam.isNullOrBlank() && index == null) {
+                                    throw IllegalArgumentException("When creating a key using `DerivationPath` or `Index`, `Seed` must also be sent")
+                                }
+                                val keyPair = Ed25519KeyPair.generateKeyPair()
+                                return keyPair.privateKey
+                            }
                         }
-                        val keyPair = Ed25519KeyPair.generateKeyPair()
-                        return keyPair.privateKey
                     }
 
                     Curve.SECP256K1.value -> {
@@ -127,45 +159,77 @@ class ApolloImpl : Apollo {
                                 throw Exception("KeyData must be a ByteArray")
                             }
                             return Secp256k1PrivateKey(it)
-                        }
-                        val index = properties[IndexKey().property] ?: 0
-                        if (index !is Int) {
-                            throw ApolloError.InvalidIndex("Index must be an integer")
-                        }
-                        val derivationPath =
-                            if (properties[DerivationPathKey().property] != null && properties[DerivationPathKey().property] !is String) {
-                                throw ApolloError.InvalidDerivationPath("Derivation path must be a string")
+                        } ?: run {
+                            val seed = properties[SeedKey().property] as String?
+                            val derivationParam = properties[DerivationPathKey().property] as String?
+                            val index = properties[IndexKey().property] as Int?
+
+                            if (seed != null) {
+                                val derivationPath = if (derivationParam != null) {
+                                    DerivationPath.fromPath(derivationParam)
+                                } else if (index is Int) {
+                                    PrismDerivationPath(
+                                        keyPurpose = KeyUsage.MASTER_KEY,
+                                        keyIndex = index
+                                    ).toString().let(DerivationPath::fromPath)
+                                } else {
+                                    throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` or `Index` must also be sent")
+                                }
+                                val seedBytes = seed.base64UrlDecodedBytes
+                                val hdKey = HDKey(seedBytes, 0, 0).derive(derivationPath.toString())
+                                val key = Secp256k1PrivateKey(hdKey.getKMMSecp256k1PrivateKey().raw)
+                                return key
                             } else {
-                                "m/$index'/0'/0'"
+                                if (derivationParam.isNullOrBlank() && index == null) {
+                                    throw IllegalArgumentException("When creating a key using `DerivationPath` or `Index`, `Seed` must also be sent")
+                                }
+                                val keyPair = Secp256k1KeyPair.generateKeyPair()
+                                return keyPair.privateKey
                             }
-
-                        val seed = properties[SeedKey().property] ?: throw Exception("Seed must provide a seed")
-                        if (seed !is String) {
-                            throw ApolloError.InvalidSeed("Seed must be a string")
                         }
-
-                        val seedByteArray = BytesOps.hexToBytes(seed)
-
-                        val hdKey = HDKey(seedByteArray, 0, 0)
-                        val derivedHdKey = hdKey.derive(derivationPath)
-                        val private = Secp256k1PrivateKey(derivedHdKey.getKMMSecp256k1PrivateKey().raw)
-                        private.keySpecification[SeedKey().property] = seed
-                        private.keySpecification[DerivationPathKey().property] = derivationPath
-                        private.keySpecification[IndexKey().property] = "0"
-                        return private
                     }
                 }
             }
 
             KeyTypes.Curve25519 -> {
-                keyData?.let {
-                    if (it !is ByteArray) {
-                        throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
+                when (curve) {
+                    Curve.X25519.value -> {
+                        keyData?.let {
+                            if (it !is ByteArray) {
+                                throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
+                            }
+                            return X25519PrivateKey(it)
+                        } ?: run {
+                            val seed = properties[SeedKey().property] as String?
+                            val derivationParam = properties[DerivationPathKey().property] as String?
+                            val index = properties[IndexKey().property] as Int?
+
+                            if (seed != null) {
+                                val derivationPath = if (derivationParam != null) {
+                                    DerivationPath.fromPath(derivationParam)
+                                } else if (index is Int) {
+                                    PrismDerivationPath(
+                                        keyPurpose = KeyUsage.KEY_AGREEMENT_KEY,
+                                        keyIndex = index
+                                    ).toString().let(DerivationPath::fromPath)
+                                } else {
+                                    throw IllegalArgumentException("When creating a key from `seed`, `DerivationPath` or `Index` must also be sent")
+                                }
+                                val seedBytes = seed.base64UrlDecodedBytes
+                                val hdKey = EdHDKey.initFromSeed(seedBytes).derive(derivationPath.toString())
+                                val edkey = KMMEdPrivateKey(hdKey.privateKey)
+                                val xKey = edkey.x25519PrivateKey()
+                                return X25519PrivateKey(xKey.raw)
+                            } else {
+                                if (derivationParam.isNullOrBlank() && index == null) {
+                                    throw IllegalArgumentException("When creating a key using `DerivationPath` or `Index`, `Seed` must also be sent")
+                                }
+                                val keyPair = X25519KeyPair.generateKeyPair()
+                                return keyPair.privateKey
+                            }
+                        }
                     }
-                    return X25519PrivateKey(it)
                 }
-                val keyPair = X25519KeyPair.generateKeyPair()
-                return keyPair.privateKey
             }
         }
         throw ApolloError.InvalidKeyType(TypeKey().property)
@@ -243,6 +307,67 @@ class ApolloImpl : Apollo {
 
             else -> {
                 throw ApolloError.RestorationFailedNoIdentifierOrInvalid()
+            }
+        }
+    }
+
+    /**
+     * Restores a key from a JWK (JSON Web Key).
+     *
+     * @param key The JWK to restore the key from.
+     * @param index The index of the key to restore, if it is a key with multiple sub-keys. Default is null.
+     * @return The restored Key object.
+     */
+    override fun restoreKey(key: JWK, index: Int?): Key {
+        return when (key.kty) {
+            "EC" -> {
+                when (key.crv?.lowercase()) {
+                    "secp256k1" -> {
+                        if (key.d != null) {
+                            Secp256k1PrivateKey(key.d.base64UrlDecodedBytes)
+                        } else if (key.x != null && key.y != null) {
+                            Secp256k1PublicKey(key.x.base64UrlDecodedBytes + key.y.base64UrlDecodedBytes)
+                        } else {
+                            throw ApolloError.InvalidJWKError()
+                        }
+                    }
+
+                    else -> {
+                        throw ApolloError.InvalidKeyCurve(key.crv ?: "")
+                    }
+                }
+            }
+
+            "OKP" -> {
+                when (key.crv?.lowercase()) {
+                    "ed25519" -> {
+                        if (key.d != null) {
+                            Ed25519PrivateKey(key.d.base64UrlDecodedBytes)
+                        } else if (key.x != null) {
+                            Ed25519PublicKey(key.x.base64UrlDecodedBytes)
+                        } else {
+                            throw ApolloError.InvalidJWKError()
+                        }
+                    }
+
+                    "x25519" -> {
+                        if (key.d != null) {
+                            X25519PrivateKey(key.d.base64UrlDecodedBytes)
+                        } else if (key.x != null) {
+                            X25519PublicKey(key.x.base64UrlDecodedBytes)
+                        } else {
+                            throw ApolloError.InvalidJWKError()
+                        }
+                    }
+
+                    else -> {
+                        throw ApolloError.InvalidKeyCurve(key.crv ?: "")
+                    }
+                }
+            }
+
+            else -> {
+                throw ApolloError.InvalidKeyType(key.kty)
             }
         }
     }

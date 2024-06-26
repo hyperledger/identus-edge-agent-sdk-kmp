@@ -1,0 +1,12 @@
+CREATE TABLE DIDKeyLink (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    didId TEXT NOT NULL,
+    keyId TEXT NOT NULL,
+    alias TEXT,
+    FOREIGN KEY (keyId) REFERENCES PrivateKey(id),
+    FOREIGN KEY (didId) REFERENCES DID(did)
+);
+
+insert:
+INSERT INTO DIDKeyLink(didId, keyId, alias)
+VALUES (:didId, :keyId, :alias);

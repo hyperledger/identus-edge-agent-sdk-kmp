@@ -1,11 +1,11 @@
 package org.hyperledger.identus.walletsdk.edgeagent.helpers
 
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.ktor.http.ContentType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import java.util.UUID
 

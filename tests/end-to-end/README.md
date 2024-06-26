@@ -7,7 +7,7 @@ Duplicate `local.properties.example` file from `test/resources` and rename the c
 Setup properties:
 
 | Property                 | Explanation                        |
-| ------------------------ | ---------------------------------- |
+|--------------------------|------------------------------------|
 | MEDIATOR_OOB_URL         | Mediator OOB url invitation        |
 | AGENT_URL                | Agent url                          |
 | PUBLISHED_DID            | Existing published DID             |

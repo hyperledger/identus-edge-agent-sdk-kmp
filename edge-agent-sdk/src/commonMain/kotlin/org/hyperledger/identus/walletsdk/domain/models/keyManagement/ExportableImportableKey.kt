@@ -1,8 +1,10 @@
 package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
-import io.iohk.atala.prism.apollo.base64.base64PadEncoded
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.hyperledger.identus.apollo.base64.base64PadEncoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 
 /**
  * This interface defines what is required for a key to be exportable
@@ -50,10 +52,13 @@ interface ImportableKey {
  */
 @Serializable
 data class JWK(
+    // Key parameters
     val kty: String,
     val alg: String? = null,
     val kid: String? = null,
     val use: String? = null,
+
+    // RSA key parameters
     val n: String? = null,
     val e: String? = null,
     val d: String? = null,
@@ -62,11 +67,24 @@ data class JWK(
     val dp: String? = null,
     val dq: String? = null,
     val qi: String? = null,
+
+    // ED key parameters
     val crv: String? = null,
     val x: String? = null,
     val y: String? = null,
+
+    // Symmetric key parameters
     val k: String? = null
-)
+) {
+    /**
+     * Converts a JWK to a Nimbus JWK.
+     *
+     * @return The converted Nimbus JWK.
+     */
+    fun toNimbusJwk(): com.nimbusds.jose.jwk.JWK {
+        return com.nimbusds.jose.jwk.JWK.parse(Json.encodeToString(this))
+    }
+}
 
 /**
  * Representation of a cryptographic key in PEM format.
@@ -168,7 +186,7 @@ enum class PEMKeyType(val value: Pair<String, String>) {
          */
         @JvmStatic
         fun fromString(value: String): PEMKeyType? {
-            return values().firstOrNull { it.value.first == value || it.value.second == value }
+            return entries.firstOrNull { it.value.first == value || it.value.second == value }
         }
     }
 }

@@ -36,10 +36,10 @@ class DescriptorPath(private val jsonElement: JsonElement) {
 
                 is JsonArray -> {
                     val index = segment.toInt()
-                    if (index >= (current as JsonArray).size) {
-                        current = null
+                    current = if (index >= (current as JsonArray).size) {
+                        null
                     } else {
-                        current = (current as JsonArray).get(index)
+                        (current as JsonArray)[index]
                     }
                 }
 

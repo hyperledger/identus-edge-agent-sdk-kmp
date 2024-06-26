@@ -37,10 +37,17 @@ open class ApiImpl(override var client: HttpClient) : Api {
             httpHeadersArray = httpHeaders,
             body = body
         )
-        val response = client.request(request)
-        return HttpResponse(
-            status = response.status.value,
-            jsonString = response.bodyAsText()
-        )
+        try {
+            val response = client.request(request)
+            return HttpResponse(
+                status = response.status.value,
+                jsonString = response.bodyAsText()
+            )
+        } catch (ex: Exception) {
+            return HttpResponse(
+                status = 500,
+                jsonString = """{"message": ${ex.localizedMessage}}"""
+            )
+        }
     }
 }

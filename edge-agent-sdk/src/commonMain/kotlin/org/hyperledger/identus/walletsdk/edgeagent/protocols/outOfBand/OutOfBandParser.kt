@@ -1,8 +1,8 @@
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.ktor.http.URLBuilder
 import io.ktor.http.Url
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.walletsdk.domain.models.CommonError
 import org.hyperledger.identus.walletsdk.edgeagent.OOB
 

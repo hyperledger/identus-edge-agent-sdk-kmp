@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
 import anoncreds_wrapper.CredentialDefinition
@@ -9,11 +7,6 @@ import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
 import anoncreds_wrapper.Presentation
 import anoncreds_wrapper.Schema
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import java.security.interfaces.ECPublicKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -23,8 +16,13 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import java.security.interfaces.ECPublicKey
 
 /**
  * The `Pollux` interface represents a set of operations for working with verifiable credentials.
@@ -115,10 +113,7 @@ interface Pollux {
      * @param credential The [Credential] object to be converted.
      * @return The converted [StorableCredential].
      */
-    fun credentialToStorableCredential(
-        type: CredentialType,
-        credential: Credential
-    ): StorableCredential
+    fun credentialToStorableCredential(type: CredentialType, credential: Credential): StorableCredential
 
     /**
      * Extracts the credential format from the given array of attachment descriptors.

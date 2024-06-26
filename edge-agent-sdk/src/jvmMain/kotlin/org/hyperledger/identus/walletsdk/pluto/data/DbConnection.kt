@@ -7,7 +7,7 @@ import org.hyperledger.identus.walletsdk.SdkPlutoDb
 actual class DbConnection actual constructor() {
     actual var driver: SqlDriver? = null
     actual suspend fun connectDb(context: Any?): SqlDriver {
-        val driver = JdbcSqliteDriver(JdbcSqliteDriver.IN_MEMORY)
+        val driver = JdbcSqliteDriver("jdbc:sqlite:prism.db")
         SdkPlutoDb.Schema.create(driver)
         this.driver = driver
         return driver

@@ -84,7 +84,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Failed to onboard.\nStatus code: $statusCode\nResponse: $response"
     }
 
-    class InvalidCredentialError constructor(
+    class InvalidCredentialError(
         private val credential: Credential? = null,
         private val type: CredentialType? = null
     ) :
@@ -100,7 +100,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             }
     }
 
-    class InvalidCredentialFormatError constructor(private val expectedFormat: CredentialType) :
+    class InvalidCredentialFormatError(private val expectedFormat: CredentialType) :
         EdgeAgentError() {
         override val code: Int
             get() = 121
@@ -109,8 +109,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Invalid credential format, it must be ${expectedFormat.type}"
     }
 
-    class AttachmentTypeNotSupported @JvmOverloads constructor() :
-        EdgeAgentError() {
+    class AttachmentTypeNotSupported : EdgeAgentError() {
         override val code: Int
             get() = 122
 
@@ -118,8 +117,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Attachment type not supported, expecting base 64 attachment."
     }
 
-    class PresentationSubmissionDoesNotContainChallenge @JvmOverloads constructor() :
-        EdgeAgentError() {
+    class PresentationSubmissionDoesNotContainChallenge : EdgeAgentError() {
         override val code: Int
             get() = 123
 
@@ -127,8 +125,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Presentation submission must contain a challenge."
     }
 
-    class EdgeAgentStateAcceptOnlyOneObserver @JvmOverloads constructor() :
-        EdgeAgentError() {
+    class EdgeAgentStateAcceptOnlyOneObserver : EdgeAgentError() {
         override val code: Int
             get() = 124
 
@@ -136,8 +133,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Agent state only accepts one subscription."
     }
 
-    class InvalidCredentialMetadata @JvmOverloads constructor() :
-        EdgeAgentError() {
+    class InvalidCredentialMetadata : EdgeAgentError() {
         override val code: Int
             get() = 125
 
@@ -145,7 +141,7 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "Invalid or null credential metadata"
     }
 
-    class MissingOrNullFieldError constructor(private val field: String, private val parent: String) :
+    class MissingOrNullFieldError(private val field: String, private val parent: String) :
         EdgeAgentError() {
         override val code: Int
             get() = 126

@@ -1,21 +1,13 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.pollux.models
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
-import kotlinx.serialization.json.Json
-import org.hyperledger.identus.walletsdk.domain.models.Claim
-import org.hyperledger.identus.walletsdk.domain.models.ClaimType
-import org.hyperledger.identus.walletsdk.domain.models.Credential
-import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
-import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.ArraySerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonTransformingSerializer
@@ -23,9 +15,15 @@ import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.walletsdk.domain.VC
+import org.hyperledger.identus.walletsdk.domain.models.Claim
+import org.hyperledger.identus.walletsdk.domain.models.ClaimType
+import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiablePresentation
+import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 
 @Serializable
 /**
@@ -39,7 +37,7 @@ import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiablePresentation
  * @property jwtPayload The parsed JWT payload containing the credential information.
  */
 @OptIn(ExperimentalSerializationApi::class)
-data class JWTCredential(
+data class JWTCredential @JvmOverloads constructor(
     override val id: String,
     override val iss: String,
     override val sub: String?,
@@ -65,7 +63,7 @@ data class JWTCredential(
     override val claims: Array<Claim>
         get() {
             return verifiableCredential?.credentialSubject?.map {
-                Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
+                Claim(key = it.key, value = ClaimType.StringValue(it.value))
             }?.toTypedArray()
                 ?: emptyArray<Claim>()
         }
@@ -103,7 +101,7 @@ data class JWTCredential(
             return properties.toMap()
         }
 
-    override var revoked: Boolean? = null
+    override var revoked: Boolean? = false
 
     /**
      * Converts the current instance of [JWTCredential] to a [StorableCredential].
@@ -139,7 +137,7 @@ data class JWTCredential(
 
             override val claims: Array<Claim>
                 get() = verifiableCredential?.credentialSubject?.map {
-                    Claim(key = it.key, value = ClaimType.StringValue(it.value.toString()))
+                    Claim(key = it.key, value = ClaimType.StringValue(it.value))
                 }?.toTypedArray() ?: emptyArray()
 
             override val properties: Map<String, Any?>
@@ -187,8 +185,112 @@ data class JWTCredential(
         }
     }
 
+    /**
+     * Compares this JWTCredential with the specified object for equality.
+     *
+     * @param other The object to compare with this JWTCredential.
+     * @return true if the specified object is equal to this JWTCredential, false otherwise.
+     */
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
+        }
+        if (javaClass != other?.javaClass) {
+            return false
+        }
+
+        other as JWTCredential
+
+        if (id != other.id) {
+            return false
+        }
+        if (iss != other.iss) {
+            return false
+        }
+        if (sub != other.sub) {
+            return false
+        }
+        if (nbf != other.nbf) {
+            return false
+        }
+        if (exp != other.exp) {
+            return false
+        }
+        if (jti != other.jti) {
+            return false
+        }
+        if (aud != null) {
+            if (other.aud == null) {
+                return false
+            }
+            if (!aud.contentEquals(other.aud)) {
+                return false
+            }
+        } else if (other.aud != null) {
+            return false
+        }
+        if (originalJWTString != other.originalJWTString) {
+            return false
+        }
+        if (verifiablePresentation != other.verifiablePresentation) {
+            return false
+        }
+        if (verifiableCredential != other.verifiableCredential) {
+            return false
+        }
+        if (nonce != other.nonce) {
+            return false
+        }
+        if (issuer != other.issuer) {
+            return false
+        }
+        if (revoked != other.revoked) {
+            return false
+        }
+
+        return true
+    }
+
+    /**
+     * Calculates the hash code value for the object.
+     *
+     * @return The hash code value.
+     */
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + iss.hashCode()
+        result = 31 * result + (sub?.hashCode() ?: 0)
+        result = 31 * result + (nbf?.hashCode() ?: 0)
+        result = 31 * result + (exp?.hashCode() ?: 0)
+        result = 31 * result + (jti?.hashCode() ?: 0)
+        result = 31 * result + (aud?.contentHashCode() ?: 0)
+        result = 31 * result + (originalJWTString?.hashCode() ?: 0)
+        result = 31 * result + (verifiablePresentation?.hashCode() ?: 0)
+        result = 31 * result + (verifiableCredential?.hashCode() ?: 0)
+        result = 31 * result + (nonce?.hashCode() ?: 0)
+        result = 31 * result + issuer.hashCode()
+        result = 31 * result + (revoked?.hashCode() ?: 0)
+        return result
+    }
+
+    /**
+     * AudSerializer is a custom serializer for serializing and deserializing JSON arrays of strings.
+     *
+     * This class extends the JsonTransformingSerializer class from the kotlinx.serialization.json package,
+     * with a type parameter of Array<String>. It transforms the serialization and deserialization process
+     * of JSON elements into arrays of strings.
+     *
+     * @OptIn annotation indicates that this class makes use of experimental serialization API.
+     */
     @OptIn(ExperimentalSerializationApi::class)
-    object AudSerializer : JsonTransformingSerializer<Array<String>>(ArraySerializer(String.serializer())) {
+    object AudSerializer :
+        JsonTransformingSerializer<Array<String>>(ArraySerializer(String.serializer())) {
+        /**
+         * Transforms a given [element] into a serialized form.
+         *
+         * @param element the [JsonElement] to be transformed
+         * @return the transformed [JsonElement]
+         */
         override fun transformDeserialize(element: JsonElement): JsonElement {
             // Check if the element is a JSON array
             if (element is JsonArray) {
@@ -200,6 +302,13 @@ data class JWTCredential(
     }
 
     companion object {
+        /**
+         * Converts a JWT string into a JWTCredential object.
+         *
+         * @param jwtString The JWT string to convert.
+         * @return The JWTCredential object extracted from the JWT string.
+         * @throws IllegalArgumentException If the JWT string is invalid.
+         */
         @JvmStatic
         fun fromJwtString(jwtString: String): JWTCredential {
             val jwtParts = jwtString.split(".")

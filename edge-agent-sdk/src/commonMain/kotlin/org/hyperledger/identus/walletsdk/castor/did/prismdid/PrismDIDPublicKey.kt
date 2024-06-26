@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.castor.did.prismdid
 
-import io.iohk.atala.prism.apollo.secp256k1.Secp256k1Lib
+import org.hyperledger.identus.apollo.secp256k1.Secp256k1Lib
 import org.hyperledger.identus.protos.CompressedECKeyData
 import org.hyperledger.identus.protos.KeyUsage
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey

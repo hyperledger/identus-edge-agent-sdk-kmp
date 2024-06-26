@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.connection
 
 import kotlinx.serialization.SerialName
@@ -8,8 +6,8 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.GOAL_CODE
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import java.util.UUID
 

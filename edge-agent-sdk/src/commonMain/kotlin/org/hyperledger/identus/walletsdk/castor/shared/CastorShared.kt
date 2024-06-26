@@ -1,9 +1,5 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.castor.shared
 
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import io.iohk.atala.prism.didcomm.didpeer.DIDCommServicePeerDID
 import io.iohk.atala.prism.didcomm.didpeer.DIDDocPeerDID
 import io.iohk.atala.prism.didcomm.didpeer.MalformedPeerDIDException
@@ -17,6 +13,10 @@ import io.iohk.atala.prism.didcomm.didpeer.VerificationMethodTypeAuthentication
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.iohk.atala.prism.didcomm.didpeer.createPeerDIDNumalgo2
 import io.ipfs.multibase.Multibase
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.protos.AtalaOperation
 import org.hyperledger.identus.protos.CreateDIDOperation
 import org.hyperledger.identus.protos.Service
@@ -46,9 +46,6 @@ import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import org.kotlincrypto.hash.sha2.SHA256
 import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray
@@ -154,7 +151,7 @@ internal class CastorShared {
          */
         @JvmStatic
         @Throws(CastorError.InvalidPeerDIDError::class, CastorError.NotPossibleToResolveDID::class)
-        internal suspend fun resolvePeerDID(didString: String): DIDDocument {
+        internal fun resolvePeerDID(didString: String): DIDDocument {
             val peerDIDDocument = try {
                 DIDDocPeerDID.fromJson(mercuryPeerDIDResolve(didString))
             } catch (e: MalformedPeerDIDException) {
@@ -295,7 +292,7 @@ internal class CastorShared {
          */
         @JvmStatic
         @Throws(CastorError.InitialStateOfDIDChanged::class)
-        internal suspend fun resolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
+        internal fun resolveLongFormPrismDID(apollo: Apollo, didString: String): DIDDocument {
             val did = DIDParser.parse(didString)
             val prismDID = LongFormPrismDID(did)
 

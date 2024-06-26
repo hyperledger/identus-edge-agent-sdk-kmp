@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.sampleapp
 
 import android.app.Application
@@ -10,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
@@ -29,7 +28,7 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import java.net.UnknownHostException
-import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
+import java.util.Base64
 
 class Sdk {
     private val apollo: Apollo = createApollo()
@@ -60,6 +59,23 @@ class Sdk {
         agent.startFetchingMessages()
 
         agentStatusStream.postValue(EdgeAgent.State.RUNNING)
+    }
+
+    suspend fun startAgentForBackup(context: Application) {
+        handler = createHandler("did:prism:asldkfjalsdf")
+        agent = createAgent(handler)
+
+        CoroutineScope(Dispatchers.Default).launch {
+            agent.flowState.collect {
+                agentStatusStream.postValue(it)
+            }
+        }
+        startPluto(context)
+        agentStatusStream.postValue(EdgeAgent.State.RUNNING)
+    }
+
+    suspend fun startPluto(context: Application) {
+        (pluto as PlutoImpl).start(context)
     }
 
     fun stopAgent() {
@@ -125,7 +141,8 @@ class Sdk {
             "admit",
             "peanut"
         )
-        return apollo.createSeed(words, "")
+        return Seed(Base64.getUrlDecoder().decode("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA"))
+//        return apollo.createSeed(words, "")
     }
 
     private fun createHandler(mediatorDID: String): MediationHandler {

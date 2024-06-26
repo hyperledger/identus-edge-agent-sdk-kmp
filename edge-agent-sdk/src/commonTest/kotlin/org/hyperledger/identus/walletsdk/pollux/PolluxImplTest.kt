@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.pollux
 
 import com.nimbusds.jose.JWSAlgorithm
@@ -8,17 +6,13 @@ import com.nimbusds.jose.crypto.ECDSASigner
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.ktor.http.HttpStatusCode
-import java.text.SimpleDateFormat
-import java.util.*
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
@@ -34,12 +28,17 @@ import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.mockito.kotlin.mock
+import java.text.SimpleDateFormat
+import java.util.*
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -629,6 +628,7 @@ class PolluxImplTest {
         return Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1))
     }
 
+    @OptIn(ExperimentalSerializationApi::class)
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<PresentationDefinitionRequest, PresentationSubmission, String> {
         val currentDate = Calendar.getInstance()
         val nextMonthDate = currentDate.clone() as Calendar

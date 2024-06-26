@@ -4,14 +4,16 @@ import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.AfterVersion
-import io.iohk.atala.prism.apollo.base64.base64UrlDecodedBytes
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.SdkPlutoDb
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
@@ -25,8 +27,11 @@ import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PlutoError
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
+import org.hyperledger.identus.walletsdk.domain.models.UnknownError
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pluto.data.isConnected
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -87,8 +92,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * @throws PlutoError.DatabaseServiceAlreadyRunning if the database service is already running.
      */
     @Throws(PlutoError.DatabaseServiceAlreadyRunning::class)
-    @JvmOverloads
-    public suspend fun start(context: Any? = null) {
+    override suspend fun start(context: Any?) {
         if (this.db != null) {
             throw PlutoError.DatabaseServiceAlreadyRunning()
         }
@@ -164,7 +168,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      */
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
-        keyPathIndex: Int,
+        keyPathIndex: Int?,
         alias: String?,
         privateKeys: List<StorableKey>
     ) {
@@ -194,7 +198,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 did.method,
                 did.methodId,
                 did.schema,
-                null
+                did.alias
             )
         )
     }
@@ -248,35 +252,39 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun storePrivateKeys(
         storableKey: StorableKey,
         did: DID,
-        keyPathIndex: Int,
+        keyPathIndex: Int?,
         metaId: String?
     ) {
-        metaId?.let { id ->
-            val list = getInstance().privateKeyQueries.fetchPrivateKeyByID(id).executeAsList()
-            if (list.isEmpty()) {
-                getInstance().privateKeyQueries.insert(
-                    PrivateKeyDB(
-                        metaId,
-                        storableKey.restorationIdentifier,
-                        storableKey.storableData.base64UrlEncoded,
-                        keyPathIndex,
-                        did.toString()
-                    )
-                )
-            } else {
-                // TODO: Implement Delete, Update
-            }
-        } ?: run {
+        val id = metaId ?: did.toString()
+        val list = getInstance().privateKeyQueries.fetchPrivateKeyByID(id).executeAsList()
+        if (list.isEmpty()) {
             getInstance().privateKeyQueries.insert(
                 PrivateKeyDB(
-                    UUID.randomUUID().toString(),
+                    id,
                     storableKey.restorationIdentifier,
                     storableKey.storableData.base64UrlEncoded,
-                    keyPathIndex,
-                    did.toString()
+                    keyPathIndex
                 )
             )
+            getInstance().dIDKeyLinkQueries.insert(
+                didId = did.toString(),
+                keyId = id,
+                alias = did.alias
+            )
+        } else {
+            // TODO: Implement Delete, Update
         }
+    }
+
+    override fun storePrivate(sorableKey: StorableKey, recoveryId: String) {
+        getInstance().privateKeyQueries.insert(
+            PrivateKeyDB(
+                UUID.randomUUID().toString(),
+                recoveryId,
+                sorableKey.storableData.base64UrlEncoded,
+                null
+            )
+        )
     }
 
     /**
@@ -594,6 +602,27 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     }
 
     /**
+     * Retrieves all DIDs.
+     *
+     * @return A flow of lists of DIDs.
+     */
+    override fun getAllDIDs(): Flow<List<DID>> {
+        return getInstance().dIDQueries.fetchAllDIDs()
+            .asFlow()
+            .map { didList ->
+                didList.executeAsList()
+                    .map { did ->
+                        DID(
+                            schema = did.schema,
+                            method = did.method,
+                            methodId = did.methodId,
+                            alias = did.alias
+                        )
+                    }
+            }
+    }
+
+    /**
      * Retrieves all the pairs of DIDs stored in the system.
      *
      * @return a [Flow] emitting a list of [DIDPair] objects representing the pairs of DIDs.
@@ -654,6 +683,38 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      */
     override fun getAllMessages(): Flow<List<Message>> {
         return getInstance().messageQueries.fetchAllMessages()
+            .asFlow()
+            .map {
+                it.executeAsList().map { message ->
+                    val messageDb = Json.decodeFromString<Message>(message.dataJson)
+                    Message(
+                        messageDb.id,
+                        messageDb.piuri,
+                        messageDb.from,
+                        messageDb.to,
+                        messageDb.fromPrior,
+                        messageDb.body,
+                        messageDb.extraHeaders,
+                        messageDb.createdTime,
+                        messageDb.expiresTimePlus,
+                        messageDb.attachments,
+                        messageDb.thid,
+                        messageDb.pthid,
+                        messageDb.ack,
+                        messageDb.direction
+                    )
+                }
+            }
+    }
+
+    /**
+     * Retrieves all the messages of the provided type.
+     *
+     * @param type The message type as a string
+     * @return a Flow of List of Message objects representing all the messages of the type
+     */
+    override fun getAllMessagesByType(type: String): Flow<List<Message>> {
+        return getInstance().messageQueries.fetchAllMessagesByType(type)
             .asFlow()
             .map {
                 it.executeAsList().map { message ->
@@ -975,15 +1036,14 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     override fun getAllCredentials(): Flow<List<CredentialRecovery>> {
         return getInstance().storableCredentialQueries.fetchAllCredentials()
             .asFlow()
-            .map { list ->
-                list.executeAsList()
-                    .map { credential ->
-                        CredentialRecovery(
-                            restorationId = credential.recoveryId,
-                            credentialData = credential.credentialData,
-                            revoked = credential.revoked != 0
-                        )
-                    }.takeIf { it.isNotEmpty() } ?: emptyList()
+            .map {
+                it.executeAsList().map { credential ->
+                    CredentialRecovery(
+                        restorationId = credential.recoveryId,
+                        credentialData = credential.credentialData,
+                        revoked = credential.revoked != 0
+                    )
+                }
             }
     }
 
@@ -1096,9 +1156,81 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                     CredentialRecovery(
                         restorationId = credential.recoveryId,
                         credentialData = credential.credentialData,
-                        revoked = true
+                        revoked = credential.revoked != 0
                     )
                 }
             }
+    }
+
+    /**
+     * Converts a storable key to a JSON Web Key (JWK) object.
+     *
+     * @param restorationIdentifier The restoration identifier of the storable key.
+     * @param b64Bytes The base64-encoded bytes of the storable key.
+     * @return The JSON Web Key (JWK) object representing the storable key.
+     * @throws UnknownError.SomethingWentWrongError if the restoration identifier is unknown.
+     */
+    private fun storableKeyToJWK(restorationIdentifier: String, b64Bytes: String): JWK {
+        return when (restorationIdentifier) {
+            "secp256k1+priv" -> {
+                Secp256k1PrivateKey(b64Bytes.base64UrlDecodedBytes)
+                    .getJwk()
+            }
+
+            "x25519+priv" -> {
+                X25519PrivateKey(b64Bytes.base64UrlDecodedBytes)
+                    .getJwk()
+            }
+
+            "ed25519+priv" -> {
+                Ed25519PrivateKey(b64Bytes.base64UrlDecodedBytes)
+                    .getJwk()
+            }
+
+            else -> {
+                // Should never run
+                throw UnknownError.SomethingWentWrongError("Unknown restoration identifier: $restorationIdentifier")
+            }
+        }
+    }
+
+    /**
+     * Retrieves all the keys for backup.
+     *
+     * @return A flow that emits a list of [BackupV0_0_1.Key] objects.
+     */
+    override fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>> {
+        val keysWithDID = getInstance().privateKeyQueries.fetchAllPrivateKeyWithDID()
+            .executeAsList()
+            .map { keyDIDRecord ->
+                val jwk = storableKeyToJWK(keyDIDRecord.restorationIdentifier, keyDIDRecord.data_)
+                BackupV0_0_1.Key(
+                    key = Json.encodeToString(jwk),
+                    did = keyDIDRecord.id,
+                    index = keyDIDRecord.keyPathIndex,
+                    recoveryId = keyDIDRecord.restorationIdentifier
+                )
+            }
+        val keysWithNoDID = getInstance().privateKeyQueries.fetchAllPrivateKeys()
+            .executeAsList()
+            .map { key ->
+                val jwk = storableKeyToJWK(key.restorationIdentifier, key.data_)
+                BackupV0_0_1.Key(
+                    key = Json.encodeToString(jwk),
+                    did = null,
+                    index = key.keyPathIndex,
+                    recoveryId = key.restorationIdentifier
+                )
+            }.filter { keyWithNoDID ->
+                keysWithDID.firstOrNull { keyWithDID ->
+                    keyWithNoDID.key == keyWithDID.key
+                }?.let {
+                    false
+                } ?: run {
+                    true
+                }
+            }
+        val keys = keysWithDID + keysWithNoDID
+        return flowOf(keys)
     }
 }

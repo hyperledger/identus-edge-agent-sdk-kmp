@@ -1,18 +1,14 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.LinkSecret
-import io.iohk.atala.prism.apollo.base64.base64UrlDecoded
-import io.iohk.atala.prism.apollo.base64.base64UrlEncoded
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
 import io.ktor.http.HttpStatusCode
-import java.security.interfaces.ECPublicKey
-import java.util.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
@@ -22,7 +18,7 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
@@ -60,6 +56,8 @@ import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import java.security.interfaces.ECPublicKey
+import java.util.*
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals

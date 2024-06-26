@@ -7,6 +7,8 @@ import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.SeedWords
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.Key
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
@@ -49,6 +51,10 @@ class ApolloMock : Apollo {
     }
 
     override fun restorePublicKey(key: StorableKey): PublicKey {
+        TODO("Not yet implemented")
+    }
+
+    override fun restoreKey(key: JWK, index: Int?): Key {
         TODO("Not yet implemented")
     }
 }

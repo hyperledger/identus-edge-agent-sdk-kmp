@@ -1,16 +1,14 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
-import kotlinx.serialization.SerialName
 import java.util.UUID
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 class RevocationNotification(
     val id: String = UUID.randomUUID().toString(),
@@ -31,7 +29,7 @@ class RevocationNotification(
     }
 
     @Serializable
-    data class Body @JvmOverloads constructor(
+    data class Body(
         @SerialName("issueCredentialProtocolThreadId")
         val threadId: String,
         val comment: String?

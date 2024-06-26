@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
-import io.iohk.atala.prism.apollo.utils.KMMX25519KeyPair
+import org.hyperledger.identus.apollo.utils.KMMX25519KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey

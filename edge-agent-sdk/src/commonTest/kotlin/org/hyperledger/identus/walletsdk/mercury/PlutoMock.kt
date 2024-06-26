@@ -1,7 +1,7 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
 package org.hyperledger.identus.walletsdk.mercury
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
@@ -10,13 +10,13 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
+import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
+
 class PlutoMock : Pluto {
     var privateKeys = mutableListOf<PrivateKey>()
 
@@ -30,7 +30,7 @@ class PlutoMock : Pluto {
 
     override fun storePrismDIDAndPrivateKeys(
         did: DID,
-        keyPathIndex: Int,
+        keyPathIndex: Int?,
         alias: String?,
         privateKeys: List<StorableKey>
     ) {
@@ -53,7 +53,11 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int, metaId: String?) {
+    override fun storePrivateKeys(storableKey: StorableKey, did: DID, keyPathIndex: Int?, metaId: String?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun storePrivate(sorableKey: StorableKey, recoveryId: String) {
         TODO("Not yet implemented")
     }
 
@@ -86,6 +90,10 @@ class PlutoMock : Pluto {
     }
 
     override fun getAllPeerDIDs(): Flow<List<PeerDID>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllDIDs(): Flow<List<DID>> {
         TODO("Not yet implemented")
     }
 
@@ -134,6 +142,10 @@ class PlutoMock : Pluto {
     }
 
     override fun getAllMessages(from: DID, to: DID): Flow<List<Message>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllMessagesByType(type: String): Flow<List<Message>> {
         TODO("Not yet implemented")
     }
 
@@ -194,6 +206,14 @@ class PlutoMock : Pluto {
     }
 
     override fun observeRevokedCredentials(): Flow<List<CredentialRecovery>> {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun start(context: Any?) {
         TODO("Not yet implemented")
     }
 }

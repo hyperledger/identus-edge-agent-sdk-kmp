@@ -5,7 +5,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 /**
  * An interface that represents a base error in the Prism SDK.
  */
-abstract interface Error {
+interface Error {
     val code: Int?
     val underlyingErrors: Array<Error>?
     val errorDescription: String?
@@ -241,7 +241,7 @@ constructor(
         invalidType: String
     ) : ApolloError(
         message = "Invalid key type $invalidType. Valid options are: ${
-            KeyTypes.values().map { it.type }.toTypedArray().joinToString(", ")
+            KeyTypes.entries.map { it.type }.toTypedArray().joinToString(", ")
         }"
     ) {
         override val code: Int
@@ -777,7 +777,7 @@ constructor(
      *
      * @see PolluxError
      */
-    class NoDomainOrChallengeFound() : PolluxError("No domain or challenge found as part of the offer json") {
+    class NoDomainOrChallengeFound : PolluxError("No domain or challenge found as part of the offer json") {
         override val code: Int
             get() = 55
     }

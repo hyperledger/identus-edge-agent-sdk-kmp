@@ -1,0 +1,52 @@
+import kotlin.Int;
+
+-- Create the new DIDKeyLink table
+CREATE TABLE DIDKeyLink (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    didId TEXT NOT NULL,
+    keyId TEXT NOT NULL,
+    alias TEXT,
+    FOREIGN KEY (keyId) REFERENCES PrivateKey(id),
+    FOREIGN KEY (didId) REFERENCES DID(did)
+);
+
+-- Populate the DIDKeyLink table
+INSERT INTO DIDKeyLink (didId, keyId, alias)
+SELECT PrivateKey.didId, PrivateKey.id, DID.alias
+FROM PrivateKey
+JOIN DID ON DID.did = PrivateKey.didId;
+
+-- Rename the PrivateKey table to a different name
+ALTER TABLE PrivateKey RENAME TO PrivateKeyOld;
+
+-- Create new PrivateKey table with the new foreign key and without didId row
+CREATE TABLE PrivateKey (
+    id TEXT NOT NULL UNIQUE,
+    restorationIdentifier TEXT NOT NULL,
+    data TEXT NOT NULL,
+    keyPathIndex INTEGER AS Int,
+    PRIMARY KEY (id)
+);
+
+-- Populate new PrivateKey table with the data from the old table
+INSERT INTO PrivateKey (id, restorationIdentifier, data, keyPathIndex)
+SELECT id, restorationIdentifier, data, keyPathIndex FROM PrivateKeyOld;
+
+-- Rename the DID table to a different name
+ALTER TABLE DID RENAME TO DIDOld;
+
+CREATE TABLE DID (
+    did TEXT NOT NULL UNIQUE,
+    method TEXT NOT NULL ,
+    methodId TEXT NOT NULL ,
+    schema TEXT NOT NULL ,
+    alias TEXT,
+    PRIMARY KEY (did)
+);
+
+-- Populate new DID table with the data from the old table
+INSERT INTO DID (did, method, methodId, schema, alias)
+SELECT did, method, methodId, schema, alias FROM DIDOld;
+
+DROP TABLE PrivateKeyOld;
+DROP TABLE DIDOld;
