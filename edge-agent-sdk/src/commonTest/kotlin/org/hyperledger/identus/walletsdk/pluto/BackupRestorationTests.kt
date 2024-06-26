@@ -139,7 +139,7 @@ class BackupRestorationTests {
             castor,
             pluto,
             MercuryMock(),
-            PolluxImpl(castor),
+            PolluxImpl(apollo, castor),
             seed,
             null,
             MediationHandlerMock()

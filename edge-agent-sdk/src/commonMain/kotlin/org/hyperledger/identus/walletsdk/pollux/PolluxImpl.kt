@@ -16,6 +16,9 @@ import anoncreds_wrapper.RequestedAttribute
 import anoncreds_wrapper.RequestedPredicate
 import anoncreds_wrapper.Schema
 import anoncreds_wrapper.SchemaId
+import com.apicatalog.jsonld.JsonLd
+import com.apicatalog.jsonld.document.JsonDocument
+import com.apicatalog.rdf.Rdf
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
@@ -24,11 +27,17 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
+import io.setl.rdf.normalization.RdfNormalize
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.encodeToJsonElement
@@ -39,9 +48,7 @@ import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.didcommx.didcomm.common.Typ
-import org.hyperledger.identus.apollo.base64.base64UrlDecoded
-import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
-import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
@@ -54,14 +61,22 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.VerifiableKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
+import java.io.ByteArrayInputStream
+import java.io.StringWriter
 import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.interfaces.ECPrivateKey
@@ -81,6 +96,12 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.DescriptorItemFormat
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pluto.RestorationID
+import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
+import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
+import org.hyperledger.identus.walletsdk.domain.models.UnknownError
+import org.hyperledger.identus.walletsdk.pollux.models.JWTProofType
+import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
+import org.hyperledger.identus.walletsdk.pollux.utils.Bitstring
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -88,7 +109,8 @@ import org.hyperledger.identus.walletsdk.pluto.RestorationID
  * @property castor An API object for interacting with the Castor system.
  */
 @Suppress("LABEL_NAME_CLASH")
-class PolluxImpl(
+open class PolluxImpl(
+    val apollo: Apollo,
     val castor: Castor,
     private val api: Api = ApiImpl(httpClient())
 ) : Pollux {
@@ -494,6 +516,159 @@ class PolluxImpl(
         throw PolluxError.InvalidCredentialDefinitionError()
     }
 
+    override suspend fun isCredentialRevoked(credential: Credential): Boolean {
+        if (credential !is JWTCredential) {
+            throw PolluxError.InvalidCredentialError()
+        }
+        if (credential.verifiableCredential?.credentialStatus == null) {
+            throw PolluxError.InvalidJWTCredential("Credential must contain credential status")
+        }
+        credential.verifiableCredential!!.credentialStatus?.let { credentialStatus ->
+            val revocationRegistryJson = fetchRevocationRegistry(credentialStatus)
+            validateProof(revocationRegistryJson)
+            return checkEncodedListRevoked(revocationRegistryJson, credentialStatus.statusListIndex)
+        }
+        return false
+    }
+
+    private suspend fun validateProof(revocationRegistryJson: String): Boolean {
+        val jsonObject = (Json.parseToJsonElement(revocationRegistryJson) as JsonObject)
+        if (!jsonObject.containsKey("proof")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("proof")
+        }
+        val proof = jsonObject["proof"]!!.jsonObject
+        if (!proof.containsKey("verificationMethod")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("Proof->verificationMethod")
+        }
+        if (!proof.containsKey("type")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("Proof->type")
+        }
+        val verificationMethod = proof["verificationMethod"]
+        val proofType = proof["type"]?.jsonPrimitive?.content
+        val base64VerificationMethod = verificationMethod!!.jsonPrimitive.content.split(",")[1]
+        val decodedVerificationMethod =
+            Json.parseToJsonElement(base64VerificationMethod.base64UrlDecoded) as JsonObject
+        if (proofType != JWTProofType.ECDSASECP256K1Signature2019.value) {
+            throw PolluxError.UnsupportedTypeError(proofType.toString())
+        }
+        if (!decodedVerificationMethod.containsKey("type")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("DecodedVerificationMethod->type")
+        }
+        if (!decodedVerificationMethod.containsKey("publicKeyJwk")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("DecodedVerificationMethod->publicKeyJwk")
+        }
+        val verificationMethodType = decodedVerificationMethod["type"]?.jsonPrimitive?.content
+        val publicKeyJwk = decodedVerificationMethod["publicKeyJwk"]?.jsonObject
+
+        if (verificationMethodType != VerificationKeyType.EcdsaSecp256k1VerificationKey2019.value) {
+            throw PolluxError.UnsupportedTypeError(verificationMethodType.toString())
+        }
+        if (!publicKeyJwk!!.containsKey("x")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("x")
+        }
+        if (!publicKeyJwk.containsKey("y")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("y")
+        }
+        if (!publicKeyJwk.containsKey("kty")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("kty")
+        }
+        if (!publicKeyJwk.containsKey("crv")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("crv")
+        }
+
+        val x = publicKeyJwk["x"]?.jsonPrimitive?.content
+        val y = publicKeyJwk["y"]?.jsonPrimitive?.content
+        val kty = publicKeyJwk["kty"]?.jsonPrimitive?.content
+        val crv = publicKeyJwk["crv"]?.jsonPrimitive?.content
+        if (x == null || y == null || kty == null || crv == null) {
+            throw PolluxError.NonNullableError("$x, $y, $kty, $crv")
+        }
+
+        if (kty != KeyTypes.EC.type || crv != Curve.SECP256K1.value.lowercase()) {
+            throw PolluxError.UnsupportedTypeError(kty)
+        }
+
+        val publicKey = apollo.createPublicKey(
+            mapOf(
+                TypeKey().property to KeyTypes.EC,
+                CurveKey().property to crv,
+                CurvePointXKey().property to x,
+                CurvePointYKey().property to y
+            )
+        )
+        if (!publicKey.canVerify()) {
+            throw PolluxError.VerifyProofError()
+        }
+
+        if (!proof.containsKey("jws")) {
+            throw PolluxError.RevocationRegistryJsonMissingFieldError("Proof->jws")
+        }
+        val jwsArray = proof["jws"]?.jsonPrimitive?.content?.split(".") ?: throw PolluxError.InvalidJWTString()
+        if (jwsArray.size != 3) {
+            throw PolluxError.InvalidJWTString()
+        }
+
+        val payload = JsonObject(jsonObject.filterKeys { it != "proof" })
+        val encoded = encode(Json.encodeToString(payload))
+        val signaturePayload = "${jwsArray[0]}.$encoded"
+        val signature = jwsArray[2].base64UrlDecodedBytes
+
+        val verified = (publicKey as VerifiableKey).verify(
+            signaturePayload.toByteArray(),
+            signature
+        )
+        if (!verified) {
+            throw PolluxError.VerifyProofError()
+        }
+        return true
+    }
+
+    private fun encode(data: String): String {
+        val inputStream = ByteArrayInputStream(data.toByteArray())
+        val document = JsonDocument.of(inputStream)
+        val rdfDataset = JsonLd.toRdf(document).get()
+        val normalized = RdfNormalize.normalize(rdfDataset)
+        val writer = StringWriter()
+        val rdfWriter = Rdf.createWriter(com.apicatalog.jsonld.http.media.MediaType.N_QUADS, writer)
+        rdfWriter.write(normalized)
+
+        return writer.toString()
+    }
+
+    fun checkEncodedListRevoked(revocationRegistryJson: String, statusListIndex: Int): Boolean {
+        val jsonObject = (Json.parseToJsonElement(revocationRegistryJson) as JsonObject)
+        if (jsonObject.containsKey("credentialSubject")) {
+            val credentialSubject = jsonObject["credentialSubject"]!!.jsonObject
+            if (credentialSubject.containsKey("encodedList")) {
+                val encodedList = credentialSubject["encodedList"]?.jsonPrimitive?.content
+                if (encodedList != null) {
+                    val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
+                    val decompressedBytes = decodedBytes.gunzip()
+                    val bitString = Bitstring(decompressedBytes)
+
+                    if (statusListIndex > decompressedBytes.size) {
+                        throw PolluxError.StatusListOutOfBoundIndex()
+                    }
+                    return bitString.get(statusListIndex)
+                }
+            }
+        }
+        return false
+    }
+    suspend fun fetchRevocationRegistry(credentialStatus: JWTVerifiableCredential.CredentialStatus): String {
+        val result = api.request(
+            HttpMethod.Get.value,
+            credentialStatus.statusListCredential,
+            emptyArray(),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+            null
+        )
+        if (result.status == 200) {
+            return result.jsonString
+        }
+        throw UnknownError.SomethingWentWrongError("Fetch revocation registry failed: ${result.jsonString}")
+    }
+
     /**
      * Parses a PrivateKey into an ECPrivateKey.
      *
@@ -809,6 +984,13 @@ class PolluxImpl(
                     val value = verifiableCredentialMapper.getValue(pathNested.path)
                     value?.let { vc ->
                         val verifiableCredential = JWTCredential.fromJwtString(vc as String)
+
+                        val isRevoked = isCredentialRevoked(verifiableCredential)
+
+                        if (isRevoked) {
+                            throw PolluxError.VerificationUnsuccessful("Provided credential is revoked")
+                        }
+
                         if (verifiableCredential.subject != issuer) {
                             throw PolluxError.VerificationUnsuccessful("Invalid submission,")
                         }

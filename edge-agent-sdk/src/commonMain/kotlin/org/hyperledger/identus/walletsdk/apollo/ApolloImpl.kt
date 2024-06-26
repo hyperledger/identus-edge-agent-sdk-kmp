@@ -6,6 +6,7 @@ import org.hyperledger.identus.apollo.derivation.EdHDKey
 import org.hyperledger.identus.apollo.derivation.HDKey
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.apollo.derivation.MnemonicLengthException
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
 import org.hyperledger.identus.apollo.utils.KMMEdPrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -24,6 +25,8 @@ import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.SeedWords
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
@@ -233,6 +236,85 @@ class ApolloImpl : Apollo {
             }
         }
         throw ApolloError.InvalidKeyType(TypeKey().property)
+    }
+
+    /**
+     * Creates a private key based on the provided properties.
+     *
+     * @param properties A map of properties used to create the private key. The map should contain the following keys:
+     *     - "type" (String): The type of the key ("EC" or "Curve25519").
+     *     - "curve" (String): The curve of the key.
+     *     - "curvePointX" (String): The x point of the compressed key.
+     *     - "curvePointY" (String): The y point of the compressed key.
+     *     - "rawKey" (ByteArray): The raw key data (optional).
+     *     - "index" (Int): The index for the key (only applicable for EC keys with curve "secp256k1").
+     *     - "derivationPath" (String): The derivation path for the key (only applicable for EC keys with curve "secp256k1").
+     *
+     * @return The created private key.
+     *
+     * @throws ApolloError.InvalidKeyType If the provided key type is invalid.
+     * @throws ApolloError.InvalidKeyCurve If the provided key curve is invalid.
+     * @throws ApolloError.InvalidRawData If the provided raw key data is invalid.
+     * @throws ApolloError.InvalidIndex If the provided index is invalid.
+     * @throws ApolloError.InvalidDerivationPath If the provided derivation path is invalid.
+     */
+    override fun createPublicKey(properties: Map<String, Any>): PublicKey {
+        if (!properties.containsKey(TypeKey().property)) {
+            throw ApolloError.InvalidKeyType(TypeKey().property)
+        }
+        if (!properties.containsKey(CurveKey().property)) {
+            throw ApolloError.InvalidKeyCurve(CurveKey().property)
+        }
+
+        val keyType = properties[TypeKey().property]
+        val curve = properties[CurveKey().property]
+
+        val keyData = properties[RawKey().property]
+        val curvePointX = properties[CurvePointXKey().property]
+        val curvePointY = properties[CurvePointYKey().property]
+
+        when (keyType) {
+            KeyTypes.EC -> {
+                when (curve) {
+                    Curve.ED25519.value -> {
+                        keyData?.let {
+                            if (it !is ByteArray) {
+                                throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
+                            }
+                            return Ed25519PublicKey(it)
+                        }
+                    }
+
+                    Curve.SECP256K1.value -> {
+                        if (curvePointX != null && curvePointY != null) {
+                            // Compressed key
+                            val nativePublicKey = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(
+                                x = (curvePointX as String).base64UrlDecodedBytes,
+                                y = (curvePointY as String).base64UrlDecodedBytes
+                            )
+                            return Secp256k1PublicKey(nativePublicKey.raw)
+                        } else {
+                            keyData?.let { data ->
+                                if (data !is ByteArray) {
+                                    throw Exception("KeyData must be a ByteArray")
+                                }
+                                return Secp256k1PublicKey(data)
+                            }
+                        }
+                    }
+                }
+            }
+
+            KeyTypes.Curve25519 -> {
+                keyData?.let {
+                    if (it !is ByteArray) {
+                        throw ApolloError.InvalidRawData("KeyData must be a ByteArray")
+                    }
+                    return X25519PublicKey(it)
+                }
+            }
+        }
+        throw ApolloError.InvalidKeyType(keyType.toString())
     }
 
     /**

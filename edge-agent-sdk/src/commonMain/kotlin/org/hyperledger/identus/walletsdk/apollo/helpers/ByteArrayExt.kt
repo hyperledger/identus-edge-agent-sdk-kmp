@@ -1,5 +1,8 @@
 package org.hyperledger.identus.walletsdk.apollo.helpers
 
+import java.io.ByteArrayInputStream
+import java.util.zip.GZIPInputStream
+
 /**
  * Pads the current ByteArray with the specified padValue at the beginning,
  * making it equal to or larger than the specified length.
@@ -16,4 +19,12 @@ fun ByteArray.padStart(length: Int, padValue: Byte): ByteArray {
         copyInto(result, length - size)
         result
     }
+}
+
+fun ByteArray.gunzip(): ByteArray {
+    val byteArrayInputStream = ByteArrayInputStream(this)
+    val gzipInputStream = GZIPInputStream(byteArrayInputStream)
+    val decompressedBytes = gzipInputStream.readBytes()
+
+    return decompressedBytes
 }

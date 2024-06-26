@@ -3,6 +3,7 @@ package org.hyperledger.identus.walletsdk.ui.credentials
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -16,8 +17,14 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class CredentialsAdapter(private var data: MutableList<Credential> = mutableListOf()) :
-    RecyclerView.Adapter<CredentialsAdapter.CredentialHolder>() {
+class CredentialsAdapter(
+    private var data: MutableList<Credential> = mutableListOf(),
+    val itemClickListener: OnItemClickListener
+) : RecyclerView.Adapter<CredentialsAdapter.CredentialHolder>() {
+
+    interface OnItemClickListener {
+        fun onItemClick(credential: Credential)
+    }
 
     fun updateCredentials(updatedCredentials: List<Credential>) {
         val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
@@ -63,10 +70,14 @@ class CredentialsAdapter(private var data: MutableList<Credential> = mutableList
         private val expiryDate: TextView = itemView.findViewById(R.id.credential_expiry_date)
         private val revoked: TextView = itemView.findViewById(R.id.revoked)
         private val typeString: String = itemView.context.getString(R.string.credential_type)
+        private val isRevoked: ImageButton = itemView.findViewById(R.id.isRevoked)
         private val issuanceString: String = itemView.context.getString(R.string.credential_issuance)
         private val expirationString: String = itemView.context.getString(R.string.credential_expiration)
 
         fun bind(cred: Credential) {
+            isRevoked.setOnClickListener {
+                itemClickListener.onItemClick(cred)
+            }
             when (cred::class) {
                 JWTCredential::class -> {
                     val jwt = cred as JWTCredential

@@ -1183,6 +1183,15 @@ class EdgeAgent {
             }
     }
 
+    suspend fun isCredentialRevoked(credential: Credential) {
+        edgeAgentScope.launch {
+            val isRevoked = pollux.isCredentialRevoked(credential)
+            if (isRevoked) {
+                pluto.revokeCredential(credential.id)
+            }
+        }
+    }
+
     /**
      * Performs a backup operation.
      *

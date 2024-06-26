@@ -111,7 +111,7 @@ class Sdk {
     }
 
     private fun createPollux(): PolluxImpl {
-        return PolluxImpl(castor)
+        return PolluxImpl(apollo, castor)
     }
 
     private fun createSeed(): Seed {
@@ -141,8 +141,11 @@ class Sdk {
             "admit",
             "peanut"
         )
-        return Seed(Base64.getUrlDecoder().decode("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA"))
 //        return apollo.createSeed(words, "")
+        return Seed(
+            Base64.getUrlDecoder()
+                .decode("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA")
+        )
     }
 
     private fun createHandler(mediatorDID: String): MediationHandler {
