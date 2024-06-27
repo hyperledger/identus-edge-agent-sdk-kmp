@@ -8,7 +8,9 @@ import com.nimbusds.jose.crypto.ECDSASigner
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import io.iohk.atala.prism.apollo.derivation.MnemonicHelper
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
@@ -22,6 +24,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
@@ -30,6 +33,8 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
@@ -48,7 +53,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
@@ -149,7 +153,7 @@ class PolluxImplTest {
     }
 
     @Test
-    fun testCreatePresentationDefinitionRequest_whenAllCorrect_thenPresentationDefinitionRequestCorrect() =
+    fun testCreatePresentationDefinitionRequest_whenJWT_thenPresentationDefinitionRequestCorrect() =
         runTest {
             pollux = PolluxImpl(apollo, castor, api)
             val definitionRequest = pollux.createPresentationDefinitionRequest(
@@ -743,6 +747,8 @@ class PolluxImplTest {
     @Test
     fun testCreatePresentationDefinitionRequest_whenAnoncreds_thenPresentationDefinitionRequestCorrect() = runTest {
         val nonce = "asdf1234"
+
+        pollux = PolluxImpl(apollo, castorMock, api)
         val definitionRequest = pollux.createPresentationDefinitionRequest(
             type = CredentialType.ANONCREDS_PROOF_REQUEST,
             presentationClaims = AnoncredsPresentationClaims(
@@ -780,6 +786,54 @@ class PolluxImplTest {
         assertEquals("18", predicates["age"]!!.pValue)
         assertEquals("<", predicates["income"]!!.pType)
         assertEquals("99000", predicates["income"]!!.pValue)
+    }
+
+    @Test
+    fun testCreatePresentationDefinitionRequest_whenAnoncredsNoOptions_thenThrowException() = runTest {
+        pollux = PolluxImpl(apollo, castorMock, api)
+        assertFailsWith(PolluxError.PresentationDefinitionRequestError::class) {
+            pollux.createPresentationDefinitionRequest(
+                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                presentationClaims = AnoncredsPresentationClaims(
+                    predicates = mapOf(
+                        "age" to AnoncredsInputFieldFilter(
+                            type = "string",
+                            name = "age",
+                            gte = "18"
+                        ),
+                        "income" to AnoncredsInputFieldFilter(
+                            type = "string",
+                            name = "income",
+                            lt = "99000"
+                        )
+                    ),
+                    attributes = mapOf(
+                        "name" to RequestedAttributes(
+                            name = "name",
+                            emptyMap()
+                        )
+                    )
+                ),
+                options = JWTPresentationOptions(domain = "domain", challenge = "challenge")
+            )
+        }
+        val nonce = "asdf1234"
+        assertFailsWith(PolluxError.PresentationDefinitionRequestError::class) {
+            pollux.createPresentationDefinitionRequest(
+                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                presentationClaims = JWTPresentationClaims(
+                    claims = mapOf(
+                        "$.vc.credentialSubject.email" to InputFieldFilter(
+                            type = "string",
+                            value = "value"
+                        )
+                    )
+                ),
+                options = AnoncredsPresentationOptions(
+                    nonce = nonce
+                )
+            )
+        }
     }
 
     private fun generateSecp256k1KeyPair(): Secp256k1KeyPair {

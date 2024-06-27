@@ -20,6 +20,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
@@ -142,8 +143,15 @@ interface Pollux {
     suspend fun createPresentationSubmission(
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
-        privateKey: PrivateKey
+        privateKey: PrivateKey? = null,
+        linkSecret: LinkSecret? = null
     ): PresentationSubmission
+
+    suspend fun createPresentationSubmissionAnoncred(
+        request: AnoncredsPresentationDefinitionRequest,
+        credential: AnonCredential,
+        linkSecret: LinkSecret
+    ): Presentation
 
     suspend fun verifyPresentationSubmission(
         presentationSubmission: PresentationSubmission,

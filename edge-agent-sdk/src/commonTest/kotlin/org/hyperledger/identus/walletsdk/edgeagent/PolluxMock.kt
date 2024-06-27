@@ -5,8 +5,6 @@ import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
 import anoncreds_wrapper.Presentation
 import anoncreds_wrapper.Schema
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import java.security.interfaces.ECPublicKey
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -26,6 +24,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import java.security.interfaces.ECPublicKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
 
 class PolluxMock : Pollux {
 
@@ -107,8 +106,17 @@ class PolluxMock : Pollux {
     override suspend fun createPresentationSubmission(
         presentationDefinitionRequest: PresentationDefinitionRequest,
         credential: Credential,
-        privateKey: PrivateKey
+        privateKey: PrivateKey?,
+        linkSecret: LinkSecret?
     ): PresentationSubmission {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun createPresentationSubmissionAnoncred(
+        request: AnoncredsPresentationDefinitionRequest,
+        credential: AnonCredential,
+        linkSecret: LinkSecret
+    ): Presentation {
         TODO("Not yet implemented")
     }
 

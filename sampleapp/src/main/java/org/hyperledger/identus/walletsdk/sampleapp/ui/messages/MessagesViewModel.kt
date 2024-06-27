@@ -26,6 +26,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
+import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.sampleapp.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -95,7 +96,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             sdk.agent.initiatePresentationRequest(
                 type = CredentialType.JWT,
                 toDID = DID(toDID),
-                presentationClaims = PresentationClaims(
+                presentationClaims = JWTPresentationClaims(
                     claims = mapOf(
 //                        "issuer" to InputFieldFilter(
 //                            type = "string",

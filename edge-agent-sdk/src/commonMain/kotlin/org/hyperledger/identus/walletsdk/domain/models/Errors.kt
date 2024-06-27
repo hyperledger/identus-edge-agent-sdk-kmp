@@ -804,8 +804,8 @@ constructor(
             get() = 57
     }
 
-    class CredentialTypeNotSupportedError(msg: String? = null) :
-        PolluxError(msg ?: "Credential type not supported, must be JWTCredential") {
+    class CredentialTypeNotSupportedError(msg: String) :
+        PolluxError(msg) {
         override val code: Int
             get() = 58
     }
@@ -895,5 +895,13 @@ constructor(
     class VerifyProofError() : PolluxError("The verification failed.") {
         override val code: Int
             get() = 68
+    }
+
+    /**
+     * Represents an error that occurs when a proof cannot be verified.
+     */
+    class PresentationDefinitionRequestError(msg: String) : PolluxError(msg) {
+        override val code: Int
+            get() = 69
     }
 }

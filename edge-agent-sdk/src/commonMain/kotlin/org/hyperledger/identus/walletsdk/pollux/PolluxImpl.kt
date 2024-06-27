@@ -364,6 +364,60 @@ open class PolluxImpl(
         )
     }
 
+    override suspend fun createPresentationSubmissionAnoncred(
+        request: AnoncredsPresentationDefinitionRequest,
+        credential: AnonCredential,
+        linkSecret: LinkSecret
+    ): Presentation {
+        println("Stop")
+//        val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
+//        val cred = anoncreds_wrapper.Credential(credential.id)
+//
+//        val requestedAttributes =
+//            presentationRequest.getRequestedAttributes().toListRequestedAttribute()
+//        val requestedPredicate =
+//            presentationRequest.getRequestedPredicates().toListRequestedPredicate()
+
+
+        TODO()
+
+
+//        val cred = anoncreds_wrapper.Credential(credential.id)
+//        val requestedAttributes = request.requestedAttributes
+//            getRequestedAttributes().toListRequestedAttribute()
+//        val requestedPredicate = request.requestedPredicates
+//            getRequestedPredicates().toListRequestedPredicate()
+
+//        val credentialRequests = CredentialRequests(
+//            credential = cred,
+//            requestedAttribute = requestedAttributes,
+//            requestedPredicate = requestedPredicate
+//        )
+//        val schemaId = credential.schemaID
+        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+        // .replace("host.docker.internal", "192.168.68.114")
+//        val schema = getSchema(schemaId)
+//
+//        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(credential.schemaID, schema))
+//
+//        val credDefId = credential.credentialDefinitionID
+//        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+//        // .replace("host.docker.internal", "192.168.68.114")
+//        val credentialDefinition = getCredentialDefinition(credDefId)
+//        val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
+//            Pair(credential.credentialDefinitionID, credentialDefinition)
+//        )
+//
+//        return Prover().createPresentation(
+//            presentationRequest = presentationRequest,
+//            credentials = listOf(credentialRequests),
+//            selfAttested = null,
+//            linkSecret = linkSecret,
+//            schemas = schemaMap,
+//            credentialDefinitions = credDefinition
+//        )
+    }
+
     /**
      * Converts a [Credential] object to a [StorableCredential] object of the specified [CredentialType].
      *
@@ -821,10 +875,10 @@ open class PolluxImpl(
         when (type) {
             CredentialType.JWT -> {
                 if (options !is JWTPresentationOptions) {
-                    throw Exception() // TODO: Custom exception
+                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation options must be ${JWTPresentationOptions::class.simpleName}")
                 }
                 if (presentationClaims !is JWTPresentationClaims) {
-                    throw Exception() // TODO: Custom exception
+                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation claims must be ${JWTPresentationClaims::class.simpleName}")
                 }
                 val jwt = options.jwt
                 if (jwt.isEmpty()) {
@@ -842,7 +896,6 @@ open class PolluxImpl(
                         )
                     } as MutableList
 
-                    << < < < < < HEAD
                 presentationClaims.issuer?.let { issuer ->
                     mutableListFields.add(
                         JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
@@ -855,403 +908,411 @@ open class PolluxImpl(
                             ),
                             name = "issuer"
                         )
-                                === === =
-                            presentationClaims.issuer?.let { issuer ->
-                                mutableListFields.add(
-                                    PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
-                                        path = arrayOf("$.issuer", "$.iss", "$.vc.iss", "$.vc.issuer"),
-                                        optional = false,
-                                        id = UUID.randomUUID().toString(),
-                                        filter = InputFieldFilter(
-                                            type = "String",
-                                            pattern = issuer
-                                        ),
-                                        name = "issuer"
-                                    )
-                                )
-                            }
-
-                        val constraints =
-                    PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
-                        fields = mutableListFields.toTypedArray(),
-                        limitDisclosure = PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
                     )
+                }
 
-                    val format =
-                        PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
-                            jwt = jwt.let {
-                                PresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
-                                    jwt.toList()
-                                            > > > > > > > main
-                                )
-                            }
-
-                            val constraints = JWTPresentationDefinitionRequest . PresentationDefinition . InputDescriptor . Constraints (
-                                fields = mutableListFields.toTypedArray(),
+                val constraints = JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
+                    fields = mutableListFields.toTypedArray(),
                     limitDisclosure =
-                        JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
-                    )
-
-                    format =
-                        JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
-                            jwt = jwt.let {
-                                JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
-                                    jwt.toList()
-                                )
-                            }
-                        )
-
-                    inputDescriptor = JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor(
-                        name = options.name,
-                        purpose = options.purpose,
-                        constraints = constraints,
-                        format = format
-                    )
-
-                    return JWTPresentationDefinitionRequest(
-                        presentationDefinition = JWTPresentationDefinitionRequest.PresentationDefinition(
-                            inputDescriptors = arrayOf(inputDescriptor),
-                            format = format
-                        ),
-                        options = JWTPresentationDefinitionRequest.PresentationDefinitionOptions(
-                            domain = options.domain,
-                            challenge = options.challenge
-                        )
-                    )
-                }
-
-                CredentialType.ANONCREDS_PROOF_REQUEST -> {
-                    if (options !is AnoncredsPresentationOptions) {
-                        throw Exception() // TODO: Custom exception
-                    }
-                    if (presentationClaims !is AnoncredsPresentationClaims) {
-                        throw Exception() // TODO: Custom exception
-                    }
-                    val predicates = presentationClaims.predicates
-
-                    val mapPredicate = mutableMapOf<String, RequestedPredicates>()
-                    predicates.forEach { predicate ->
-                        val key = predicate.key
-                        val inputFilter: AnoncredsInputFieldFilter = predicate.value
-                        val pType =
-                            if (inputFilter.gt != null) {
-                                ">"
-                            } else if (inputFilter.gte != null) {
-                                ">="
-                            } else if (inputFilter.lt != null) {
-                                "<"
-                            } else if (inputFilter.lte != null) {
-                                "<="
-                            } else {
-                                throw Exception() // TODO: Custom exception
-                            }
-
-                        val pValue = (inputFilter.gt
-                            ?: (inputFilter.gte
-                                ?: (inputFilter.lt
-                                    ?: (inputFilter.lte ?: throw Exception())))) as String // TODO: Custom excetion
-
-                        // Based on the definition of AnoncredsPresentationClaims we do not need to verify if key is duplicated.
-                        mapPredicate[key] = RequestedPredicates(
-                            name = inputFilter.name,
-                            pType = pType,
-                            pValue = pValue
-                        )
-                    }
-
-                    return AnoncredsPresentationDefinitionRequest(
-                        nonce = options.nonce,
-                        name = "anoncreds_presentation_request",
-                        version = "0.1",
-                        requestedPredicates = mapPredicate,
-                        requestedAttributes = presentationClaims.attributes
-                    )
-                }
-
-                else -> {
-                    throw PolluxError.CredentialTypeNotSupportedError(
-                        "Credential type ${type.type} not supported. " +
-                                "Must be ${CredentialType.JWT.type} or ${CredentialType.ANONCREDS_PROOF_REQUEST.type}"
-                    )
-                }
-            }
-        }
-
-        override suspend fun createPresentationSubmission(
-            presentationDefinitionRequest: PresentationDefinitionRequest,
-            credential: Credential,
-            privateKey: PrivateKey
-        ): PresentationSubmission {
-            if (credential::class != JWTCredential::class) {
-                throw PolluxError.CredentialTypeNotSupportedError()
-            }
-            if (privateKey::class != Secp256k1PrivateKey::class) {
-                throw PolluxError.PrivateKeyTypeNotSupportedError()
-            }
-            privateKey as Secp256k1PrivateKey
-            credential as JWTCredential
-            presentationDefinitionRequest as JWTPresentationDefinitionRequest
-            val descriptorItems =
-                presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
-                    if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
-                        throw PolluxError.InvalidCredentialDefinitionError()
-                    }
-                    PresentationSubmission.Submission.DescriptorItem(
-                        id = inputDescriptor.id,
-                        format = DescriptorItemFormat.JWT_VP.value,
-                        path = "$.verifiablePresentation[0]",
-                        pathNested = PresentationSubmission.Submission.DescriptorItem(
-                            id = inputDescriptor.id,
-                            format = DescriptorItemFormat.JWT_VC.value,
-                            path = "$.vp.verifiableCredential[0]"
-                        )
-                    )
-                }.toTypedArray()
-
-            val credentialSubject = credential.subject
-            credentialSubject?.let { subject ->
-                if (!privateKey.isSignable()) {
-                    throw PolluxError.WrongKeyProvided(
-                        expected = SignableKey::class.simpleName,
-                        actual = privateKey::class.simpleName
-                    )
-                }
-                val signedChallenge =
-                    privateKey.sign(presentationDefinitionRequest.options.challenge.encodeToByteArray())
-
-                val ecPrivateKey = parsePrivateKey(privateKey)
-                val presentationJwt = signClaimsProofPresentationJWT(
-                    subjectDID = DID(subject),
-                    privateKey = ecPrivateKey,
-                    credential = credential,
-                    domain = presentationDefinitionRequest.options.domain,
-                    challenge = presentationDefinitionRequest.options.challenge
+                    JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
                 )
 
-                return PresentationSubmission(
-                    presentationSubmission = PresentationSubmission.Submission(
-                        definitionId = presentationDefinitionRequest.presentationDefinition.id
-                            ?: UUID.randomUUID().toString(),
-                        descriptorMap = descriptorItems
-                    ),
-                    verifiablePresentation = arrayOf(presentationJwt)
-                )
-            } ?: throw PolluxError.NullField("CredentialSubject")
-        }
-
-        override suspend fun verifyPresentationSubmission(
-            presentationSubmission: PresentationSubmission,
-            options: PresentationSubmissionOptions
-        ): Boolean {
-            if (options::class == PresentationSubmissionOptionsJWT::class) {
-                val presentationDefinitionRequest =
-                    (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest as JWTPresentationDefinitionRequest
-                presentationDefinitionRequest.presentationDefinition
-                val inputDescriptors =
-                    presentationDefinitionRequest.presentationDefinition.inputDescriptors
-                val descriptorMap = DescriptorPath(Json.encodeToJsonElement(presentationSubmission))
-                val descriptorMaps = presentationSubmission.presentationSubmission.descriptorMap
-                descriptorMaps.forEach { descriptorItem ->
-                    if (descriptorItem.format != DescriptorItemFormat.JWT_VP.value) {
-                        throw PolluxError.VerificationUnsuccessful("Invalid submission, ${descriptorItem.path} expected to have format ${DescriptorItemFormat.JWT_VP.value}")
-                    }
-
-                    var newPath: String? = null
-                    if (!descriptorItem.path.contains("verifiablePresentation")) {
-                        newPath =
-                            PresentationSubmission.Submission.DescriptorItem.replacePathWithVerifiablePresentation(
-                                descriptorItem.path
+                format =
+                    JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
+                        jwt = jwt.let {
+                            JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
+                                jwt.toList()
                             )
-                    }
-                    val jws =
-                        descriptorMap.getValue(newPath ?: descriptorItem.path)
-                            ?: throw PolluxError.VerificationUnsuccessful("Could not find ${descriptorItem.path} value")
-                    val presentation = JWTCredential.fromJwtString(jws as String)
-                    val issuer = presentation.issuer
-
-                    val presentationDefinitionOptions = presentationDefinitionRequest.options
-                    val challenge = presentationDefinitionOptions.challenge
-                    if (challenge.isNotBlank()) {
-                        val nonce = presentation.nonce
-                        if (nonce.isNullOrBlank()) {
-                            throw PolluxError.VerificationUnsuccessful("Invalid submission, ${descriptorItem.path} does snot contain a nonce with a valid signature for the challenge.")
                         }
-                        if (challenge != nonce) {
-                            throw PolluxError.VerificationUnsuccessful("Invalid submission, the signature from ${descriptorItem.path} is not valid for the challenge.")
+                    )
+
+                inputDescriptor = JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor(
+                    name = options.name,
+                    purpose = options.purpose,
+                    constraints = constraints,
+                    format = format
+                )
+
+                return JWTPresentationDefinitionRequest(
+                    presentationDefinition = JWTPresentationDefinitionRequest.PresentationDefinition(
+                        inputDescriptors = arrayOf(inputDescriptor),
+                        format = format
+                    ),
+                    options = JWTPresentationDefinitionRequest.PresentationDefinitionOptions(
+                        domain = options.domain,
+                        challenge = options.challenge
+                    )
+                )
+            }
+
+            CredentialType.ANONCREDS_PROOF_REQUEST -> {
+                if (options !is AnoncredsPresentationOptions) {
+                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation options must be ${AnoncredsPresentationOptions::class.simpleName}")
+                }
+                if (presentationClaims !is AnoncredsPresentationClaims) {
+                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation options must be ${AnoncredsPresentationClaims::class.simpleName}")
+                }
+                val predicates = presentationClaims.predicates
+
+                val mapPredicate = mutableMapOf<String, RequestedPredicates>()
+                predicates.forEach { predicate ->
+                    val key = predicate.key
+                    val inputFilter: AnoncredsInputFieldFilter = predicate.value
+                    val pType =
+                        if (inputFilter.gt != null) {
+                            ">"
+                        } else if (inputFilter.gte != null) {
+                            ">="
+                        } else if (inputFilter.lt != null) {
+                            "<"
+                        } else if (inputFilter.lte != null) {
+                            "<="
+                        } else {
+                            throw Exception() // TODO: Custom exception
                         }
+
+                    val pValue = (inputFilter.gt
+                        ?: (inputFilter.gte
+                            ?: (inputFilter.lt
+                                ?: (inputFilter.lte ?: throw Exception())))) as String // TODO: Custom excetion
+
+                    // Based on the definition of AnoncredsPresentationClaims we do not need to verify if key is duplicated.
+                    mapPredicate[key] = RequestedPredicates(
+                        name = inputFilter.name,
+                        pType = pType,
+                        pValue = pValue
+                    )
+                }
+
+                return AnoncredsPresentationDefinitionRequest(
+                    nonce = options.nonce,
+                    name = "anoncreds_presentation_request",
+                    version = "0.1",
+                    requestedPredicates = mapPredicate,
+                    requestedAttributes = presentationClaims.attributes
+                )
+            }
+
+            else -> {
+                throw PolluxError.CredentialTypeNotSupportedError(
+                    "Credential type ${type.type} not supported. " +
+                        "Must be ${CredentialType.JWT.type} or ${CredentialType.ANONCREDS_PROOF_REQUEST.type}"
+                )
+            }
+        }
+    }
+
+    override suspend fun createPresentationSubmission(
+        presentationDefinitionRequest: PresentationDefinitionRequest,
+        credential: Credential,
+        privateKey: PrivateKey?,
+        linkSecret: LinkSecret?
+
+    ): PresentationSubmission {
+        when (presentationDefinitionRequest) {
+            is JWTPresentationDefinitionRequest -> {
+                if (credential::class != JWTCredential::class) {
+                    throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be JWTCredential")
+                }
+                if (privateKey == null || privateKey::class != Secp256k1PrivateKey::class) {
+                    throw PolluxError.PrivateKeyTypeNotSupportedError()
+                }
+                privateKey as Secp256k1PrivateKey
+                credential as JWTCredential
+                val descriptorItems =
+                    presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
+                        if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
+                            throw PolluxError.InvalidCredentialDefinitionError()
+                        }
+                        PresentationSubmission.Submission.DescriptorItem(
+                            id = inputDescriptor.id,
+                            format = DescriptorItemFormat.JWT_VP.value,
+                            path = "$.verifiablePresentation[0]",
+                            pathNested = PresentationSubmission.Submission.DescriptorItem(
+                                id = inputDescriptor.id,
+                                format = DescriptorItemFormat.JWT_VC.value,
+                                path = "$.vp.verifiableCredential[0]"
+                            )
+                        )
+                    }.toTypedArray()
+
+                val credentialSubject = credential.subject
+                credentialSubject?.let { subject ->
+                    if (!privateKey.isSignable()) {
+                        throw PolluxError.WrongKeyProvided(
+                            expected = SignableKey::class.simpleName,
+                            actual = privateKey::class.simpleName
+                        )
                     }
+                    val signedChallenge =
+                        privateKey.sign(presentationDefinitionRequest.options.challenge.encodeToByteArray())
 
-                    descriptorItem.pathNested?.let { pathNested ->
-                        val verifiableCredentialMapper =
-                            DescriptorPath(Json.encodeToJsonElement(presentation))
-                        val value = verifiableCredentialMapper.getValue(pathNested.path)
-                        value?.let { vc ->
-                            val verifiableCredential = JWTCredential.fromJwtString(vc as String)
+                    val ecPrivateKey = parsePrivateKey(privateKey)
+                    val presentationJwt = signClaimsProofPresentationJWT(
+                        subjectDID = DID(subject),
+                        privateKey = ecPrivateKey,
+                        credential = credential,
+                        domain = presentationDefinitionRequest.options.domain,
+                        challenge = presentationDefinitionRequest.options.challenge
+                    )
 
-                            val isRevoked = isCredentialRevoked(verifiableCredential)
+                    return PresentationSubmission(
+                        presentationSubmission = PresentationSubmission.Submission(
+                            definitionId = presentationDefinitionRequest.presentationDefinition.id
+                                ?: UUID.randomUUID().toString(),
+                            descriptorMap = descriptorItems
+                        ),
+                        verifiablePresentation = arrayOf(presentationJwt)
+                    )
+                } ?: throw PolluxError.NullField("CredentialSubject")
+            }
 
-                            if (isRevoked) {
-                                throw PolluxError.VerificationUnsuccessful("Provided credential is revoked")
-                            }
+            is AnoncredsPresentationDefinitionRequest -> {
+                if (credential::class != AnonCredential::class) {
+                    throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be AnonCredential")
+                }
+                if (linkSecret == null) {
+                    throw PolluxError.NullField("LinkSecret")
+                }
 
-                            if (verifiableCredential.subject != issuer) {
-                                throw PolluxError.VerificationUnsuccessful("Invalid submission,")
-                            }
+                val presentationSubmission = createPresentationSubmissionAnoncred(
+                    request = presentationDefinitionRequest,
+                    credential = credential as AnonCredential,
+                    linkSecret = linkSecret
+                )
 
-                            val didDocHolder = castor.resolveDID(verifiableCredential.issuer)
-                            val authenticationMethodHolder =
-                                didDocHolder.coreProperties.find { it::class == DIDDocument.Authentication::class }
-                                    ?: throw PolluxError.VerificationUnsuccessful("Holder core properties must contain Authentication")
-                            val ecPublicKeysHolder =
-                                extractEcPublicKeyFromVerificationMethod(authenticationMethodHolder)
 
-                            if (!verifyJWTSignatureWithEcPublicKey(
-                                    verifiableCredential.id,
-                                    ecPublicKeysHolder
-                                )
-                            ) {
-                                throw PolluxError.VerificationUnsuccessful("Invalid presentation credential JWT Signature")
-                            }
+                TODO()
 
-                            // Now we are going to validate the requested fields with the provided credentials
-                            val verifiableCredentialDescriptorPath =
-                                DescriptorPath(Json.encodeToJsonElement(verifiableCredential))
-                            val inputDescriptor =
-                                inputDescriptors.find { it.id == descriptorItem.id }
-                            if (inputDescriptor != null) {
-                                val constraints = inputDescriptor.constraints
-                                val fields = constraints.fields
-                                if (constraints.limitDisclosure == JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
-                                    fields?.forEach { field ->
-                                        val optional = field.optional
-                                        if (!optional) {
-                                            var validClaim = false
-                                            var reason = ""
-                                            val paths = field.path
-                                            paths.forEach { path ->
-                                                val fieldValue =
-                                                    verifiableCredentialDescriptorPath.getValue(path)
-                                                if (fieldValue != null) {
-                                                    if (field.filter != null) {
-                                                        val filter: InputFieldFilter = field.filter
-                                                        filter.pattern?.let { pattern ->
-                                                            val regexPattern = Regex(pattern)
-                                                            if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
+//                return PresentationSubmission(
+//                    presentationSubmission = PresentationSubmission.Submission(
+//                        definitionId = presentationDefinitionRequest.presentationDefinition.id
+//                            ?: UUID.randomUUID().toString(),
+//                        descriptorMap = descriptorItems
+//                    ),
+//                    verifiablePresentation = arrayOf(presentationJwt)
+//                )
+            }
+
+            else -> {
+                throw Exception() // TODO: Custom exception
+            }
+        }
+    }
+
+    override suspend fun verifyPresentationSubmission(
+        presentationSubmission: PresentationSubmission,
+        options: PresentationSubmissionOptions
+    ): Boolean {
+        if (options::class == PresentationSubmissionOptionsJWT::class) {
+            val presentationDefinitionRequest =
+                (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest as JWTPresentationDefinitionRequest
+            presentationDefinitionRequest.presentationDefinition
+            val inputDescriptors =
+                presentationDefinitionRequest.presentationDefinition.inputDescriptors
+            val descriptorMap = DescriptorPath(Json.encodeToJsonElement(presentationSubmission))
+            val descriptorMaps = presentationSubmission.presentationSubmission.descriptorMap
+            descriptorMaps.forEach { descriptorItem ->
+                if (descriptorItem.format != DescriptorItemFormat.JWT_VP.value) {
+                    throw PolluxError.VerificationUnsuccessful("Invalid submission, ${descriptorItem.path} expected to have format ${DescriptorItemFormat.JWT_VP.value}")
+                }
+
+                var newPath: String? = null
+                if (!descriptorItem.path.contains("verifiablePresentation")) {
+                    newPath =
+                        PresentationSubmission.Submission.DescriptorItem.replacePathWithVerifiablePresentation(
+                            descriptorItem.path
+                        )
+                }
+                val jws =
+                    descriptorMap.getValue(newPath ?: descriptorItem.path)
+                        ?: throw PolluxError.VerificationUnsuccessful("Could not find ${descriptorItem.path} value")
+                val presentation = JWTCredential.fromJwtString(jws as String)
+                val issuer = presentation.issuer
+
+                val presentationDefinitionOptions = presentationDefinitionRequest.options
+                val challenge = presentationDefinitionOptions.challenge
+                if (challenge.isNotBlank()) {
+                    val nonce = presentation.nonce
+                    if (nonce.isNullOrBlank()) {
+                        throw PolluxError.VerificationUnsuccessful("Invalid submission, ${descriptorItem.path} does snot contain a nonce with a valid signature for the challenge.")
+                    }
+                    if (challenge != nonce) {
+                        throw PolluxError.VerificationUnsuccessful("Invalid submission, the signature from ${descriptorItem.path} is not valid for the challenge.")
+                    }
+                }
+
+                descriptorItem.pathNested?.let { pathNested ->
+                    val verifiableCredentialMapper =
+                        DescriptorPath(Json.encodeToJsonElement(presentation))
+                    val value = verifiableCredentialMapper.getValue(pathNested.path)
+                    value?.let { vc ->
+                        val verifiableCredential = JWTCredential.fromJwtString(vc as String)
+
+                        val isRevoked = isCredentialRevoked(verifiableCredential)
+
+                        if (isRevoked) {
+                            throw PolluxError.VerificationUnsuccessful("Provided credential is revoked")
+                        }
+
+                        if (verifiableCredential.subject != issuer) {
+                            throw PolluxError.VerificationUnsuccessful("Invalid submission,")
+                        }
+
+                        val didDocHolder = castor.resolveDID(verifiableCredential.issuer)
+                        val authenticationMethodHolder =
+                            didDocHolder.coreProperties.find { it::class == DIDDocument.Authentication::class }
+                                ?: throw PolluxError.VerificationUnsuccessful("Holder core properties must contain Authentication")
+                        val ecPublicKeysHolder =
+                            extractEcPublicKeyFromVerificationMethod(authenticationMethodHolder)
+
+                        if (!verifyJWTSignatureWithEcPublicKey(
+                                verifiableCredential.id,
+                                ecPublicKeysHolder
+                            )
+                        ) {
+                            throw PolluxError.VerificationUnsuccessful("Invalid presentation credential JWT Signature")
+                        }
+
+                        // Now we are going to validate the requested fields with the provided credentials
+                        val verifiableCredentialDescriptorPath =
+                            DescriptorPath(Json.encodeToJsonElement(verifiableCredential))
+                        val inputDescriptor =
+                            inputDescriptors.find { it.id == descriptorItem.id }
+                        if (inputDescriptor != null) {
+                            val constraints = inputDescriptor.constraints
+                            val fields = constraints.fields
+                            if (constraints.limitDisclosure == JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
+                                fields?.forEach { field ->
+                                    val optional = field.optional
+                                    if (!optional) {
+                                        var validClaim = false
+                                        var reason = ""
+                                        val paths = field.path
+                                        paths.forEach { path ->
+                                            val fieldValue =
+                                                verifiableCredentialDescriptorPath.getValue(path)
+                                            if (fieldValue != null) {
+                                                if (field.filter != null) {
+                                                    val filter: InputFieldFilter = field.filter
+                                                    filter.pattern?.let { pattern ->
+                                                        val regexPattern = Regex(pattern)
+                                                        if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
+                                                            validClaim = true
+                                                            return@forEach
+                                                        } else {
+                                                            reason =
+                                                                "Expected the $path field to be $pattern but got $fieldValue"
+                                                        }
+                                                    }
+                                                    filter.enum?.let { enum ->
+                                                        enum.forEach { predicate ->
+                                                            if (fieldValue == predicate) {
                                                                 validClaim = true
                                                                 return@forEach
-                                                            } else {
-                                                                reason =
-                                                                    "Expected the $path field to be $pattern but got $fieldValue"
                                                             }
                                                         }
-                                                        filter.enum?.let { enum ->
-                                                            enum.forEach { predicate ->
-                                                                if (fieldValue == predicate) {
-                                                                    validClaim = true
-                                                                    return@forEach
-                                                                }
-                                                            }
-                                                            if (!validClaim) {
-                                                                reason =
-                                                                    "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
-                                                            }
+                                                        if (!validClaim) {
+                                                            reason =
+                                                                "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
                                                         }
-                                                        filter.const?.let { const ->
-                                                            const.forEach { constValue ->
-                                                                if (fieldValue == constValue) {
-                                                                    validClaim = true
-                                                                    return@forEach
-                                                                }
-                                                            }
-                                                            if (!validClaim) {
-                                                                reason =
-                                                                    "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
-                                                            }
-                                                        }
-                                                        filter.value?.let { value ->
-                                                            if (value == fieldValue) {
+                                                    }
+                                                    filter.const?.let { const ->
+                                                        const.forEach { constValue ->
+                                                            if (fieldValue == constValue) {
                                                                 validClaim = true
                                                                 return@forEach
-                                                            } else {
-                                                                reason =
-                                                                    "Expected the $path field to be $value but got $fieldValue"
                                                             }
                                                         }
-                                                    } else {
-                                                        reason =
-                                                            "Input field filter for ${field.name} is null"
+                                                        if (!validClaim) {
+                                                            reason =
+                                                                "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
+                                                        }
+                                                    }
+                                                    filter.value?.let { value ->
+                                                        if (value == fieldValue) {
+                                                            validClaim = true
+                                                            return@forEach
+                                                        } else {
+                                                            reason =
+                                                                "Expected the $path field to be $value but got $fieldValue"
+                                                        }
                                                     }
                                                 } else {
-                                                    reason = "Field value for path $path is null"
+                                                    reason =
+                                                        "Input field filter for ${field.name} is null"
                                                 }
+                                            } else {
+                                                reason = "Field value for path $path is null"
                                             }
-                                            if (!validClaim) {
-                                                throw PolluxError.VerificationUnsuccessful(reason)
-                                            }
+                                        }
+                                        if (!validClaim) {
+                                            throw PolluxError.VerificationUnsuccessful(reason)
                                         }
                                     }
                                 }
                             }
                         }
-                            ?: throw PolluxError.VerificationUnsuccessful("Invalid submission, no value found for $pathNested")
-                        return true
                     }
-                }
-            } else {
-                // TODO: Anoncreds and more
-            }
-            return false
-        }
-
-        internal fun verifyJWTSignatureWithEcPublicKey(
-            jwtString: String,
-            ecPublicKeys: Array<ECPublicKey>
-        ): Boolean {
-            val jwtPartsIssuer = jwtString.split(".")
-            if (jwtPartsIssuer.size != 3) {
-                throw PolluxError.InvalidJWTString("Invalid JWT string, must contain 3 parts.")
-            }
-            val jwsObject =
-                SignedJWT(
-                    Base64URL(jwtPartsIssuer[0]),
-                    Base64URL(jwtPartsIssuer[1]),
-                    Base64URL(jwtPartsIssuer[2])
-                )
-            val areVerified = ecPublicKeys.map { ecPublicKey ->
-                val verifiers = ECDSAVerifier(ecPublicKey)
-                val provider = BouncyCastleProviderSingleton.getInstance()
-                verifiers.jcaContext.provider = provider
-
-                jwsObject.verify(verifiers)
-            }
-            return areVerified.find { it } ?: false
-        }
-
-        override suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey> {
-            val publicKeys = castor.getPublicKeysFromCoreProperties(arrayOf(coreProperty))
-
-            val ecPublicKeys = publicKeys.map { publicKey ->
-                when (DIDDocument.VerificationMethod.getCurveByType(publicKey.getCurve())) {
-                    Curve.SECP256K1 -> {
-                        val kmmEcSecp = KMMECSecp256k1PublicKey.secp256k1FromBytes(publicKey.raw)
-                        val x = BigInteger(1, kmmEcSecp.getCurvePoint().x)
-                        val y = BigInteger(1, kmmEcSecp.getCurvePoint().y)
-                        val ecPoint = ECPoint(x, y)
-                        val curveName = publicKey.getCurve()
-                        val sp = ECNamedCurveTable.getParameterSpec(curveName)
-                        val params: ECParameterSpec =
-                            ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
-
-                        val publicKeySpec = ECPublicKeySpec(ecPoint, params)
-                        val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
-                        keyFactory.generatePublic(publicKeySpec) as ECPublicKey
-                    }
-
-                    else -> {
-                        throw Exception("Key type not supported ${publicKey.getCurve()}")
-                    }
+                        ?: throw PolluxError.VerificationUnsuccessful("Invalid submission, no value found for $pathNested")
+                    return true
                 }
             }
-            return ecPublicKeys.toTypedArray()
+        } else {
+            // TODO: Anoncreds and more
         }
+        return false
     }
+
+    internal fun verifyJWTSignatureWithEcPublicKey(
+        jwtString: String,
+        ecPublicKeys: Array<ECPublicKey>
+    ): Boolean {
+        val jwtPartsIssuer = jwtString.split(".")
+        if (jwtPartsIssuer.size != 3) {
+            throw PolluxError.InvalidJWTString("Invalid JWT string, must contain 3 parts.")
+        }
+        val jwsObject =
+            SignedJWT(
+                Base64URL(jwtPartsIssuer[0]),
+                Base64URL(jwtPartsIssuer[1]),
+                Base64URL(jwtPartsIssuer[2])
+            )
+        val areVerified = ecPublicKeys.map { ecPublicKey ->
+            val verifiers = ECDSAVerifier(ecPublicKey)
+            val provider = BouncyCastleProviderSingleton.getInstance()
+            verifiers.jcaContext.provider = provider
+
+            jwsObject.verify(verifiers)
+        }
+        return areVerified.find { it } ?: false
+    }
+
+    override suspend fun extractEcPublicKeyFromVerificationMethod(coreProperty: DIDDocumentCoreProperty): Array<ECPublicKey> {
+        val publicKeys = castor.getPublicKeysFromCoreProperties(arrayOf(coreProperty))
+
+        val ecPublicKeys = publicKeys.map { publicKey ->
+            when (DIDDocument.VerificationMethod.getCurveByType(publicKey.getCurve())) {
+                Curve.SECP256K1 -> {
+                    val kmmEcSecp = KMMECSecp256k1PublicKey.secp256k1FromBytes(publicKey.raw)
+                    val x = BigInteger(1, kmmEcSecp.getCurvePoint().x)
+                    val y = BigInteger(1, kmmEcSecp.getCurvePoint().y)
+                    val ecPoint = ECPoint(x, y)
+                    val curveName = publicKey.getCurve()
+                    val sp = ECNamedCurveTable.getParameterSpec(curveName)
+                    val params: ECParameterSpec =
+                        ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
+
+                    val publicKeySpec = ECPublicKeySpec(ecPoint, params)
+                    val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
+                    keyFactory.generatePublic(publicKeySpec) as ECPublicKey
+                }
+
+                else -> {
+                    throw Exception("Key type not supported ${publicKey.getCurve()}")
+                }
+            }
+        }
+        return ecPublicKeys.toTypedArray()
+    }
+}
