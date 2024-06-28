@@ -251,7 +251,7 @@ class PolluxImplTest {
         pollux = PolluxImpl(apollo, castor, api)
 
         assertFailsWith(PolluxError.CredentialTypeNotSupportedError::class) {
-            pollux.createPresentationSubmission(
+            pollux.createJWTPresentationSubmission(
                 presentationDefinitionRequest = presentationDefinitionRequest,
                 credential = credential,
                 privateKey = secpKeyPair.privateKey
@@ -308,7 +308,7 @@ class PolluxImplTest {
             pollux = PolluxImpl(apollo, castor, api)
 
             assertFailsWith(PolluxError.PrivateKeyTypeNotSupportedError::class) {
-                pollux.createPresentationSubmission(
+                pollux.createJWTPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequest,
                     credential = credential,
                     privateKey = nonSecpKeyPair.privateKey
@@ -1136,8 +1136,8 @@ class PolluxImplTest {
         doReturn(false)
             .`when`(pollux).isCredentialRevoked(any())
 
-        val presentationSubmission = pollux.createPresentationSubmission(
-            presentationDefinitionRequest = presentationDefinition,
+        val presentationSubmission = pollux.createJWTPresentationSubmission(
+            presentationDefinitionRequest = presentationDefinition as JWTPresentationDefinitionRequest,
             credential = jwtCredential,
             privateKey = testCaseOptions.holderPrv
         )

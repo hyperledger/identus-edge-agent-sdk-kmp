@@ -19,6 +19,7 @@ import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
@@ -32,10 +33,12 @@ import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
+import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
@@ -50,6 +53,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyArray
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
 
 @RunWith(AndroidJUnit4::class)
 class AnoncredsTests {
@@ -313,4 +317,83 @@ class AnoncredsTests {
             attachmentData.base64.base64UrlDecoded
         )
     }
+
+    @Test
+    fun testHandlePresentationDefinitionRequest_whenAnoncreds_thenSendPresentationSubmissionCorrectly() =
+        runTest {
+            val apiMock = mock<Api>()
+            `when`(apiMock.request(any(), any(), any(), any(), any()))
+                .thenReturn(HttpResponse(200, "Ok"))
+
+            val apolloMock = mock<Apollo>()
+            val castorMock = mock<Castor>()
+            val plutoMock = mock<Pluto>()
+            val mercuryMock = mock<Mercury>()
+            val polluxMock = mock<Pollux>()
+            val connectionManagerMock = mock<ConnectionManager>()
+            val seed = Seed(MnemonicHelper.createRandomSeed())
+
+            val anoncredPresentationDefinitionRequest =
+                """{"nonce":"","name":"anoncreds_presentation_request","version":"0.1","requested_predicates":{"age":{"name":"age","p_type":">","p_value":"18"}},"requested_attributes":{}}"""
+
+            val presentationSubmissionString =
+                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
+            val presentationSubmission = Json.decodeFromString<PresentationSubmission>(
+                presentationSubmissionString
+            )
+            // Mock createPresentationSubmission response
+//            `when`(polluxMock.createPresentationSubmissionAnoncred(any(), any(), any())).thenReturn(
+//                presentationSubmission
+//            )
+
+            val agent = spy(
+                EdgeAgent(
+                    apollo = apolloMock,
+                    castor = castorMock,
+                    pluto = plutoMock,
+                    mercury = mercuryMock,
+                    pollux = polluxMock,
+                    connectionManager = connectionManagerMock,
+                    seed = seed,
+                    api = apiMock,
+                    logger = PrismLoggerMock()
+                )
+            )
+
+//            val mockLinkSecret = mock<LinkSecret>()
+//            doReturn(mockLinkSecret).`when`(agent.getLinkSecret())
+
+            val anoncredsPresentationDefinitionRequestBase64 = anoncredPresentationDefinitionRequest.base64UrlEncoded
+            val msg = Json.decodeFromString<Message>(
+                "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"$anoncredsPresentationDefinitionRequestBase64\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
+            )
+
+            val credential = AnonCredential(
+                schemaID = "",
+                credentialDefinitionID = "",
+                values = mapOf(),
+                signatureJson = "",
+                signatureCorrectnessProofJson = "",
+                revocationRegistryId = null,
+                revocationRegistryJson = null,
+                witnessJson = "",
+                json = ""
+            )
+            val presentation = agent.preparePresentationForRequestProof(
+                RequestPresentation.fromMessage(msg),
+                credential
+            )
+
+//            assertEquals("00000000-ef9d-4722-0000-00003b1bc908", presentation.thid)
+//            assertEquals("did:peer:fdsafdsa", presentation.from.toString())
+//            assertEquals("did:peer:asdfasdf", presentation.to.toString())
+//            assertEquals(1, presentation.attachments.size)
+//            val attachmentDescriptor = presentation.attachments.first()
+//            val attachmentData = attachmentDescriptor.data
+//            assertTrue(attachmentData is AttachmentBase64)
+//            assertEquals(
+//                presentationSubmissionString.base64UrlEncoded,
+//                attachmentData.base64
+//            )
+        }
 }

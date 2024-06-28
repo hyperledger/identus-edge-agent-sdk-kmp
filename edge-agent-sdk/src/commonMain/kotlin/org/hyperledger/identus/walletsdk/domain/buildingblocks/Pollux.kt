@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
 import anoncreds_wrapper.CredentialDefinition
@@ -21,6 +23,7 @@ import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
@@ -140,15 +143,14 @@ interface Pollux {
         options: PresentationOptions
     ): PresentationDefinitionRequest
 
-    suspend fun createPresentationSubmission(
-        presentationDefinitionRequest: PresentationDefinitionRequest,
+    suspend fun createJWTPresentationSubmission(
+        presentationDefinitionRequest: JWTPresentationDefinitionRequest,
         credential: Credential,
-        privateKey: PrivateKey? = null,
-        linkSecret: LinkSecret? = null
+        privateKey: PrivateKey
     ): PresentationSubmission
 
-    suspend fun createPresentationSubmissionAnoncred(
-        request: AnoncredsPresentationDefinitionRequest,
+    suspend fun createAnoncredsPresentationSubmission(
+        presentationDefinitionRequest: AnoncredsPresentationDefinitionRequest,
         credential: AnonCredential,
         linkSecret: LinkSecret
     ): Presentation

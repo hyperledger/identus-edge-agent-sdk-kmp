@@ -54,7 +54,6 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -135,7 +134,7 @@ private fun Url.Companion.parse(str: String): Url? {
  * EdgeAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
  * Service Endpoint and seed data.
  */
-class EdgeAgent {
+open class EdgeAgent {
     var state: State = State.STOPPED
         private set(value) {
             field = value
@@ -679,7 +678,7 @@ class EdgeAgent {
                 val linkSecret = getLinkSecret()
                 val offerDataString = offer.attachments.firstNotNullOf {
                     when (it.data) {
-                        is AttachmentData.AttachmentBase64 -> it.data.base64
+                        is AttachmentBase64 -> it.data.base64
                         else -> null
                     }
                 }
@@ -1070,11 +1069,12 @@ class EdgeAgent {
             }
 
             CredentialType.ANONCREDS_PROOF_REQUEST -> {
+                // TODO: fill up nonce
                 presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
                     type = type,
                     presentationClaims = presentationClaims,
                     options = AnoncredsPresentationOptions(
-                        nonce = "" // TODO: fill up this string
+                        nonce = ""
                     )
                 )
                 attachmentDescriptor = AttachmentDescriptor(
@@ -1135,10 +1135,10 @@ class EdgeAgent {
                 val privateKey = privateKeyKeys.first()
                     ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
 
-                val presentationSubmissionProof = pollux.createPresentationSubmission(
+                val presentationSubmissionProof = pollux.createJWTPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequest,
                     credential = credential,
-                    privateKey = privateKey
+                    privateKey = privateKey,
                 )
 
                 val attachmentDescriptor = AttachmentDescriptor(
@@ -1166,18 +1166,12 @@ class EdgeAgent {
                         )
                     }
 
-                val didString =
-                    credential.subject ?: throw Exception("Credential must contain subject")
+                val linkSecret = getLinkSecret()
 
-                val privateKeyKeys = pluto.getDIDPrivateKeysByDID(DID(didString)).first()
-                val privateKey = privateKeyKeys.first()
-                    ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
-
-
-                val presentationSubmissionProof = pollux.createPresentationSubmission(
+                val presentationSubmissionProof = pollux.createAnoncredsPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequest,
                     credential = credential,
-                    privateKey = privateKey
+                    linkSecret = linkSecret
                 )
 
                 val attachmentDescriptor = AttachmentDescriptor(
@@ -1402,7 +1396,7 @@ class EdgeAgent {
      *
      * @return The retrieved or newly created link secret object.
      */
-    private suspend fun getLinkSecret(): LinkSecret {
+    internal suspend fun getLinkSecret(): LinkSecret {
         val linkSecret = pluto.getLinkSecret().firstOrNull()
         return if (linkSecret == null) {
             val linkSecretObj = LinkSecret()

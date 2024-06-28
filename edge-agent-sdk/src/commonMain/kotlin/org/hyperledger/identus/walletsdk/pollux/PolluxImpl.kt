@@ -364,60 +364,6 @@ open class PolluxImpl(
         )
     }
 
-    override suspend fun createPresentationSubmissionAnoncred(
-        request: AnoncredsPresentationDefinitionRequest,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation {
-        println("Stop")
-//        val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
-//        val cred = anoncreds_wrapper.Credential(credential.id)
-//
-//        val requestedAttributes =
-//            presentationRequest.getRequestedAttributes().toListRequestedAttribute()
-//        val requestedPredicate =
-//            presentationRequest.getRequestedPredicates().toListRequestedPredicate()
-
-
-        TODO()
-
-
-//        val cred = anoncreds_wrapper.Credential(credential.id)
-//        val requestedAttributes = request.requestedAttributes
-//            getRequestedAttributes().toListRequestedAttribute()
-//        val requestedPredicate = request.requestedPredicates
-//            getRequestedPredicates().toListRequestedPredicate()
-
-//        val credentialRequests = CredentialRequests(
-//            credential = cred,
-//            requestedAttribute = requestedAttributes,
-//            requestedPredicate = requestedPredicate
-//        )
-//        val schemaId = credential.schemaID
-        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
-        // .replace("host.docker.internal", "192.168.68.114")
-//        val schema = getSchema(schemaId)
-//
-//        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(credential.schemaID, schema))
-//
-//        val credDefId = credential.credentialDefinitionID
-//        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
-//        // .replace("host.docker.internal", "192.168.68.114")
-//        val credentialDefinition = getCredentialDefinition(credDefId)
-//        val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
-//            Pair(credential.credentialDefinitionID, credentialDefinition)
-//        )
-//
-//        return Prover().createPresentation(
-//            presentationRequest = presentationRequest,
-//            credentials = listOf(credentialRequests),
-//            selfAttested = null,
-//            linkSecret = linkSecret,
-//            schemas = schemaMap,
-//            credentialDefinitions = credDefinition
-//        )
-    }
-
     /**
      * Converts a [Credential] object to a [StorableCredential] object of the specified [CredentialType].
      *
@@ -1002,102 +948,112 @@ open class PolluxImpl(
         }
     }
 
-    override suspend fun createPresentationSubmission(
-        presentationDefinitionRequest: PresentationDefinitionRequest,
+    override suspend fun createJWTPresentationSubmission(
+        presentationDefinitionRequest: JWTPresentationDefinitionRequest,
         credential: Credential,
-        privateKey: PrivateKey?,
-        linkSecret: LinkSecret?
-
+        privateKey: PrivateKey
     ): PresentationSubmission {
-        when (presentationDefinitionRequest) {
-            is JWTPresentationDefinitionRequest -> {
-                if (credential::class != JWTCredential::class) {
-                    throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be JWTCredential")
-                }
-                if (privateKey == null || privateKey::class != Secp256k1PrivateKey::class) {
-                    throw PolluxError.PrivateKeyTypeNotSupportedError()
-                }
-                privateKey as Secp256k1PrivateKey
-                credential as JWTCredential
-                val descriptorItems =
-                    presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
-                        if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
-                            throw PolluxError.InvalidCredentialDefinitionError()
-                        }
-                        PresentationSubmission.Submission.DescriptorItem(
-                            id = inputDescriptor.id,
-                            format = DescriptorItemFormat.JWT_VP.value,
-                            path = "$.verifiablePresentation[0]",
-                            pathNested = PresentationSubmission.Submission.DescriptorItem(
-                                id = inputDescriptor.id,
-                                format = DescriptorItemFormat.JWT_VC.value,
-                                path = "$.vp.verifiableCredential[0]"
-                            )
-                        )
-                    }.toTypedArray()
-
-                val credentialSubject = credential.subject
-                credentialSubject?.let { subject ->
-                    if (!privateKey.isSignable()) {
-                        throw PolluxError.WrongKeyProvided(
-                            expected = SignableKey::class.simpleName,
-                            actual = privateKey::class.simpleName
-                        )
-                    }
-                    val signedChallenge =
-                        privateKey.sign(presentationDefinitionRequest.options.challenge.encodeToByteArray())
-
-                    val ecPrivateKey = parsePrivateKey(privateKey)
-                    val presentationJwt = signClaimsProofPresentationJWT(
-                        subjectDID = DID(subject),
-                        privateKey = ecPrivateKey,
-                        credential = credential,
-                        domain = presentationDefinitionRequest.options.domain,
-                        challenge = presentationDefinitionRequest.options.challenge
-                    )
-
-                    return PresentationSubmission(
-                        presentationSubmission = PresentationSubmission.Submission(
-                            definitionId = presentationDefinitionRequest.presentationDefinition.id
-                                ?: UUID.randomUUID().toString(),
-                            descriptorMap = descriptorItems
-                        ),
-                        verifiablePresentation = arrayOf(presentationJwt)
-                    )
-                } ?: throw PolluxError.NullField("CredentialSubject")
-            }
-
-            is AnoncredsPresentationDefinitionRequest -> {
-                if (credential::class != AnonCredential::class) {
-                    throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be AnonCredential")
-                }
-                if (linkSecret == null) {
-                    throw PolluxError.NullField("LinkSecret")
-                }
-
-                val presentationSubmission = createPresentationSubmissionAnoncred(
-                    request = presentationDefinitionRequest,
-                    credential = credential as AnonCredential,
-                    linkSecret = linkSecret
-                )
-
-
-                TODO()
-
-//                return PresentationSubmission(
-//                    presentationSubmission = PresentationSubmission.Submission(
-//                        definitionId = presentationDefinitionRequest.presentationDefinition.id
-//                            ?: UUID.randomUUID().toString(),
-//                        descriptorMap = descriptorItems
-//                    ),
-//                    verifiablePresentation = arrayOf(presentationJwt)
-//                )
-            }
-
-            else -> {
-                throw Exception() // TODO: Custom exception
-            }
+        if (credential::class != JWTCredential::class) {
+            throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be JWTCredential")
         }
+        if (privateKey == null || privateKey::class != Secp256k1PrivateKey::class) {
+            throw PolluxError.PrivateKeyTypeNotSupportedError()
+        }
+        privateKey as Secp256k1PrivateKey
+        credential as JWTCredential
+        val descriptorItems =
+            presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
+                if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
+                    throw PolluxError.InvalidCredentialDefinitionError()
+                }
+                PresentationSubmission.Submission.DescriptorItem(
+                    id = inputDescriptor.id,
+                    format = DescriptorItemFormat.JWT_VP.value,
+                    path = "$.verifiablePresentation[0]",
+                    pathNested = PresentationSubmission.Submission.DescriptorItem(
+                        id = inputDescriptor.id,
+                        format = DescriptorItemFormat.JWT_VC.value,
+                        path = "$.vp.verifiableCredential[0]"
+                    )
+                )
+            }.toTypedArray()
+
+        val credentialSubject = credential.subject
+        credentialSubject?.let { subject ->
+            if (!privateKey.isSignable()) {
+                throw PolluxError.WrongKeyProvided(
+                    expected = SignableKey::class.simpleName,
+                    actual = privateKey::class.simpleName
+                )
+            }
+            val signedChallenge =
+                privateKey.sign(presentationDefinitionRequest.options.challenge.encodeToByteArray())
+
+            val ecPrivateKey = parsePrivateKey(privateKey)
+            val presentationJwt = signClaimsProofPresentationJWT(
+                subjectDID = DID(subject),
+                privateKey = ecPrivateKey,
+                credential = credential,
+                domain = presentationDefinitionRequest.options.domain,
+                challenge = presentationDefinitionRequest.options.challenge
+            )
+
+            return PresentationSubmission(
+                presentationSubmission = PresentationSubmission.Submission(
+                    definitionId = presentationDefinitionRequest.presentationDefinition.id
+                        ?: UUID.randomUUID().toString(),
+                    descriptorMap = descriptorItems
+                ),
+                verifiablePresentation = arrayOf(presentationJwt)
+            )
+        } ?: throw PolluxError.NullField("CredentialSubject")
+    }
+
+    override suspend fun createAnoncredsPresentationSubmission(
+        presentationDefinitionRequest: AnoncredsPresentationDefinitionRequest,
+        credential: AnonCredential,
+        linkSecret: LinkSecret
+    ): Presentation {
+        if (credential::class != AnonCredential::class) {
+            throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be AnonCredential")
+        }
+
+        val presentationRequest = PresentationRequest(Json.encodeToString(presentationDefinitionRequest))
+        val cred = anoncreds_wrapper.Credential(credential.id)
+
+        val requestedAttributes =
+            presentationRequest.getRequestedAttributes().toListRequestedAttribute()
+        val requestedPredicate =
+            presentationRequest.getRequestedPredicates().toListRequestedPredicate()
+
+        val credentialRequests = CredentialRequests(
+            credential = cred,
+            requestedAttribute = requestedAttributes,
+            requestedPredicate = requestedPredicate
+        )
+        val schemaId = credential.schemaID
+        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+        // .replace("host.docker.internal", "192.168.68.114")
+        val schema = getSchema(schemaId)
+
+        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(credential.schemaID, schema))
+
+        val credDefId = credential.credentialDefinitionID
+        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+        // .replace("host.docker.internal", "192.168.68.114")
+        val credentialDefinition = getCredentialDefinition(credDefId)
+        val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
+            Pair(credential.credentialDefinitionID, credentialDefinition)
+        )
+
+        return Prover().createPresentation(
+            presentationRequest = presentationRequest,
+            credentials = listOf(credentialRequests),
+            selfAttested = null,
+            linkSecret = linkSecret,
+            schemas = schemaMap,
+            credentialDefinitions = credDefinition
+        )
     }
 
     override suspend fun verifyPresentationSubmission(

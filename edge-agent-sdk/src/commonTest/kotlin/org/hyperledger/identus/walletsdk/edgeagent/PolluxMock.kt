@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.CredentialOffer
@@ -25,6 +27,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import java.security.interfaces.ECPublicKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
 
 class PolluxMock : Pollux {
 
@@ -103,17 +106,16 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override suspend fun createPresentationSubmission(
-        presentationDefinitionRequest: PresentationDefinitionRequest,
+    override suspend fun createJWTPresentationSubmission(
+        presentationDefinitionRequest: JWTPresentationDefinitionRequest,
         credential: Credential,
-        privateKey: PrivateKey?,
-        linkSecret: LinkSecret?
+        privateKey: PrivateKey
     ): PresentationSubmission {
         TODO("Not yet implemented")
     }
 
-    override suspend fun createPresentationSubmissionAnoncred(
-        request: AnoncredsPresentationDefinitionRequest,
+    override suspend fun createAnoncredsPresentationSubmission(
+        presentationDefinitionRequest: AnoncredsPresentationDefinitionRequest,
         credential: AnonCredential,
         linkSecret: LinkSecret
     ): Presentation {
