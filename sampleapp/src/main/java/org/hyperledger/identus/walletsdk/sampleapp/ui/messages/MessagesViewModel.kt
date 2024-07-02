@@ -18,6 +18,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -122,11 +123,13 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         sdk.agent.let { agent ->
             sdk.mercury.let { mercury ->
                 viewModelScope.launch {
-                    val presentation = agent.preparePresentationForRequestProof(
-                        RequestPresentation.fromMessage(message),
-                        credential
-                    )
-                    sdk.agent.sendMessage(presentation.makeMessage())
+                    if (credential is ProvableCredential) {
+                        val presentation = agent.preparePresentationForRequestProof(
+                            RequestPresentation.fromMessage(message),
+                            credential
+                        )
+                        sdk.agent.sendMessage(presentation.makeMessage())
+                    }
                 }
             }
         }

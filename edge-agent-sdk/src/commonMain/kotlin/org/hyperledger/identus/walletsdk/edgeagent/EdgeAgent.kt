@@ -14,6 +14,7 @@ import com.nimbusds.jose.crypto.X25519Decrypter
 import com.nimbusds.jose.crypto.X25519Encrypter
 import com.nimbusds.jose.jwk.OctetKeyPair
 import com.nimbusds.jose.util.Base64URL
+import eu.europa.ec.eudi.sdjwt.vc.SD_JWT_VC_TYPE
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
@@ -59,6 +60,7 @@ import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.Attachment
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
@@ -70,6 +72,7 @@ import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
+import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
@@ -111,9 +114,11 @@ import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.kotlincrypto.hash.sha2.SHA256
 import java.net.UnknownHostException
 import java.util.*
+import kotlin.text.encodeToByteArray
 
 /**
  * Check if the passed URL is valid or not.
@@ -957,10 +962,10 @@ class EdgeAgent {
      * @throws EdgeAgentError if there is a problem creating the presentation.
      **/
     @Throws(PolluxError.InvalidPrismDID::class)
-    suspend fun preparePresentationForRequestProof(
+    suspend fun <T> preparePresentationForRequestProof(
         request: RequestPresentation,
-        credential: Credential
-    ): Presentation {
+        credential: T
+    ): Presentation where T : Credential, T : ProvableCredential {
         val attachmentFormat = request.attachments.first().format ?: CredentialType.Unknown.type
         if (attachmentFormat == CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type) {
             request.attachments.find { it.data::class == AttachmentBase64::class }
@@ -992,12 +997,12 @@ class EdgeAgent {
                             else -> null
                         }
                     }
-                    val requestJsonObject = Json.parseToJsonElement(requestData).jsonObject
-                    presentationString = pollux.createVerifiablePresentationJWT(
-                        subjectDID,
-                        keyPair.privateKey,
-                        credential,
-                        requestJsonObject
+                    presentationString = credential.presentation(
+                        requestData.encodeToByteArray(),
+                        listOf(
+                            CredentialOperationsOptions.SubjectDID(subjectDID),
+                            CredentialOperationsOptions.ExportableKey(keyPair.privateKey)
+                        )
                     )
                     mediaType = JWT_MEDIA_TYPE
                 }
@@ -1007,13 +1012,36 @@ class EdgeAgent {
                     if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
                         throw EdgeAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
                     }
+                    val requestData = request.attachments.mapNotNull {
+                        when (it.data) {
+                            is AttachmentJsonData -> it.data.data
+                            else -> null
+                        }
+                    }.first()
                     val linkSecret = getLinkSecret()
-                    val presentation = pollux.createVerifiablePresentationAnoncred(
-                        request,
-                        credential as AnonCredential,
-                        linkSecret
+                    presentationString = credential.presentation(
+                        requestData.encodeToByteArray(),
+                        listOf(
+                            CredentialOperationsOptions.LinkSecret("", linkSecret.getValue()),
+                            CredentialOperationsOptions.SchemaDownloader(api),
+                            CredentialOperationsOptions.CredentialDefinitionDownloader(api)
+                        )
                     )
-                    presentationString = presentation.getJson()
+                }
+
+                SDJWTCredential::class -> {
+                    val requestData = request.attachments.mapNotNull {
+                        when (it.data) {
+                            is AttachmentJsonData -> it.data.data
+                            else -> null
+                        }
+                    }.first().encodeToByteArray()
+                    presentationString = credential.presentation(
+                        requestData,
+                        listOf(CredentialOperationsOptions.DisclosingClaims(listOf(credential.claims.toString())))
+                    )
+
+                    mediaType = SD_JWT_VC_TYPE
                 }
 
                 else -> {

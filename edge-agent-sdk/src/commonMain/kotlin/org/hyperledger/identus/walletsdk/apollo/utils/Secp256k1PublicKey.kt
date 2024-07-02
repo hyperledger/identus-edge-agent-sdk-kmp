@@ -1,7 +1,11 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
+import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.apollo.config.ECConfig
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
@@ -16,6 +20,11 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PEMKeyType
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.VerifiableKey
+import org.hyperledger.identus.walletsdk.pollux.EC
+import java.security.KeyFactory
+import java.security.interfaces.ECPublicKey
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPublicKeySpec
 
 /**
  * Represents a public key in the Secp256k1 elliptic curve algorithm.
@@ -125,5 +134,15 @@ class Secp256k1PublicKey(nativeValue: ByteArray) : PublicKey(), VerifiableKey, S
      */
     fun getEncodedCompressed(): ByteArray {
         return KMMECSecp256k1PublicKey(raw).getCompressed()
+    }
+
+    override fun jca(): java.security.PublicKey {
+        val curveName = KMMEllipticCurve.SECP256k1.value
+        val sp = ECNamedCurveTable.getParameterSpec(curveName)
+        val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
+
+        val publicKeySpec = ECPublicKeySpec(params.generator, params)
+        val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
+        return keyFactory.generatePublic(publicKeySpec) as ECPublicKey
     }
 }
