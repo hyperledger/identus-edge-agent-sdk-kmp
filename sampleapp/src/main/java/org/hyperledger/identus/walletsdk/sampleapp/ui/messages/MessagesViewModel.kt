@@ -14,10 +14,8 @@ import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.models.Credential
-import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
-import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
@@ -27,7 +25,10 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
-import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
 import org.hyperledger.identus.walletsdk.sampleapp.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -94,23 +95,35 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     fun sendVerificationRequest(toDID: String) {
         CoroutineScope(Dispatchers.Default).launch {
             val sdk = Sdk.getInstance()
-            sdk.agent.initiatePresentationRequest(
-                type = CredentialType.JWT,
-                toDID = DID(toDID),
-                presentationClaims = JWTPresentationClaims(
-                    claims = mapOf(
-//                        "issuer" to InputFieldFilter(
+            // JWT presentation request
+//            sdk.agent.initiatePresentationRequest(
+//                type = CredentialType.JWT,
+//                toDID = DID(toDID),
+//                presentationClaims = JWTPresentationClaims(
+//                    claims = mapOf(
+//                        "emailAddress" to InputFieldFilter(
 //                            type = "string",
-//                            pattern = "did:prism:bc9daaeaf0ad673f5d55b3b6612a1653bc72ac1659cefa81c6eef45c1f721639"
-//                        ),
-                        "emailAddress" to InputFieldFilter(
-                            type = "string",
-                            pattern = "cristian.castro@iohk.io"
+//                            pattern = "cristian.castro@iohk.io"
+//                        )
+//                    )
+//                ),
+//                domain = "domain",
+//                challenge = "challenge"
+//            )
+
+            // Anoncreds presentation request
+            sdk.agent.initiatePresentationRequest(
+                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                toDID = DID(toDID),
+                presentationClaims = AnoncredsPresentationClaims(
+                    predicates = emptyMap(),
+                    attributes = mapOf(
+                        "attribute1" to RequestedAttributes(
+                            "age",
+                            emptyMap()
                         )
                     )
-                ),
-                domain = "domain",
-                challenge = "challenge"
+                )
             )
         }
     }

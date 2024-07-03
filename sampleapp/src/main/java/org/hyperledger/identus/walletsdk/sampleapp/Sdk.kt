@@ -99,9 +99,6 @@ class Sdk {
 
     private fun createCastor(): Castor {
         val castor = CastorImpl(apollo)
-        val prismDIDApiResolver =
-            PrismDIDApiResolver(this.apollo, "https://sit-prism-agent-issuer.atalaprism.io/prism-agent")
-        castor.addResolver(prismDIDApiResolver)
         return castor
     }
 

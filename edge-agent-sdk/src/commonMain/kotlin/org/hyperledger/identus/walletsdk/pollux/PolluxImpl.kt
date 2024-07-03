@@ -920,7 +920,7 @@ open class PolluxImpl(
                     val pValue = (inputFilter.gt
                         ?: (inputFilter.gte
                             ?: (inputFilter.lt
-                                ?: (inputFilter.lte ?: throw Exception())))) as String // TODO: Custom excetion
+                                ?: (inputFilter.lte ?: throw Exception())))) as Int // TODO: Custom excetion
 
                     // Based on the definition of AnoncredsPresentationClaims we do not need to verify if key is duplicated.
                     mapPredicate[key] = RequestedPredicates(
@@ -1045,7 +1045,6 @@ open class PolluxImpl(
         val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
             Pair(credential.credentialDefinitionID, credentialDefinition)
         )
-
         return Prover().createPresentation(
             presentationRequest = presentationRequest,
             credentials = listOf(credentialRequests),

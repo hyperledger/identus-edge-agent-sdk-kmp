@@ -42,7 +42,7 @@ class MessagesFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.sendMessage.setOnClickListener {
-            viewModel.sendMessage(DID("did:peer:2.Ez6LStdwaumgiojDcFwtwVU8W9oddwdUgmtbSfcwd6ZibE9ER.Vz6MkuecQ492kzZ7prfErLJ1KMa6Zen3kxoSEttjUqvxYfWS3.SeyJzIjp7ImEiOltdLCJyIjpbXSwidXJpIjoiZGlkOnBlZXI6Mi5FejZMU2dod1NFNDM3d25ERTFwdDNYNmhWRFVRelNqc0h6aW5wWDNYRnZNalJBbTd5LlZ6Nk1raGgxZTVDRVlZcTZKQlVjVFo2Q3AycmFuQ1dScnY3WWF4M0xlNE41OVI2ZGQuU2V5SjBJam9pWkcwaUxDSnpJanA3SW5WeWFTSTZJbWgwZEhCek9pOHZjMmwwTFhCeWFYTnRMVzFsWkdsaGRHOXlMbUYwWVd4aGNISnBjMjB1YVc4aUxDSmhJanBiSW1ScFpHTnZiVzB2ZGpJaVhYMTkuU2V5SjBJam9pWkcwaUxDSnpJanA3SW5WeWFTSTZJbmR6Y3pvdkwzTnBkQzF3Y21semJTMXRaV1JwWVhSdmNpNWhkR0ZzWVhCeWFYTnRMbWx2TDNkeklpd2lZU0k2V3lKa2FXUmpiMjF0TDNZeUlsMTlmUSJ9LCJ0IjoiZG0ifQ"))
+            viewModel.sendMessage()
         }
         binding.sendVerification.setOnClickListener {
             InitiateVerificationDialogFragment(viewModel).show(

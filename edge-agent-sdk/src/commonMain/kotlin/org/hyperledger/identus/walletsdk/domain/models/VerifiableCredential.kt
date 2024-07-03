@@ -427,5 +427,5 @@ data class RequestedPredicates(
     @SerialName("p_type")
     val pType: String,
     @SerialName("p_value")
-    val pValue: String
+    val pValue: Int
 )

@@ -115,7 +115,9 @@ kotlin {
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 
-                implementation("org.didcommx:didcomm:0.3.2")
+                implementation("org.didcommx:didcomm:0.3.2") {
+                    exclude("com.google.protobuf")
+                }
 
                 implementation("com.google.protobuf:protoc:3.12.0") {
                     exclude("com.google.protobuf")

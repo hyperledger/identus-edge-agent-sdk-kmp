@@ -3,6 +3,7 @@ package org.hyperledger.identus.walletsdk.edgeagent
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
+import anoncreds_wrapper.Nonce
 import com.nimbusds.jose.EncryptionMethod
 import com.nimbusds.jose.JWEAlgorithm
 import com.nimbusds.jose.JWEDecrypter
@@ -1042,8 +1043,8 @@ open class EdgeAgent {
         type: CredentialType,
         toDID: DID,
         presentationClaims: PresentationClaims,
-        domain: String,
-        challenge: String
+        domain: String? = null,
+        challenge: String? = null
     ) {
         val didDocument = this.castor.resolveDID(toDID.toString())
         val newPeerDID = createNewPeerDID(services = didDocument.services, updateMediator = true)
@@ -1052,6 +1053,13 @@ open class EdgeAgent {
         val attachmentDescriptor: AttachmentDescriptor
         when (type) {
             CredentialType.JWT -> {
+                if (domain == null){
+                    throw EdgeAgentError.MissingOrNullFieldError("Domain", "initiatePresentationRequest parameters")
+                }
+                if (challenge == null){
+                    throw EdgeAgentError.MissingOrNullFieldError("Challenge", "initiatePresentationRequest parameters")
+                }
+
                 presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
                     type = type,
                     presentationClaims = presentationClaims,
@@ -1069,17 +1077,16 @@ open class EdgeAgent {
             }
 
             CredentialType.ANONCREDS_PROOF_REQUEST -> {
-                // TODO: fill up nonce
                 presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
                     type = type,
                     presentationClaims = presentationClaims,
                     options = AnoncredsPresentationOptions(
-                        nonce = ""
+                        nonce = Nonce().getValue()
                     )
                 )
                 attachmentDescriptor = AttachmentDescriptor(
                     mediaType = "application/json",
-                    format = CredentialType.ANONCREDS_PROOF_REQUEST.type,
+                    format = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
                     data = AttachmentBase64(Json.encodeToString(presentationDefinitionRequest as AnoncredsPresentationDefinitionRequest).base64UrlEncoded)
                 )
             }
@@ -1177,7 +1184,7 @@ open class EdgeAgent {
                 val attachmentDescriptor = AttachmentDescriptor(
                     mediaType = "application/json",
                     format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
-                    data = AttachmentBase64(Json.encodeToString(presentationSubmissionProof).base64UrlEncoded)
+                    data = AttachmentBase64(presentationSubmissionProof.getJson().base64UrlEncoded)
                 )
                 return Presentation(
                     body = Presentation.Body(),

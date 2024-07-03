@@ -4,7 +4,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import org.hyperledger.identus.walletsdk.SdkPlutoDb
 
-actual class DbConnection actual constructor() {
+actual open class DbConnection actual constructor() {
     actual var driver: SqlDriver? = null
     actual suspend fun connectDb(context: Any?): SqlDriver {
         val driver = JdbcSqliteDriver("jdbc:sqlite:prism.db")
