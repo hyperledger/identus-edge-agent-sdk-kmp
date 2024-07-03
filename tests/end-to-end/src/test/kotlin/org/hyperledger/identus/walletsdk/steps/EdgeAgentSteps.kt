@@ -1,6 +1,7 @@
 package org.hyperledger.identus.walletsdk.steps
 
 import io.cucumber.java.After
+import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
@@ -17,6 +18,11 @@ class EdgeAgentSteps {
 
     @Inject
     private lateinit var cloudAgentWorkflow: CloudAgentWorkflow
+
+    @Given("{actor} has created a backup")
+    fun `Edge Agent has created a backup`(edgeAgent: Actor) {
+        edgeAgentWorkflow.createBackup(edgeAgent)
+    }
 
     @When("{actor} connects through the invite")
     fun `Edge Agent connects through the invite`(edgeAgent: Actor) {
@@ -138,6 +144,16 @@ class EdgeAgentSteps {
     fun `Edge Agent should see the credentials were revoked by Cloud Agent`(edgeAgent: Actor, cloudAgent: Actor) {
         val revokedRecordIdList = cloudAgent.recall<MutableList<String>>("revokedRecordIdList")
         edgeAgentWorkflow.waitUntilCredentialIsRevoked(edgeAgent, revokedRecordIdList)
+    }
+
+    @Then("a new SDK can be restored from {actor}")
+    fun `A new SDK can be restored from Edge Agent`(edgeAgent: Actor) {
+        edgeAgentWorkflow.createANewWalletFromBackup(edgeAgent)
+    }
+
+    @Then("a new SDK cannot be restored from {actor} with wrong seed")
+    fun `A new SDK cannot be restored from Edge Agent with wrong seed`(edgeAgent: Actor) {
+        edgeAgentWorkflow.createNewWalletFromBackupWithWrongSeed(edgeAgent)
     }
 
     @After

@@ -2,8 +2,6 @@ package org.hyperledger.identus.walletsdk.abilities
 
 import com.jayway.jsonpath.JsonPath
 import io.iohk.atala.automation.utils.Logger
-import org.hyperledger.identus.walletsdk.configuration.Environment
-import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import io.restassured.RestAssured
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,15 +9,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.serenitybdd.screenplay.Ability
 import net.serenitybdd.screenplay.Actor
+import net.serenitybdd.screenplay.HasTeardown
 import net.serenitybdd.screenplay.Question
 import net.serenitybdd.screenplay.SilentInteraction
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.hyperledger.identus.walletsdk.configuration.Environment
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.Experiments
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
@@ -27,12 +30,21 @@ import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
 import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
-import java.util.*
+import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
+import java.io.File
+import java.util.Base64
+import java.util.Collections
 
 
-class UseWalletSdk : Ability {
+class UseWalletSdk : Ability, HasTeardown {
     companion object {
         private fun `as`(actor: Actor): UseWalletSdk {
+            if (actor.abilityTo(UseWalletSdk::class.java) != null) {
+                val ability = actor.abilityTo(UseWalletSdk::class.java)
+                if (!ability.isInitialized) {
+                    ability.initialize()
+                }
+            }
             return actor.abilityTo(UseWalletSdk::class.java) ?: throw ActorCannotUseWalletSdk(actor)
         }
 
@@ -78,6 +90,7 @@ class UseWalletSdk : Ability {
                     runBlocking {
                         walletSdk.context.sdk.stopFetchingMessages()
                         walletSdk.context.sdk.stop()
+                        walletSdk.isInitialized = false
                     }
                 }
 
@@ -86,14 +99,23 @@ class UseWalletSdk : Ability {
     }
 
     private val logger = Logger.get<EdgeAgentWorkflow>()
-    private val context: SdkContext
+    lateinit var context: SdkContext
     private val receivedMessages = mutableListOf<String>()
+    private var isInitialized = false
 
-    init {
+    fun initialize() {
+        createSdk()
+        start()
+        isInitialized = true
+    }
+
+    fun createSdk(initialSeed: Seed? = null) {
+        tearDown()
+
         val apollo = ApolloImpl()
         val castor = CastorImpl(apollo)
         val pluto = PlutoImpl(DbConnection())
-        val pollux = PolluxImpl(castor)
+        val pollux = PolluxImpl(apollo, castor)
         val didcommWrapper = DIDCommWrapper(castor, pluto, apollo)
         val api = ApiImpl(httpClient())
         val mercury = MercuryImpl(castor, didcommWrapper, api)
@@ -102,29 +124,36 @@ class UseWalletSdk : Ability {
 
         val store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto)
         val handler = BasicMediatorHandler(mediatorDid, mercury, store)
-        val seed = apollo.createRandomSeed().seed
+        val seed = initialSeed ?: apollo.createRandomSeed().seed
 
         val sdk = EdgeAgent(
-            apollo,
-            castor,
-            pluto,
-            mercury,
-            pollux,
-            seed,
-            api,
-            handler
+            apollo = apollo,
+            castor = castor,
+            pluto = pluto,
+            mercury = mercury,
+            pollux = pollux,
+            seed = seed,
+            api = api,
+            mediatorHandler = handler,
+            agentOptions = AgentOptions(
+                experiments = Experiments(
+                    liveMode = false
+                )
+            )
         )
 
         this.context = SdkContext(sdk)
+    }
 
+    fun start() {
         runBlocking {
-            pluto.start(this)
-            sdk.start()
-            sdk.startFetchingMessages(1)
+            context.sdk.pluto.start(this)
+            context.sdk.start()
+            context.sdk.startFetchingMessages(1)
         }
 
         CoroutineScope(Dispatchers.Default).launch {
-            sdk.handleReceivedMessagesEvents().collect { messageList: List<Message> ->
+            context.sdk.handleReceivedMessagesEvents().collect { messageList: List<Message> ->
                 messageList.forEach { message ->
                     if (receivedMessages.contains(message.id)) {
                         return@forEach
@@ -149,6 +178,10 @@ class UseWalletSdk : Ability {
         val decodedData = String(Base64.getDecoder().decode(encodedData))
         val json = JsonPath.parse(decodedData)
         return json.read("from")
+    }
+
+    override fun tearDown() {
+        File("prism.db").delete()
     }
 }
 

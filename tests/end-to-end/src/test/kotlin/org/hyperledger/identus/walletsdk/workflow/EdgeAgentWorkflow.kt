@@ -5,15 +5,22 @@ import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.utils.Logger
 import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.rest.interactions.Ensure
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.hamcrest.CoreMatchers.equalTo
+import org.hyperledger.identus.walletsdk.abilities.SdkContext
+import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.domain.models.CastorError
+import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
+import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
 import java.util.function.Consumer
 
 class EdgeAgentWorkflow {
@@ -149,5 +156,47 @@ class EdgeAgentWorkflow {
                 )
             }
         )
+    }
+
+    fun createBackup(edgeAgent: Actor) {
+        edgeAgent.attemptsTo(
+            UseWalletSdk.execute { sdkContext: SdkContext ->
+                val backup = sdkContext.sdk.backupWallet(PlutoBackupTask(sdkContext.sdk.pluto))
+                val seed = sdkContext.sdk.seed
+                edgeAgent.remember("backup", backup)
+                edgeAgent.remember("seed", seed)
+            }
+        )
+    }
+
+    fun createANewWalletFromBackup(edgeAgent: Actor) {
+        val backup = edgeAgent.recall<String>("backup")
+        val seed = edgeAgent.recall<Seed>("seed")
+        val walletSdk = UseWalletSdk()
+        walletSdk.tearDown() // removes prism.db
+        walletSdk.createSdk(seed)
+        runBlocking {
+            walletSdk.context.sdk.pluto.start()
+            walletSdk.context.sdk.recoverWallet(backup)
+            walletSdk.context.sdk.start()
+            walletSdk.context.sdk.stop()
+        }
+    }
+
+    fun createNewWalletFromBackupWithWrongSeed(edgeAgent: Actor) {
+        val backup = edgeAgent.recall<String>("backup")
+        val seed = ApolloImpl().createRandomSeed().seed
+        val walletSdk = UseWalletSdk()
+        walletSdk.tearDown() // removes prism.db
+        walletSdk.createSdk(seed)
+        runBlocking {
+            walletSdk.context.sdk.pluto.start()
+            try {
+                walletSdk.context.sdk.recoverWallet(backup)
+                fail<String>("SDK should not be able to restore with wrong seed phrase.")
+            } catch (e: Exception) {
+                assertThat(e).isNotNull()
+            }
+        }
     }
 }
