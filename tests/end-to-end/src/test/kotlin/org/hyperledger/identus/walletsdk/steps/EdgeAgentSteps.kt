@@ -4,11 +4,11 @@ import io.cucumber.java.After
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import net.serenitybdd.screenplay.Actor
+import net.serenitybdd.screenplay.actors.OnStage
 import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
 import org.hyperledger.identus.walletsdk.workflow.CloudAgentWorkflow
 import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
-import net.serenitybdd.screenplay.Actor
-import net.serenitybdd.screenplay.actors.OnStage
 import javax.inject.Inject
 
 class EdgeAgentSteps {
@@ -29,6 +29,16 @@ class EdgeAgentSteps {
         edgeAgentWorkflow.connect(edgeAgent)
     }
 
+    @When("{actor} creates '{}' peer DIDs")
+    fun `Edge Agent creates Peer DIDs`(edgeAgent: Actor, numberOfDids: Int) {
+        edgeAgentWorkflow.createPeerDids(edgeAgent, numberOfDids)
+    }
+
+    @When("{actor} creates '{}' prism DIDs")
+    fun `Edge Agent creates Prism DIDs`(edgeAgent: Actor, numberOfDids: Int) {
+        edgeAgentWorkflow.createPrismDids(edgeAgent, numberOfDids)
+    }
+
     @When("{actor} has '{}' jwt credentials issued by {actor}")
     fun `Edge Agent has {} jwt issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
         val recordIdList = mutableListOf<String>()
@@ -46,7 +56,11 @@ class EdgeAgentSteps {
     }
 
     @When("{actor} has '{}' anonymous credentials issued by {actor}")
-    fun `Edge Agent has {} anonymous issued credential`(edgeAgent: Actor, numberOfCredentialsIssued: Int, cloudAgent: Actor) {
+    fun `Edge Agent has {} anonymous issued credential`(
+        edgeAgent: Actor,
+        numberOfCredentialsIssued: Int,
+        cloudAgent: Actor
+    ) {
         repeat(numberOfCredentialsIssued) {
             cloudAgentWorkflow.offerAnonymousCredential(cloudAgent)
             edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
@@ -135,7 +149,10 @@ class EdgeAgentSteps {
     }
 
     @Then("{actor} waits to receive the revocation notifications from {actor}")
-    fun `Edge Agent waits to receive the revocation notifications from Cloud Agent`(edgeAgent: Actor, cloudAgent: Actor) {
+    fun `Edge Agent waits to receive the revocation notifications from Cloud Agent`(
+        edgeAgent: Actor,
+        cloudAgent: Actor
+    ) {
         val revokedRecordIdList = cloudAgent.recall<MutableList<String>>("revokedRecordIdList")
         edgeAgentWorkflow.waitForCredentialRevocationMessage(edgeAgent, revokedRecordIdList.size)
     }
@@ -154,6 +171,24 @@ class EdgeAgentSteps {
     @Then("a new SDK cannot be restored from {actor} with wrong seed")
     fun `A new SDK cannot be restored from Edge Agent with wrong seed`(edgeAgent: Actor) {
         edgeAgentWorkflow.createNewWalletFromBackupWithWrongSeed(edgeAgent)
+    }
+
+    @Then("a new {actor} is restored from {actor}")
+    fun `A new Agent is restored from Edge Agent`(newAgent: Actor, originalAgent: Actor) {
+        edgeAgentWorkflow.backupAndRestoreToNewAgent(newAgent, originalAgent)
+    }
+
+    @Then("{actor} should have the expected values from {actor}")
+    fun `Restored Agent should have the expected values from Original Edge Agent`(
+        restoredEdgeAgent: Actor,
+        originalEdgeAgent: Actor
+    ) {
+        edgeAgentWorkflow.copyAgentShouldMatchOriginalAgent(restoredEdgeAgent, originalEdgeAgent)
+    }
+
+    @Then("{actor} is dismissed")
+    fun `Edge Agent is dismissed`(edgeAgent: Actor) {
+        edgeAgent.wrapUp()
     }
 
     @After

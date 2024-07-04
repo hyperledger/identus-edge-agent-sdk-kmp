@@ -9,11 +9,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.serenitybdd.screenplay.Ability
 import net.serenitybdd.screenplay.Actor
-import net.serenitybdd.screenplay.HasTeardown
 import net.serenitybdd.screenplay.Question
 import net.serenitybdd.screenplay.SilentInteraction
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.hyperledger.identus.walletsdk.configuration.DbConnectionInMemory
 import org.hyperledger.identus.walletsdk.configuration.Environment
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.DID
@@ -28,15 +28,13 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
 import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
 import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
-import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
-import java.io.File
 import java.util.Base64
 import java.util.Collections
 
 
-class UseWalletSdk : Ability, HasTeardown {
+class UseWalletSdk : Ability {
     companion object {
         private fun `as`(actor: Actor): UseWalletSdk {
             if (actor.abilityTo(UseWalletSdk::class.java) != null) {
@@ -105,19 +103,30 @@ class UseWalletSdk : Ability, HasTeardown {
 
     fun initialize() {
         createSdk()
-        start()
+        startPluto()
+        startSdk()
+        listenToMessages()
         isInitialized = true
     }
 
-    fun createSdk(initialSeed: Seed? = null) {
-        tearDown()
+    fun recoverWallet(seed: Seed, jwe: String) {
+        createSdk(seed)
+        startPluto()
+        runBlocking {
+            context.sdk.recoverWallet(jwe)
+        }
+        startSdk()
+        listenToMessages()
+        isInitialized = true
+    }
 
+    private fun createSdk(initialSeed: Seed? = null) {
+        val api = ApiImpl(httpClient())
         val apollo = ApolloImpl()
         val castor = CastorImpl(apollo)
-        val pluto = PlutoImpl(DbConnection())
-        val pollux = PolluxImpl(apollo, castor)
+        val pluto = PlutoImpl(DbConnectionInMemory())
+        val pollux = PolluxImpl(apollo, castor, api)
         val didcommWrapper = DIDCommWrapper(castor, pluto, apollo)
-        val api = ApiImpl(httpClient())
         val mercury = MercuryImpl(castor, didcommWrapper, api)
 
         val mediatorDid = DID(getMediatorDidThroughOob())
@@ -145,13 +154,20 @@ class UseWalletSdk : Ability, HasTeardown {
         this.context = SdkContext(sdk)
     }
 
-    fun start() {
+    private fun startPluto() {
         runBlocking {
             context.sdk.pluto.start(this)
-            context.sdk.start()
-            context.sdk.startFetchingMessages(1)
         }
+    }
 
+    private fun startSdk() {
+        runBlocking {
+            context.sdk.start()
+        }
+        context.sdk.startFetchingMessages(1)
+    }
+
+    private fun listenToMessages() {
         CoroutineScope(Dispatchers.Default).launch {
             context.sdk.handleReceivedMessagesEvents().collect { messageList: List<Message> ->
                 messageList.forEach { message ->
@@ -178,10 +194,6 @@ class UseWalletSdk : Ability, HasTeardown {
         val decodedData = String(Base64.getDecoder().decode(encodedData))
         val json = JsonPath.parse(decodedData)
         return json.read("from")
-    }
-
-    override fun tearDown() {
-        File("prism.db").delete()
     }
 }
 
