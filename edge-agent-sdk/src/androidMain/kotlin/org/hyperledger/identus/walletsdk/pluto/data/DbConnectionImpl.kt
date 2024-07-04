@@ -9,9 +9,9 @@ import org.hyperledger.identus.walletsdk.domain.models.PlutoError
 /**
  * DbConnection class represents a connection to the database.
  */
-actual class DbConnection actual constructor() {
-    actual var driver: SqlDriver? = null
-    actual suspend fun connectDb(context: Any?): SqlDriver {
+actual class DbConnectionImpl actual constructor() : DbConnection {
+    actual override var driver: SqlDriver? = null
+    actual override suspend fun connectDb(context: Any?): SqlDriver {
         val androidContext: Context = (context as? Context) ?: throw PlutoError.DatabaseContextError()
         val driver = AndroidSqliteDriver(SdkPlutoDb.Schema, androidContext, "prism.db")
         this.driver = driver

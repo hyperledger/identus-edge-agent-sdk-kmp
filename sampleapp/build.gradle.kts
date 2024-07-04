@@ -78,6 +78,8 @@ dependencies {
     implementation("androidx.room:room-runtime:2.4.2")
     ksp("androidx.room:room-compiler:2.4.2")
 
+    implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
+
     // Unit Tests
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

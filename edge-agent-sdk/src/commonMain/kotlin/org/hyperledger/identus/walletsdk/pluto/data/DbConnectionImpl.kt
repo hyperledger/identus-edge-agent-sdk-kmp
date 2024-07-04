@@ -2,11 +2,17 @@ package org.hyperledger.identus.walletsdk.pluto.data
 
 import app.cash.sqldelight.db.SqlDriver
 
+interface DbConnection {
+    var driver: SqlDriver?
+
+    suspend fun connectDb(context: Any?): SqlDriver
+}
+
 /**
  * DbConnection class represents a connection to the database.
  */
-expect class DbConnection() {
-    var driver: SqlDriver?
+expect class DbConnectionImpl() : DbConnection {
+    override var driver: SqlDriver?
 
     /**
      * Establishes a connection to the database.
@@ -15,7 +21,7 @@ expect class DbConnection() {
      *
      * @return The SdkPlutoDb instance representing the connection to the database.
      */
-    suspend fun connectDb(context: Any?): SqlDriver
+    override suspend fun connectDb(context: Any?): SqlDriver
 }
 
 /**

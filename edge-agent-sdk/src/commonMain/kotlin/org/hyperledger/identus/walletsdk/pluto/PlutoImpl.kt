@@ -6,6 +6,7 @@ import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.AfterVersion
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -37,7 +38,6 @@ import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pluto.data.isConnected
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import java.util.UUID
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import org.hyperledger.identus.walletsdk.pluto.data.DID as DIDDB
 import org.hyperledger.identus.walletsdk.pluto.data.DIDPair as DIDPairDB
