@@ -32,8 +32,14 @@ constructor(
     val keys: List<Key>,
     val messages: List<String>,
     @SerialName("link_secret")
+<<<<<<< Updated upstream
     val linkSecret: String,
     val mediators: List<Mediator>
+=======
+    val linkSecret: String?,
+    val mediators: List<Mediator>,
+    val didKeyLink: List<DIDKeyLink>
+>>>>>>> Stashed changes
 ) {
 
     /**
@@ -75,6 +81,9 @@ constructor(
         if (mediators != other.mediators) {
             return false
         }
+        if (didKeyLink != other.didKeyLink) {
+            return false
+        }
 
         return true
     }
@@ -93,6 +102,7 @@ constructor(
      * - messages: The hash code of the 'messages' property
      * - linkSecret: The hash code of the 'linkSecret' property, if not null. Otherwise, 0 is used.
      * - mediators: The hash code of the 'mediators' property
+     * - didKeyLink: The hash code of the 'didKeyLink' property
      *
      * @return the hash code value for this object
      */
@@ -105,6 +115,7 @@ constructor(
         result = 31 * result + messages.hashCode()
         result = 31 * result + (linkSecret.hashCode())
         result = 31 * result + mediators.hashCode()
+        result = 31 * result + didKeyLink.hashCode()
         return result
     }
 
@@ -386,6 +397,68 @@ constructor(
             var result = mediatorDid.hashCode()
             result = 31 * result + holderDid.hashCode()
             result = 31 * result + routingDid.hashCode()
+            return result
+        }
+    }
+
+    /**
+     * The [DIDKeyLink] class represents a mediator entity used in a system.
+     *
+     * @property didId The unique identifier of a did.
+     * @property keyId The unique identifier of a key.
+     * @property alias The unique identifier of the DID/Key relation.
+     */
+    @Serializable
+    data class DIDKeyLink(
+        val didId: String,
+        val keyId: String,
+        val alias: String?
+    ) {
+        /**
+         * Checks if this DIDKeyLink object is equal to the specified object.
+         *
+         * @param other the object to compare with this DIDKeyLink
+         * @return true if the specified object is equal to this DIDKeyLink, false otherwise
+         */
+        override fun equals(other: Any?): Boolean {
+            if (this === other) {
+                return true
+            }
+            if (other !is DIDKeyLink) {
+                return false
+            }
+
+            if (didId != other.didId) {
+                return false
+            }
+            if (keyId != other.keyId) {
+                return false
+            }
+            if (alias != other.alias) {
+                return false
+            }
+
+            return true
+        }
+
+        /**
+         * Calculates the hash code for this object.
+         *
+         * The hash code is calculated by combining the hash codes of the
+         * `didId`, `keyId`, and `alias` properties. The algorithm
+         * used for the calculation is as follows:
+         *
+         * 1. Get the hash code of the `didId` property.
+         * 2. Multiply the hash code by 31 and add the hash code of the `keyId` property.
+         * 3. Multiply the result by 31 and add the hash code of the `alias` property.
+         * 4. Return the final result.
+         *
+         * @return the hash code value for this object.
+         */
+        override fun hashCode(): Int {
+            var result = didId.hashCode()
+            result = 31 * result + keyId.hashCode()
+            result = 31 * result + alias.hashCode()
             return result
         }
     }

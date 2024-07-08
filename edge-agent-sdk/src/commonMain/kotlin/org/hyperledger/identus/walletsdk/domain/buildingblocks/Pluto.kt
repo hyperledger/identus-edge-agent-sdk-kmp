@@ -386,5 +386,23 @@ interface Pluto {
 
     fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>>
 
+    fun getAllDidKeyLinks(): Flow<List<BackupV0_0_1.DIDKeyLink>>
+
+    fun restorePrivateKeys(
+        storableKey: StorableKey,
+        did: DID,
+        keyPathIndex: Int?,
+        metaId: String? = null
+    )
+
+    fun restorePrismDIDAndPrivateKeys(
+        did: DID,
+        keyPathIndex: Int?,
+        alias: String?,
+        privateKeys: List<StorableKey>
+    )
+
+    fun restoreDidKeyLink(did: String, keyId: String, alias: String?)
+
     suspend fun start(context: Any? = null)
 }

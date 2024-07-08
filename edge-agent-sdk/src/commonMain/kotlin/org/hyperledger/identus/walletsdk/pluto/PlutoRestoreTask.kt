@@ -56,13 +56,27 @@ open class PlutoRestoreTask(
      * This method should be called to initialize or restore the necessary components.
      */
     fun run() {
+        restoreDidKeyLink()
         restoreCredentials()
+        restoreKeys()
         restoreDids()
         restoreDidPairs()
-        restoreKeys()
         restoreLinkSecret()
         restoreMessages()
         restoreMediators()
+    }
+
+    /**
+     * Restores did key links from a backup source.
+     *
+     * The method iterates over the didkeyLinks stored in the backup and restores them using the `pluto.s` method.
+     *
+     * @throws UnknownError.SomethingWentWrongError if an unknown recovery id is encountered while restoring a credential.
+     */
+    private fun restoreDidKeyLink() {
+        this.backup.didKeyLink.forEach { didKeyLink ->
+            pluto.restoreDidKeyLink(didKeyLink.didId, didKeyLink.keyId, didKeyLink.alias)
+        }
     }
 
     /**
@@ -170,15 +184,14 @@ open class PlutoRestoreTask(
             if (it.third is DID) {
                 if (it.third.toString().contains("peer")) {
                     val metaId = (it.third as DID).toString()
-                    pluto.storePrivateKeys(
+                    pluto.restorePrivateKeys(
                         it.first as StorableKey,
                         it.third as DID,
                         (it.first.keySpecification[IndexKey().property])?.toInt(),
                         metaId
                     )
-                    pluto.storePeerDID(it.third as DID)
                 } else {
-                    pluto.storePrismDIDAndPrivateKeys(
+                    pluto.restorePrismDIDAndPrivateKeys(
                         it.third as DID,
                         (it.first.keySpecification[IndexKey().property])?.toInt(),
                         null,

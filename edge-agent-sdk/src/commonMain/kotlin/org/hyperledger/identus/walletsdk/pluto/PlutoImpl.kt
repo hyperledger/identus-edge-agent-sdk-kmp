@@ -1235,4 +1235,65 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         val keys = keysWithDID + keysWithNoDID
         return flowOf(keys)
     }
+
+    override fun getAllDidKeyLinks(): Flow<List<BackupV0_0_1.DIDKeyLink>> {
+        val didKeyLinkList = getInstance().dIDKeyLinkQueries.fetchAll()
+            .executeAsList()
+            .map { didKeyLink ->
+                BackupV0_0_1.DIDKeyLink(
+                    didId = didKeyLink.didId,
+                    keyId = didKeyLink.keyId,
+                    alias = didKeyLink.alias
+                )
+            }
+        return flowOf(didKeyLinkList)
+    }
+
+    override fun restorePrivateKeys(
+        storableKey: StorableKey,
+        did: DID,
+        keyPathIndex: Int?,
+        metaId: String?
+    ) {
+        val id = metaId ?: did.toString()
+        val list = getInstance().privateKeyQueries.fetchPrivateKeyByID(id).executeAsList()
+        if (list.isEmpty()) {
+            getInstance().privateKeyQueries.insert(
+                PrivateKeyDB(
+                    id,
+                    storableKey.restorationIdentifier,
+                    storableKey.storableData.base64UrlEncoded,
+                    keyPathIndex
+                )
+            )
+        }
+    }
+
+    override fun restorePrismDIDAndPrivateKeys(
+        did: DID,
+        keyPathIndex: Int?,
+        alias: String?,
+        privateKeys: List<StorableKey>
+    ) {
+        getInstance().dIDQueries.insert(
+            DIDDB(
+                did.toString(),
+                did.method,
+                did.methodId,
+                did.schema,
+                alias
+            )
+        )
+        privateKeys.map { privateKey ->
+            restorePrivateKeys(privateKey, did, keyPathIndex)
+        }
+    }
+
+    override fun restoreDidKeyLink(did: String, keyId: String, alias: String?) {
+        getInstance().dIDKeyLinkQueries.insert(
+            didId = did,
+            keyId = keyId,
+            alias = alias
+        )
+    }
 }

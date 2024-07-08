@@ -37,6 +37,7 @@ open class PlutoBackupTask(private val pluto: Pluto) {
                 val credentials = async { getCredentialBackups() }
                 val messages = async { getMessageBackups() }
                 val mediator = async { getMediatorBackups() }
+                val didKeyLink = async { getDidKeyLinkBackups() }
                 BackupV0_0_1(
                     credentials = credentials.await(),
                     dids = dids.await(),
@@ -44,7 +45,8 @@ open class PlutoBackupTask(private val pluto: Pluto) {
                     keys = privateKeys.await(),
                     linkSecret = linkSecret.await()!!,
                     messages = messages.await(),
-                    mediators = mediator.await()
+                    mediators = mediator.await(),
+                    didKeyLink = didKeyLink.await()
                 )
             }
             emit(backup)
@@ -176,5 +178,14 @@ open class PlutoBackupTask(private val pluto: Pluto) {
                 routingDid = mediator.routingDID.toString()
             )
         }
+    }
+
+    /**
+     *
+     *
+     * @return a list of [BackupV0_0_1.Mediator] objects representing the mediator backups.
+     */
+    private suspend fun getDidKeyLinkBackups(): List<BackupV0_0_1.DIDKeyLink> {
+        return pluto.getAllDidKeyLinks().first()
     }
 }
