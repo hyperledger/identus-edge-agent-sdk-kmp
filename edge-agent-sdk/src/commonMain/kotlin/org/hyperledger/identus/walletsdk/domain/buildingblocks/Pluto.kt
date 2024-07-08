@@ -384,10 +384,26 @@ interface Pluto {
      */
     fun observeRevokedCredentials(): Flow<List<CredentialRecovery>>
 
+    /**
+     * Retrieves all keys for back up purpose.
+     * @return a [Flow] emitting a list of [BackupV0_0_1.Key].
+     */
     fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>>
 
+    /**
+     * Retrieves all DID key links for back up purpose.
+     * @return a [Flow] emitting a list of [BackupV0_0_1.DIDKeyLink].
+     */
     fun getAllDidKeyLinks(): Flow<List<BackupV0_0_1.DIDKeyLink>>
 
+    /**
+     * Restores the private key along with additional information.
+     *
+     * @param storableKey The private key to store. Must implement the [StorableKey] interface.
+     * @param did The DID associated with the private key.
+     * @param keyPathIndex The key path index.
+     * @param metaId The optional metadata ID.
+     */
     fun restorePrivateKeys(
         storableKey: StorableKey,
         did: DID,
@@ -395,6 +411,14 @@ interface Pluto {
         metaId: String? = null
     )
 
+    /**
+     * Restores the Prism DID, key path index, alias, and private keys.
+     *
+     * @param did The Prism DID to store.
+     * @param keyPathIndex The key path index.
+     * @param alias The optional alias for the Prism DID.
+     * @param privateKeys The list of private keys to store.
+     */
     fun restorePrismDIDAndPrivateKeys(
         did: DID,
         keyPathIndex: Int?,
@@ -402,6 +426,13 @@ interface Pluto {
         privateKeys: List<StorableKey>
     )
 
+    /**
+     * Stores the DID key link.
+     *
+     * @param did DID as string.
+     * @param keyId The keyId of a private key.
+     * @param alias The optional alias for the Prism DID.
+     */
     fun restoreDidKeyLink(did: String, keyId: String, alias: String?)
 
     suspend fun start(context: Any? = null)

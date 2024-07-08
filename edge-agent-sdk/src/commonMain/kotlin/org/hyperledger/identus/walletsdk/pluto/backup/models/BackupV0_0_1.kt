@@ -32,14 +32,9 @@ constructor(
     val keys: List<Key>,
     val messages: List<String>,
     @SerialName("link_secret")
-<<<<<<< Updated upstream
-    val linkSecret: String,
-    val mediators: List<Mediator>
-=======
     val linkSecret: String?,
     val mediators: List<Mediator>,
     val didKeyLink: List<DIDKeyLink>
->>>>>>> Stashed changes
 ) {
 
     /**

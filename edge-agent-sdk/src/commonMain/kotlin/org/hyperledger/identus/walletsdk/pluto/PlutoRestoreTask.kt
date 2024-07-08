@@ -209,7 +209,9 @@ open class PlutoRestoreTask(
      * If the backup object has a link secret, it is decoded from base64 URL encoding and stored using the pluto.storeLinkSecret method.
      */
     private fun restoreLinkSecret() {
-        pluto.storeLinkSecret(this.backup.linkSecret)
+        if (this.backup.linkSecret != null) {
+            pluto.storeLinkSecret(this.backup.linkSecret)
+        }
     }
 
     /**
