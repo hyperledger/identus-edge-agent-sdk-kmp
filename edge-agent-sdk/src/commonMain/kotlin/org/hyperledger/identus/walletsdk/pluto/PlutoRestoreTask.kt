@@ -1,5 +1,8 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.pluto
 
+import java.util.*
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -32,11 +35,12 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.descriptor
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.deserialize
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.serialize
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
-import java.util.*
-import kotlin.jvm.Throws
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
