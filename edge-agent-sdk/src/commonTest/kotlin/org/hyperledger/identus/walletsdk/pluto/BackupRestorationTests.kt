@@ -310,8 +310,8 @@ class BackupRestorationTests {
 
         // Validates DIDs are backed up and restored properly, and passed to pluto for storage
         val didCaptor = argumentCaptor<DID>()
-        verify(edgeAgent.pluto, times(9)).storePeerDID(didCaptor.capture())
-        assertEquals(9, didCaptor.allValues.size)
+        verify(edgeAgent.pluto, times(5)).storePeerDID(didCaptor.capture())
+        assertEquals(5, didCaptor.allValues.size)
 
         assertTrue {
             didCaptor.allValues.contains(DID("did:peer:2.Ez6LSok96TA4orHQXSMHZj3mqyUuVLMfLfGGqj27i1giErbXL.Vz6Mku5mY1GuJ9AN2vvDwjMv5QUC2zqKVRPCcbmJVYTFTCFmr"))
@@ -327,18 +327,6 @@ class BackupRestorationTests {
         }
         assertTrue {
             didCaptor.allValues.contains(DID("did:prism:0a4b552169e3158781741fbbeffe81212784d32d90cf8f2622923f11f6ecd966:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2BJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2A"))
-        }
-        assertTrue {
-            didCaptor.allValues.contains(DID("did:peer:2.Ez6LSok96TA4orHQXSMHZj3mqyUuVLMfLfGGqj27i1giErbXL.Vz6Mku5mY1GuJ9AN2vvDwjMv5QUC2zqKVRPCcbmJVYTFTCFmr#key-2"))
-        }
-        assertTrue {
-            didCaptor.allValues.contains(DID("did:peer:2.Ez6LSok96TA4orHQXSMHZj3mqyUuVLMfLfGGqj27i1giErbXL.Vz6Mku5mY1GuJ9AN2vvDwjMv5QUC2zqKVRPCcbmJVYTFTCFmr#key-1"))
-        }
-        assertTrue {
-            didCaptor.allValues.contains(DID("did:peer:2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ#key-2"))
-        }
-        assertTrue {
-            didCaptor.allValues.contains(DID("did:peer:2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ#key-1"))
         }
 
         // Validates DID pairs are backed up and restored properly, and passed to pluto for storage
@@ -371,7 +359,7 @@ class BackupRestorationTests {
         )
         // 9 because of already ran items and items in the key backup
         val keysDidCaptor2 = argumentCaptor<DID>()
-        verify(edgeAgent.pluto, times(9)).storePeerDID(keysDidCaptor2.capture())
+        verify(edgeAgent.pluto, times(5)).storePeerDID(keysDidCaptor2.capture())
 
         val keysCaptor = argumentCaptor<StorableKey>()
         val keysDidCaptor3 = argumentCaptor<DID>()

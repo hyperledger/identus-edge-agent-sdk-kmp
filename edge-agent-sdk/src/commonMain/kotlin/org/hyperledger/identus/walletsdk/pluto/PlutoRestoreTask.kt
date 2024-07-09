@@ -57,12 +57,12 @@ open class PlutoRestoreTask(
      */
     fun run() {
         restoreCredentials()
-        restoreDids()
         restoreDidPairs()
         restoreKeys()
         restoreLinkSecret()
         restoreMessages()
         restoreMediators()
+        restoreDids()
     }
 
     /**
@@ -169,14 +169,21 @@ open class PlutoRestoreTask(
         }.forEach {
             if (it.third is DID) {
                 if (it.third.toString().contains("peer")) {
-                    val metaId = (it.third as DID).toString()
+                    val origDid = (it.third as DID)
+                    val did = if (origDid.toString().contains("#")) {
+                        val splits = origDid.toString().split("#")
+                        DID(splits[0])
+                    } else {
+                        DID(origDid.toString())
+                    }
+                    val keyId = origDid.toString()
                     pluto.storePrivateKeys(
                         it.first as StorableKey,
-                        it.third as DID,
+                        did,
                         (it.first.keySpecification[IndexKey().property])?.toInt(),
-                        metaId
+                        keyId
                     )
-                    pluto.storePeerDID(it.third as DID)
+//                    pluto.storePeerDID(did)
                 } else {
                     pluto.storePrismDIDAndPrivateKeys(
                         it.third as DID,
