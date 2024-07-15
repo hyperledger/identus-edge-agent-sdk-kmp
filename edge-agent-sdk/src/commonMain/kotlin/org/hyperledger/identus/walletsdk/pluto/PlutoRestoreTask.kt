@@ -282,14 +282,13 @@ open class PlutoRestoreTask(
      * @throws IndexOutOfBoundsException If the input string is not in the required format `x:y:z`
      */
     @Throws(IndexOutOfBoundsException::class)
-    private fun String.toDID(alias: String? = null): DID {
-        return DID(
+    private fun String.toDID(alias: String? = null): DID =
+        DID(
             DID.getSchemaFromString(this),
             DID.getMethodFromString(this),
             DID.getMethodIdFromString(this),
             alias
         )
-    }
 
     /**
      * Represents the various types of backup restoration IDs that can be used.
@@ -306,13 +305,12 @@ open class PlutoRestoreTask(
          *
          * @return The corresponding RestorationID object based on the current BackUpRestorationId.
          */
-        fun toRestorationId(): RestorationID {
-            return when (this) {
+        fun toRestorationId(): RestorationID =
+            when (this) {
                 JWT -> RestorationID.JWT
                 ANONCRED -> RestorationID.ANONCRED
                 W3C -> RestorationID.W3C
             }
-        }
     }
 
     /**
@@ -531,8 +529,8 @@ open class PlutoRestoreTask(
          *
          * @return The converted Message object.
          */
-        fun toMessage(): Message {
-            return Message(
+        fun toMessage(): Message =
+            Message(
                 id,
                 piuri,
                 from,
@@ -548,7 +546,6 @@ open class PlutoRestoreTask(
                 ack,
                 direction
             )
-        }
 
         /**
          * Serializer for the [Message.Direction] enum class.
@@ -582,9 +579,8 @@ open class PlutoRestoreTask(
              * @param decoder The decoder used for deserialization.
              * @return The deserialized Message.Direction value.
              */
-            override fun deserialize(decoder: Decoder): Message.Direction {
-                return Message.Direction.fromValue(decoder.decodeInt())
-            }
+            override fun deserialize(decoder: Decoder): Message.Direction =
+                Message.Direction.fromValue(decoder.decodeInt())
         }
 
         /**
@@ -733,9 +729,8 @@ open class PlutoRestoreTask(
              * @param decoder The Decoder object used for deserialization.
              * @return A new instance of DID.
              */
-            override fun deserialize(decoder: Decoder): DID {
-                return DID(decoder.decodeString())
-            }
+            override fun deserialize(decoder: Decoder): DID =
+                DID(decoder.decodeString())
         }
     }
 }

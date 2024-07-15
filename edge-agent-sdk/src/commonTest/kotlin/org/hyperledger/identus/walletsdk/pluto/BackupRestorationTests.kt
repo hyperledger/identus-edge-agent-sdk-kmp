@@ -205,11 +205,10 @@ class BackupRestorationTests {
                     val revoked: Boolean
                 )
 
-                fun String.toRestorationId(): RestorationID {
-                    return RestorationID.entries.first {
+                fun String.toRestorationId(): RestorationID =
+                    RestorationID.entries.first {
                         it.value == this
                     }
-                }
 
                 val credentials = Json.decodeFromString<List<CredentialMock>>(getCredentials).map {
                     val currentCredential = when (it.restorationId.toRestorationId()) {
