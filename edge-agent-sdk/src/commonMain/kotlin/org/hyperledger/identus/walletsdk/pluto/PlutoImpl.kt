@@ -1235,4 +1235,33 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
         val keys = keysWithDID + keysWithNoDID
         return flowOf(keys)
     }
+
+    override fun getAllPrivateKeys(): Flow<List<PrivateKey?>> {
+        return getInstance().privateKeyQueries
+            .fetchAllPrivateKeys()
+            .asFlow()
+            .map {
+                it.executeAsList()
+                    .map { storableKey ->
+                        when (storableKey.restorationIdentifier) {
+                            "secp256k1+priv" -> {
+                                Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                            }
+
+                            "ed25519+priv" -> {
+                                Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                            }
+
+                            "x25519+priv" -> {
+                                X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
+                            }
+
+                            else -> {
+                                throw PlutoError.InvalidRestorationIdentifier()
+                            }
+                        }
+                    }
+            }
+    }
+
 }

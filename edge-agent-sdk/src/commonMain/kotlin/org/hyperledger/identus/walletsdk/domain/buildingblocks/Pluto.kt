@@ -386,5 +386,13 @@ interface Pluto {
 
     fun getAllKeysForBackUp(): Flow<List<BackupV0_0_1.Key>>
 
+    /**
+     * Retrieves a list of all private keys.
+     *
+     * @return A flow that emits a list of nullable [PrivateKey] objects. In case a private key is not found, null is emitted.
+     */
+    fun getAllPrivateKeys(): Flow<List<PrivateKey?>>
+
+
     suspend fun start(context: Any? = null)
 }

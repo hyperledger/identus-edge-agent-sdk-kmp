@@ -273,4 +273,8 @@ class PlutoMock : Pluto {
     override suspend fun start(context: Any?) {
         TODO("Not yet implemented")
     }
+
+    override fun getAllPrivateKeys(): Flow<List<PrivateKey?>> {
+        TODO("Not yet implemented")
+    }
 }
