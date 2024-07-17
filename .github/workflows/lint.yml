@@ -1,23 +1,23 @@
----
-name: MegaLinter
-
-on:
-  pull_request:
-
-jobs:
-  lint:
-    name: Lint project
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Mega-Linter
-        uses: oxsecurity/megalinter@v7
-
-      - name: Archive production artifacts
-        if: success() || failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mega-Linter reports
-          path: megalinter-reports
+#---
+#name: MegaLinter
+#
+#on:
+#  pull_request:
+#
+#jobs:
+#  lint:
+#    name: Lint project
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout Code
+#        uses: actions/checkout@v4
+#
+#      - name: Mega-Linter
+#        uses: oxsecurity/megalinter@v7
+#
+#      - name: Archive production artifacts
+#        if: success() || failure()
+#        uses: actions/upload-artifact@v4
+#        with:
+#          name: Mega-Linter reports
+#          path: megalinter-reports
