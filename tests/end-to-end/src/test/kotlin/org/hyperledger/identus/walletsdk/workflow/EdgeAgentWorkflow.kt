@@ -6,8 +6,6 @@ import io.iohk.atala.automation.utils.Logger
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import net.serenitybdd.screenplay.Actor
-import net.serenitybdd.screenplay.actors.Cast
-import net.serenitybdd.screenplay.actors.OnStage
 import net.serenitybdd.screenplay.rest.abilities.CallAnApi
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
@@ -17,12 +15,19 @@ import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.configuration.Environment
 import org.hyperledger.identus.walletsdk.domain.models.CastorError
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
+import java.util.UUID
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 class EdgeAgentWorkflow {
     private val logger = Logger.get<EdgeAgentWorkflow>()
@@ -61,7 +66,6 @@ class EdgeAgentWorkflow {
                 UseWalletSdk.proofOfRequestStackSize(),
                 equalTo(1)
             )
-
         )
     }
 
@@ -129,7 +133,7 @@ class EdgeAgentWorkflow {
 
     fun waitForCredentialRevocationMessage(edgeAgent: Actor, numberOfRevocation: Int) {
         edgeAgent.attemptsTo(
-            PollingWait.until(
+            PollingWait.with(2.minutes, 500.milliseconds).until(
                 UseWalletSdk.revocationStackSize(),
                 equalTo(numberOfRevocation)
             )
@@ -169,7 +173,7 @@ class EdgeAgentWorkflow {
         val walletSdk = UseWalletSdk()
         walletSdk.recoverWallet(seed, backup)
         runBlocking {
-            walletSdk.context.sdk.stop()
+            walletSdk.tearDown()
         }
     }
 
@@ -191,7 +195,8 @@ class EdgeAgentWorkflow {
         edgeAgent.attemptsTo(
             UseWalletSdk.execute { sdkContext ->
                 repeat(numberOfDids) {
-                    sdkContext.sdk.createNewPeerDID(updateMediator = false)
+                    val did = sdkContext.sdk.createNewPeerDID(updateMediator = true)
+                    edgeAgent.remember("did", did)
                 }
             }
         )
@@ -240,6 +245,39 @@ class EdgeAgentWorkflow {
                 assertThat(actualPeerDids.containsAll(expectedPeerDids)).isTrue()
                 assertThat(actualPrismDids.size).isEqualTo(expectedPrismDids.size)
                 assertThat(actualPrismDids.containsAll(expectedPrismDids)).isTrue()
+            }
+        )
+    }
+
+    fun initiatePresentationRequest(type: CredentialType, edgeAgent: Actor, did: DID, claims: PresentationClaims) {
+        edgeAgent.attemptsTo(
+            UseWalletSdk.execute {
+                it.sdk.initiatePresentationRequest(type, did, claims, "", UUID.randomUUID().toString())
+            }
+        )
+    }
+
+    fun waitForPresentationMessage(edgeAgent: Actor, numberOfMessages: Int = 1) {
+        edgeAgent.attemptsTo(
+            PollingWait.until(
+                UseWalletSdk.presentationStackSize(),
+                equalTo(numberOfMessages)
+            )
+        )
+    }
+
+    fun verifyPresentation(edgeAgent: Actor, expected: Boolean = true, shouldBeRevoked: Boolean = false) {
+        edgeAgent.attemptsTo(
+            UseWalletSdk.execute {
+                val message = it.presentationStack.removeFirst()
+                try {
+                    val isVerified = it.sdk.handlePresentation(message)
+                    assertThat(isVerified).isEqualTo(expected)
+                } catch (e: PolluxError.VerificationUnsuccessful) {
+                    assertThat(expected).isFalse()
+                    assertThat(shouldBeRevoked).isTrue()
+                    assertThat(e.message).contains("Provided credential is revoked")
+                }
             }
         )
     }

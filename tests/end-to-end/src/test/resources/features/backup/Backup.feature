@@ -2,6 +2,7 @@
 Feature: Backup
   The Edge Agent should be able to create and restore a backup
 
+  @test
   Scenario: Create and restore a backup
     Given Edge Agent has created a backup
     Then a new SDK can be restored from Edge Agent

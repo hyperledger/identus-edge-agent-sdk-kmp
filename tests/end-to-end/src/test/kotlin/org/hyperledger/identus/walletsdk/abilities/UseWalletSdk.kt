@@ -5,10 +5,12 @@ import io.iohk.atala.automation.utils.Logger
 import io.restassured.RestAssured
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.serenitybdd.screenplay.Ability
 import net.serenitybdd.screenplay.Actor
+import net.serenitybdd.screenplay.HasTeardown
 import net.serenitybdd.screenplay.Question
 import net.serenitybdd.screenplay.SilentInteraction
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
@@ -24,7 +26,11 @@ import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.Experiments
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommIssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommOfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommRequestPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.PrismRevocation
 import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
 import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
 import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
@@ -34,7 +40,7 @@ import java.util.Base64
 import java.util.Collections
 
 
-class UseWalletSdk : Ability {
+class UseWalletSdk : Ability, HasTeardown {
     companion object {
         private fun `as`(actor: Actor): UseWalletSdk {
             if (actor.abilityTo(UseWalletSdk::class.java) != null) {
@@ -70,6 +76,12 @@ class UseWalletSdk : Ability {
             }
         }
 
+        fun presentationStackSize(): Question<Int> {
+            return Question.about("presentation messages stack").answeredBy {
+                `as`(it).context.presentationStack.size
+            }
+        }
+
         fun execute(callback: suspend (sdk: SdkContext) -> Unit): SilentInteraction {
             return object : SilentInteraction() {
                 override fun <T : Actor> performAs(actor: T) {
@@ -80,26 +92,13 @@ class UseWalletSdk : Ability {
                 }
             }
         }
-
-        fun stop(): SilentInteraction {
-            return object : SilentInteraction() {
-                override fun <T : Actor> performAs(actor: T) {
-                    val walletSdk = `as`(actor)
-                    runBlocking {
-                        walletSdk.context.sdk.stopFetchingMessages()
-                        walletSdk.context.sdk.stop()
-                        walletSdk.isInitialized = false
-                    }
-                }
-
-            }
-        }
     }
 
     private val logger = Logger.get<EdgeAgentWorkflow>()
-    lateinit var context: SdkContext
+    private lateinit var context: SdkContext
     private val receivedMessages = mutableListOf<String>()
     private var isInitialized = false
+    private lateinit var fetchJob: Job
 
     fun initialize() {
         createSdk()
@@ -168,7 +167,7 @@ class UseWalletSdk : Ability {
     }
 
     private fun listenToMessages() {
-        CoroutineScope(Dispatchers.Default).launch {
+        fetchJob = CoroutineScope(Dispatchers.Default).launch {
             context.sdk.handleReceivedMessagesEvents().collect { messageList: List<Message> ->
                 messageList.forEach { message ->
                     if (receivedMessages.contains(message.id)) {
@@ -176,10 +175,11 @@ class UseWalletSdk : Ability {
                     }
                     receivedMessages.add(message.id)
                     when (message.piuri) {
-                        ProtocolType.DidcommOfferCredential.value -> context.credentialOfferStack.add(message)
-                        ProtocolType.DidcommIssueCredential.value -> context.issuedCredentialStack.add(message)
-                        ProtocolType.DidcommRequestPresentation.value -> context.proofRequestStack.add(message)
-                        ProtocolType.PrismRevocation.value -> context.revocationNotificationStack.add(message)
+                        DidcommOfferCredential.value -> context.credentialOfferStack.add(message)
+                        DidcommIssueCredential.value -> context.issuedCredentialStack.add(message)
+                        DidcommRequestPresentation.value -> context.proofRequestStack.add(message)
+                        PrismRevocation.value -> context.revocationNotificationStack.add(message)
+                        DidcommPresentation.value -> context.presentationStack.add(message)
                         else -> logger.debug("other message: ${message.piuri}")
                     }
                 }
@@ -195,6 +195,12 @@ class UseWalletSdk : Ability {
         val json = JsonPath.parse(decodedData)
         return json.read("from")
     }
+
+    override fun tearDown() {
+        context.sdk.stopFetchingMessages()
+        context.sdk.stop()
+        fetchJob.cancel()
+    }
 }
 
 data class SdkContext(
@@ -202,7 +208,8 @@ data class SdkContext(
     val credentialOfferStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val proofRequestStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
-    val revocationNotificationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
+    val revocationNotificationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
+    val presentationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
 )
 
 class ActorCannotUseWalletSdk(actor: Actor) :

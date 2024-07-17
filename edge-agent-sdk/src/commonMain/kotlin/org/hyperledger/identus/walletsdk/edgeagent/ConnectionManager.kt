@@ -106,10 +106,9 @@ class ConnectionManagerImpl(
                         }
                     }
                 }
-
                 // Fallback mechanism if no WebSocket service endpoint is available
                 if (serviceEndpoint == null) {
-                    while (true) {
+                    while (fetchingMessagesJob!!.isActive) {
                         // Continuously await and process new messages
                         awaitMessages().collect { array ->
                             processMessages(array)

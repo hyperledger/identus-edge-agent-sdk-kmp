@@ -1,12 +1,15 @@
 package org.hyperledger.identus.walletsdk.steps
 
-import io.cucumber.java.After
 import io.cucumber.java.en.Given
 import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
+import kotlinx.coroutines.flow.first
 import net.serenitybdd.screenplay.Actor
-import net.serenitybdd.screenplay.actors.OnStage
 import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
+import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.workflow.CloudAgentWorkflow
 import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import javax.inject.Inject
@@ -123,6 +126,38 @@ class EdgeAgentSteps {
         edgeAgentWorkflow.presentProof(edgeAgent)
     }
 
+    @When("{actor} request {actor} to verify the JWT credential")
+    fun `Verifier requests Holder to verify the JWT Credential`(verifierEdgeAgent: Actor, holderEdgeAgent: Actor) {
+        edgeAgentWorkflow.createPeerDids(holderEdgeAgent, 1)
+        val did = holderEdgeAgent.recall<DID>("did")
+        val claims = PresentationClaims(
+            claims = mapOf(
+                "automation-required" to InputFieldFilter(type = "string", pattern = "required value")
+            )
+        )
+        edgeAgentWorkflow.initiatePresentationRequest(CredentialType.JWT, verifierEdgeAgent, did, claims)
+    }
+
+    @When("{actor} request {actor} to verify the anonymous credential")
+    fun `Verifier requests Holder to verify the anoncred credential`(verifierEdgeAgent: Actor, holderEdgeAgent: Actor) {
+        edgeAgentWorkflow.createPeerDids(holderEdgeAgent, 1)
+        val did = holderEdgeAgent.recall<DID>("did")
+        // FIXME: change to anoncred attributes request
+        val claims = PresentationClaims(
+            claims = mapOf(
+                "name" to InputFieldFilter(type = "string", pattern = "automation")
+            )
+        )
+        // FIXME: change to CredentialType.AnonCred
+        edgeAgentWorkflow.initiatePresentationRequest(CredentialType.JWT, verifierEdgeAgent, did, claims)
+    }
+
+    @When("{actor} sends the verification proof")
+    fun `Edge Agent sends the verification proof`(edgeAgent: Actor) {
+        edgeAgentWorkflow.waitForProofRequest(edgeAgent)
+        edgeAgentWorkflow.presentProof(edgeAgent)
+    }
+
     @Then("{actor} should receive the credential")
     fun `Edge Agent should receive the credential`(edgeAgent: Actor) {
         edgeAgentWorkflow.waitForCredentialOffer(edgeAgent, 1)
@@ -146,6 +181,15 @@ class EdgeAgentSteps {
     @Then("{actor} should have {} credentials")
     fun `Edge Agent should have N credential`(actor: Actor, numberOfCredentials: Int) {
         //edgeAgentWorkflow.creden
+    }
+
+    @Given("{actor} has 0 issued credentials")
+    fun `Edge agent test`(actor: Actor) {
+        actor.attemptsTo(
+            UseWalletSdk.execute {
+                assert(it.sdk.getAllCredentials().first().isEmpty())
+            }
+        )
     }
 
     @Then("{actor} waits to receive the revocation notifications from {actor}")
@@ -191,10 +235,15 @@ class EdgeAgentSteps {
         edgeAgent.wrapUp()
     }
 
-    @After
-    fun stopAgent() {
-        OnStage.theActor("Edge Agent").attemptsTo(
-            UseWalletSdk.stop()
-        )
+    @Then("{actor} should see the verification proof is verified")
+    fun `Verifier Edge Agent should see the verification proof is verified`(verifierEdgeAgent: Actor) {
+        edgeAgentWorkflow.waitForPresentationMessage(verifierEdgeAgent)
+        edgeAgentWorkflow.verifyPresentation(verifierEdgeAgent)
+    }
+
+    @Then("{actor} should see the verification proof was not verified due revocation")
+    fun `Verifier Edge Agent should see the verification proof was not verified`(verifierEdgeAgent: Actor) {
+        edgeAgentWorkflow.waitForPresentationMessage(verifierEdgeAgent)
+        edgeAgentWorkflow.verifyPresentation(verifierEdgeAgent, expected = false, shouldBeRevoked = true)
     }
 }

@@ -58,7 +58,7 @@ class CloudAgentWorkflow {
     fun offerJwtCredential(cloudAgent: Actor) {
         val connectionId = cloudAgent.recall<String>("connectionId")
         val credential = CreateIssueCredentialRecordRequest(
-            claims = mapOf(Pair("automation-required", UUID.randomUUID())),
+            claims = mapOf(Pair("automation-required", "required value")),
             issuingDID = Environment.publishedDid,
             connectionId = UUID.fromString(connectionId),
             schemaId = "${Environment.agentUrl}/schema-registry/schemas/${Environment.jwtSchemaGuid}"
