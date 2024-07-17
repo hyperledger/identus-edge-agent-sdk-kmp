@@ -3,9 +3,7 @@
 package org.hyperledger.identus.walletsdk.pluto
 
 import java.util.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -66,15 +64,13 @@ open class PlutoRestoreTask(
      * This method should be called to initialize or restore the necessary components.
      */
     fun run() {
-        CoroutineScope(Dispatchers.Default).launch {
-            restoreCredentials()
-            restoreDidPairs()
-            restoreKeys()
-            restoreLinkSecret()
-            restoreMessages()
-            restoreMediators()
-            restoreDids()
-        }
+        restoreDids()
+        restoreDidPairs()
+        restoreMediators()
+        restoreLinkSecret()
+        restoreCredentials()
+        restoreKeys()
+        restoreMessages()
     }
 
     /**
@@ -86,7 +82,7 @@ open class PlutoRestoreTask(
      * @throws UnknownError.SomethingWentWrongError if an unknown recovery id is encountered while restoring a credential.
      */
     private fun restoreCredentials() {
-        this.backup.credentials.map {
+        val credentials = this.backup.credentials.map {
             when (it.recoveryId) {
                 BackUpRestorationId.JWT.value -> {
                     val jwtString = it.data.base64UrlDecoded
@@ -104,7 +100,8 @@ open class PlutoRestoreTask(
                     throw UnknownError.SomethingWentWrongError("Unknown recovery id: ${it.recoveryId}")
                 }
             }
-        }.forEach {
+        }
+        credentials.forEach {
             pluto.storeCredential(it)
         }
     }
@@ -148,7 +145,7 @@ open class PlutoRestoreTask(
      *
      * @throws UnknownError.SomethingWentWrongError if the key is invalid, it does not have index or DID
      */
-    private suspend fun restoreKeys() {
+    private fun restoreKeys() {
         this.backup.keys.map {
             val jwkJson = it.key.base64UrlDecoded
             val jwk = Json.decodeFromString<JWK>(jwkJson)
@@ -193,7 +190,9 @@ open class PlutoRestoreTask(
                     } else {
                         // This else is for jwe coming from TS/Swift which do not use didUrl for private key id
                         // and is a requirement for us.
-                        resolveDIDForPrivateKey(keyId, it.first)
+                        runBlocking {
+                            resolveDIDForPrivateKey(keyId, it.first)
+                        }
                     }
                 } else {
                     pluto.storePrismDIDAndPrivateKeys(
