@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
@@ -35,6 +36,7 @@ import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
 import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.Seed
@@ -42,7 +44,6 @@ import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
@@ -57,11 +58,16 @@ import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
+import org.mockito.kotlin.spy
+import java.security.interfaces.ECPublicKey
+import java.util.*
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -72,32 +78,48 @@ import kotlin.test.assertTrue
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class EdgeAgentTests {
 
+    @Mock
+    lateinit var plutoMock: Pluto
+
+    @Mock
+    lateinit var polluxMock: Pollux
+
+    @Mock
+    lateinit var castorMock: Castor
+
+    @Mock
+    lateinit var connectionManagerMock: ConnectionManager
+
+    @Mock
+    lateinit var mediationHandlerMock: MediationHandler
+
     lateinit var apolloMock: ApolloMock
-    lateinit var castorMock: CastorMock
-    lateinit var plutoMock: PlutoMock
+    lateinit var castorMockOld: CastorMock
+    lateinit var plutoMockOld: PlutoMock
     lateinit var mercuryMock: MercuryMock
-    lateinit var polluxMock: PolluxMock
-    lateinit var mediationHandlerMock: MediationHandlerMock
-    lateinit var connectionManager: ConnectionManager
+    lateinit var polluxMockOld: PolluxMock
+    lateinit var mediationHandlerMockOld: MediationHandlerMock
+    lateinit var connectionManagerOld: ConnectionManager
     lateinit var json: Json
 
     @BeforeTest
     fun setup() {
+        MockitoAnnotations.openMocks(this)
         apolloMock = ApolloMock()
-        castorMock = CastorMock()
-        plutoMock = PlutoMock()
+        castorMockOld = CastorMock()
+        plutoMockOld = PlutoMock()
         mercuryMock = MercuryMock()
-        polluxMock = PolluxMock()
-        mediationHandlerMock = MediationHandlerMock()
+        polluxMockOld = PolluxMock()
+        mediationHandlerMockOld = MediationHandlerMock()
         // Pairing will be removed in the future
-        connectionManager =
+        connectionManagerOld =
             ConnectionManagerImpl(
                 mercuryMock,
-                castorMock,
-                plutoMock,
-                mediationHandlerMock,
+                castorMockOld,
+                plutoMockOld,
+                mediationHandlerMockOld,
                 mutableListOf(),
-                polluxMock
+                polluxMockOld
             )
         json = Json {
             ignoreUnknownKeys = true
@@ -107,41 +129,175 @@ class EdgeAgentTests {
     }
 
     @Test
+    fun `EdgeAgent start should create peer did and register mediator if no mediator available`() = runTest {
+        val connectionManager = ConnectionManagerImpl(
+            mercuryMock,
+            castorMockOld,
+            plutoMock,
+            mediationHandlerMock,
+            mutableListOf(),
+            polluxMock
+        )
+
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMock,
+                pollux = polluxMockOld,
+                connectionManager = connectionManager,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+
+        val mediator = Mediator(
+            mediatorDID = DID("did:peer:asdf"),
+            hostDID = DID("did:peer:asdf"),
+            routingDID = DID("did:peer:asdf")
+        )
+        `when`(mediationHandlerMock.bootRegisteredMediator()).thenReturn(null)
+        `when`(mediationHandlerMock.achieveMediation(any())).thenReturn(flow { emit(mediator) })
+        `when`(mediationHandlerMock.mediator).thenReturn(mediator)
+        `when`(mediationHandlerMock.mediatorDID).thenReturn(mediator.mediatorDID)
+
+        `when`(agent.createNewPeerDID(updateMediator = false)).thenReturn(DID("did:peer:asdf"))
+        agent.start()
+
+        assertEquals(EdgeAgent.State.RUNNING, agent.state)
+    }
+
+    @Test
+    fun `EdgeAgent start should throw MediationRequestFailedError if mediatiorhandler mediator is null`() = runTest {
+        val connectionManager = ConnectionManagerImpl(
+            mercuryMock,
+            castorMockOld,
+            plutoMock,
+            mediationHandlerMock,
+            mutableListOf(),
+            polluxMock
+        )
+
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMock,
+                pollux = polluxMockOld,
+                connectionManager = connectionManager,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+
+        val mediator = Mediator(
+            mediatorDID = DID("did:peer:asdf"),
+            hostDID = DID("did:peer:asdf"),
+            routingDID = DID("did:peer:asdf")
+        )
+        `when`(mediationHandlerMock.bootRegisteredMediator()).thenReturn(null)
+        `when`(mediationHandlerMock.achieveMediation(any())).thenReturn(flow { emit(mediator) })
+        `when`(mediationHandlerMock.mediator).thenReturn(null)
+
+        `when`(agent.createNewPeerDID(updateMediator = false)).thenReturn(DID("did:peer:asdf"))
+
+        assertFailsWith(EdgeAgentError.MediationRequestFailedError::class) {
+            agent.start()
+            assertEquals(EdgeAgent.State.STOPPED, agent.state)
+        }
+    }
+
+    @Test
+    fun `EdgeAgent stop should change the state to stop`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMock,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerMock,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+        agent.stop()
+        assertEquals(EdgeAgent.State.STOPPED, agent.state)
+    }
+
+    @Test
+    fun `EdgeAgent setupMediatorHandler should stop the agent and replace the current mediatior handler`() = runTest {
+        val connectionManager = ConnectionManagerImpl(
+            mercuryMock,
+            castorMockOld,
+            plutoMock,
+            mediationHandlerMock,
+            mutableListOf(),
+            polluxMock
+        )
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMock,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerMock,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+        val mediatorHandlerMock2 = mock<MediationHandler>()
+        agent.setupMediatorHandler(mediatorHandlerMock2)
+
+    }
+
+    @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
         val seed = Seed(MnemonicHelper.createRandomSeed())
         val validDID = DID("did", "test", "123")
-        castorMock.createPrismDIDReturn = validDID
+        castorMockOld.createPrismDIDReturn = validDID
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = seed,
             api = null,
             logger = PrismLoggerMock(),
             agentOptions = AgentOptions()
         )
-        plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
+        plutoMockOld.getPrismLastKeyPathIndexReturn = flow { emit(0) }
         val newDID = agent.createNewPrismDID()
         assertEquals(newDID, validDID)
-        assertEquals(newDID, plutoMock.storedPrismDID.first())
-        assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
-        assertTrue { plutoMock.wasStorePrismDIDAndPrivateKeysCalled }
+        assertEquals(newDID, plutoMockOld.storedPrismDID.first())
+        assertTrue { plutoMockOld.wasGetPrismLastKeyPathIndexCalled }
+        assertTrue { plutoMockOld.wasStorePrismDIDAndPrivateKeysCalled }
     }
 
     @Test
     fun testCreateNewPeerDID_shouldCreateNewDID_whenCalled() = runTest {
         val validDID = DID("did", "test", "123")
-        castorMock.createPeerDIDReturn = validDID
+        castorMockOld.createPeerDIDReturn = validDID
         val agent = EdgeAgent(
             apolloMock,
-            castorMock,
-            plutoMock,
+            castorMockOld,
+            plutoMockOld,
             mercuryMock,
-            polluxMock,
-            connectionManager,
+            polluxMockOld,
+            connectionManagerOld,
             null,
             null,
             logger = PrismLoggerMock(),
@@ -151,8 +307,8 @@ class EdgeAgentTests {
         val newDID = agent.createNewPeerDID(services = emptyArray(), updateMediator = false)
 
         assertEquals(newDID, validDID)
-        assertEquals(newDID, plutoMock.storedPeerDID.first())
-        assertTrue { plutoMock.wasStorePeerDIDAndPrivateKeysCalled }
+        assertEquals(newDID, plutoMockOld.storedPeerDID.first())
+        assertTrue { plutoMockOld.wasStorePeerDIDAndPrivateKeysCalled }
     }
 
     @Test
@@ -162,10 +318,10 @@ class EdgeAgentTests {
         val agent = EdgeAgent(
             apollo,
             castor,
-            plutoMock,
+            plutoMockOld,
             mercuryMock,
-            polluxMock,
-            connectionManager,
+            polluxMockOld,
+            connectionManagerOld,
             null,
             null,
             logger = PrismLoggerMock(),
@@ -197,11 +353,11 @@ class EdgeAgentTests {
         runTest {
             val agent = EdgeAgent(
                 apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
                 mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
                 logger = PrismLoggerMock()
@@ -224,11 +380,11 @@ class EdgeAgentTests {
             val api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
             val agent = EdgeAgent(
                 apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
                 mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = api,
                 logger = PrismLoggerMock()
@@ -251,11 +407,11 @@ class EdgeAgentTests {
         runTest {
             val agent = EdgeAgent(
                 apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
                 mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
                 logger = PrismLoggerMock()
@@ -277,21 +433,21 @@ class EdgeAgentTests {
         runTest {
             val agent = EdgeAgent(
                 apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
                 mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = null,
                 logger = PrismLoggerMock()
             )
 
-            plutoMock.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
+            plutoMockOld.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
 
             val did = DID("did", "peer", "asdf1234asdf1234")
             val messageString = "This is a message"
-            assertFalse { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
+            assertFalse { plutoMockOld.wasGetDIDPrivateKeysByDIDCalled }
             assertFailsWith(EdgeAgentError.CannotFindDIDPrivateKey::class, null) {
                 agent.signWith(did, messageString.toByteArray())
             }
@@ -310,8 +466,8 @@ class EdgeAgentTests {
         )
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
             pollux = polluxMock,
             connectionManager = connectionManager,
@@ -348,11 +504,11 @@ class EdgeAgentTests {
     fun testParseInvitation_whenOutOfBand_thenReturnsOutOfBandInvitationObject() = runTest {
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -395,11 +551,11 @@ class EdgeAgentTests {
         runTest {
             val agent = EdgeAgent(
                 apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
                 mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = null,
                 logger = PrismLoggerMock()
@@ -422,14 +578,14 @@ class EdgeAgentTests {
     @Test
     fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
         val getLinkSecretReturn = flow<String> { emit("linkSecret") }
-        plutoMock.getLinkSecretReturn = getLinkSecretReturn
+        plutoMockOld.getLinkSecretReturn = getLinkSecretReturn
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -444,11 +600,11 @@ class EdgeAgentTests {
     fun testStopPrismAgent_whenCalled_thenStatusIsStopped() = runTest {
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -464,11 +620,11 @@ class EdgeAgentTests {
             "https://my.domain.com/path?_oob=eyJpZCI6ImQzNjM3NzlhLWYyMmItNGFiNC1hYjY0LTkxZjkxNjgzNzYwNyIsInR5cGUiOiJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzIuMC9pbnZpdGF0aW9uIiwiZnJvbSI6ImRpZDpwZWVyOjIuRXo2TFNjcGZReGJ2VEhLaGpvbzVvMzlmc254VEp1RTRobVp3ckROUE5BVzI0dmFORi5WejZNa3UzSkpVTDNkaHpYQXB0RWpuUDFpNkF0TDlTNGlwRTNYOHM3MWV4MW9WVGNHLlNleUowSWpvaVpHMGlMQ0p6SWpvaWFIUjBjSE02THk5ck9ITXRaR1YyTG1GMFlXeGhjSEpwYzIwdWFXOHZjSEpwYzIwdFlXZGxiblF2Wkdsa1kyOXRiU0lzSW5JaU9sdGRMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDAiLCJib2R5Ijp7ImdvYWxfY29kZSI6ImlvLmF0YWxhcHJpc20uY29ubmVjdCIsImdvYWwiOiJFc3RhYmxpc2ggYSB0cnVzdCBjb25uZWN0aW9uIGJldHdlZW4gdHdvIHBlZXJzIHVzaW5nIHRoZSBwcm90b2NvbCAnaHR0cHM6Ly9hdGFsYXByaXNtLmlvL21lcmN1cnkvY29ubmVjdGlvbnMvMS4wL3JlcXVlc3QnIiwiYWNjZXB0IjpbXX19"
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -481,63 +637,144 @@ class EdgeAgentTests {
 
     @AndroidIgnore
     @Test
-    fun testAnoncreds_whenOfferReceived_thenProcessed() = runTest {
-        val fromDID = DID("did:prism:asdf42sf")
-        val toDID = DID("did:prism:asdf42sf")
-
+    fun testPrepareRequestCredentialWithIssuer_whenAnoncredOfferCredential_thenProcessed() = runTest {
         val apiMock: Api = ApiMock(
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
-        plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
+        val pollux = PolluxImpl(apolloMock, castorMockOld, apiMock)
+        plutoMockOld.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
 
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
             pollux = pollux,
-            connectionManager = connectionManager,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
             logger = PrismLoggerMock(),
             agentOptions = AgentOptions()
         )
 
-        val attachmentDescriptor =
-            AttachmentDescriptor(
-                mediaType = "application/json",
-                format = CredentialType.ANONCREDS_OFFER.type,
-                data = AttachmentBase64(
-                    "eyJzY2hlbWFfaWQiOiJodHRwOi8vaG9zdC5kb2NrZXIuaW50ZXJuYWw6ODAwMC9wcmlzbS1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy81ZTBkNWE5My00YmZkLTMxMTEtYTk1Ni01ZDViYzgyZjc2Y2MiLCJjcmVkX2RlZl9pZCI6Imh0dHA6Ly8xOTIuMTY4LjY4LjEwMjo4MDAwL3ByaXNtLWFnZW50L2NyZWRlbnRpYWwtZGVmaW5pdGlvbi1yZWdpc3RyeS9kZWZpbml0aW9ucy81ZTI5NWNmMi00MjI2LTNjN2QtYjI3Zi04N2JlMTYwNjQ3NmQvZGVmaW5pdGlvbiIsImtleV9jb3JyZWN0bmVzc19wcm9vZiI6eyJjIjoiMTAyNTI4NDk1NTgzODg5MzkwMDcxMzk2OTI1ODg2NzI1MDk2MDMwNjY4ODgwOTMzNzQ5NTUzODEyNTY3MzE0NjQ0ODE0ODU2Nzk2NjI4IiwieHpfY2FwIjoiMTA4NzM1NDQ3NTAzNTQwNDc2MDIyOTAzNTYxNDY1Nzk4NzExMDA5MTU3MDcwOTY1MjMzNzIyNTAzMzg1NDY2NjIyNjYxNDgyMDkzMjAyMjg2ODcxMDQ5MDM3MDA5NzA1ODg3OTUzMDY5NjczNjA4Mzg5MTQ4NzY5ODI1NjMyNTU3NTk0Mzg3NDI2MjkzODY5OTIxNTg4MTM0MzI1OTczODg5NDY1NjYzNzM4ODA4ODg5NTE3Njc4MzIwOTYxNTk0NDg5MjYxNzI3ODAxMTc1OTMxMTQ2MjcwNDk3MzE5NTc4MTc4NDg3Nzg3MTAxNzg1ODMwMjE2NjgzODk2ODE1ODUyNjgzNDc5NjUxMzQ5NDY3MzUzNzM4MjM0NjE4NTMyODIyMzU1MTQ3ODcxOTU5NTU5ODgzNTUxOTQ5OTkwODY0ODEzNTYyODU3NzU5NDU4MTg1MDI5MDI3NTI1NTMzMDQyMDQ5MjEwMDA4NTg3MTc2MzQwNTg4Nzc2Mjc0MzgxMDU2MzM5ODE0OTAzMTMyNjI2MzIyMzc3MjAwMjYwMjM4NDcwNjcyMzI4NDQ4NzIyOTk4NDc1MDIwMzA4MjY2NDIzODUyNzA3Njk2OTQyNjk3NDc3MzI0MDUzOTM0MjQ3NDU4MDcxNjkyMDM5OTQ4MDkxMDg5MjA0NDQ2MDkyODY0Njc1NTQyMDA0Nzk1MDUyNjMzNzczMTQyMDc4Mzg0MTA1MDQzMDY4NjQ3Nzg3NzY3MDE1MDc5MjE1OTEzNTIzODIxOTU4NDQ2NTAxODY2ODY1OTE1NzEwNjY1NDU1MzU4ODEwNTY0OTk3MDUwNjAzNDc4NDE0MzA4NDQzMzc3Njg3ODUyMzc4NDgwNzg3MTQ1MDY2MTQ5MzA5MTM0NzMyNDg4NzQzMTg1NDgxMzU5MzA1NTM3MiIsInhyX2NhcCI6W1siZGF0ZW9maXNzdWFuY2UiLCIxODg0NTYwNDI1ODExNzgxNjE2Njc5NjAyMzA5ODExOTI5NzEyNDA4MDA0MzkxMDEyNzk3ODAxODA0MzU0MzQ0MTI3NDI2MTk0ODg5NDI3MjU3NjQzMzg2MTkxNTY0NDM5ODUzOTQ2NTg4MzkyNjMwNzEwMzA1OTM2OTAxNDA3NjYwOTk2NDc5ODkxNTgzNDE2NDkxODYyNzA3MTczOTA2OTg4ODEzNDE5ODQyMDg1MDM1MTg1OTA0MzQ2MTU4OTM2NDIyOTY5OTMwODg4Njg3NTc0MDcyMzY5MDc2NjkxNTk4MjkyMDkwNDA3Mjg5ODM2NDc2ODQyNTc2MjI3MzAzNDAwOTI4MjkwMDM0NTYwNjk5NTg1NTMzMzkxNDg0OTMwMDQ3NTEwMzMxNDQxNjAyMzEwNjM3NDg2MjY2OTIyNTIyNTIxMzQ2ODM5ODkxMDg1ODM3NTczMzAzMjkyNzMyNTA5Mzc0MTI0ODgzMTA0MjEzNzYzMDA3NzMwOTY4Mzg4MDc0NzE3ODc5NDM5NjE5Njg1NzY4MjU1OTg4MjY0NjMxMTk1MTU3MjE3NjExMTE0NzE3Njc4NjUzMTc0NDc2MTc4MjA4NTIwNzk2MDkwNzI2MzE1MjIzMDU4MTk4NjM3NjU4NDU2NTA3NDcyNzA4MDI0OTgzMjUzNjQyMDAwNDI0MjQyNTUyMDcwNzUzMTg3MDI3MTE0MTI1NzQ0MzExNzMxOTM1NjgwNDE1MTk5NzI4OTE2NjgxNTY2MzY2NjkxNDQyMzE4OTE3NDAxMzA0MzMzNzI5ODU0MzQ2MTAwNDI2NDE1MzEwMzYwNjQ4NDg3NDYzNzgxNjI5NDQ2ODU3ODg2NjgzNTIzODk2ODcyMTExNDg3MjUwNjgwMDQzOTIxMzgyMDM1MDkxMTg4NzE1MDAwNTIzIl0sWyJlbWFpbGFkZHJlc3MiLCIxNTUwMTI2ODAwMjA1MzI5Mzg3NzcyNjA4OTY3NDk0NDIyOTc0MjU1MTI1NDU0NTEyOTc3NjExNTgyNDE2Nzc1MDg2OTA1NjIzNDUzMTIxNDg0NzM0MzkyNDQ4NzEyNTQyNTYwODUyMjUzNzcyODI2NTYyNjg5NzY1NjYwMzM3OTUyNTEyODQ4MDA1Mzk1NTQxMzcwMTI1Mzk4NDg4OTIxNDM4NDUwNzMxMzYwNTcwMzQ2MjMyNDEyODgzMzQ5NjU4MjMxOTQ5OTgwMTUwMTI2NTQ3Nzg0NTM2ODE2NzM0Njc2Mzg1NDA2OTM1MDQ4NDQ0NDM1ODY2MzYwNTk2MjE3NTM4Njg1NTg5MDE3NDY1NTg2MzI1MDQxNzc1OTcwMzQ1NjY1MjM3MzcyMDA3MjAxNTczNDAwODk3NDA3MDA0OTY1Nzk1MDE3MDQ2NDI5MzM5MzMwMTg2NjAwNzE1MjE3Mjg3ODk3Mjg1MDk1MTEwMzExMDYxODU1OTE1NjQ3Nzk3MTkyNTc4NDI1MDgzMjAwMTIwNDEyNTU4NDM2MjQyNTc0ODIzNjE4NTAxODY5NTQxNzAwMTU5NjMyNDkwNDgxMzY3ODU2NjA5MTAwNjA4MzI0MDcyODk3MjA3NDQxNzgwNDc1Njg4MTk4ODI3MDE1MjE2MDA5OTA4NjY0NTYwODk5MDMzODYxNjk1NTg2OTE1NzI4NjYwMDkzMjM3Njk4NzUzODMwOTAxODQ2MDE1OTU0NzEzNTc5MTc5NDgyMDMyNjIxMTEyNjA3NDcyOTM5NzYyNjM4OTgzMDkyNDE0NTgzMzMyODI2MjUzMTE3NDMwNTAwOTI2NTcwODcxNjI2MzYyMTQxNTM0NzUwMDQwMTkxNzEzMzE4OTQ1NTIwNDUzOTI5Mjk5Nzk3ODc2NDEyNzI3MzgiXSxbImZhbWlseW5hbWUiLCIyMDM1NjQzMjQ2ODM3MTA2MDc3MzEzNTkwOTY1Nzc2ODc1ODkwMjM0MTI0MDQ2MjcyOTc0OTQ0MDMxOTIxNzQ4NjQ1ODA0NDc2MjExODc4NTA1MTEzODE5NzYzMjM3MjczMTM4MjgzNDE1MTE2ODYyMzMwNTg0Mjc4NzcxNjg5NjMyNTIyNzE4NjYzMzkwOTg2MjI0NTA3NDg3OTc3MDk2MDMxMTAzMDY1MDQzNjI5Nzk3NjAzMjM2MTc1ODczOTA0MzUwMjMyNjU1Mjc2NzEzNjIxOTUwNzExNjExMzMzODM5OTE0OTU2MzEyNzM4NDkyNjI5NjQ3Nzk2NTk4NDUzOTM2MTY1NjIwNDI1MTc4OTU0NzE2MjE1OTUzNzQyNjM4NDk0NzA3NzMxNjM2NTc0OTI0Njc4MTk5NDQzMjY1MDU4NDM4MTc3NjE0NTM3NjE5NTI0NzY0MDkxNTY1NzUxODg0OTkzMTU4ODc3NjIxMjMxNzc5MDkzOTIyNzQ0NzM4Nzk5OTEwOTg0OTczOTMyMzYwNzM0OTA3NTQ1NTAxOTE2OTUyOTU3MTEwNTczMjQzODA5MDA1NzE5MjU5MTg1MzgwODI4NTU2MzgwMDA1NzU4MTkzNjIwMzc5MzA5NTk1NTgyMTAxMDEwOTg2MDkyNTE3NjM4Njc3NDYwMTQ5MzQ5ODc5NjYyMzc0MTQ0NzUwMDkyODAzNTE1OTUwMzc0MzkzMTAzMTY5MDYzNTE4ODczNTMzMjAxMjAxMjg4NzU3NjczNzk2OTAzOTAzMTEyNzYyMDgxNjE0MzY1NjgwNjEyNzQ1OTEyMTQ4Mjg0NTQ2MzgxOTA4NDAzNzExMDYwNzc0NDQzNDQyMjc3NTU5MjcyMjkzMDg2MzEzMzg5MDQ4ODA0MzA5OTg0NjgyMDA4MDgxMTYiXSxbImRyaXZpbmdsaWNlbnNlaWQiLCIyMzg0Nzk3NTUyNDQ2NTQ0Nzk3NjQyNTc0NjMyMDU3MjgwODIyODkwODgxNjY4NDQyMTczNDY5OTQ4MDYwOTU0ODU2MjY4MDU2MzQ4MTEyMjQ3MzA4NzYwMDQwNTAxODY4NzE3NDQ4MTI1MDI0NDc2MTcwOTU5Njg0Njc1NzY0MjAwMjc5MTcyMzAwOTgzMTQ1MjgzMDAwMzQzNjIxOTEzNTYwNjA5MzQzNTQyNDM2ODQzNDI0NzkwMzUxNjgwMjg3MDAwNzc4ODM5ODQwMDI0NjA4NDg4NTA5MDQ3MjU3MDI0ODU1Njc5ODk3ODc3NTk5NjU2MTc2NDAwMzk1MTQ0MzY5NjkyNzU4MzIxOTc0MzQyODk2MzY4NzEwMTA3ODIyMTQ4NTM2MzIwMDI0NjYwMzUzNTk1MzA5MDgxMTIwNDQyMTgzNDQ3NzE5NzA5Nzc4MjQxNTI2NDQ4MjU5NTY1NTYyNDUxODYyMDk2OTQzMTUwMzk4ODQ1OTM0ODA3OTM4NjE0MTE4Mzk2MjA5NTc5NDM0OTU2MDk2NzY3OTAzMTE4MDc4MTk1NjE1NzI4MDgwNjA3NzMyOTczMTg2NzU0MTA3Mjc2MTM4OTk1NDQzMzQxNzAxMDQ5OTY3NTc0ODA1MjM2MjEyNTIyNDc0MDI5NTcyOTc0OTk4MjA2NDExMDM5MzQxODY4MzIwMTgwMDU5MzQ4ODE4MDQ5NTgyNjU4ODg0OTI2Nzk2OTAzMzc1OTY4NjMwNjA0MDgwOTE2MTc1ODIzMDIyNjc3ODc5MzE4MDgyODUwNzgwMzQyNDU0ODI4OTEzMTA4Nzk1MDg4NjA1Mzk1NjUxMzM0NTMyNDU3NzUxNjQxNTUwOTE5NDQ4NDAzODM1OTI0NDg5NzYzMjE4NDUyNzUzMzY0NjAzMzE3NzgxMDA0Il0sWyJkcml2aW5nY2xhc3MiLCI3MTMwODIxMTg0NjAwNjAwNjE1Nzk1NDU5NjkyNDYwMzE1NzM4ODA5NTU0MjA0NTQ4OTI1NjA2MzkyNzQ2MjE3MDQyMDI1OTExNjE2NTM4ODQ0ODgyMDgwNjM5MTQ0MjAwMDA2NzIwMzY4MjUzNzMzMzM0ODk1NTQ0NjU5ODU1ODk3MzQzNjc1MzMxNjUwMDI2NjgwNzc1MjgxMzgxMzY0MzcyNTE3ODgzMDI5NTE1MDM2MjQ1ODIyOTUwNzU3MDYwNTk2Nzc5MDE0ODUzODIzMTczNTU0NjczMTk0NjAxODU0MTk2NDQ1NDI3MzIxNTk1Mjk4NTg0OTI5MDM3NTMyMzk3NDMxODE1MDk0Mzk3MjQyODUwMTQ3NjY3NTc0NDM1OTY5ODMzMzE2NDc1MTY0MDM4NjIxMzk1Mzk0ODAxOTg3MzIyOTc0NDY0MjYxNTQyODMxNzI0OTQwNDQ5NjQyMjI5OTA3MzIwNzY2Njg0Nzk0NTgwMDExNzc4NzM0NzI5OTk0MjkxMjAxMDA3NTY5NTE5ODg0ODU3MzU2OTY5NzIwMDUwMTk5OTE3MDk3MjIzOTU3Mjc0MzI2MjkxNjc2Mjc1OTIzOTI1NTQ2MTMxODIxNDE2NDc3MDE3OTk2NzE1OTU3MzAxOTM4MzMyNzU0MzE5OTA0ODkxNDExNDU0MjkzNjMwMDU1NTg4MTUwNjA3ODQ4MTM1MDU1Njk5OTM2OTAxNzAzNTAwNjM2MzgxNDQ5ODAzMTM2NzAyODQwNDcyMjY1MDAzNTczNzk4MDM1NzYyNjIzMzAwOTQzNTQ3Mjk1NDA4OTkxODgyNDMxODEwNzIwNzE3NDE3NjIxNjYxNzUyNzEzNzM2ODQ2MDY4NzExNDk4OTkxMjc2NDcyMDgxNDAzMjEyMzUwNDEzNDA0MjQyNDQiXSxbIm1hc3Rlcl9zZWNyZXQiLCIxNDQ0ODk0NjYyMjg1MjAwNjE4ODEwMjI2MTUxMTk3NjIwMjc0OTgwNTk0NzkzMzU3ODY0MDg1NDA0MzcxNzY2MTA0NzI5OTg0ODI3MjgyNzA4NTkzODUyMDU1NDUwNTUzOTc3MzA3MDQwMTY5NDA1ODgwMTEwMzMxMDU3MDMxNjc4OTM2NDQ2MDQ3NDE4NzE0NDc5OTA3Mjg5MTExMTkxMzA5MDQ2MTMzMzAxMTIzNTk4MTAyMzg0NjQ5ODA3NTQwOTY4NjQ5NzU2MjY4NDAwNDc2NDk5ODY2NDg1MjMxNjkzMDEyMjUxNzA5ODE3OTE3MTMyNjUxNjExNDM0NzkzMTI4NDM5MjQ1NjY3ODE1NjQ2NDUxOTg1ODAyNTg3NDYwMDk4ODk2MDc3OTA3ODUwNTE4NzI4MzMxNzAyMTQ2OTk0NzQzMDUxMDM5ODkwNjA3MzE5NzYyNjkyNTY4NjcwOTY5NDA1OTU2NDU5ODMxMTU5Njg2MTk1OTM3ODM0OTUyNzM2NjY4MDU5NDUxNDM5MTQ3NDI0Njg0ODY2OTg1ODE0Nzg5MzY5NTE0NDczOTExNTA1NjM1OTUwMjg1OTU0NzI3ODE4OTk2MjI4NDI4NTU5NjY3MjM5MDcxNTkwMTI2NzYxOTQ4MDQ5NTE2OTY1MTg4OTE1MTkzMTYxMjk4MDU4NDAwMjk3MDQ2MzQ0NTg2ODk5OTQ2MTA0MDM0ODc2MjkxMjU1NDMxNzYyMTcyMTc3MTEwODk5OTgxOTU1MjM0MDE0NzM2ODgzNTczMjQ1OTA3MTUxNzAzMjM1MDY2MjU0NDU2NzU5NDUxNDIzODcxNTA5NzgwMzA5NDAxODYzNDc4OTgxMjU0MDMwNjE2NDYxNTg4NjU0NjgxMDg5OTk4OTE4NjA2NTc4MjM0ODc5OTg1NjcxIl1dfSwibm9uY2UiOiIxMTE2NzA0MDg4NDcyOTA3NTIzNjkwNDkwIn0="
-                )
-            )
-
-        val offerCredential = OfferCredential(
-            body = OfferCredential.Body(
-                credentialPreview = CredentialPreview(
-                    attributes = arrayOf(
-                        CredentialPreview.Attribute(
-                            name = "Name",
-                            value = "Value",
-                            mediaType = "application/json"
-                        )
-                    )
-                )
-            ),
-            attachments = arrayOf(attachmentDescriptor),
-            thid = "1",
-            from = fromDID,
-            to = toDID
+        val message = Json.decodeFromString<Message>(
+            """{"id":"e430e4af-455e-4a15-9f2f-5bd8e5f350b8","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":\"http:\\/\\/192.168.68.113:8000\\/cloud-agent\\/schema-registry\\/schemas\\/5667190d-640c-36af-a9f1-f4ed2587e766\\/schema\",\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"age\",\"value\":\"18\"},{\"media_type\":null,\"name\":\"name\",\"value\":\"Cristian\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242264","expires_time_plus":"1721328667","attachments":[{"id":"ee903fe0-2c49-4356-9b41-cfccc979c0a1","data":{"base64":"eyJzY2hlbWFfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy81NjY3MTkwZC02NDBjLTM2YWYtYTlmMS1mNGVkMjU4N2U3NjYvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2RhNmExZDgtMmIyMy0zMTM4LWIwMmEtYWIwYmI0OGY4MGY5L2RlZmluaXRpb24iLCJrZXlfY29ycmVjdG5lc3NfcHJvb2YiOnsiYyI6IjM0MjE0MzM4OTA5MDk4MTU5ODIyNTA3MjQ4Njk3NjUyNTIyMzc1NzM2ODM0OTM1MDg0NjM5MTYzNTUyNjgwMjc3MjQyOTcxODI5ODUwIiwieHpfY2FwIjoiODAwNzA3NDcxNzUyOTQ3MTI1NDIxNTU2ODI1ODYyNDc5NzE1OTE0OTE3ODE4NTY4MDI1NjU5Mzk1NDcyMTAzMzQ0NjAwMDI4NzU4MzczMTA5Mjg0NzEzNDg5MDg1OTk3NzE5NDcwOTc5MDQ1NzA3NTY1ODA4MDczNzYxMjI0OTI3MzcyMDk1MTU2MzAxODE3MzgzNDE5NzE4NzM0NDk2MDQwMjc1MzM2MTg0ODIzNzQ4NTg0NzgzNjIxNzE1NTQwOTI3Nzk0ODQyMTA2NDM1NDEwNzc4MDg2ODg1MTc5MzQzMjEzMjU3NTk2ODM2NjU5NzYwMTI4NzI5ODI5MTk2MzI0MjQwMzgyOTc3MzczNjU3MTA0NjQ5NjE4MjU0MDMzMDk4Njc0OTkxMzIwMzc2NTEyMTUyOTk3Mzg0Mzk5MzY0OTc3MDM4NzU2ODcwOTU3NTcyMDM0NTM0NTY1MDM5OTY0MTYzNDgzNDEyMTEzNzc0NzA5MTU2NTcxMjcxNTI3ODY2NzQwNzU1Nzc2MzIzOTgxNTE5NzEzNjQ1MjQ4Njc5NzgyOTM3NTcyOTI4NDI1NzQ0NjE3MjMwNzk2MzYwNzE5MDA3Mzc0ODgwNTI2ODA4ODIzODg2NTMwMzE2MzgyOTI1MDcxOTYzMjUwMzgyNzU4MDA5Mjk1MzI1NDgzODIyNTg0OTIyMDkwMTcwMTAxOTY5OTk5MTg1MzAxMDA1NDM2MjYyMDI4NDIxOTA0NjU5MzY4OTU3OTQyNTAwNDkxNzI5MjY0MTMzMzE5Nzg0NDIwNjQ0NDUxMTUyNjA2MDI2MDg1MDkwNDYzNzAzMTQzNDczMTcxMjg3OTUxMTM0NTM1MDY0NDc0NjQ5NDE5MzUzMDQ4MzQwOTk4MTY2NjYwNDkyMDE5ODQyNDU2NDM5MTcxNjM2IiwieHJfY2FwIjpbWyJhZ2UiLCI3MjA2NjI4MDAzNzAwMjM5MzM5NjAzNjUxNDQ1MTY2NDE0MjcwNTA0ODM4ODAwMzYxMjE0NjQ3MjA1ODYwOTczMTg4MTQ0OTE2OTkwOTE3NTIyNjU4Mzg3Njg1MTcwMzkyMDcyMjk0MTUxMDUwODk1Njc0MTU0OTYwMDMyMDM0Mzg2MzEzMzY0MTMwMDQwNzI5ODQwMjcxMzcyNjc4NTI0NjE0NjUxNDcxNDU0NTg4MzgwMzI2OTMwODQ0Njc4Nzg3MzA3NzY3ODk2NjY5NTE2MDY1Njc3MDA3MjQyMDEwMjQyMDAwNTg4NjgxMTczNDUxNjg4NTU5MDEwMjQyNTgyMTg4MTY5MTUyNjUwNzY4NzgxNjMyMjgwNTgyODI1NjM3MjY0NzUwMTA3NTU2NDQzNTgyNzMwNDIxMjE3NTI4OTgyNTE5MzA3NzQ0ODAxNTYyNTYyMzQzNTcyNzU4NDEzNjc1NzY0ODQwOTY5MTY3NTE3ODcyNjk2MDY1MDM2MDU1MzgwMDg2NjcyNjUzMDEyMTIxMDk2MTA5OTQyMTg1NjM2ODk3MDE3Mjc5NDg3NjEyNDczNzc4NDUxMjkxMjE3NDg3ODQxOTc1NjI2MDczMjI0ODQ1MjI4NDM1OTk0MjI2MTg1MDc1NDI4MjA3OTg5MzAwMjExMzI5OTM4NjQxMzEwMTk5MjcwNTE0NjA2ODU5NDEzNDY1NzE1MjQyNjk0ODc0ODkwNDAzNDk5MzUxOTIxMDY4OTMwODE1ODY5ODM5NDYyMTE0MDI2MjM3MzY5OTAwMzE2MTA0NzYwMDAwNzk2NjcxOTUzNTAxMjcxMTI3MjM4NzM5NDI0Mjc2ODQyODkwNjQwNDY3NjYxNDEzODQ5Mzc5NzEwNzcxNjg0NzU4NTY1NzY2MDY4NzgwNjY0NjI3MjgiXSxbIm1hc3Rlcl9zZWNyZXQiLCI3ODg0ODQyMDE4MzA5NzY5NTg2MDY2Mjc5NDAwNjAzNjIzNjE4NzcxNTc3MjQ1NDk5NzQ5MzE0MzgyNTUyMzMzMjE4MzA3ODk1NzU4MDk2OTc3NjUzNjQ3MDcwNjk5MDE0OTY4OTUwMDg0OTk2MjMwNDAwODA4OTM0MzQ1MzQwMDcyMzY2NDg5NDYxNDg4MDk0MDgyOTk1OTU3MjUwMTg5NTkxMjg2NDQyMDg4MTMwNDA5MDA4Mjc5MzgxMjUzMDIxOTE0MTc5Nzc5MTAyNTcwNjIxNDQ0MDU0NzcxNjY5Mjk5NjQzNTcwODg5NjY1ODQzOTY2ODA1MjM1ODgxNzQ1OTQ3OTQ4NDQ2ODU1MDY4ODU4ODUzMDg2MTQ5NjMxMjA1ODcwMTIzODc1NDg3MTM0NjAxMDQwODA4Njg2MzQ4NDUwOTA0MTI4MTI4Nzk1MjUzMjczMjU3ODc4NjM4MjAxNTcyOTExMDQxNTQ4NDc0MTMzMDMyMTIyMTMyODExNjQ0NjAzNjg0MDU5MDk2ODM2NjU1NjQzMTI2NDU0NTAwNDM2MTgxNjQxMjkyNjQ4MTQ3MjYxODUyNzY5NjIyMzE5Mjk2NjI0NDU3OTg2NzI5NzMwNzE3NDEyNTE2MzEyNjQwNTM0OTE3NzEwNzE4Njc2MTMwODExMTI2NjQwMTkyODg4NjI2ODI2NTcwNzA1OTUxNTUyODI5NDY2NzY5NjUxNTcxNTI2OTMzNDUyNjY0ODk5NTExNzM0ODk0Njc3OTY5NjI0OTgzODI3MTgzMDg2NjA0NTE0NDE3MDE2MDgxNDE2Nzk0NDgwMDIwNDU2ODMxNzUyNjM2NTk1NzcwNjgwODQ0MDE0MjIyOTc2MjE5NzIzODg1MjAxNTg1ODk0MDQwMDA3MTQ5MjkwMDAxNTc4MjMxMDQiXSxbIm5hbWUiLCI4NjIxNzg3ODk1MzA5MzExOTQ3Njc0OTU5NDA4MjIzMTg5ODgwNDEzNTQ2NzIyOTYyODg5NjI0NzgwMjE1MDc4NDc3OTMxNTk5MDk5MzIwODkyNzY2NjM4NjExNDYyOTMzNTg3NjgwMTU0ODQ4ODgxMTY5MzY5NTc3OTk1NTI1ODQ2NDA1NjcyNDUyMzIyMTcyNjQ4MTc4OTEwMTg2ODkwNzYwNzM2MjMwNzA0MDA3NzU1OTA0OTIyNTUwODQ0MjkxNzgwOTk1NDAyNzUyNTU0NTAwNjg1NTY5NzYzMDc4ODY5NDU0NDI3NzY5NzU0Mzc5ODg5NzAzODQzNDM4ODcyMjMyOTc0MjIzODc5MzY5MTYzOTI1NjY3NjY5MzQyOTUwOTk5MjMwOTY1NDQ1MTkwOTM5Mzk5NzM1NjE1MTk2OTY2MzUyMTMwMzQ5MTE0NDE5OTIwMTk3NDIyMjA0ODQ2MTc2OTI3NTMwMDQ3NDkxNjI1NzAwODQ5NDc1MzQzNzk3MjU0MDYwNjc3MTA4MzkxOTU3MzU0MDAzOTAyNzMzMzEzMDI1ODE5Njk3MTIzMTc2NTg3MTU5NzQ5ODkxODg5MzU3Mjk0OTUyNDMwMDY2MTE5MjgzNzA1NTAwMTcxNTc3ODMzMzk3OTE1Mzc5OTA2NTA1MDExMjczODM2NTM3OTA2NjkyMjg2MTk5NDgzMjA3NDc1MzM2MjE1Njc4MTA1NDY5MDc3MTMyNDAwNDM4NTgyOTAyMjMwMzI5MDc4NjA4NTI4NDgzNDEwODI1NDkzNDcwMjI5MjA3MzA1NTk0ODUwMTg4ODUwMjEyNTQ0NzI0NDgyOTExOTQ3NTQ4NzIzMzMxMzYyNTI3MjA0Mzg3MzE1Mjk1MDU4Njk5MDk3NDc3MjQzMTczOTE0Njk5MDAzOTkzNTQiXV19LCJub25jZSI6IjM2MDY2NjE3NzQwNTA3NzY5NTI5NTMxNyJ9"},"format":"anoncreds/credential-offer@v1.0"}],"thid":"3a1c143b-7ab7-470d-99cf-bc5f31771388","ack":[]}"""
         )
+        val offerCredential = OfferCredential.fromMessage(message)
+        val subjectDid =
+            DID("did:prism:6f23ddace519b68dfc0fa06e992db40f2f3c584af382ce446fa2fd0e042e5dea:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvxJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvw")
+
         val requestCredential =
-            agent.prepareRequestCredentialWithIssuer(did = toDID, offer = offerCredential)
+            agent.prepareRequestCredentialWithIssuer(did = subjectDid, offer = offerCredential)
+
         assertEquals(offerCredential.from, requestCredential.to)
         assertEquals(offerCredential.to, requestCredential.from)
         assertTrue(requestCredential.attachments.size == 1)
         assertEquals(requestCredential.attachments[0].format, CredentialType.ANONCREDS_REQUEST.type)
         assertEquals(offerCredential.thid, requestCredential.thid)
+    }
+
+    @Test
+    fun testPrepareRequestCredentialWithIssuer_whenJwtOfferCredential_thenProcessed() = runTest {
+        val seed =
+            Seed("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA".base64UrlDecodedBytes)
+        val agent = EdgeAgent(
+            apollo = apolloMock,
+            castor = castorMockOld,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            pollux = polluxMock,
+            connectionManager = connectionManagerOld,
+            seed = seed,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
+        )
+
+        `when`(plutoMock.getPrismDIDKeyPathIndex(any())).thenReturn(flow { emit(2) })
+
+        `when`(polluxMock.extractCredentialFormatFromMessage(any())).thenReturn(CredentialType.JWT)
+
+        val jwtString =
+            """eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MGE0YjU1MjE2OWUzMTU4NzgxNzQxZmJiZWZmZTgxMjEyNzg0ZDMyZDkwY2Y4ZjI2MjI5MjNmMTFmNmVjZDk2NjpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRTGd6aHN1T3FoQXlJbXktYzhvOVptSUo0aVlfR2M4dHZOSVQzbDF3NThmMkJKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFMZ3poc3VPcWhBeUlteS1jOG85Wm1JSjRpWV9HYzh0dk5JVDNsMXc1OGYyQSIsImF1ZCI6ImRvbWFpbiIsInZwIjp7IkBjb250ZXh0IjpbImh0dHBzOlwvXC93d3cudzMub3JnXC8yMDE4XC9jcmVkZW50aWFsc1wvdjEiXSwidHlwZSI6WyJWZXJpZmlhYmxlUHJlc2VudGF0aW9uIl19LCJub25jZSI6ImVhNzBmMzIwLTgwYjYtNGE5My1iMjkzLTJmNjE2NWRmNmRlYyJ9.iAQ3iwiz9-0fCO28TPGUG0y8y1xN9mgTYPTud8sL_p8Qrz8MwtS2NCvl_CR-vCnh1jzi5AJIo99AbFkGYkZ6XQ"""
+        `when`(polluxMock.processCredentialRequestJWT(any(), any(), any())).thenReturn(jwtString)
+
+        val message = Json.decodeFromString<Message>(
+            """{"id":"a77e5336-f4bb-4ccb-ae6f-2929ed53bbc3","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":null,\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"familyName\",\"value\":\"demo\"},{\"media_type\":null,\"name\":\"drivingClass\",\"value\":\"1\"},{\"media_type\":null,\"name\":\"dateOfIssuance\",\"value\":\"01\\/01\\/2024\"},{\"media_type\":null,\"name\":\"emailAddress\",\"value\":\"demo@email.com\"},{\"media_type\":null,\"name\":\"drivingLicenseID\",\"value\":\"A1221332\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242627","expires_time_plus":"1721329026","attachments":[{"id":"d2c693e7-c217-46e5-92ba-6a0880a89416","data":{"data":"{\"options\":{\"domain\":\"domain\",\"challenge\":\"ea70f320-80b6-4a93-b293-2f6165df6dec\"},\"presentation_definition\":{\"purpose\":null,\"format\":{\"jwt\":{\"proof_type\":[],\"alg\":[\"ES256K\"]},\"ldp\":null},\"name\":null,\"input_descriptors\":[],\"id\":\"aa81d240-9d95-4f2c-bc94-09101c2081c0\"}}"},"format":"prism/jwt"}],"thid":"8b58db48-d243-45b8-a0f1-9862323b7e77","ack":[]}"""
+        )
+        val offerCredential = OfferCredential.fromMessage(message)
+        val subjectDID = DID("did:prism:asdf42sf")
+
+        val requestCredential =
+            agent.prepareRequestCredentialWithIssuer(did = subjectDID, offer = offerCredential)
+
+        assertEquals(offerCredential.from, requestCredential.to)
+        assertEquals(offerCredential.to, requestCredential.from)
+        assertTrue(requestCredential.attachments.size == 1)
+        assertEquals(requestCredential.attachments[0].format, CredentialType.JWT.type)
+        assertTrue(requestCredential.attachments[0].data is AttachmentBase64)
+        assertEquals(offerCredential.thid, requestCredential.thid)
+    }
+
+    @Test
+    fun testPrepareRequestCredentialWithIssuer_whenDIDNotPrism_thenThrowException() = runTest {
+        val seed =
+            Seed("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA".base64UrlDecodedBytes)
+        val agent = EdgeAgent(
+            apollo = apolloMock,
+            castor = castorMockOld,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            pollux = polluxMock,
+            connectionManager = connectionManagerOld,
+            seed = seed,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
+        )
+
+        val message = Json.decodeFromString<Message>(
+            """{"id":"a77e5336-f4bb-4ccb-ae6f-2929ed53bbc3","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":null,\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"familyName\",\"value\":\"demo\"},{\"media_type\":null,\"name\":\"drivingClass\",\"value\":\"1\"},{\"media_type\":null,\"name\":\"dateOfIssuance\",\"value\":\"01\\/01\\/2024\"},{\"media_type\":null,\"name\":\"emailAddress\",\"value\":\"demo@email.com\"},{\"media_type\":null,\"name\":\"drivingLicenseID\",\"value\":\"A1221332\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242627","expires_time_plus":"1721329026","attachments":[{"id":"d2c693e7-c217-46e5-92ba-6a0880a89416","data":{"data":"{\"options\":{\"domain\":\"domain\",\"challenge\":\"ea70f320-80b6-4a93-b293-2f6165df6dec\"},\"presentation_definition\":{\"purpose\":null,\"format\":{\"jwt\":{\"proof_type\":[],\"alg\":[\"ES256K\"]},\"ldp\":null},\"name\":null,\"input_descriptors\":[],\"id\":\"aa81d240-9d95-4f2c-bc94-09101c2081c0\"}}"},"format":"prism/jwt"}],"thid":"8b58db48-d243-45b8-a0f1-9862323b7e77","ack":[]}"""
+        )
+        val offerCredential = OfferCredential.fromMessage(message)
+        val subjectDID = DID("did:peer:asdf42sf")
+
+        assertFailsWith(PolluxError.InvalidPrismDID::class) {
+            agent.prepareRequestCredentialWithIssuer(did = subjectDID, offer = offerCredential)
+        }
+    }
+
+    @Test
+    fun testPrepareRequestCredentialWithIssuer_whenCredentialTypeNotSupported_thenThrowException() = runTest {
+        val seed =
+            Seed("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA".base64UrlDecodedBytes)
+        val agent = EdgeAgent(
+            apollo = apolloMock,
+            castor = castorMockOld,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            pollux = polluxMock,
+            connectionManager = connectionManagerOld,
+            seed = seed,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
+        )
+
+        `when`(plutoMock.getPrismDIDKeyPathIndex(any())).thenReturn(flow { emit(2) })
+
+        `when`(polluxMock.extractCredentialFormatFromMessage(any())).thenReturn(CredentialType.PRESENTATION_EXCHANGE_SUBMISSION)
+
+        val message = Json.decodeFromString<Message>(
+            """{"id":"a77e5336-f4bb-4ccb-ae6f-2929ed53bbc3","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":null,\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"familyName\",\"value\":\"demo\"},{\"media_type\":null,\"name\":\"drivingClass\",\"value\":\"1\"},{\"media_type\":null,\"name\":\"dateOfIssuance\",\"value\":\"01\\/01\\/2024\"},{\"media_type\":null,\"name\":\"emailAddress\",\"value\":\"demo@email.com\"},{\"media_type\":null,\"name\":\"drivingLicenseID\",\"value\":\"A1221332\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242627","expires_time_plus":"1721329026","attachments":[{"id":"d2c693e7-c217-46e5-92ba-6a0880a89416","data":{"data":"{\"options\":{\"domain\":\"domain\",\"challenge\":\"ea70f320-80b6-4a93-b293-2f6165df6dec\"},\"presentation_definition\":{\"purpose\":null,\"format\":{\"jwt\":{\"proof_type\":[],\"alg\":[\"ES256K\"]},\"ldp\":null},\"name\":null,\"input_descriptors\":[],\"id\":\"aa81d240-9d95-4f2c-bc94-09101c2081c0\"}}"},"format":"prism/jwt"}],"thid":"8b58db48-d243-45b8-a0f1-9862323b7e77","ack":[]}"""
+        )
+        val offerCredential = OfferCredential.fromMessage(message)
+        val subjectDID = DID("did:prism:asdf42sf")
+
+        assertFailsWith(EdgeAgentError.InvalidCredentialError::class) {
+            agent.prepareRequestCredentialWithIssuer(did = subjectDID, offer = offerCredential)
+        }
     }
 
     @AndroidIgnore
@@ -550,21 +787,21 @@ class EdgeAgentTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
-        plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
+        val pollux = PolluxImpl(apolloMock, castorMockOld, apiMock)
+        plutoMockOld.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
         val meta = CredentialRequestMeta(
             linkSecretName = "1",
             json = "{\"link_secret_blinding_data\":{\"v_prime\":\"1234\",\"vr_prime\":\"1234\"},\"nonce\":\"411729288962137159046778\",\"link_secret_name\":\"link:secret:id\"}"
         )
-        plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
+        plutoMockOld.getCredentialMetadataReturn = flow { emit(meta) }
 
         val agent = EdgeAgent(
             apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
             mercury = mercuryMock,
             pollux = pollux,
-            connectionManager = connectionManager,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
             logger = PrismLoggerMock(),
@@ -678,7 +915,7 @@ class EdgeAgentTests {
         `when`(castorMock.createPeerDID(any(), any())).thenReturn(DID(newPeerDid))
 
         val definitionJson =
-            "{\"presentation_definition\":{\"id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"input_descriptors\":[{\"id\":\"wa_driver_license\",\"name\":\"Washington State Business License\",\"purpose\":\"We can only allow licensed Washington State business representatives into the WA Business Conference\",\"constraints\":{\"fields\":[{\"path\":[\"\$.credentialSubject.dateOfBirth\",\"\$.credentialSubject.dob\",\"\$.vc.credentialSubject.dateOfBirth\",\"\$.vc.credentialSubject.dob\"]}]}}],\"format\":{\"jwt\":{\"alg\":[\"ES256K\"]}}},\"options\":{\"domain\":\"domain\",\"challenge\":\"challenge\"}}"
+            "{\"presentation_definition\":{\"id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"input_descriptors\":[{\"id\":\"wa_driver_license\",\"name\":\"Washington State Business License\",\"purpose\":\"We can only allow licensed Washington State business representatives into the WA Business Conference\",\"constraints\":{\"fields\":[{\"path\":[\"$.credentialSubject.dateOfBirth\",\"$.credentialSubject.dob\",\"$.vc.credentialSubject.dateOfBirth\",\"$.vc.credentialSubject.dob\"]}]}}],\"format\":{\"jwt\":{\"alg\":[\"ES256K\"]}}},\"options\":{\"domain\":\"domain\",\"challenge\":\"challenge\"}}"
         val presentationDefinitionRequest: PresentationDefinitionRequest =
             Json.decodeFromString(definitionJson)
         // Mock createPresentationDefinitionRequest
@@ -849,7 +1086,7 @@ class EdgeAgentTests {
             `when`(apolloMock.restorePrivateKey(storablePrivateKeys.first())).thenReturn(privateKey)
 
             val presentationSubmissionString =
-                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
+                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
             val presentationSubmission = Json.decodeFromString<PresentationSubmission>(
                 presentationSubmissionString
             )
@@ -989,7 +1226,7 @@ class EdgeAgentTests {
             `when`(apolloMock.restorePrivateKey(storablePrivateKeys.first())).thenReturn(privateKey)
 
             val presentationSubmission = Json.decodeFromString<PresentationSubmission>(
-                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
+                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
             )
             // Mock createPresentationSubmission response
             `when`(polluxMock.createPresentationSubmission(any(), any(), any())).thenReturn(
@@ -1086,7 +1323,7 @@ class EdgeAgentTests {
         ).thenReturn(flow { emit(requestMsg) })
 
         val presentationSubmission = Json.decodeFromString<PresentationSubmission>(
-            "{\"presentation_submission\":{\"id\":\"015a6303-3a16-4813-a657-54a12ff5dab4\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
+            "{\"presentation_submission\":{\"id\":\"015a6303-3a16-4813-a657-54a12ff5dab4\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
         )
         // Mock createPresentationSubmission response
         `when`(polluxMock.createPresentationSubmission(any(), any(), any())).thenReturn(
