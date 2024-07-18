@@ -473,30 +473,19 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * @param did The DID for which to retrieve private keys.
      * @return A flow that emits a list of nullable [PrivateKey] objects. In case a private key is not found, null is emitted.
      */
-    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<StorablePrivateKey>> {
         return getInstance().privateKeyQueries
             .fetchPrivateKeyByDID(did.toString())
             .asFlow()
             .map {
                 it.executeAsList()
                     .map { storableKey ->
-                        when (storableKey.restorationIdentifier) {
-                            "secp256k1+priv" -> {
-                                Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                            }
-
-                            "ed25519+priv" -> {
-                                Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                            }
-
-                            "x25519+priv" -> {
-                                X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                            }
-
-                            else -> {
-                                throw PlutoError.InvalidRestorationIdentifier()
-                            }
-                        }
+                        StorablePrivateKey(
+                            id = storableKey.id,
+                            restorationIdentifier = storableKey.restorationIdentifier,
+                            data = storableKey.data_,
+                            keyPathIndex = storableKey.keyPathIndex
+                        )
                     }
             }
     }
@@ -508,29 +497,18 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * @return A [Flow] that emits the private key as a nullable [PrivateKey] object. If no private key is found,
      * null is emitted.
      */
-    override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
+    override fun getDIDPrivateKeyByID(id: String): Flow<StorablePrivateKey?> {
         return getInstance().privateKeyQueries
             .fetchPrivateKeyByID(id)
             .asFlow()
             .map {
                 it.executeAsList().firstOrNull()?.let { storableKey ->
-                    when (storableKey.restorationIdentifier) {
-                        "secp256k1+priv" -> {
-                            Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                        }
-
-                        "ed25519+priv" -> {
-                            Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                        }
-
-                        "x25519+priv" -> {
-                            X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                        }
-
-                        else -> {
-                            throw PlutoError.InvalidRestorationIdentifier()
-                        }
-                    }
+                    StorablePrivateKey(
+                        id = storableKey.id,
+                        restorationIdentifier = storableKey.restorationIdentifier,
+                        data = storableKey.data_,
+                        keyPathIndex = storableKey.keyPathIndex
+                    )
                 }
             }
     }
@@ -1234,5 +1212,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
         val keys = keysWithDID + keysWithNoDID
         return flowOf(keys)
+    }
+
+    override fun getAllPrivateKeys(): Flow<List<StorablePrivateKey>> {
+        return getInstance().privateKeyQueries
+            .fetchAllPrivateKeys()
+            .asFlow()
+            .map {
+                it.executeAsList()
+                    .map { storableKey ->
+                        StorablePrivateKey(
+                            id = storableKey.id,
+                            restorationIdentifier = storableKey.restorationIdentifier,
+                            data = storableKey.data_,
+                            keyPathIndex = storableKey.keyPathIndex
+                        )
+                    }
+            }
     }
 }

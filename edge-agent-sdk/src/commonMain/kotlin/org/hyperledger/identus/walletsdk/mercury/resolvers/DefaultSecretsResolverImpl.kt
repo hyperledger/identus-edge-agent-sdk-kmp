@@ -5,6 +5,7 @@ package org.hyperledger.identus.walletsdk.mercury.resolvers
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.Serializable
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.Secret
 import org.hyperledger.identus.walletsdk.domain.models.SecretMaterialJWK
@@ -16,7 +17,7 @@ import org.hyperledger.identus.walletsdk.mercury.OKP
  *
  * @property pluto Instance of the Pluto class used for resolving secrets.
  */
-class DefaultSecretsResolverImpl(val pluto: Pluto) : SecretsResolver {
+class DefaultSecretsResolverImpl(val pluto: Pluto, val apollo: Apollo) : SecretsResolver {
 
     /**
      * Represents a Private JSON Web Key (JWK).
@@ -55,7 +56,8 @@ class DefaultSecretsResolverImpl(val pluto: Pluto) : SecretsResolver {
      * @return The secret object if found, otherwise null.
      */
     override suspend fun getSecret(secretId: String): Secret? {
-        return pluto.getDIDPrivateKeyByID(secretId).firstOrNull()?.let { privateKey ->
+        return pluto.getDIDPrivateKeyByID(secretId).firstOrNull()?.let { storablePrivateKey ->
+            val privateKey = apollo.restorePrivateKey(storablePrivateKey)
             return Secret(
                 secretId,
                 SecretType.JsonWebKey2020,

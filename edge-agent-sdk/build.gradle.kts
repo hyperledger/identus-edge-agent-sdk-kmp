@@ -136,6 +136,8 @@ kotlin {
                 implementation("com.apicatalog:titanium-json-ld-jre8:1.4.0")
                 implementation("org.glassfish:jakarta.json:2.0.1")
                 implementation("io.setl:rdf-urdna:1.3")
+
+                implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
             }
         }
         val commonTest by getting {

@@ -9,9 +9,9 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
+import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -51,8 +51,8 @@ class PlutoMock : Pluto {
     lateinit var getPrismDIDKeyPathIndexReturn: Flow<Int?>
     lateinit var getPrismLastKeyPathIndexReturn: Flow<Int>
     lateinit var getAllPeerDIDsReturn: Flow<List<PeerDID>>
-    lateinit var getDIDPrivateKeysReturn: Flow<List<PrivateKey?>>
-    lateinit var getDIDPrivateKeysByIDReturn: Flow<PrivateKey?>
+    lateinit var getDIDPrivateKeysReturn: Flow<List<StorablePrivateKey?>>
+    lateinit var getDIDPrivateKeysByIDReturn: Flow<StorablePrivateKey?>
     lateinit var getAllDidPairsReturn: Flow<List<DIDPair>>
     lateinit var getPairByDIDReturn: Flow<DIDPair?>
     lateinit var getPairByNameReturn: Flow<DIDPair?>
@@ -139,12 +139,12 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<StorablePrivateKey?>> {
         wasGetDIDPrivateKeysByDIDCalled = true
         return getDIDPrivateKeysReturn
     }
 
-    override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
+    override fun getDIDPrivateKeyByID(id: String): Flow<StorablePrivateKey?> {
         wasGetDIDPrivateKeysByIDCalled = true
         return getDIDPrivateKeysByIDReturn
     }
@@ -271,6 +271,10 @@ class PlutoMock : Pluto {
     }
 
     override suspend fun start(context: Any?) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getAllPrivateKeys(): Flow<List<StorablePrivateKey?>> {
         TODO("Not yet implemented")
     }
 }

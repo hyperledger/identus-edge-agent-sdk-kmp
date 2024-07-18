@@ -22,6 +22,7 @@ import org.hyperledger.identus.walletsdk.apollo.utils.X25519PublicKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
 import org.hyperledger.identus.walletsdk.domain.models.Curve
+import org.hyperledger.identus.walletsdk.domain.models.PlutoError
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.SeedWords
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
@@ -38,6 +39,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.RawKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
+import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
 
 /**
  * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
@@ -450,6 +452,32 @@ class ApolloImpl : Apollo {
 
             else -> {
                 throw ApolloError.InvalidKeyType(key.kty)
+            }
+        }
+    }
+
+    /**
+     * Restores a private key from StorablePrivateKey.
+     *
+     * @param storablePrivateKey The StorablePrivateKey to restore the key from.
+     * @return The restored Key object.
+     */
+    override fun restorePrivateKey(storablePrivateKey: StorablePrivateKey): PrivateKey {
+        return when (storablePrivateKey.restorationIdentifier) {
+            "secp256k1+priv" -> {
+                Secp256k1PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
+            }
+
+            "ed25519+priv" -> {
+                Ed25519PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
+            }
+
+            "x25519+priv" -> {
+                X25519PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
+            }
+
+            else -> {
+                throw PlutoError.InvalidRestorationIdentifier()
             }
         }
     }
