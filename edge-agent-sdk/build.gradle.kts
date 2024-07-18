@@ -128,6 +128,10 @@ kotlin {
                 implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.6")
                 implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
+                implementation("eu.europa.ec.eudi:eudi-lib-jvm-sdjwt-kt:0.4.0") {
+                    exclude(group = "com.nimbusds", module = "nimbus-jose-jwt")
+                }
+                implementation(kotlin("reflect"))
 
                 implementation("com.apicatalog:titanium-json-ld-jre8:1.4.0")
                 implementation("org.glassfish:jakarta.json:2.0.1")

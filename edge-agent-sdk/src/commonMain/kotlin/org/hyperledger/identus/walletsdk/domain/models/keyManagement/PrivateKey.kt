@@ -43,4 +43,7 @@ abstract class PrivateKey : Key() {
      * Defines a method to fetch the public key of this private key
      */
     abstract fun publicKey(): PublicKey
+
+    @Throws
+    abstract fun jca(): java.security.PrivateKey
 }

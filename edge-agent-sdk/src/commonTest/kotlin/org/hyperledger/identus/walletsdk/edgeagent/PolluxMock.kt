@@ -3,8 +3,6 @@ package org.hyperledger.identus.walletsdk.edgeagent
 import anoncreds_wrapper.CredentialOffer
 import anoncreds_wrapper.CredentialRequestMetadata
 import anoncreds_wrapper.LinkSecret
-import anoncreds_wrapper.Presentation
-import anoncreds_wrapper.Schema
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -19,8 +17,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import java.security.interfaces.ECPublicKey
@@ -43,20 +39,7 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun createVerifiablePresentationJWT(
-        subjectDID: DID,
-        privateKey: PrivateKey,
-        credential: Credential,
-        requestPresentationJson: JsonObject
-    ): String {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun createVerifiablePresentationAnoncred(
-        request: RequestPresentation,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation {
+    override fun processCredentialRequestSDJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
         TODO("Not yet implemented")
     }
 
@@ -84,14 +67,6 @@ class PolluxMock : Pollux {
 
     override fun extractCredentialFormatFromMessage(formats: Array<AttachmentDescriptor>): CredentialType {
         return extractedCredentialFormatFromMessageReturn ?: throw Exception("Return not defined")
-    }
-
-    override suspend fun getCredentialDefinition(id: String): anoncreds_wrapper.CredentialDefinition {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun getSchema(schemaId: String): Schema {
-        TODO("Not yet implemented")
     }
 
     override suspend fun createPresentationDefinitionRequest(

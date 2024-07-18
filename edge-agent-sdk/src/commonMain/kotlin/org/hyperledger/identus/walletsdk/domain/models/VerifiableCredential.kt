@@ -60,6 +60,7 @@ data class VerifiableCredentialTypeContainer(
 enum class CredentialType(val type: String) {
     JWT("prism/jwt"),
     W3C("w3c"),
+    SDJWT("vc+sd-jwt"),
     ANONCREDS_OFFER("anoncreds/credential-offer@v1.0"),
     ANONCREDS_REQUEST("anoncreds/credential-request@v1.0"),
     ANONCREDS_ISSUE("anoncreds/credential@v1.0"),

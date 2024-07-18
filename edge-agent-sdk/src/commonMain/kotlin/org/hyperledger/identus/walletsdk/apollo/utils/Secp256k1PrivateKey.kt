@@ -1,10 +1,14 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.derivation.DerivationPath
 import org.hyperledger.identus.apollo.derivation.HDKey
 import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PrivateKey
+import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
@@ -20,6 +24,12 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.pollux.EC
+import java.math.BigInteger
+import java.security.KeyFactory
+import java.security.interfaces.ECPrivateKey
+import java.security.spec.ECParameterSpec
+import java.security.spec.ECPrivateKeySpec
 
 /**
  * The `Secp256k1PrivateKey` class represents a private key that uses the secp256k1 elliptic curve.
@@ -158,5 +168,14 @@ class Secp256k1PrivateKey(nativeValue: ByteArray) :
         val hdKey = HDKey(seedByteArray, 0, 0)
         val derivedHdKey = hdKey.derive(derivationPath.toString())
         return Secp256k1PrivateKey(derivedHdKey.getKMMSecp256k1PrivateKey().raw)
+    }
+
+    override fun jca(): java.security.PrivateKey {
+        val curveName = KMMEllipticCurve.SECP256k1.value
+        val sp = ECNamedCurveTable.getParameterSpec(curveName)
+        val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
+        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, getValue()), params)
+        val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
+        return keyFactory.generatePrivate(privateKeySpec) as ECPrivateKey
     }
 }

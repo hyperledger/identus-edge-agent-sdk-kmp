@@ -32,6 +32,7 @@ import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
@@ -877,6 +878,7 @@ class EdgeAgentTests {
             val plutoMock = mock<Pluto>()
             val mercuryMock = mock<Mercury>()
             val polluxMock = mock<Pollux>()
+            val provableCredentialMock = mock<ProvableCredential>()
             val connectionManagerMock = mock<ConnectionManager>()
             val seed = Seed(MnemonicHelper.createRandomSeed())
 
@@ -907,7 +909,7 @@ class EdgeAgentTests {
             `when`(plutoMock.getPrismDIDKeyPathIndex(DID(credential.subject!!))).thenReturn(pathIndexFlow)
 
             val testVerifiablePresentationJWTPayload = "testPayload"
-            `when`(polluxMock.createVerifiablePresentationJWT(any(), any(), any(), any())).thenReturn(testVerifiablePresentationJWTPayload)
+            `when`(provableCredentialMock.presentation(any(), any())).thenReturn(testVerifiablePresentationJWTPayload)
 
             val presentation = agent.preparePresentationForRequestProof(
                 requestPresentation,
@@ -922,8 +924,8 @@ class EdgeAgentTests {
             val attachmentData = attachmentDescriptor.data
             assertTrue(attachmentData is AttachmentBase64)
             assertEquals(
-                testVerifiablePresentationJWTPayload,
-                attachmentData.base64.base64UrlDecoded
+                3,
+                attachmentData.base64.base64UrlDecoded.split(".").count()
             )
         }
 

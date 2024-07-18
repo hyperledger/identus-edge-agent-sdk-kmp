@@ -1,5 +1,7 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
+import org.bouncycastle.crypto.params.X25519PrivateKeyParameters
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.utils.KMMX25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.Curve
@@ -13,6 +15,8 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PEMKeyType
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import java.security.KeyFactory
+import java.security.spec.PKCS8EncodedKeySpec
 
 /**
  * Represents a private key for the X25519 elliptic curve.
@@ -101,4 +105,11 @@ class X25519PrivateKey(nativeValue: ByteArray) : PrivateKey(), StorableKey, Expo
      */
     override val restorationIdentifier: String
         get() = "x25519+priv"
+
+    override fun jca(): java.security.PrivateKey {
+        val privateKeyParams = X25519PrivateKeyParameters(raw, 0)
+        val pkcs8Encoded = privateKeyParams.encoded
+        val keyFactory = KeyFactory.getInstance("X25519", BouncyCastleProvider())
+        return keyFactory.generatePrivate(PKCS8EncodedKeySpec(pkcs8Encoded))
+    }
 }
