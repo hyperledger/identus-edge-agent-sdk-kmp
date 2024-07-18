@@ -2,6 +2,7 @@ package org.hyperledger.identus.walletsdk.mercury
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
@@ -13,19 +14,28 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
+import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
+import java.util.*
 
 class PlutoMock : Pluto {
     var privateKeys = mutableListOf<PrivateKey>()
 
-    override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
+    override fun getDIDPrivateKeyByID(id: String): Flow<StorablePrivateKey?> {
         val pk = privateKeys.find {
             it.getCurve() == id
         }
-
-        return flow { emit(pk) }
+        val storablePrivateKeys = pk?.let { privateKey ->
+            StorablePrivateKey(
+                id = UUID.randomUUID().toString(),
+                restorationIdentifier = "secp256k1+priv",
+                data = privateKey.raw.base64UrlEncoded,
+                keyPathIndex = 0
+            )
+        }
+        return flow { emit(storablePrivateKeys) }
     }
 
     override fun storePrismDIDAndPrivateKeys(
@@ -97,7 +107,7 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<StorablePrivateKey?>> {
         TODO("Not yet implemented")
     }
 
@@ -217,7 +227,7 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun getAllPrivateKeys(): Flow<List<PrivateKey?>> {
+    override fun getAllPrivateKeys(): Flow<List<StorablePrivateKey?>> {
         TODO("Not yet implemented")
     }
 }

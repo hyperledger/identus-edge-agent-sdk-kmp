@@ -10,8 +10,6 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
-import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
-import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
@@ -548,17 +546,17 @@ class BackupRestorationTests {
         var ed25519Counter = 0
         var x25519Counter = 0
         var secp256k1Counter = 0
-        allKeys.forEach { key ->
-            when (key) {
-                is Ed25519PrivateKey -> {
+        allKeys.forEach { storablePrivateKey ->
+            when (storablePrivateKey.restorationIdentifier) {
+                "ed25519+priv" -> {
                     ed25519Counter++
                 }
 
-                is X25519PrivateKey -> {
+                "x25519+priv" -> {
                     x25519Counter++
                 }
 
-                is Secp256k1PrivateKey -> {
+                "secp256k1+priv" -> {
                     secp256k1Counter++
                 }
             }
@@ -669,17 +667,17 @@ class BackupRestorationTests {
         var ed25519Counter = 0
         var x25519Counter = 0
         var secp256k1Counter = 0
-        allKeys.forEach { key ->
-            when (key) {
-                is Ed25519PrivateKey -> {
+        allKeys.forEach { storablePrivateKey ->
+            when (storablePrivateKey.restorationIdentifier) {
+                "ed25519+priv" -> {
                     ed25519Counter++
                 }
 
-                is X25519PrivateKey -> {
+                "x25519+priv" -> {
                     x25519Counter++
                 }
 
-                is Secp256k1PrivateKey -> {
+                "secp256k1+priv" -> {
                     secp256k1Counter++
                 }
             }

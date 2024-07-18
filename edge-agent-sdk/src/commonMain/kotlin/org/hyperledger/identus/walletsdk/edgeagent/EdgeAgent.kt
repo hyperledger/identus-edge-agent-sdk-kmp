@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_wrapper.CredentialOffer
@@ -20,6 +22,8 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import java.net.UnknownHostException
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -110,14 +114,13 @@ import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
+import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.kotlincrypto.hash.sha2.SHA256
-import java.net.UnknownHostException
-import java.util.*
 import kotlin.text.encodeToByteArray
 
 /**
@@ -598,27 +601,30 @@ class EdgeAgent {
      */
     @Throws(EdgeAgentError.CannotFindDIDPrivateKey::class)
     suspend fun signWith(did: DID, message: ByteArray): Signature {
-        val privateKey =
-            pluto.getDIDPrivateKeysByDID(did).first().first()
-                ?: throw EdgeAgentError.CannotFindDIDPrivateKey(did.toString())
-        val returnByteArray: ByteArray = when (privateKey.getCurve()) {
-            Curve.ED25519.value -> {
-                val ed = privateKey as Ed25519PrivateKey
-                ed.sign(message)
+        val storablePrivateKey: StorablePrivateKey = pluto.getDIDPrivateKeysByDID(did).first().first()
+            ?: throw EdgeAgentError.CannotFindDIDPrivateKey(did.toString())
+        val privateKey = apollo.restorePrivateKey(storablePrivateKey)
+
+        val returnByteArray: ByteArray =
+            when (privateKey.getCurve()) {
+                Curve.ED25519.value -> {
+                    val ed = privateKey as Ed25519PrivateKey
+                    ed.sign(message)
+                }
+
+                Curve.SECP256K1.value -> {
+                    val secp = privateKey as Secp256k1PrivateKey
+                    secp.sign(message)
+                }
+
+                else -> {
+                    throw ApolloError.InvalidSpecificKeyCurve(
+                        privateKey.getCurve(),
+                        arrayOf(Curve.SECP256K1.value, Curve.ED25519.value)
+                    )
+                }
             }
 
-            Curve.SECP256K1.value -> {
-                val secp = privateKey as Secp256k1PrivateKey
-                secp.sign(message)
-            }
-
-            else -> {
-                throw ApolloError.InvalidSpecificKeyCurve(
-                    privateKey.getCurve(),
-                    arrayOf(Curve.SECP256K1.value, Curve.ED25519.value)
-                )
-            }
-        }
         return Signature(returnByteArray)
     }
 
@@ -1120,9 +1126,9 @@ class EdgeAgent {
         val didString =
             credential.subject ?: throw Exception("Credential must contain subject")
 
-        val privateKeyKeys = pluto.getDIDPrivateKeysByDID(DID(didString)).first()
-        val privateKey = privateKeyKeys.first()
+        val storablePrivateKey: StorablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
             ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
+        val privateKey = apollo.restorePrivateKey(storablePrivateKey)
 
         val presentationSubmissionProof = pollux.createPresentationSubmission(
             presentationDefinitionRequest = presentationDefinitionRequest,

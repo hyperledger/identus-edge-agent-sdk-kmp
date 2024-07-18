@@ -8,9 +8,9 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
+import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -188,18 +188,18 @@ interface Pluto {
      * Retrieves a list of private keys associated with a given DID.
      *
      * @param did The DID for which to retrieve private keys.
-     * @return A flow that emits a list of nullable [PrivateKey] objects. In case a private key is not found, null is emitted.
+     * @return A flow that emits a list of nullable [StorablePrivateKey] objects. In case a private key is not found, null is emitted.
      */
-    fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>>
+    fun getDIDPrivateKeysByDID(did: DID): Flow<List<StorablePrivateKey?>>
 
     /**
      * Retrieves the private key associated with a given ID.
      *
      * @param id The ID of the private key.
-     * @return A [Flow] that emits the private key as a nullable [PrivateKey] object. If no private key is found,
+     * @return A [Flow] that emits the private key as a nullable [StorablePrivateKey] object. If no private key is found,
      * null is emitted.
      */
-    fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?>
+    fun getDIDPrivateKeyByID(id: String): Flow<StorablePrivateKey?>
 
     /**
      * Retrieves all the pairs of DIDs stored in the system.
@@ -389,9 +389,9 @@ interface Pluto {
     /**
      * Retrieves a list of all private keys.
      *
-     * @return A flow that emits a list of nullable [PrivateKey] objects. In case a private key is not found, null is emitted.
+     * @return A flow that emits a list of nullable [StorablePrivateKey] objects. In case a private key is not found, null is emitted.
      */
-    fun getAllPrivateKeys(): Flow<List<PrivateKey?>>
+    fun getAllPrivateKeys(): Flow<List<StorablePrivateKey?>>
 
     suspend fun start(context: Any? = null)
 }

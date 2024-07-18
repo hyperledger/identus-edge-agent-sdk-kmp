@@ -1,5 +1,7 @@
 package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
+import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
+
 /**
 * This interface defines the functionality to verify and restore cryptographic keys
 */
@@ -43,4 +45,12 @@ interface KeyRestoration {
      * @return The restored Key object.
      */
     fun restoreKey(key: JWK, index: Int? = null): Key
+
+    /**
+     * Restores a private key from StorablePrivateKey.
+     *
+     * @param storablePrivateKey The StorablePrivateKey to restore the key from.
+     * @return The restored Key object.
+     */
+    fun restorePrivateKey(storablePrivateKey: StorablePrivateKey): PrivateKey
 }

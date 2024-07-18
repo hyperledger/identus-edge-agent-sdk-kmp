@@ -2,6 +2,7 @@
 
 package org.hyperledger.identus.walletsdk.mercury.resolvers
 
+import java.util.*
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
@@ -16,7 +17,6 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.OctetPrivateKey
 import org.hyperledger.identus.walletsdk.mercury.OKP
-import java.util.Optional
 
 /**
  * DIDCommSecretsResolver is a class that implements the SecretResolver interface.
@@ -48,7 +48,9 @@ class DIDCommSecretsResolver(val pluto: Pluto, val apollo: Apollo) : SecretResol
         return runBlocking {
             pluto.getDIDPrivateKeyByID(kid)
                 .firstOrNull()
-                ?.let { privateKey ->
+                ?.let { storablePrivateKey ->
+                    val privateKey = apollo.restorePrivateKey(storablePrivateKey)
+
                     val octetJwk = OctetPrivateKey(
                         crv = privateKey.getCurve(),
                         kty = OKP,
