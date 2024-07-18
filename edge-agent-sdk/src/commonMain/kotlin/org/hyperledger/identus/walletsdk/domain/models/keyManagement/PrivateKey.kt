@@ -1,11 +1,6 @@
 package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
-import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
-import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
-import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
-import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.Curve
-import org.hyperledger.identus.walletsdk.domain.models.PlutoError
 
 /**
  * Abstraction of what a PrivateKey is and what functionality provides.
