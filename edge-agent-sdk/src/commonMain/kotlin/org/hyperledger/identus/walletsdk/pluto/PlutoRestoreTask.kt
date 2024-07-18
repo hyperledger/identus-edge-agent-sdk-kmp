@@ -1,5 +1,8 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.pluto
 
+import java.util.*
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -32,11 +35,12 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.descriptor
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.deserialize
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.serialize
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
-import java.util.*
-import kotlin.jvm.Throws
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -57,12 +61,12 @@ open class PlutoRestoreTask(
      */
     fun run() {
         restoreCredentials()
-        restoreDids()
         restoreDidPairs()
         restoreKeys()
         restoreLinkSecret()
         restoreMessages()
         restoreMediators()
+        restoreDids()
     }
 
     /**
@@ -169,14 +173,21 @@ open class PlutoRestoreTask(
         }.forEach {
             if (it.third is DID) {
                 if (it.third.toString().contains("peer")) {
-                    val metaId = (it.third as DID).toString()
+                    val origDid = (it.third as DID)
+                    val did = if (origDid.toString().contains("#")) {
+                        val splits = origDid.toString().split("#")
+                        DID(splits[0])
+                    } else {
+                        DID(origDid.toString())
+                    }
+                    val keyId = origDid.toString()
                     pluto.storePrivateKeys(
                         it.first as StorableKey,
-                        it.third as DID,
+                        did,
                         (it.first.keySpecification[IndexKey().property])?.toInt(),
-                        metaId
+                        keyId
                     )
-                    pluto.storePeerDID(it.third as DID)
+//                    pluto.storePeerDID(did)
                 } else {
                     pluto.storePrismDIDAndPrivateKeys(
                         it.third as DID,
@@ -271,14 +282,13 @@ open class PlutoRestoreTask(
      * @throws IndexOutOfBoundsException If the input string is not in the required format `x:y:z`
      */
     @Throws(IndexOutOfBoundsException::class)
-    private fun String.toDID(alias: String? = null): DID {
-        return DID(
+    private fun String.toDID(alias: String? = null): DID =
+        DID(
             DID.getSchemaFromString(this),
             DID.getMethodFromString(this),
             DID.getMethodIdFromString(this),
             alias
         )
-    }
 
     /**
      * Represents the various types of backup restoration IDs that can be used.
@@ -295,13 +305,12 @@ open class PlutoRestoreTask(
          *
          * @return The corresponding RestorationID object based on the current BackUpRestorationId.
          */
-        fun toRestorationId(): RestorationID {
-            return when (this) {
+        fun toRestorationId(): RestorationID =
+            when (this) {
                 JWT -> RestorationID.JWT
                 ANONCRED -> RestorationID.ANONCRED
                 W3C -> RestorationID.W3C
             }
-        }
     }
 
     /**
@@ -520,8 +529,8 @@ open class PlutoRestoreTask(
          *
          * @return The converted Message object.
          */
-        fun toMessage(): Message {
-            return Message(
+        fun toMessage(): Message =
+            Message(
                 id,
                 piuri,
                 from,
@@ -537,7 +546,6 @@ open class PlutoRestoreTask(
                 ack,
                 direction
             )
-        }
 
         /**
          * Serializer for the [Message.Direction] enum class.
@@ -571,9 +579,8 @@ open class PlutoRestoreTask(
              * @param decoder The decoder used for deserialization.
              * @return The deserialized Message.Direction value.
              */
-            override fun deserialize(decoder: Decoder): Message.Direction {
-                return Message.Direction.fromValue(decoder.decodeInt())
-            }
+            override fun deserialize(decoder: Decoder): Message.Direction =
+                Message.Direction.fromValue(decoder.decodeInt())
         }
 
         /**
@@ -722,9 +729,8 @@ open class PlutoRestoreTask(
              * @param decoder The Decoder object used for deserialization.
              * @return A new instance of DID.
              */
-            override fun deserialize(decoder: Decoder): DID {
-                return DID(decoder.decodeString())
-            }
+            override fun deserialize(decoder: Decoder): DID =
+                DID(decoder.decodeString())
         }
     }
 }
