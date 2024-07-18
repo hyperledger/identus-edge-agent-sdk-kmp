@@ -158,7 +158,7 @@ open class EdgeAgent {
 
     private val edgeAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
-    private var connectionManager: ConnectionManager
+    internal var connectionManager: ConnectionManager
     private var logger: PrismLogger
     private val agentOptions: AgentOptions
 
