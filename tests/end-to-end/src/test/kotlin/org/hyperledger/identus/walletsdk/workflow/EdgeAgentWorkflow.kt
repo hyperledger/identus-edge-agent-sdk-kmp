@@ -3,6 +3,7 @@ package org.hyperledger.identus.walletsdk.workflow
 import com.google.gson.GsonBuilder
 import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.utils.Logger
+import io.ktor.util.reflect.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import net.serenitybdd.screenplay.Actor
@@ -19,12 +20,15 @@ import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
+import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import java.util.UUID
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.minutes
@@ -74,9 +78,12 @@ class EdgeAgentWorkflow {
             UseWalletSdk.execute {
                 val credentials = it.sdk.getAllCredentials().first()
                 val credential = credentials.first()
-                val requestPresentationMessage = RequestPresentation.fromMessage(it.proofRequestStack.removeFirst())
-                val presentation = it.sdk.preparePresentationForRequestProof(requestPresentationMessage, credential)
-                it.sdk.sendMessage(presentation.makeMessage())
+                assertThat(credential).instanceOf(ProvableCredential::class)
+                if (credential is ProvableCredential) {
+                    val requestPresentationMessage = RequestPresentation.fromMessage(it.proofRequestStack.removeFirst())
+                    val presentation = it.sdk.preparePresentationForRequestProof(requestPresentationMessage, credential)
+                    it.sdk.sendMessage(presentation.makeMessage())
+                }
             }
         )
     }
