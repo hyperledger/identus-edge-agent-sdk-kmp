@@ -13,8 +13,8 @@ import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
-import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -195,11 +195,11 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
+    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
         TODO("Not yet implemented")
     }
 
-    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
+    override fun storeCredentialMetadata(name: String, linkSecretName: String, json: String) {
         TODO("Not yet implemented")
     }
 

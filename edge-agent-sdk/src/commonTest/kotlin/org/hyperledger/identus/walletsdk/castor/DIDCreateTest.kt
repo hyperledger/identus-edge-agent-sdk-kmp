@@ -7,6 +7,7 @@ import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
+import org.hyperledger.identus.walletsdk.domain.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
@@ -14,7 +15,6 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.RawKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
-import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

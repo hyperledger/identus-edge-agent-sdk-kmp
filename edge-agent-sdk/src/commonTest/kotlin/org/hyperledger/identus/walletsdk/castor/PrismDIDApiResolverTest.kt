@@ -9,7 +9,7 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
-import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
+import org.hyperledger.identus.walletsdk.domain.models.KeyValue
 import org.junit.Test
 import org.mockito.Mockito.`when`
 import org.mockito.kotlin.mock

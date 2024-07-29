@@ -9,8 +9,8 @@ import org.hyperledger.identus.walletsdk.domain.models.PeerDID
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
-import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -109,25 +109,24 @@ interface Pluto {
     /**
      * Stores the metadata associated with a credential request.
      *
+     * @param name the unique name used to retrieve the stored metadata.
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
-     *
-     * @deprecated This method has been deprecated and should no longer be used.
-     * @see storeCredentialMetadata("", metadata) for the replacement method that should be used.
      */
     @Deprecated(
         "This method has been deprecated and should no longer be used.",
-        ReplaceWith("storeCredentialMetadata(\"\", metadata)"),
+        ReplaceWith("storeCredentialMetadata(name, linkSecretName, json)"),
         DeprecationLevel.ERROR
     )
-    fun storeCredentialMetadata(metadata: CredentialRequestMeta)
+    fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta)
 
     /**
      * Stores the metadata associated with a credential request.
      *
      * @param name the unique name used to retrieve the stored metadata.
-     * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     * @param linkSecretName The link secret name as String.
+     * @param json The json string.
      */
-    fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta)
+    fun storeCredentialMetadata(name: String, linkSecretName: String, json: String)
 
     /**
      * Retrieves all PrismDIDs and their associated information.

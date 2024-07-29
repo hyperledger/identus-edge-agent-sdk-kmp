@@ -13,7 +13,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.pluto.StorablePrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 
 class ApolloMock : Apollo {
     var createRandomMnemonicsReturn: Array<String> = emptyArray()
@@ -56,6 +56,10 @@ class ApolloMock : Apollo {
     }
 
     override fun restorePrivateKey(storablePrivateKey: StorablePrivateKey): PrivateKey {
+        TODO("Not yet implemented")
+    }
+
+    override fun restorePrivateKey(restorationIdentifier: String, privateKeyData: String): PrivateKey {
         TODO("Not yet implemented")
     }
 

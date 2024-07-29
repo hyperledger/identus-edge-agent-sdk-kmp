@@ -57,7 +57,7 @@ class DefaultSecretsResolverImpl(val pluto: Pluto, val apollo: Apollo) : Secrets
      */
     override suspend fun getSecret(secretId: String): Secret? {
         return pluto.getDIDPrivateKeyByID(secretId).firstOrNull()?.let { storablePrivateKey ->
-            val privateKey = apollo.restorePrivateKey(storablePrivateKey)
+            val privateKey = apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
             return Secret(
                 secretId,
                 SecretType.JsonWebKey2020,

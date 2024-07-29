@@ -1,7 +1,6 @@
 package org.hyperledger.identus.walletsdk.edgeagent
 
 const val DIDCOMM1 = "#didcomm-1"
-const val DIDCOMM_MESSAGING = "DIDCommMessaging"
 const val PRISM = "prism"
 const val JWT_MEDIA_TYPE = "prism/jwt"
 const val SDJWT_MEDIA_TYPE = "vc+sd-jwt"

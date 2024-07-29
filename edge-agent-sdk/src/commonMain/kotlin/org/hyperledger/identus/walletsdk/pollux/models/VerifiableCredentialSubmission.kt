@@ -1,7 +1,8 @@
-package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
+package org.hyperledger.identus.walletsdk.pollux.models
 
 import kotlinx.serialization.Serializable
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.Proof
 
 @Serializable
 abstract class CredentialSubmission

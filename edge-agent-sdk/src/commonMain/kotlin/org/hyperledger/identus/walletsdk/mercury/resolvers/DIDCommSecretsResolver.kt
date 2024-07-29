@@ -49,7 +49,7 @@ class DIDCommSecretsResolver(val pluto: Pluto, val apollo: Apollo) : SecretResol
             pluto.getDIDPrivateKeyByID(kid)
                 .firstOrNull()
                 ?.let { storablePrivateKey ->
-                    val privateKey = apollo.restorePrivateKey(storablePrivateKey)
+                    val privateKey = apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
 
                     val octetJwk = OctetPrivateKey(
                         crv = privateKey.getCurve(),

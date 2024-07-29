@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.pluto
+package org.hyperledger.identus.walletsdk.domain.models.keyManagement
 
 data class StorablePrivateKey(
     val id: String,
