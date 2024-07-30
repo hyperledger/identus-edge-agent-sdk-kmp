@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
+package org.hyperledger.identus.walletsdk.pollux.models
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName

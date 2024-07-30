@@ -19,50 +19,9 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import org.hyperledger.identus.apollo.base64.base64UrlDecoded
-import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
-import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.setl.rdf.normalization.RdfNormalize
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.encodeToJsonElement
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
-import org.didcommx.didcomm.common.Typ
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
-import org.hyperledger.identus.walletsdk.domain.models.Api
-import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.Credential
-import org.hyperledger.identus.walletsdk.domain.models.CredentialType
-import org.hyperledger.identus.walletsdk.domain.models.DID
-import org.hyperledger.identus.walletsdk.domain.models.PolluxError
-import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.domain.models.httpClient
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.VerifiableKey
-import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
-import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
-import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
-import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
 import java.io.ByteArrayInputStream
 import java.io.StringWriter
 import java.math.BigInteger
@@ -73,22 +32,66 @@ import java.security.spec.ECParameterSpec
 import java.security.spec.ECPoint
 import java.security.spec.ECPublicKeySpec
 import java.util.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
+import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
+import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
+import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
+import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
-import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.DescriptorItemFormat
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
-import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
-import org.hyperledger.identus.walletsdk.pluto.RestorationID
-import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
+import org.hyperledger.identus.walletsdk.domain.models.KeyValue
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
+import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.VerifiableKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.pluto.RestorationID
+import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import org.hyperledger.identus.walletsdk.pollux.models.DescriptorItemFormat
+import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTProofType
+import org.hyperledger.identus.walletsdk.pollux.models.PresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
+import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
 import org.hyperledger.identus.walletsdk.pollux.utils.Bitstring
 
 /**
@@ -204,6 +207,7 @@ open class PolluxImpl(
             "sd-jwt+credential" -> {
                 cred = SDJWTCredential.fromSDJwtString(credentialData.decodeToString())
             }
+
             RestorationID.JWT.value -> {
                 cred = JWTCredential.fromJwtString(credentialData.decodeToString())
             }
@@ -565,6 +569,7 @@ open class PolluxImpl(
         }
         return false
     }
+
     suspend fun fetchRevocationRegistry(credentialStatus: JWTVerifiableCredential.CredentialStatus): String {
         val result = api.request(
             HttpMethod.Get.value,
@@ -725,7 +730,7 @@ open class PolluxImpl(
         type: CredentialType,
         presentationClaims: PresentationClaims,
         options: PresentationOptions
-    ): PresentationDefinitionRequest {
+    ): String {
         if (type != CredentialType.JWT) {
             throw PolluxError.CredentialTypeNotSupportedError()
         }
@@ -782,23 +787,25 @@ open class PolluxImpl(
             format = format
         )
 
-        return PresentationDefinitionRequest(
-            presentationDefinition = PresentationDefinitionRequest.PresentationDefinition(
-                inputDescriptors = arrayOf(inputDescriptor),
-                format = format
-            ),
-            options = PresentationDefinitionRequest.PresentationDefinitionOptions(
-                domain = options.domain,
-                challenge = options.challenge
+        return Json.encodeToString(
+            PresentationDefinitionRequest(
+                presentationDefinition = PresentationDefinitionRequest.PresentationDefinition(
+                    inputDescriptors = arrayOf(inputDescriptor),
+                    format = format
+                ),
+                options = PresentationDefinitionRequest.PresentationDefinitionOptions(
+                    domain = options.domain,
+                    challenge = options.challenge
+                )
             )
         )
     }
 
     override suspend fun createPresentationSubmission(
-        presentationDefinitionRequest: PresentationDefinitionRequest,
+        presentationDefinitionRequestString: String,
         credential: Credential,
         privateKey: PrivateKey
-    ): PresentationSubmission {
+    ): String {
         if (credential::class != JWTCredential::class) {
             throw PolluxError.CredentialTypeNotSupportedError()
         }
@@ -807,6 +814,8 @@ open class PolluxImpl(
         }
         privateKey as Secp256k1PrivateKey
         credential as JWTCredential
+        val presentationDefinitionRequest =
+            Json.decodeFromString<PresentationDefinitionRequest>(presentationDefinitionRequestString)
         val descriptorItems =
             presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
                 if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
@@ -844,27 +853,52 @@ open class PolluxImpl(
                 challenge = presentationDefinitionRequest.options.challenge
             )
 
-            return PresentationSubmission(
-                presentationSubmission = PresentationSubmission.Submission(
-                    definitionId = presentationDefinitionRequest.presentationDefinition.id
-                        ?: UUID.randomUUID().toString(),
-                    descriptorMap = descriptorItems
-                ),
-                verifiablePresentation = arrayOf(presentationJwt)
+            return Json.encodeToString(
+                PresentationSubmission(
+                    presentationSubmission = PresentationSubmission.Submission(
+                        definitionId = presentationDefinitionRequest.presentationDefinition.id
+                            ?: UUID.randomUUID().toString(),
+                        descriptorMap = descriptorItems
+                    ),
+                    verifiablePresentation = arrayOf(presentationJwt)
+                )
             )
         } ?: throw PolluxError.NullField("CredentialSubject")
     }
 
     override suspend fun verifyPresentationSubmission(
-        presentationSubmission: PresentationSubmission,
+        presentationSubmissionString: String,
         options: PresentationSubmissionOptions
     ): Boolean {
+        val presentationSubmissionJsonObject =
+            Json.decodeFromString<JsonElement>(presentationSubmissionString).jsonObject
+        val presentationSubmission =
+            presentationSubmissionJsonObject["presentation_submission"]?.let { presentationSubmissionField ->
+                val submission =
+                    Json.decodeFromJsonElement<PresentationSubmission.Submission>(
+                        presentationSubmissionField
+                    )
+                var arrayStrings: Array<String> = arrayOf()
+
+                if (submission.descriptorMap.isNotEmpty()) {
+                    val firstDescriptorItem = submission.descriptorMap.first()
+                    // Assume the path denotes a direct key in the JSON and strip out JSONPath or XPath specific characters if any.
+                    val path = firstDescriptorItem.path.removePrefix("$.")
+                        .removeSuffix("[0]") // Adjust based on actual path format
+                    arrayStrings =
+                        presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
+                            ?.toTypedArray()
+                            ?: arrayOf()
+                }
+                return@let PresentationSubmission(submission, arrayStrings)
+            } ?: throw PolluxError.VerificationUnsuccessful("Presentation is missing presentation_submission")
+
         if (options::class == PresentationSubmissionOptionsJWT::class) {
-            val presentationDefinitionRequest =
+            val presentationDefinitionRequestString =
                 (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest
-            presentationDefinitionRequest.presentationDefinition
-            val inputDescriptors =
-                presentationDefinitionRequest.presentationDefinition.inputDescriptors
+            val presentationDefinitionRequest =
+                Json.decodeFromString<PresentationDefinitionRequest>(presentationDefinitionRequestString)
+            val inputDescriptors = presentationDefinitionRequest.presentationDefinition.inputDescriptors
             val descriptorMap = DescriptorPath(Json.encodeToJsonElement(presentationSubmission))
             val descriptorMaps = presentationSubmission.presentationSubmission.descriptorMap
             descriptorMaps.forEach { descriptorItem ->

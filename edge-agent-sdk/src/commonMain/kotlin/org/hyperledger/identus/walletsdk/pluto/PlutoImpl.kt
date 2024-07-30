@@ -34,6 +34,7 @@ import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pluto.data.isConnected
@@ -375,21 +376,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     }
 
     /**
-     * This method is used to store credential metadata.
+     * Stores the metadata associated with a credential request.
      *
+     * @param name the unique name used to retrieve the stored metadata.
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
      *
      * @deprecated This method has been deprecated and should no longer be used.
-     * @see storeCredentialMetadata("", metadata) for the replacement method that should be used.
+     * @see storeCredentialMetadata(name, linkSecretName, json) for the replacement method that should be used.
      */
     @Deprecated(
         "This method has been deprecated and should no longer be used.",
-        ReplaceWith("storeCredentialMetadata(\"\", metadata)"),
+        ReplaceWith("storeCredentialMetadata(name, linkSecretName, json)"),
         DeprecationLevel.ERROR
     )
-    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
+    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
         getInstance().credentialMetadataQueries.insert(
-            id = UUID.randomUUID().toString(),
+            id = name,
             linkSecretName = metadata.linkSecretName,
             json = metadata.json
         )
@@ -399,13 +401,14 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * Stores the metadata associated with a credential request.
      *
      * @param name the unique name used to retrieve the stored metadata.
-     * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     * @param linkSecretName The link secret name as String.
+     * @param json The json string.
      */
-    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
+    override fun storeCredentialMetadata(name: String, linkSecretName: String, json: String) {
         getInstance().credentialMetadataQueries.insert(
             id = name,
-            linkSecretName = metadata.linkSecretName,
-            json = metadata.json
+            linkSecretName = linkSecretName,
+            json = json
         )
     }
 

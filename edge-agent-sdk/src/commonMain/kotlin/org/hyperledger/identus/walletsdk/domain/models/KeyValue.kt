@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.edgeagent.shared
+package org.hyperledger.identus.walletsdk.domain.models
 
 import kotlinx.serialization.Serializable
 

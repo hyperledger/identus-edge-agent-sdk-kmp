@@ -8,6 +8,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.http.contentType
 import io.ktor.http.path
+import org.hyperledger.identus.walletsdk.domain.models.KeyValue
 
 /**
  * Utility class for shared functionality used by Prism API.

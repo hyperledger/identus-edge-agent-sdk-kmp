@@ -13,9 +13,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
@@ -73,20 +71,20 @@ class PolluxMock : Pollux {
         type: CredentialType,
         presentationClaims: PresentationClaims,
         options: PresentationOptions
-    ): PresentationDefinitionRequest {
+    ): String {
         TODO("Not yet implemented")
     }
 
     override suspend fun createPresentationSubmission(
-        presentationDefinitionRequest: PresentationDefinitionRequest,
+        presentationDefinitionRequestString: String,
         credential: Credential,
         privateKey: PrivateKey
-    ): PresentationSubmission {
+    ): String {
         TODO("Not yet implemented")
     }
 
     override suspend fun verifyPresentationSubmission(
-        presentationSubmission: PresentationSubmission,
+        presentationSubmissionString: String,
         options: PresentationSubmissionOptions
     ): Boolean {
         TODO("Not yet implemented")

@@ -21,8 +21,8 @@ import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.DIDResolver
+import org.hyperledger.identus.walletsdk.domain.models.KeyValue
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
-import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 
 class PrismDIDApiResolver(
     private val apollo: Apollo,
