@@ -140,7 +140,7 @@ private fun Url.Companion.parse(str: String): Url? {
  * EdgeAgent class is responsible for handling the connection to other agents in the network using a provided Mediator
  * Service Endpoint and seed data.
  */
-class EdgeAgent {
+open class EdgeAgent {
     var state: State = State.STOPPED
         private set(value) {
             field = value
@@ -158,7 +158,7 @@ class EdgeAgent {
 
     private val edgeAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
-    private var connectionManager: ConnectionManager
+    internal var connectionManager: ConnectionManager
     private var logger: PrismLogger
     private val agentOptions: AgentOptions
 
@@ -406,7 +406,7 @@ class EdgeAgent {
      * @return A new [DID].
      */
     @JvmOverloads
-    suspend fun createNewPeerDID(
+    open suspend fun createNewPeerDID(
         services: Array<DIDDocument.Service> = emptyArray(),
         updateMediator: Boolean
     ): DID {
