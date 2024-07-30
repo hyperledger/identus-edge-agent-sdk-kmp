@@ -42,7 +42,7 @@ open class PlutoBackupTask(private val pluto: Pluto) {
                     dids = dids.await(),
                     didPairs = didPairs.await(),
                     keys = privateKeys.await(),
-                    linkSecret = linkSecret.await()!!,
+                    linkSecret = linkSecret.await(),
                     messages = messages.await(),
                     mediators = mediator.await()
                 )
