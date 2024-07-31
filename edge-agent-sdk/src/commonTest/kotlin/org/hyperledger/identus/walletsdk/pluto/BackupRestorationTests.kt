@@ -1,7 +1,6 @@
 package org.hyperledger.identus.walletsdk.pluto
 
 import junit.framework.TestCase.assertFalse
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.runBlocking
@@ -11,7 +10,6 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
-import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
@@ -30,7 +28,6 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationP
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.edgeagent.MediationHandlerMock
@@ -49,7 +46,6 @@ import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.argumentCaptor
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.time.Duration
 
 class BackupRestorationTests {
 
@@ -580,7 +576,7 @@ class BackupRestorationTests {
     }
 
     @Test
-    fun restoreFromTS_Swift() = runTest() {
+    fun restoreFromTS_Swift() = runTest {
         val realPluto = PlutoImpl(DbConnectionInMemory())
         val logger = PrismLoggerMock()
         val realCastor = CastorImpl(apollo, logger)
