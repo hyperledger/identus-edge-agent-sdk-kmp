@@ -32,7 +32,7 @@ constructor(
     val keys: List<Key>,
     val messages: List<String>,
     @SerialName("link_secret")
-    val linkSecret: String,
+    val linkSecret: String?,
     val mediators: List<Mediator>
 ) {
 

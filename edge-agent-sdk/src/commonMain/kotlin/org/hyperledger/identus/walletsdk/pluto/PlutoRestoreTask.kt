@@ -181,9 +181,10 @@ open class PlutoRestoreTask(
                     val did = (it.third as DID)
                     val keyId = did.toString()
                     if (keyId.contains("#")) {
+                        val simpleDid = keyId.split("#").first()
                         pluto.storePrivateKeys(
                             it.first as StorableKey,
-                            did,
+                            DID(simpleDid),
                             (it.first.keySpecification[IndexKey().property])?.toInt(),
                             keyId
                         )
@@ -242,7 +243,9 @@ open class PlutoRestoreTask(
      * If the backup object has a link secret, it is decoded from base64 URL encoding and stored using the pluto.storeLinkSecret method.
      */
     private fun restoreLinkSecret() {
-        pluto.storeLinkSecret(this.backup.linkSecret)
+        if (this.backup.linkSecret != null) {
+            pluto.storeLinkSecret(this.backup.linkSecret)
+        }
     }
 
     /**
