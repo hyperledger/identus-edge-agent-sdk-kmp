@@ -7,17 +7,9 @@ import org.hyperledger.identus.walletsdk.domain.models.KnownPrismError
 
 sealed class EdgeAgentError : KnownPrismError() {
 
-    class CannotFindDIDKeyPairIndex : EdgeAgentError() {
-        override val code: Int
-            get() = 111
-
-        override val message: String
-            get() = "To sign with a DID a key pair needs to be registered, please register the key pair first"
-    }
-
     class InvitationIsInvalidError : EdgeAgentError() {
         override val code: Int
-            get() = 112
+            get() = 61
 
         override val message: String
             get() = "The system could not parse the invitation, the message/json are invalid"
@@ -25,7 +17,7 @@ sealed class EdgeAgentError : KnownPrismError() {
 
     class UnknownInvitationTypeError(private val type: String) : EdgeAgentError() {
         override val code: Int
-            get() = 113
+            get() = 62
 
         override val message: String
             get() = "The type of the invitation is not supported: $type"
@@ -33,7 +25,7 @@ sealed class EdgeAgentError : KnownPrismError() {
 
     class InvalidMessageType(private val type: String, private val shouldBe: String) : EdgeAgentError() {
         override val code: Int
-            get() = 114
+            get() = 63
 
         override val message: String
             get() = "The following message $type, does not represent the protocol $shouldBe.\nAlso the message should have \"from\" and \"to\" fields\n"
@@ -41,7 +33,7 @@ sealed class EdgeAgentError : KnownPrismError() {
 
     class NoMediatorAvailableError : EdgeAgentError() {
         override val code: Int
-            get() = 115
+            get() = 64
 
         override val message: String
             get() = "There is no mediator.\nYou need to provide a mediation handler and start the prism agent before doing some operations."
@@ -50,7 +42,7 @@ sealed class EdgeAgentError : KnownPrismError() {
     class MediationRequestFailedError
     @JvmOverloads constructor(private val underlyingError: Array<Error>? = null) : EdgeAgentError() {
         override val code: Int
-            get() = 116
+            get() = 65
 
         override val message: String
             get() {
@@ -60,25 +52,17 @@ sealed class EdgeAgentError : KnownPrismError() {
             }
     }
 
-    class OfferDoesNotProvideEnoughInformation : EdgeAgentError() {
-        override val code: Int
-            get() = 117
-
-        override val message: String
-            get() = "Offer provided doesnt have challenge and domain in the attachments"
-    }
-
     class CannotFindDIDPrivateKey(private val did: String) : EdgeAgentError() {
 
         override val code: Int
-            get() = 118
+            get() = 66
         override val message: String
             get() = "Could not find private key for DID: $did"
     }
 
     class FailedToOnboardError(private val statusCode: Int, private val response: String) : EdgeAgentError() {
         override val code: Int
-            get() = 119
+            get() = 67
 
         override val message: String
             get() = "Failed to onboard.\nStatus code: $statusCode\nResponse: $response"
@@ -90,7 +74,7 @@ sealed class EdgeAgentError : KnownPrismError() {
     ) :
         EdgeAgentError() {
         override val code: Int
-            get() = 120
+            get() = 68
 
         override val message: String
             get() = when {
@@ -103,7 +87,7 @@ sealed class EdgeAgentError : KnownPrismError() {
     class InvalidCredentialFormatError(private val expectedFormat: CredentialType) :
         EdgeAgentError() {
         override val code: Int
-            get() = 121
+            get() = 69
 
         override val message: String
             get() = "Invalid credential format, it must be ${expectedFormat.type}"
@@ -111,23 +95,15 @@ sealed class EdgeAgentError : KnownPrismError() {
 
     class AttachmentTypeNotSupported : EdgeAgentError() {
         override val code: Int
-            get() = 122
+            get() = 610
 
         override val message: String
             get() = "Attachment type not supported, expecting base 64 attachment."
     }
 
-    class PresentationSubmissionDoesNotContainChallenge : EdgeAgentError() {
-        override val code: Int
-            get() = 123
-
-        override val message: String
-            get() = "Presentation submission must contain a challenge."
-    }
-
     class EdgeAgentStateAcceptOnlyOneObserver : EdgeAgentError() {
         override val code: Int
-            get() = 124
+            get() = 611
 
         override val message: String
             get() = "Agent state only accepts one subscription."
@@ -135,7 +111,7 @@ sealed class EdgeAgentError : KnownPrismError() {
 
     class InvalidCredentialMetadata : EdgeAgentError() {
         override val code: Int
-            get() = 125
+            get() = 612
 
         override val message: String
             get() = "Invalid or null credential metadata"
@@ -144,7 +120,7 @@ sealed class EdgeAgentError : KnownPrismError() {
     class MissingOrNullFieldError(private val field: String, private val parent: String) :
         EdgeAgentError() {
         override val code: Int
-            get() = 126
+            get() = 613
 
         override val message: String = ""
             get() = "$field from $parent is missing or null, and is mandatory"

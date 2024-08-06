@@ -863,7 +863,7 @@ open class PolluxImpl(
                     verifiablePresentation = arrayOf(presentationJwt)
                 )
             )
-        } ?: throw PolluxError.NullField("CredentialSubject")
+        } ?: throw PolluxError.NonNullableError("CredentialSubject")
     }
 
     override suspend fun verifyPresentationSubmission(

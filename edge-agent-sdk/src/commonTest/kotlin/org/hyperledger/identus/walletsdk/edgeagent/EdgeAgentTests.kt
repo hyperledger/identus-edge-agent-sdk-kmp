@@ -646,7 +646,7 @@ class EdgeAgentTests {
         val did = DID("did", "peer", "asdf1234asdf1234")
         val message = "This is a message".toByteArray()
 
-        assertFailsWith(ApolloError.InvalidSpecificKeyCurve::class) {
+        assertFailsWith(ApolloError.InvalidKeyCurve::class) {
             agent.signWith(did, message)
         }
     }
