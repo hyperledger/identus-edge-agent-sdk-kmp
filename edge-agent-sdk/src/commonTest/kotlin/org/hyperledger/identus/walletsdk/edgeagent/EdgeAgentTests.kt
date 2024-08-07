@@ -85,7 +85,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mock
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
-import org.junit.Assert.assertNull
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
@@ -1632,8 +1631,9 @@ class EdgeAgentTests {
             )
         )
         val attachments1 = message1.attachments
-        val attachmentDataString2 = attachments1.first().data.getDataAsJsonString()
-        assertNull(attachmentDataString2)
+        assertFailsWith<EdgeAgentError.AttachmentTypeNotSupported> {
+            attachments1.first().data.getDataAsJsonString()
+        }
     }
 
     val getCredentialDefinitionResponse =

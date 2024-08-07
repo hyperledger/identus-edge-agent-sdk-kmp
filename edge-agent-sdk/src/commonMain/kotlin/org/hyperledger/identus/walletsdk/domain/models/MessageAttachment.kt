@@ -14,6 +14,7 @@ import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonNames
 import kotlinx.serialization.json.jsonObject
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import java.util.UUID
 import kotlin.jvm.JvmOverloads
 
@@ -27,30 +28,18 @@ sealed class AttachmentData {
     /**
      * This method verifies the type of [AttachmentData] and returns the data as a json string.
      */
-    fun getDataAsJsonString(): String? {
+    fun getDataAsJsonString(): String {
         return when (this) {
-            is AttachmentHeader -> {
-                null
-            }
-
-            is AttachmentJws -> {
-                null
-            }
-
-            is AttachmentJwsData -> {
-                null
-            }
-
             is AttachmentBase64 -> {
                 this.base64.base64UrlDecoded
             }
 
-            is AttachmentLinkData -> {
-                null
-            }
-
             is AttachmentJsonData -> {
                 this.data
+            }
+
+            else -> {
+                throw EdgeAgentError.AttachmentTypeNotSupported()
             }
         }
     }
