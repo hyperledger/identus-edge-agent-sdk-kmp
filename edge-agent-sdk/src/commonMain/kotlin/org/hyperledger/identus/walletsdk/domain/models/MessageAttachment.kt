@@ -13,6 +13,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonDecoder
 import kotlinx.serialization.json.JsonNames
 import kotlinx.serialization.json.jsonObject
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import java.util.UUID
 import kotlin.jvm.JvmOverloads
 
@@ -22,6 +23,38 @@ import kotlin.jvm.JvmOverloads
  */
 @Serializable
 sealed class AttachmentData {
+
+    /**
+     * This method verifies the type of [AttachmentData] and returns the data as a json string.
+     */
+    fun getDataAsJsonString(): String? {
+        return when (this) {
+            is AttachmentHeader -> {
+                null
+            }
+
+            is AttachmentJws -> {
+                null
+            }
+
+            is AttachmentJwsData -> {
+                null
+            }
+
+            is AttachmentBase64 -> {
+                this.base64.base64UrlDecoded
+            }
+
+            is AttachmentLinkData -> {
+                null
+            }
+
+            is AttachmentJsonData -> {
+                this.data
+            }
+        }
+    }
+
     /**
      * The [AttachmentHeader] data class represents the header for a DIDComm attachment.
      */
@@ -229,12 +262,35 @@ object AttachmentDataSerializer : KSerializer<AttachmentData> {
      */
     override fun serialize(encoder: Encoder, value: AttachmentData) {
         when (value) {
-            is AttachmentData.AttachmentHeader -> encoder.encodeSerializableValue(AttachmentData.AttachmentHeader.serializer(), value)
-            is AttachmentData.AttachmentJws -> encoder.encodeSerializableValue(AttachmentData.AttachmentJws.serializer(), value)
-            is AttachmentData.AttachmentJwsData -> encoder.encodeSerializableValue(AttachmentData.AttachmentJwsData.serializer(), value)
-            is AttachmentData.AttachmentBase64 -> encoder.encodeSerializableValue(AttachmentData.AttachmentBase64.serializer(), value)
-            is AttachmentData.AttachmentLinkData -> encoder.encodeSerializableValue(AttachmentData.AttachmentLinkData.serializer(), value)
-            is AttachmentData.AttachmentJsonData -> encoder.encodeSerializableValue(AttachmentData.AttachmentJsonData.serializer(), value)
+            is AttachmentData.AttachmentHeader -> encoder.encodeSerializableValue(
+                AttachmentData.AttachmentHeader.serializer(),
+                value
+            )
+
+            is AttachmentData.AttachmentJws -> encoder.encodeSerializableValue(
+                AttachmentData.AttachmentJws.serializer(),
+                value
+            )
+
+            is AttachmentData.AttachmentJwsData -> encoder.encodeSerializableValue(
+                AttachmentData.AttachmentJwsData.serializer(),
+                value
+            )
+
+            is AttachmentData.AttachmentBase64 -> encoder.encodeSerializableValue(
+                AttachmentData.AttachmentBase64.serializer(),
+                value
+            )
+
+            is AttachmentData.AttachmentLinkData -> encoder.encodeSerializableValue(
+                AttachmentData.AttachmentLinkData.serializer(),
+                value
+            )
+
+            is AttachmentData.AttachmentJsonData -> encoder.encodeSerializableValue(
+                AttachmentData.AttachmentJsonData.serializer(),
+                value
+            )
         }
     }
 
@@ -255,9 +311,11 @@ object AttachmentDataSerializer : KSerializer<AttachmentData> {
             json.containsKey("children") -> {
                 jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentHeader.serializer(), json)
             }
+
             json.containsKey("protected") && json.containsKey("signature") -> {
                 jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentJws.serializer(), json)
             }
+
             json.containsKey("base64") -> {
                 if (json.containsKey("jws")) {
                     jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentJwsData.serializer(), json)
@@ -265,12 +323,15 @@ object AttachmentDataSerializer : KSerializer<AttachmentData> {
                     jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentBase64.serializer(), json)
                 }
             }
+
             json.containsKey("links") && json.containsKey("hash") -> {
                 jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentLinkData.serializer(), json)
             }
+
             json.containsKey("data") -> {
                 jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentJsonData.serializer(), json)
             }
+
             else -> throw SerializationException("Unknown AttachmentData type")
         }
     }

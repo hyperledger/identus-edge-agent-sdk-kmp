@@ -33,6 +33,7 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
@@ -84,6 +85,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 import org.mockito.Mock
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.junit.Assert.assertNull
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.MockitoAnnotations
@@ -94,6 +96,7 @@ import org.mockito.kotlin.spy
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 @RunWith(JUnit4::class)
@@ -1091,8 +1094,8 @@ class EdgeAgentTests {
         assertEquals(toDid, sentMessage.to.toString())
         assertEquals(1, sentMessage.attachments.size)
         assertTrue(sentMessage.attachments.first().data::class == AttachmentBase64::class)
-        val base64Attachment = sentMessage.attachments.first().data as AttachmentBase64
-        assertEquals(definitionJson, base64Attachment.base64.base64UrlDecoded)
+        val attachmentJsonData = sentMessage.attachments.first().data.getDataAsJsonString()
+        assertEquals(definitionJson, attachmentJsonData)
     }
 
     @Test
@@ -1145,55 +1148,6 @@ class EdgeAgentTests {
                 json = ""
             )
             assertFailsWith(EdgeAgentError.InvalidCredentialError::class) {
-                agent.preparePresentationForRequestProof(
-                    RequestPresentation.fromMessage(msg),
-                    credential
-                )
-            }
-        }
-
-    @Test
-    fun testHandlePresentationDefinitionRequest_whenWrongAttachmentType_thenThrowPresentationRequestAttachmentNotSupported() =
-        runTest {
-            val apiMock = mock<Api>()
-            `when`(apiMock.request(any(), any(), any(), any(), any()))
-                .thenReturn(HttpResponse(200, "Ok"))
-
-            val apolloMock = mock<Apollo>()
-            val castorMock = mock<Castor>()
-            val plutoMock = mock<Pluto>()
-            val mercuryMock = mock<Mercury>()
-            val polluxMock = mock<Pollux>()
-            val connectionManagerMock = mock<ConnectionManager>()
-
-            val mediatorHandlerMock = mock<MediationHandler>()
-            `when`(connectionManagerMock.mediationHandler).thenReturn(mediatorHandlerMock)
-            val mediator = Mediator(
-                id = UUID.randomUUID().toString(),
-                mediatorDID = DID("did:peer:mediatordid"),
-                hostDID = DID("did:peer:hostdid"),
-                routingDID = DID("did:peer:routingdid")
-            )
-            `when`(mediatorHandlerMock.mediator).thenReturn(mediator)
-
-            val agent = EdgeAgent(
-                apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
-                mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManagerMock,
-                seed = seed,
-                api = apiMock,
-                logger = PrismLoggerMock()
-            )
-            val msg = Json.decodeFromString<Message>(
-                "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData\",\"data\":\"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
-            )
-            val credential = JWTCredential.fromJwtString(
-                "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
-            )
-            assertFailsWith(EdgeAgentError.AttachmentTypeNotSupported::class) {
                 agent.preparePresentationForRequestProof(
                     RequestPresentation.fromMessage(msg),
                     credential
@@ -1368,98 +1322,6 @@ class EdgeAgentTests {
                 attachmentData.base64.base64UrlDecoded.split(".").count()
             )
         }
-
-    @Test
-    fun testHandlePresentationSubmission_whenAttachmentNotSupported_thenThrowsAttachmentTypeNotSupported() = runTest {
-        val apiMock = mock<Api>()
-        `when`(apiMock.request(any(), any(), any(), any(), any()))
-            .thenReturn(HttpResponse(200, "Ok"))
-
-        val apolloMock = mock<Apollo>()
-        val castorMock = mock<Castor>()
-        val plutoMock = mock<Pluto>()
-        val mercuryMock = mock<Mercury>()
-        val polluxMock = mock<Pollux>()
-        val connectionManagerMock = mock<ConnectionManager>()
-
-        val privateKey =
-            Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(MnemonicHelper.createRandomSeed()),
-                curve = KeyCurve(Curve.SECP256K1)
-            ).privateKey
-        val storablePrivateKeys = listOf(
-            StorablePrivateKey(
-                id = UUID.randomUUID().toString(),
-                restorationIdentifier = "secp256k1+priv",
-                data = privateKey.raw.base64UrlEncoded,
-                keyPathIndex = 0
-            )
-        )
-        // Mock getDIDPrivateKeysByDID response
-        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
-        `when`(
-            apolloMock.restorePrivateKey(
-                storablePrivateKeys.first().restorationIdentifier,
-                storablePrivateKeys.first().data
-            )
-        ).thenReturn(privateKey)
-
-        val presentationSubmission =
-            "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
-
-        // Mock createPresentationSubmission response
-        `when`(polluxMock.createPresentationSubmission(any(), any(), any())).thenReturn(
-            presentationSubmission
-        )
-
-        val vmAuthentication = DIDDocument.VerificationMethod(
-            id = DIDUrl(DID("2", "1", "0")),
-            controller = DID("2", "2", "0"),
-            type = Curve.ED25519.value,
-            publicKeyJwk = mapOf("crv" to Curve.ED25519.value, "x" to "")
-        )
-
-        val vmKeyAgreement = DIDDocument.VerificationMethod(
-            id = DIDUrl(DID("3", "1", "0")),
-            controller = DID("3", "2", "0"),
-            type = Curve.X25519.value,
-            publicKeyJwk = mapOf("crv" to Curve.X25519.value, "x" to "")
-        )
-
-        val resolverMock = mock<DIDResolver>()
-        val didDoc = DIDDocument(
-            id = DID("did:prism:asdfasdf"),
-            coreProperties = arrayOf(
-                DIDDocument.Authentication(
-                    urls = emptyArray(),
-                    verificationMethods = arrayOf(vmAuthentication, vmKeyAgreement)
-                )
-            )
-        )
-        // Mock resolve did response
-        `when`(castorMock.resolveDID(any())).thenReturn(didDoc)
-        `when`(resolverMock.resolve(any())).thenReturn(didDoc)
-
-        val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManagerMock,
-            seed = seed,
-            api = apiMock,
-            logger = PrismLoggerMock()
-        )
-
-        val msgString =
-            "{\"id\":\"00000000-621a-4ae9-0000-00002ffb05bf\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"to\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-18T17:11:58.053680Z\",\"expiresTimePlus\":\"2024-03-19T17:11:58.058523Z\",\"attachments\":[{\"id\":\"00000000-ef5f-40c0-0000-0000d2674b80\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData\",\"data\":\"eyJwcmVzZW50YXRpb25fc3VibWlzc2lvbiI6eyJpZCI6IjAwMDAwMDAwLWMyMjQtNDVkNy0wMDAwLTAwMDA3MzJmNDkzMiIsImRlZmluaXRpb25faWQiOiIzMmY1NDE2My03MTY2LTQ4ZjEtOTNkOC1mZjIxN2JkYjA2NTMiLCJkZXNjcmlwdG9yX21hcCI6W3siaWQiOiJ3YV9kcml2ZXJfbGljZW5zZSIsImZvcm1hdCI6Imp3dF92cCIsInBhdGgiOiIkLnZlcmlmaWFibGVDcmVkZW50aWFsWzBdIn1dfSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlt7InZjIjp7ImNvbnRleHQiOltdLCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImFkZGl0aW9uYWxQcm9wMiI6IlRlc3QzIiwiaWQiOiJkaWQ6cHJpc206YmVlYTUyMzRhZjQ2ODA0NzE0ZDhlYThlYzc3YjY2Y2M3ZjNlODE1YzY4YWJiNDc1ZjI1NGNmOWMzMDYyNjc2MzpDc2NCQ3NRQkVtUUtEMkYxZEdobGJuUnBZMkYwYVc5dU1CQUVRazhLQ1hObFkzQXlOVFpyTVJJZ2VTZy0yT08xSmRucHpVT0JpdHpJaWNYZGZ6ZUFjVGZXQU4tWUNldUNieUlhSUpRNEdUSTMwdGFWaXdjaFQzZTBuTFhCUzQzQjRqOWpsc2xLbzJabGRYempFbHdLQjIxaGMzUmxjakFRQVVKUENnbHpaV053TWpVMmF6RVNJSGtvUHRqanRTWFo2YzFEZ1lyY3lJbkYzWDgzZ0hFMzFnRGZtQW5yZ204aUdpQ1VPQmt5TjlMV2xZc0hJVTkzdEp5MXdVdU53ZUlfWTViSlNxTm1aWFY4NHcifX19XSwicHJvb2YiOnsidHlwZSI6IkVjZHNhU2VjcDI1NmsxU2lnbmF0dXJlMjAxOSIsImNyZWF0ZWQiOiIyOCBKdW5lIDU2MTU1LCAwNzozMToxMCIsInByb29mUHVycG9zZSI6ImF1dGhlbnRpY2F0aW9uIiwidmVyaWZpY2F0aW9uTWV0aG9kIjoiZGlkOnByaXNtOmFzZGZhc2RmYXNkZmFzZGYja2V5cy0xIiwiandzIjoiZXlKaGJHY2lPaUpGVXpJMU5rc2lmUS5leUpwYzNNaU9pSmthV1E2Y0hKcGMyMDZNalUzTVRsaE9UWmlNVFV4TWpBM01UWTVPREZoT0RRek1HRmtNR05pT1RZNFpHUTFNelF3TnpNMU9UTmpPR05rTTJZeFpESTNZVFk0TURSbFl6VXdaVHBEY0c5RFEzQmpRMFZzYjB0Q1YzUnNaVk13ZUVWQlNrTlVkMjlLWXpKV2FtTkVTVEZPYlhONFJXbEJSVzlUUTI0MWRIbEVZVFpaTm5JdFNXMVRjWEJLT0ZreGJXbzNTa016WDI5VmVrVXdUbmw1UldsRFFtOW5jMmRPWVdWU1pHTkRVa2RRYkdVNE1sWjJPWFJLWms1M2JEWnlaelpXWTJoU00wOXhhR2xXWWxSaE9GTlhkMjlIV1ZoV01HRkRNSGhGUVZKRFZIZHZTbU15Vm1walJFa3hUbTF6ZUVWcFJFMXJRbVEyUm5ScGIwcHJNMWhQUm5VdFgyTjVOVmh0VWkwMGRGVlJNazVNUjJsWE9HRkpVMjl0YTFKdlp6WlRaR1U1VUhkdVJ6QlJNRk5DVkcxR1UxUkVZbE5MUW5aSlZqWkRWRXhZY21wSlNuUjBaVWRKYlVGVFdFRnZTR0pYUm5wa1IxWjVUVUpCUWxGck9FdERXRTVzV1ROQmVVNVVXbkpOVWtsblR6Y3hNRzEwTVZkZmFYaEVlVkZOTTNoSmN6ZFVjR3BNUTA1UFJGRjRaMVpvZURWemFHWkxUbGd4YjJGSlNGZFFjbmMzU1ZWTGJHWnBZbEYwZURaS2F6UlVVMnBuWTFkT1QyWmpUM1JWT1VRNVVIVmFOMVE1ZENJc0luTjFZaUk2SW1ScFpEcHdjbWx6YlRwaVpXVmhOVEl6TkdGbU5EWTRNRFEzTVRSa09HVmhPR1ZqTnpkaU5qWmpZemRtTTJVNE1UVmpOamhoWW1JME56Vm1NalUwWTJZNVl6TXdOakkyTnpZek9rTnpZMEpEYzFGQ1JXMVJTMFF5UmpGa1IyaHNZbTVTY0ZreVJqQmhWemwxVFVKQlJWRnJPRXREV0U1c1dUTkJlVTVVV25KTlVrbG5aVk5uTFRKUFR6RktaRzV3ZWxWUFFtbDBla2xwWTFoa1pucGxRV05VWmxkQlRpMVpRMlYxUTJKNVNXRkpTbEUwUjFSSk16QjBZVlpwZDJOb1ZETmxNRzVNV0VKVE5ETkNOR281YW14emJFdHZNbHBzWkZoNmFrVnNkMHRDTWpGb1l6TlNiR05xUVZGQlZVcFFRMmRzZWxwWFRuZE5hbFV5WVhwRlUwbElhMjlRZEdwcWRGTllXalpqTVVSbldYSmplVWx1UmpOWU9ETm5TRVV6TVdkRVptMUJibkpuYlRocFIybERWVTlDYTNsT09VeFhiRmx6U0VsVk9UTjBTbmt4ZDFWMVRuZGxTVjlaTldKS1UzRk9iVnBZVmpnMGR5SXNJbTVpWmlJNk1UWTROVFl6TVRrNU5Td2laWGh3SWpveE5qZzFOak0xTlRrMUxDSjJZeUk2ZXlKamNtVmtaVzUwYVdGc1UzVmlhbVZqZENJNmV5SmhaR1JwZEdsdmJtRnNVSEp2Y0RJaU9pSlVaWE4wTXlJc0ltbGtJam9pWkdsa09uQnlhWE50T21KbFpXRTFNak0wWVdZME5qZ3dORGN4TkdRNFpXRTRaV00zTjJJMk5tTmpOMll6WlRneE5XTTJPR0ZpWWpRM05XWXlOVFJqWmpsak16QTJNalkzTmpNNlEzTmpRa056VVVKRmJWRkxSREpHTVdSSGFHeGlibEp3V1RKR01HRlhPWFZOUWtGRlVXczRTME5ZVG14Wk0wRjVUbFJhY2sxU1NXZGxVMmN0TWs5UE1VcGtibkI2VlU5Q2FYUjZTV2xqV0dSbWVtVkJZMVJtVjBGT0xWbERaWFZEWW5sSllVbEtVVFJIVkVrek1IUmhWbWwzWTJoVU0yVXdia3hZUWxNME0wSTBhamxxYkhOc1MyOHlXbXhrV0hwcVJXeDNTMEl5TVdoak0xSnNZMnBCVVVGVlNsQkRaMng2V2xkT2QwMXFWVEpoZWtWVFNVaHJiMUIwYW1wMFUxaGFObU14UkdkWmNtTjVTVzVHTTFnNE0yZElSVE14WjBSbWJVRnVjbWR0T0dsSGFVTlZUMEpyZVU0NVRGZHNXWE5JU1ZVNU0zUktlVEYzVlhWT2QyVkpYMWsxWWtwVGNVNXRXbGhXT0RSM0luMHNJblI1Y0dVaU9sc2lWbVZ5YVdacFlXSnNaVU55WldSbGJuUnBZV3dpWFN3aVFHTnZiblJsZUhRaU9sc2lhSFIwY0hNNlhDOWNMM2QzZHk1M015NXZjbWRjTHpJd01UaGNMMk55WldSbGJuUnBZV3h6WEM5Mk1TSmRmWDAueDBTRjE3WTBWQ0RtdDdIY2VPZFR4Zkhsb2ZzWm1ZMThSbjZWUWIwLXIta19CbTNoVGkxLWsydmtkakIyNWhkeHlUQ3Z4YW0tQWtBUC1BZzNBaG41TmciLCJjaGFsbGVuZ2UiOiIzMDQ1MDIyMTAwYjE0MTJjMGYzZmJiYzVjODc2ZGRlNjExNDFmYTY4N2Y3ZjJmYWJhODM0YWJjZTA5Yzg2YzcwNWEwYjkwMjAwNTAyMjA2YjY3MjUzZmE1ZjgwMzQ0YzQyZGQ4NGQyMzZiYmJiMTVkNTBhODliODE2ZmE1NWQ1YTZhNzQyY2NjODYwZTIzIn19\"},\"format\":\"prism/jwt\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
-        val msg = Json.decodeFromString<Message>(msgString)
-
-        assertFailsWith<EdgeAgentError.AttachmentTypeNotSupported> {
-            agent.handlePresentation(msg)
-        }
-    }
 
     @Test
     fun testHandlePresentationSubmission_whenAllCorrect_thenReturnTrue() = runTest {
@@ -1736,6 +1598,42 @@ class EdgeAgentTests {
         val jweObject = JWEObject.parse(jwe)
         assertEquals(JWEAlgorithm.ECDH_ES_A256KW, jweObject.header.algorithm)
         assertEquals(EncryptionMethod.A256CBC_HS512, jweObject.header.encryptionMethod)
+    }
+
+    @Test
+    fun `test AttachementData getDataAsString`() = runTest {
+        val message = Json.decodeFromString<Message>(
+            """{"id":"e430e4af-455e-4a15-9f2f-5bd8e5f350b8","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":\"http:\\/\\/192.168.68.113:8000\\/cloud-agent\\/schema-registry\\/schemas\\/5667190d-640c-36af-a9f1-f4ed2587e766\\/schema\",\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"age\",\"value\":\"18\"},{\"media_type\":null,\"name\":\"name\",\"value\":\"Cristian\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242264","expires_time_plus":"1721328667","attachments":[{"id":"ee903fe0-2c49-4356-9b41-cfccc979c0a1","data":{"base64":"eyJzY2hlbWFfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy81NjY3MTkwZC02NDBjLTM2YWYtYTlmMS1mNGVkMjU4N2U3NjYvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2RhNmExZDgtMmIyMy0zMTM4LWIwMmEtYWIwYmI0OGY4MGY5L2RlZmluaXRpb24iLCJrZXlfY29ycmVjdG5lc3NfcHJvb2YiOnsiYyI6IjM0MjE0MzM4OTA5MDk4MTU5ODIyNTA3MjQ4Njk3NjUyNTIyMzc1NzM2ODM0OTM1MDg0NjM5MTYzNTUyNjgwMjc3MjQyOTcxODI5ODUwIiwieHpfY2FwIjoiODAwNzA3NDcxNzUyOTQ3MTI1NDIxNTU2ODI1ODYyNDc5NzE1OTE0OTE3ODE4NTY4MDI1NjU5Mzk1NDcyMTAzMzQ0NjAwMDI4NzU4MzczMTA5Mjg0NzEzNDg5MDg1OTk3NzE5NDcwOTc5MDQ1NzA3NTY1ODA4MDczNzYxMjI0OTI3MzcyMDk1MTU2MzAxODE3MzgzNDE5NzE4NzM0NDk2MDQwMjc1MzM2MTg0ODIzNzQ4NTg0NzgzNjIxNzE1NTQwOTI3Nzk0ODQyMTA2NDM1NDEwNzc4MDg2ODg1MTc5MzQzMjEzMjU3NTk2ODM2NjU5NzYwMTI4NzI5ODI5MTk2MzI0MjQwMzgyOTc3MzczNjU3MTA0NjQ5NjE4MjU0MDMzMDk4Njc0OTkxMzIwMzc2NTEyMTUyOTk3Mzg0Mzk5MzY0OTc3MDM4NzU2ODcwOTU3NTcyMDM0NTM0NTY1MDM5OTY0MTYzNDgzNDEyMTEzNzc0NzA5MTU2NTcxMjcxNTI3ODY2NzQwNzU1Nzc2MzIzOTgxNTE5NzEzNjQ1MjQ4Njc5NzgyOTM3NTcyOTI4NDI1NzQ0NjE3MjMwNzk2MzYwNzE5MDA3Mzc0ODgwNTI2ODA4ODIzODg2NTMwMzE2MzgyOTI1MDcxOTYzMjUwMzgyNzU4MDA5Mjk1MzI1NDgzODIyNTg0OTIyMDkwMTcwMTAxOTY5OTk5MTg1MzAxMDA1NDM2MjYyMDI4NDIxOTA0NjU5MzY4OTU3OTQyNTAwNDkxNzI5MjY0MTMzMzE5Nzg0NDIwNjQ0NDUxMTUyNjA2MDI2MDg1MDkwNDYzNzAzMTQzNDczMTcxMjg3OTUxMTM0NTM1MDY0NDc0NjQ5NDE5MzUzMDQ4MzQwOTk4MTY2NjYwNDkyMDE5ODQyNDU2NDM5MTcxNjM2IiwieHJfY2FwIjpbWyJhZ2UiLCI3MjA2NjI4MDAzNzAwMjM5MzM5NjAzNjUxNDQ1MTY2NDE0MjcwNTA0ODM4ODAwMzYxMjE0NjQ3MjA1ODYwOTczMTg4MTQ0OTE2OTkwOTE3NTIyNjU4Mzg3Njg1MTcwMzkyMDcyMjk0MTUxMDUwODk1Njc0MTU0OTYwMDMyMDM0Mzg2MzEzMzY0MTMwMDQwNzI5ODQwMjcxMzcyNjc4NTI0NjE0NjUxNDcxNDU0NTg4MzgwMzI2OTMwODQ0Njc4Nzg3MzA3NzY3ODk2NjY5NTE2MDY1Njc3MDA3MjQyMDEwMjQyMDAwNTg4NjgxMTczNDUxNjg4NTU5MDEwMjQyNTgyMTg4MTY5MTUyNjUwNzY4NzgxNjMyMjgwNTgyODI1NjM3MjY0NzUwMTA3NTU2NDQzNTgyNzMwNDIxMjE3NTI4OTgyNTE5MzA3NzQ0ODAxNTYyNTYyMzQzNTcyNzU4NDEzNjc1NzY0ODQwOTY5MTY3NTE3ODcyNjk2MDY1MDM2MDU1MzgwMDg2NjcyNjUzMDEyMTIxMDk2MTA5OTQyMTg1NjM2ODk3MDE3Mjc5NDg3NjEyNDczNzc4NDUxMjkxMjE3NDg3ODQxOTc1NjI2MDczMjI0ODQ1MjI4NDM1OTk0MjI2MTg1MDc1NDI4MjA3OTg5MzAwMjExMzI5OTM4NjQxMzEwMTk5MjcwNTE0NjA2ODU5NDEzNDY1NzE1MjQyNjk0ODc0ODkwNDAzNDk5MzUxOTIxMDY4OTMwODE1ODY5ODM5NDYyMTE0MDI2MjM3MzY5OTAwMzE2MTA0NzYwMDAwNzk2NjcxOTUzNTAxMjcxMTI3MjM4NzM5NDI0Mjc2ODQyODkwNjQwNDY3NjYxNDEzODQ5Mzc5NzEwNzcxNjg0NzU4NTY1NzY2MDY4NzgwNjY0NjI3MjgiXSxbIm1hc3Rlcl9zZWNyZXQiLCI3ODg0ODQyMDE4MzA5NzY5NTg2MDY2Mjc5NDAwNjAzNjIzNjE4NzcxNTc3MjQ1NDk5NzQ5MzE0MzgyNTUyMzMzMjE4MzA3ODk1NzU4MDk2OTc3NjUzNjQ3MDcwNjk5MDE0OTY4OTUwMDg0OTk2MjMwNDAwODA4OTM0MzQ1MzQwMDcyMzY2NDg5NDYxNDg4MDk0MDgyOTk1OTU3MjUwMTg5NTkxMjg2NDQyMDg4MTMwNDA5MDA4Mjc5MzgxMjUzMDIxOTE0MTc5Nzc5MTAyNTcwNjIxNDQ0MDU0NzcxNjY5Mjk5NjQzNTcwODg5NjY1ODQzOTY2ODA1MjM1ODgxNzQ1OTQ3OTQ4NDQ2ODU1MDY4ODU4ODUzMDg2MTQ5NjMxMjA1ODcwMTIzODc1NDg3MTM0NjAxMDQwODA4Njg2MzQ4NDUwOTA0MTI4MTI4Nzk1MjUzMjczMjU3ODc4NjM4MjAxNTcyOTExMDQxNTQ4NDc0MTMzMDMyMTIyMTMyODExNjQ0NjAzNjg0MDU5MDk2ODM2NjU1NjQzMTI2NDU0NTAwNDM2MTgxNjQxMjkyNjQ4MTQ3MjYxODUyNzY5NjIyMzE5Mjk2NjI0NDU3OTg2NzI5NzMwNzE3NDEyNTE2MzEyNjQwNTM0OTE3NzEwNzE4Njc2MTMwODExMTI2NjQwMTkyODg4NjI2ODI2NTcwNzA1OTUxNTUyODI5NDY2NzY5NjUxNTcxNTI2OTMzNDUyNjY0ODk5NTExNzM0ODk0Njc3OTY5NjI0OTgzODI3MTgzMDg2NjA0NTE0NDE3MDE2MDgxNDE2Nzk0NDgwMDIwNDU2ODMxNzUyNjM2NTk1NzcwNjgwODQ0MDE0MjIyOTc2MjE5NzIzODg1MjAxNTg1ODk0MDQwMDA3MTQ5MjkwMDAxNTc4MjMxMDQiXSxbIm5hbWUiLCI4NjIxNzg3ODk1MzA5MzExOTQ3Njc0OTU5NDA4MjIzMTg5ODgwNDEzNTQ2NzIyOTYyODg5NjI0NzgwMjE1MDc4NDc3OTMxNTk5MDk5MzIwODkyNzY2NjM4NjExNDYyOTMzNTg3NjgwMTU0ODQ4ODgxMTY5MzY5NTc3OTk1NTI1ODQ2NDA1NjcyNDUyMzIyMTcyNjQ4MTc4OTEwMTg2ODkwNzYwNzM2MjMwNzA0MDA3NzU1OTA0OTIyNTUwODQ0MjkxNzgwOTk1NDAyNzUyNTU0NTAwNjg1NTY5NzYzMDc4ODY5NDU0NDI3NzY5NzU0Mzc5ODg5NzAzODQzNDM4ODcyMjMyOTc0MjIzODc5MzY5MTYzOTI1NjY3NjY5MzQyOTUwOTk5MjMwOTY1NDQ1MTkwOTM5Mzk5NzM1NjE1MTk2OTY2MzUyMTMwMzQ5MTE0NDE5OTIwMTk3NDIyMjA0ODQ2MTc2OTI3NTMwMDQ3NDkxNjI1NzAwODQ5NDc1MzQzNzk3MjU0MDYwNjc3MTA4MzkxOTU3MzU0MDAzOTAyNzMzMzEzMDI1ODE5Njk3MTIzMTc2NTg3MTU5NzQ5ODkxODg5MzU3Mjk0OTUyNDMwMDY2MTE5MjgzNzA1NTAwMTcxNTc3ODMzMzk3OTE1Mzc5OTA2NTA1MDExMjczODM2NTM3OTA2NjkyMjg2MTk5NDgzMjA3NDc1MzM2MjE1Njc4MTA1NDY5MDc3MTMyNDAwNDM4NTgyOTAyMjMwMzI5MDc4NjA4NTI4NDgzNDEwODI1NDkzNDcwMjI5MjA3MzA1NTk0ODUwMTg4ODUwMjEyNTQ0NzI0NDgyOTExOTQ3NTQ4NzIzMzMxMzYyNTI3MjA0Mzg3MzE1Mjk1MDU4Njk5MDk3NDc3MjQzMTczOTE0Njk5MDAzOTkzNTQiXV19LCJub25jZSI6IjM2MDY2NjE3NzQwNTA3NzY5NTI5NTMxNyJ9"},"format":"anoncreds/credential-offer@v1.0"}],"thid":"3a1c143b-7ab7-470d-99cf-bc5f31771388","ack":[]}"""
+        )
+
+        val expectedAttachmentDataString =
+            """{"schema_id":"http://192.168.68.113:8000/cloud-agent/schema-registry/schemas/5667190d-640c-36af-a9f1-f4ed2587e766/schema","cred_def_id":"http://192.168.68.113:8000/cloud-agent/credential-definition-registry/definitions/3da6a1d8-2b23-3138-b02a-ab0bb48f80f9/definition","key_correctness_proof":{"c":"34214338909098159822507248697652522375736834935084639163552680277242971829850","xz_cap":"800707471752947125421556825862479715914917818568025659395472103344600028758373109284713489085997719470979045707565808073761224927372095156301817383419718734496040275336184823748584783621715540927794842106435410778086885179343213257596836659760128729829196324240382977373657104649618254033098674991320376512152997384399364977038756870957572034534565039964163483412113774709156571271527866740755776323981519713645248679782937572928425744617230796360719007374880526808823886530316382925071963250382758009295325483822584922090170101969999185301005436262028421904659368957942500491729264133319784420644451152606026085090463703143473171287951134535064474649419353048340998166660492019842456439171636","xr_cap":[["age","720662800370023933960365144516641427050483880036121464720586097318814491699091752265838768517039207229415105089567415496003203438631336413004072984027137267852461465147145458838032693084467878730776789666951606567700724201024200058868117345168855901024258218816915265076878163228058282563726475010755644358273042121752898251930774480156256234357275841367576484096916751787269606503605538008667265301212109610994218563689701727948761247377845129121748784197562607322484522843599422618507542820798930021132993864131019927051460685941346571524269487489040349935192106893081586983946211402623736990031610476000079667195350127112723873942427684289064046766141384937971077168475856576606878066462728"],["master_secret","788484201830976958606627940060362361877157724549974931438255233321830789575809697765364707069901496895008499623040080893434534007236648946148809408299595725018959128644208813040900827938125302191417977910257062144405477166929964357088966584396680523588174594794844685506885885308614963120587012387548713460104080868634845090412812879525327325787863820157291104154847413303212213281164460368405909683665564312645450043618164129264814726185276962231929662445798672973071741251631264053491771071867613081112664019288862682657070595155282946676965157152693345266489951173489467796962498382718308660451441701608141679448002045683175263659577068084401422297621972388520158589404000714929000157823104"],["name","862178789530931194767495940822318988041354672296288962478021507847793159909932089276663861146293358768015484888116936957799552584640567245232217264817891018689076073623070400775590492255084429178099540275255450068556976307886945442776975437988970384343887223297422387936916392566766934295099923096544519093939973561519696635213034911441992019742220484617692753004749162570084947534379725406067710839195735400390273331302581969712317658715974989188935729495243006611928370550017157783339791537990650501127383653790669228619948320747533621567810546907713240043858290223032907860852848341082549347022920730559485018885021254472448291194754872333136252720438731529505869909747724317391469900399354"]]},"nonce":"360666177405077695295317"}"""
+        val attachments = message.attachments
+        val attachmentDataString = attachments.first().data.getDataAsJsonString()
+        assertNotNull(attachmentDataString)
+        assertEquals(expectedAttachmentDataString, attachmentDataString)
+
+        val expectedJsonData =
+            """{"options":{"domain":"https://prism-verifier.com","challenge":"11c91493-01b3-4c4d-ac36-b336bab5bddf"},"presentation_definition":{"purpose":null,"format":null,"name":null,"input_descriptors":[],"id":"56108c4a-ca57-40b6-89f0-1e1a2fa186fd"}}"""
+        val requestPresentationJson =
+            """{"id":"581f9d51-bb0c-4bcd-a851-487a14d30cc6","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"2.Ez6LScuoWiuQHfk4Js2aMC4Qs8rD5zNUfmiNfWMCb2pWR3FAc.Vz6MkvKtf2JqqcxhC1MPmWbWPrxqt8A4v44zri36XHgNmsmgV.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSmuL2dNc6wg5HpqDcDBXnNDG6TawcrBuxZbFkW9Hberjq.Vz6MkvcyMv5VAbTTttvNpo3YYku9Y8VMR9kRw8SFjAX8ic7JU.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":{"goal_code":"Request Proof Presentation","comment":null,"proof_types":[],"will_confirm":false},"createdTime":"1718228880","expiresTimePlus":"2024-06-13T21:48:02.636794Z","attachments":[{"id":"e784ac49-bb2d-4445-9cac-edd365664c73","data":{"type":"org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData","data":"{\"options\":{\"domain\":\"https://prism-verifier.com\",\"challenge\":\"11c91493-01b3-4c4d-ac36-b336bab5bddf\"},\"presentation_definition\":{\"purpose\":null,\"format\":null,\"name\":null,\"input_descriptors\":[],\"id\":\"56108c4a-ca57-40b6-89f0-1e1a2fa186fd\"}}"},"format":"prism/jwt"}],"thid":"c7cdff93-2706-4023-8d3c-3ce850ab0b2d","ack":[]}"""
+        val requestPresentation = json.decodeFromString<RequestPresentation>(requestPresentationJson)
+        val attachmentDataString1 = requestPresentation.attachments.first().data.getDataAsJsonString()
+        assertNotNull(attachmentDataString1)
+        assertEquals(expectedJsonData, attachmentDataString1)
+
+        val message1 = Message(
+            piuri = ProtocolType.DidcommRequestPresentation.value,
+            body = "",
+            attachments = arrayOf(
+                AttachmentDescriptor(
+                    data = AttachmentData.AttachmentHeader("")
+                )
+            )
+        )
+        val attachments1 = message1.attachments
+        val attachmentDataString2 = attachments1.first().data.getDataAsJsonString()
+        assertNull(attachmentDataString2)
     }
 
     val getCredentialDefinitionResponse =
