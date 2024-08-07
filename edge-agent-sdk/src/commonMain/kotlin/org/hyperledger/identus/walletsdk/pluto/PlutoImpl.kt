@@ -440,7 +440,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> {
         return getInstance().dIDQueries
-            .fetchDIDInfoByDID(did.methodId)
+            .fetchDIDInfoByDID(did.toString())
             .asFlow()
             .mapLatest {
                 try {

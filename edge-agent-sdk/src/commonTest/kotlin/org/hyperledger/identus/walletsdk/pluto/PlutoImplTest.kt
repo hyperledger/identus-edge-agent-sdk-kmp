@@ -1,11 +1,15 @@
 package org.hyperledger.identus.walletsdk.pluto
 
 import junit.framework.TestCase.assertNotNull
+import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
+import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
+import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PlutoError
@@ -15,6 +19,7 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.mockito.MockitoAnnotations
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
@@ -269,63 +274,151 @@ class PlutoImplTest {
         assertEquals(json, credentialMetadata.json)
     }
 
-//    @Test
-//    fun `test getAllPrismDIDs returns list of PrismDIDInfo`() = runTest {
-//        val did = DID("did", "prism", "asdfasdf", "alias")
-//        val fetchAllPrismDID = FetchAllPrismDID(
-//            did = did.toString(),
-//            method = did.method,
-//            methodId = did.methodId,
-//            schema = did.schema,
-//            alias = "alias",
-//            keyPathIndex = null
-//        )
-//        whenever(sdkPlutoDbMock.dIDQueries.fetchAllPrismDID().asFlow().mapToList(any()))
-//            .thenReturn(flowOf(listOf(fetchAllPrismDID)))
-//
-//        val context = Any()
-//        pluto.start(context)
-//        val result = pluto.getAllPrismDIDs()
-//        assertEquals(
-//            listOf(PrismDIDInfo(did, null, "alias")),
-//            result.first()
-//        )
-//    }
+    @Test
+    fun `test getAllPrismDIDs`() = runTest {
+        val prismDID = DID("did:prism:test")
+        val privateKey = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        pluto?.start()
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, null, null, listOf(privateKey))
 
-//    @Test
-//    fun `test getMessage returns message`() = runTest {
-//        val messageDb = MessageDB(
-//            id = "messageId",
-//            createdTime = 0L,
-//            dataJson = "dataJson",
-//            from = "from",
-//            thid = "thid",
-//            to = "to",
-//            piuri = "piuri",
-//            direction = 0
-//        )
-//        whenever(sdkPlutoDbMock.messageQueries.fetchMessageById(any()).executeAsOne()).thenReturn(messageDb)
-//          val context = Any()
-//          pluto.start(context)
-//        val result = pluto.getMessage("messageId")
-//        assertEquals(
-//            Message(
-//                id = "messageId",
-//                piuri = "piuri",
-//                from = DID("from"),
-//                to = DID("to"),
-//                fromPrior = null,
-//                body = "body",
-//                extraHeaders = emptyMap(),
-//                createdTime = 0L,
-//                expiresTimePlus = null,
-//                attachments = emptyList(),
-//                thid = "thid",
-//                pthid = null,
-//                ack = null,
-//                direction = Message.Direction.INBOUND
-//            ),
-//            result.first()
-//        )
-//    }
+        val allPrismDids = pluto?.getAllPrismDIDs()?.first()
+        assertNotNull(allPrismDids)
+        assertEquals(1, allPrismDids!!.size)
+        val prismDidInfo = allPrismDids.first()
+        assertEquals(prismDID.toString(), prismDidInfo.did.toString())
+        assertNull(prismDidInfo.keyPathIndex)
+        assertNull(prismDidInfo.alias)
+    }
+
+    @Test
+    fun `test getDIDInfoByDID`() = runTest {
+        val prismDID = DID("did:prism:test")
+        val privateKey = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        pluto?.start()
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, null, null, listOf(privateKey))
+
+        val prismDidInfo = pluto?.getDIDInfoByDID(prismDID)?.first()
+        assertNotNull(prismDidInfo)
+        assertEquals(prismDID.toString(), prismDidInfo!!.did.toString())
+    }
+
+    @Test
+    fun `test getDIDInfoByAlias`() = runTest {
+        val prismDID = DID("did:prism:test")
+        val privateKey = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        pluto?.start()
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, null, "alias", listOf(privateKey))
+
+        val prismDidInfo = pluto?.getDIDInfoByAlias("alias")?.first()
+        assertNotNull(prismDidInfo)
+        assertEquals(1, prismDidInfo!!.size)
+        assertEquals(prismDID.toString(), prismDidInfo.first().did.toString())
+    }
+
+    @Test
+    fun `test getDIDPrivateKeysByDID`() = runTest {
+        val prismDID = DID("did:prism:test")
+        val privateKey = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        pluto?.start()
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, null, "alias", listOf(privateKey))
+
+        val storablePrivateKey = pluto?.getDIDPrivateKeysByDID(prismDID)?.first()
+        assertNotNull(storablePrivateKey)
+        assertEquals(1, storablePrivateKey!!.size)
+        val storableKey = storablePrivateKey.first()
+        assertEquals("secp256k1+priv", storableKey.restorationIdentifier)
+        assertEquals(privateKey.storableData.base64UrlEncoded, storableKey.data)
+    }
+
+    @Test
+    fun `test getDIDPrivateKeyByID`() = runTest {
+        val prismDID = DID("did:prism:test")
+        val privateKey = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        pluto?.start()
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, null, "alias", listOf(privateKey))
+
+        val storablePrivateKey = pluto?.getDIDPrivateKeyByID(prismDID.toString())?.first()
+        assertNotNull(storablePrivateKey)
+        assertEquals("secp256k1+priv", storablePrivateKey!!.restorationIdentifier)
+        assertEquals(privateKey.storableData.base64UrlEncoded, storablePrivateKey.data)
+    }
+
+    @Test
+    fun `test getPrismDIDKeyPathIndex`() = runTest {
+        val prismDID = DID("did:prism:test")
+        val privateKey = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        pluto?.start()
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, 99, "alias", listOf(privateKey))
+
+        val keyPathIndex = pluto?.getPrismDIDKeyPathIndex(prismDID)?.first()
+        assertNotNull(keyPathIndex)
+        assertEquals(99, keyPathIndex)
+    }
+
+    @Test
+    fun `test getPrismLastKeyPathIndex`() = runTest {
+        val prismDID = DID("did:prism:test")
+        val privateKey = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        pluto?.start()
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, 10, "alias", listOf(privateKey))
+        pluto?.storePrismDIDAndPrivateKeys(prismDID, 9, "alias", listOf(privateKey))
+
+        val keyPathIndex = pluto?.getPrismLastKeyPathIndex()?.first()
+        assertNotNull(keyPathIndex)
+        assertEquals(10, keyPathIndex)
+    }
+
+    @Test
+    fun `test getAllPeerDIDs`() = runTest {
+        val peerDID1 = DID("did:peer:test1")
+        val privateKey1 = Secp256k1KeyPair.generateKeyPair().privateKey as StorableKey
+        val peerDID2 = DID("did:peer:test2")
+        val privateKey2 = Ed25519KeyPair.generateKeyPair().privateKey as StorableKey
+        val peerDID3 = DID("did:peer:test3")
+        val privateKey3 = X25519KeyPair.generateKeyPair().privateKey as StorableKey
+
+        pluto?.start()
+        pluto?.storePeerDID(peerDID1)
+        pluto?.storePrivateKeys(privateKey1, peerDID1, null, "$peerDID1#key-1")
+        pluto?.storePeerDID(peerDID2)
+        pluto?.storePrivateKeys(privateKey2, peerDID2, null, "$peerDID2#key-1")
+        pluto?.storePeerDID(peerDID3)
+        pluto?.storePrivateKeys(privateKey3, peerDID3, null, "$peerDID3#key-1")
+
+        val peerDIDs = pluto?.getAllPeerDIDs()?.first()
+        assertNotNull(peerDIDs)
+        assertEquals(3, peerDIDs?.size)
+
+        assertEquals(peerDID1.toString(), peerDIDs!![0].did.toString())
+        assertEquals(1, peerDIDs[0].privateKeys.size)
+        assertContentEquals(privateKey1.storableData, peerDIDs[0].privateKeys.first().raw)
+
+        assertEquals(peerDID2.toString(), peerDIDs[1].did.toString())
+        assertEquals(1, peerDIDs[1].privateKeys.size)
+        assertContentEquals(privateKey2.storableData, peerDIDs[1].privateKeys.first().raw)
+
+        assertEquals(peerDID3.toString(), peerDIDs[2].did.toString())
+        assertEquals(1, peerDIDs[2].privateKeys.size)
+        assertContentEquals(privateKey3.storableData, peerDIDs[2].privateKeys.first().raw)
+    }
+
+    @Test
+    fun `test getAllDIDs`() = runTest {
+        val peerDID1 = DID("did:peer:test1")
+        val peerDID2 = DID("did:peer:test2")
+        val peerDID3 = DID("did:peer:test3")
+
+        pluto?.start()
+        pluto?.storePeerDID(peerDID1)
+        pluto?.storePeerDID(peerDID2)
+        pluto?.storePeerDID(peerDID3)
+
+        val dids = pluto?.getAllDIDs()?.first()
+        assertNotNull(dids)
+        assertEquals(3, dids?.size)
+
+        assertEquals(peerDID1.toString(), dids!![0].toString())
+        assertEquals(peerDID2.toString(), dids[1].toString())
+        assertEquals(peerDID3.toString(), dids[2].toString())
+    }
 }
