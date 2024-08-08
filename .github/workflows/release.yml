@@ -2,6 +2,7 @@
 name: Release sdk
 
 env:
+  JAVA_VERSION: 17
   SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
   GITHUB_ACTOR: "hyperledger-bot"
   GITHUB_ACTOR_EMAIL: "hyperledger-bot@hyperledger.org"
@@ -12,13 +13,13 @@ env:
   OSSRH_GPG_SECRET_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
   OSSRH_GPG_SECRET_KEY_PASSWORD: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
 
+
 on:
   workflow_dispatch:
 
 permissions:
   contents: write
   packages: write
-  checks: write
 
 jobs:
   release:
