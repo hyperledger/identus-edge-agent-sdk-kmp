@@ -1,5 +1,6 @@
 package org.hyperledger.identus.walletsdk.pluto
 
+import java.util.*
 import junit.framework.TestCase.assertNotNull
 import junit.framework.TestCase.assertNull
 import junit.framework.TestCase.assertTrue
@@ -420,5 +421,244 @@ class PlutoImplTest {
         assertEquals(peerDID1.toString(), dids!![0].toString())
         assertEquals(peerDID2.toString(), dids[1].toString())
         assertEquals(peerDID3.toString(), dids[2].toString())
+    }
+
+    @Test
+    fun `test getAllDidPairs`() = runTest {
+        val hostPeerDID1 = DID("did:peer:test1")
+        val receiverPeerDID1 = DID("did:peer:test1")
+        val name1 = "name1"
+        val hostPeerDID2 = DID("did:peer:test2")
+        val receiverPeerDID2 = DID("did:peer:test3")
+        val name2 = "name2"
+
+        pluto?.start()
+        pluto?.storeDIDPair(hostPeerDID1, receiverPeerDID1, name1)
+        pluto?.storeDIDPair(hostPeerDID2, receiverPeerDID2, name2)
+
+        val didPairs = pluto?.getAllDidPairs()?.first()
+        assertNotNull(didPairs)
+        assertEquals(2, didPairs?.size)
+
+        assertEquals(hostPeerDID1.toString(), didPairs!![0].holder.toString())
+        assertEquals(receiverPeerDID1.toString(), didPairs[0].receiver.toString())
+        assertEquals(name1, didPairs[0].name)
+
+        assertEquals(hostPeerDID2.toString(), didPairs!![1].holder.toString())
+        assertEquals(receiverPeerDID2.toString(), didPairs[1].receiver.toString())
+        assertEquals(name2, didPairs[1].name)
+    }
+
+    @Test
+    fun `test getPairByDID`() = runTest {
+        val hostPeerDID1 = DID("did:peer:test1")
+        val receiverPeerDID1 = DID("did:peer:test1")
+        val name1 = "name1"
+        val hostPeerDID2 = DID("did:peer:test2")
+        val receiverPeerDID2 = DID("did:peer:test3")
+        val name2 = "name2"
+
+        pluto?.start()
+        pluto?.storeDIDPair(hostPeerDID1, receiverPeerDID1, name1)
+        pluto?.storeDIDPair(hostPeerDID2, receiverPeerDID2, name2)
+
+        val didPair = pluto?.getPairByDID(hostPeerDID2)?.first()
+        assertNotNull(didPair)
+
+        assertEquals(hostPeerDID2.toString(), didPair!!.holder.toString())
+        assertEquals(receiverPeerDID2.toString(), didPair.receiver.toString())
+        assertEquals(name2, didPair.name)
+    }
+
+    @Test
+    fun `test getPairByName`() = runTest {
+        val hostPeerDID1 = DID("did:peer:test1")
+        val receiverPeerDID1 = DID("did:peer:test1")
+        val name1 = "name1"
+        val hostPeerDID2 = DID("did:peer:test2")
+        val receiverPeerDID2 = DID("did:peer:test3")
+        val name2 = "name2"
+
+        pluto?.start()
+        pluto?.storeDIDPair(hostPeerDID1, receiverPeerDID1, name1)
+        pluto?.storeDIDPair(hostPeerDID2, receiverPeerDID2, name2)
+
+        val didPair = pluto?.getPairByName(name2)?.first()
+        assertNotNull(didPair)
+
+        assertEquals(hostPeerDID2.toString(), didPair!!.holder.toString())
+        assertEquals(receiverPeerDID2.toString(), didPair.receiver.toString())
+        assertEquals(name2, didPair.name)
+    }
+
+    @Test
+    fun `test getAllMessages`() = runTest {
+        val message = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from1"),
+            to = DID("did:peer:to1"),
+            body = "{}"
+        )
+
+        val message1 = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from2"),
+            to = DID("did:peer:to2"),
+            body = "{}"
+        )
+
+        pluto?.start()
+        pluto?.storeMessages(listOf(message, message1))
+
+        val messages = pluto?.getAllMessages(message.from!!, message.to!!)?.first()
+        assertNotNull(messages)
+        assertEquals(1, messages?.size)
+
+        assertEquals(message.piuri, messages!![0].piuri)
+        assertEquals(message.from, messages[0].from)
+        assertEquals(message.to, messages[0].to)
+    }
+
+    @Test
+    fun `test getAllMessagesSent`() = runTest {
+        val message = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from1"),
+            to = DID("did:peer:to1"),
+            body = "{}"
+        )
+
+        val message1 = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from2"),
+            to = DID("did:peer:to2"),
+            body = "{}",
+            direction = Message.Direction.SENT
+        )
+
+        pluto?.start()
+        pluto?.storeMessages(listOf(message, message1))
+
+        val messages = pluto?.getAllMessagesSent()?.first()
+        assertNotNull(messages)
+        assertEquals(1, messages?.size)
+
+        assertEquals(message1.piuri, messages!![0].piuri)
+        assertEquals(message1.from, messages[0].from)
+        assertEquals(message1.to, messages[0].to)
+
+        val messages1 = pluto?.getAllMessagesReceived()?.first()
+        assertNotNull(messages1)
+        assertEquals(1, messages1!!.size)
+
+        assertEquals(message.piuri, messages1[0].piuri)
+        assertEquals(message.from, messages1[0].from)
+        assertEquals(message.to, messages1[0].to)
+    }
+
+    @Test
+    fun `test getAllMessagesSentTo`() = runTest {
+        val message = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from1"),
+            to = DID("did:peer:to1"),
+            body = "{}"
+        )
+
+        val message1 = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from2"),
+            to = DID("did:peer:to2"),
+            body = "{}",
+            direction = Message.Direction.SENT
+        )
+
+        pluto?.start()
+        pluto?.storeMessages(listOf(message, message1))
+
+        val messages = pluto?.getAllMessagesSentTo(message1.to!!)?.first()
+        assertNotNull(messages)
+        assertEquals(1, messages?.size)
+
+        assertEquals(message1.piuri, messages!![0].piuri)
+        assertEquals(message1.from, messages[0].from)
+        assertEquals(message1.to, messages[0].to)
+    }
+
+    @Test
+    fun `test getAllMessagesReceivedFrom`() = runTest {
+        val message = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from1"),
+            to = DID("did:peer:to1"),
+            body = "{}"
+        )
+
+        val message1 = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from2"),
+            to = DID("did:peer:to2"),
+            body = "{}",
+            direction = Message.Direction.SENT
+        )
+
+        pluto?.start()
+        pluto?.storeMessages(listOf(message, message1))
+
+        val messages = pluto?.getAllMessagesSentTo(message.to!!)?.first()
+        assertNotNull(messages)
+        assertEquals(1, messages?.size)
+
+        assertEquals(message.piuri, messages!![0].piuri)
+        assertEquals(message.from, messages[0].from)
+        assertEquals(message.to, messages[0].to)
+    }
+
+    @Test
+    fun `test getMessageByThidAndPiuri`() = runTest {
+        val message = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from1"),
+            to = DID("did:peer:to1"),
+            body = "{}"
+        )
+
+        val message1 = Message(
+            piuri = "https://didcomm.atalaprism.io/present-proof/3.0/request-presentation",
+            from = DID("did:peer:from2"),
+            to = DID("did:peer:to2"),
+            body = "{}",
+            direction = Message.Direction.SENT,
+            thid = UUID.randomUUID().toString()
+        )
+
+        pluto?.start()
+        pluto?.storeMessages(listOf(message, message1))
+
+        val message2 = pluto?.getMessageByThidAndPiuri(message1.thid!!, piuri = message1.piuri)?.first()
+        assertNotNull(message2)
+
+        assertEquals(message1.piuri, message2!!.piuri)
+        assertEquals(message1.from, message2.from)
+        assertEquals(message1.to, message2.to)
+    }
+
+    @Test
+    fun `test revokeCredential`() = runTest {
+        val credential = JWTCredential.fromJwtString(
+            "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
+        )
+
+        pluto?.start()
+        pluto?.storeCredential(credential.toStorableCredential())
+
+        val observeRevoked = pluto?.observeRevokedCredentials()
+
+        pluto?.revokeCredential(credential.id)
+        val credentials = pluto?.getAllCredentials()?.first()
+        assertNotNull(credentials)
+        val cred = credentials!!.first()
+        assertTrue(cred.revoked)
+        assertEquals(1, observeRevoked?.first()?.size)
     }
 }
