@@ -1,6 +1,19 @@
 ---
 name: Build and Test
 
+env:
+  JAVA_VERSION: 17
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  GITHUB_ACTOR: "hyperledger-bot"
+  GITHUB_ACTOR_EMAIL: "hyperledger-bot@hyperledger.org"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+  OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+  OSSRH_GPG_SECRET_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+  OSSRH_GPG_SECRET_KEY_PASSWORD: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
+  NODEJS_VERSION: 16.17.0
+
 defaults:
   run:
     shell: bash
@@ -9,17 +22,16 @@ concurrency:
   group: "${{ github.head_ref }}${{ github.ref }}"
   cancel-in-progress: true
 
-env:
-  JAVA_VERSION: 17
-  NODEJS_VERSION: 16.17.0
-  ATALA_GITHUB_ACTOR: ${{ secrets.GITHUB_TOKEN }}
-  ATALA_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:
   push:
     branches:
       - "main"
   pull_request:
+
+permissions:
+  checks: write
+  pull-requests: write
 
 jobs:
 
@@ -29,11 +41,17 @@ jobs:
       - name: Checkout the repo
         uses: actions/checkout@v3
 
-      - name: Install Java ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v3
+      - name: "Install Java ${{ env.JAVA_VERSION }}"
+        uses: actions/setup-java@v4
+        continue-on-error: true
         with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: "zulu"
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: zulu
+          server-id: ossrh
+          server-username: ${{ secrets.OSSRH_USERNAME }}
+          server-password: ${{ secrets.OSSRH_PASSWORD }}
+          gpg-private-key: ${{ secrets.HYP_BOT_GPG_PRIVATE }}
+          gpg-passphrase: ${{ secrets.HYP_BOT_GPG_PASSWORD }}
 
       - name: Gradle Build Action
         uses: gradle/gradle-build-action@v2
@@ -44,11 +62,11 @@ jobs:
       - name: Build for JS, Android, JVM
         run: ./gradlew build allTests koverXmlReportRelease koverHtmlReportRelease --stacktrace
 
-      - name: Coveralls
-        uses: coverallsapp/github-action@v2
-        with:
-          file: "${{ github.workspace }}/edge-agent-sdk/build/reports/android/result.xml"
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Coveralls
+#        uses: coverallsapp/github-action@v2
+#        with:
+#          file: "${{ github.workspace }}/edge-agent-sdk/build/reports/android/result.xml"
+#          github-token: ${{ secrets.IDENTUS_CI }}
 
       - name: Publish test results
         if: always()

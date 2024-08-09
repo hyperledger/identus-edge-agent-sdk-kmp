@@ -1,5 +1,4 @@
 import org.gradle.internal.os.OperatingSystem
-import java.util.Base64
 
 val publishedMavenId = "org.hyperledger.identus"
 val os: OperatingSystem = OperatingSystem.current()
@@ -13,7 +12,7 @@ plugins {
     id("org.jetbrains.kotlin.kapt") version "1.9.10"
     id("maven-publish")
     id("signing")
-    id("io.github.gradle-nexus.publish-plugin") version "2.0.0-rc-1"
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
 buildscript {
@@ -101,6 +100,17 @@ subprojects {
         apply(plugin = "org.gradle.signing")
 
         publishing {
+            repositories {
+                maven {
+                    name = "OSSRH"
+                    url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+                    credentials {
+                        username =
+                            project.findProperty("sonatypeUsername") as String? ?: System.getenv("OSSRH_USERNAME")
+                        password = project.findProperty("sonatypePassword") as String? ?: System.getenv("OSSRH_TOKEN")
+                    }
+                }
+            }
             publications {
                 withType<MavenPublication> {
                     groupId = publishedMavenId
@@ -111,12 +121,12 @@ subprojects {
                         description.set(" Edge Agent SDK - Kotlin Multiplatform (Android/JVM)")
                         url.set("https://docs.atalaprism.io/")
                         organization {
-                            name.set("IOG")
-                            url.set("https://iog.io/")
+                            name.set("Hyperledger")
+                            url.set("https://hyperledger.org/")
                         }
                         issueManagement {
                             system.set("Github")
-                            url.set("https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm")
+                            url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
                         }
                         licenses {
                             license {
@@ -125,6 +135,14 @@ subprojects {
                             }
                         }
                         developers {
+                            developer {
+                                id.set("cristianIOHK")
+                                name.set("Cristian Gonzalez")
+                                email.set("cristian.castro@iohk.io")
+                                organization.set("IOG")
+                                roles.add("developer")
+                                url.set("https://github.com/cristianIOHK")
+                            }
                             developer {
                                 id.set("hamada147")
                                 name.set("Ahmed Moussa")
@@ -139,14 +157,6 @@ subprojects {
                                 email.set("javier.ribo@iohk.io")
                                 organization.set("IOG")
                                 roles.add("developer")
-                            }
-                            developer {
-                                id.set("cristianIOHK")
-                                name.set("Cristian Gonzalez")
-                                email.set("cristian.castro@iohk.io")
-                                organization.set("IOG")
-                                roles.add("developer")
-                                url.set("https://github.com/cristianIOHK")
                             }
                             developer {
                                 id.set("amagyar-iohk")
@@ -171,29 +181,19 @@ subprojects {
                             }
                         }
                         scm {
-                            connection.set("scm:git:git://input-output-hk/atala-prism-wallet-sdk-kmm.git")
-                            developerConnection.set("scm:git:ssh://input-output-hk/atala-prism-wallet-sdk-kmm.git")
-                            url.set("https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm")
+                            connection.set("scm:git:git://hyperledger/identus-edge-agent-sdk-kmp.git")
+                            developerConnection.set("scm:git:ssh://hyperledger/identus-edge-agent-sdk-kmp.git")
+                            url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
                         }
                     }
-                    if (System.getenv("BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN") != null) {
-                        if (System.getenv("BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN").isNotBlank()) {
-                            signing {
-                                val base64EncodedAsciiArmoredSigningKey: String =
-                                    System.getenv("BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN") ?: ""
-                                val signingKeyPassword: String =
-                                    System.getenv("SIGNING_KEY_PASSWORD") ?: ""
-                                useInMemoryPgpKeys(
-                                    String(
-                                        Base64.getDecoder().decode(
-                                            base64EncodedAsciiArmoredSigningKey.toByteArray()
-                                        )
-                                    ),
-                                    signingKeyPassword
-                                )
-                                sign(this@withType)
-                            }
-                        }
+                    signing {
+                        useInMemoryPgpKeys(
+                            project.findProperty("signing.signingSecretKey") as String?
+                                ?: System.getenv("OSSRH_GPG_SECRET_KEY"),
+                            project.findProperty("signing.signingSecretKeyPassword") as String?
+                                ?: System.getenv("OSSRH_GPG_SECRET_KEY_PASSWORD")
+                        )
+                        sign(this@withType)
                     }
                 }
             }
@@ -206,8 +206,8 @@ nexusPublishing {
         sonatype {
             nexusUrl.set(uri("https://oss.sonatype.org/service/local/"))
             snapshotRepositoryUrl.set(uri("https://oss.sonatype.org/content/repositories/snapshots/"))
-            username.set(System.getenv("SONATYPE_USERNAME"))
-            password.set(System.getenv("SONATYPE_PASSWORD"))
+            username.set(System.getenv("OSSRH_USERNAME"))
+            password.set(System.getenv("OSSRH_TOKEN"))
         }
     }
 }
