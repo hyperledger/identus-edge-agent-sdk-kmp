@@ -1,23 +1,33 @@
 ---
 name: Release sdk
 
+env:
+  JAVA_VERSION: 17
+  SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+  GITHUB_ACTOR: "hyperledger-bot"
+  GITHUB_ACTOR_EMAIL: "hyperledger-bot@hyperledger.org"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+  OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+  OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+  OSSRH_GPG_SECRET_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+  OSSRH_GPG_SECRET_KEY_PASSWORD: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
+
+
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+  packages: write
+
 jobs:
   release:
-    env:
-      ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
-      ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
-      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-      SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
-          token: ${{ secrets.ATALA_GITHUB_TOKEN }}
+          token: ${{ secrets.IDENTUS_CI }}
           fetch-depth: 0
 
       - name: Setup Node.js
@@ -25,26 +35,40 @@ jobs:
         with:
           node-version: "lts/*"
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: "Install Java ${{ env.JAVA_VERSION }}"
+        uses: actions/setup-java@v4
+        continue-on-error: true
         with:
-          distribution: adopt
-          java-version: 17
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: zulu
+          server-id: ossrh
+          server-username: ${{ secrets.OSSRH_USERNAME }}
+          server-password: ${{ secrets.OSSRH_PASSWORD }}
+          gpg-private-key: ${{ secrets.HYP_BOT_GPG_PRIVATE }}
+          gpg-passphrase: ${{ secrets.HYP_BOT_GPG_PASSWORD }}
+
 
       - uses: crazy-max/ghaction-import-gpg@v5
         id: import_gpg
         with:
-          gpg_private_key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg_private_key: ${{ secrets.HYP_BOT_GPG_PRIVATE }}
+          passphrase: ${{ secrets.HYP_BOT_GPG_PASSWORD }}
           git_user_signingkey: true
           git_commit_gpgsign: true
+          git_config_global: true
+          git_tag_gpgsign: false
 
-      - name: Release
+      - name: "Release"
         env:
+          GITHUB_TOKEN: ${{ secrets.IDENTUS_CI }}
           GIT_AUTHOR_EMAIL: ${{ steps.import_gpg.outputs.email }}
           GIT_COMMITTER_EMAIL: ${{ steps.import_gpg.outputs.email }}
           GIT_AUTHOR_NAME: ${{ steps.import_gpg.outputs.name }}
           GIT_COMMITTER_NAME: ${{ steps.import_gpg.outputs.name }}
-          BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN: ${{ secrets.BASE64_ARMORED_GPG_SIGNING_KEY_MAVEN }}
+          OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
+          OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
+          OSSRH_GPG_SECRET_KEY: ${{ secrets.OSSRH_GPG_SECRET_KEY }}
+          OSSRH_GPG_SECRET_KEY_PASSWORD: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
         run: |
           npm install
           npx semantic-release

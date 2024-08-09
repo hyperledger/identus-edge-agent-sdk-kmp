@@ -8,8 +8,9 @@ defaults:
 env:
   JAVA_VERSION: 17
   NODEJS_VERSION: 16.17.0
-  ATALA_GITHUB_ACTOR: ${{ secrets.ATALA_GITHUB_ACTOR }}
-  ATALA_GITHUB_TOKEN: ${{ secrets.ATALA_GITHUB_TOKEN }}
+  GITHUB_ACTOR: "hyperledger-bot"
+  GITHUB_ACTOR_EMAIL: "hyperledger-bot@hyperledger.org"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 on:
   workflow_dispatch:
