@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.pluto
 
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import kotlin.reflect.KClass
 
 /**

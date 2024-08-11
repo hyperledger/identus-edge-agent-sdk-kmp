@@ -10,3 +10,7 @@ CREATE TABLE DIDKeyLink (
 insert:
 INSERT INTO DIDKeyLink(didId, keyId, alias)
 VALUES (:didId, :keyId, :alias);
+
+fetchAll:
+SELECT *
+FROM DIDKeyLink;
