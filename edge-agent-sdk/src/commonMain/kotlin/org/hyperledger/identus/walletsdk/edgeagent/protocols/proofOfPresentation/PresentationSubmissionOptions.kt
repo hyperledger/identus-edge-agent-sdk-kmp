@@ -3,5 +3,5 @@ package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentatio
 interface PresentationSubmissionOptions
 
 data class PresentationSubmissionOptionsJWT(
-    val presentationDefinitionRequest: PresentationDefinitionRequest
+    val presentationDefinitionRequest: String
 ) : PresentationSubmissionOptions

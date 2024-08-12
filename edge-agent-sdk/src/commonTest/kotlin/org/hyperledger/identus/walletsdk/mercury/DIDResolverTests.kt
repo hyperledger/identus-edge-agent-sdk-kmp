@@ -8,12 +8,12 @@ import org.didcommx.didcomm.common.VerificationMaterialFormat
 import org.didcommx.didcomm.common.VerificationMethodType
 import org.didcommx.didcomm.diddoc.DIDCommService
 import org.didcommx.didcomm.diddoc.VerificationMethod
+import org.hyperledger.identus.walletsdk.domain.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
 import org.hyperledger.identus.walletsdk.domain.models.OctetPublicKey
-import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommDIDResolver
 import kotlin.test.BeforeTest
 import kotlin.test.Test

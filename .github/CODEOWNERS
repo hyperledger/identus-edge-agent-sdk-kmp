@@ -1,9 +1,7 @@
-@goncalo-frade-iohk @yshyn-iohk @elribonazo @hamada147 @cristianIOHK 
+@goncalo-frade-iohk @yshyn-iohk @elribonazo @cristianIOHK
 
 # Test related:
-/sampleapp/ @amagyar-iohk @todorkoleviohk @hamada147 @cristianIOHK
-/tests/ @amagyar-iohk @todorkoleviohk @hamada147 @cristianIOHK
+/tests/ @amagyar-iohk
 
 # Docs:
 *.md @petevielhaber
-

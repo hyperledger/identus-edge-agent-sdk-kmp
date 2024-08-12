@@ -31,4 +31,7 @@ abstract class PublicKey : Key() {
     fun getValue(): ByteArray {
         return this.raw
     }
+
+    @Throws
+    abstract fun jca(): java.security.PublicKey
 }

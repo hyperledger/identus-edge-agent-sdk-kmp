@@ -1,15 +1,33 @@
 package org.hyperledger.identus.walletsdk.pollux.models
 
+import anoncreds_uniffi.CredentialDefinition
+import anoncreds_uniffi.PresentationRequest
+import anoncreds_uniffi.Prover
+import anoncreds_uniffi.Schema
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonNames
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
+import org.hyperledger.identus.walletsdk.domain.models.KeyValue
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
+import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.AnonCredentialBackUp.RevocationRegistry
 
@@ -55,7 +73,7 @@ data class AnonCredential(
     @JsonNames("witness", "witnessJson")
     val witnessJson: String?,
     private val json: String
-) : Credential {
+) : Credential, ProvableCredential {
 
     /**
      * Converts the current object to a [PlutoRestoreTask.AnonCredentialBackUp] object.
@@ -125,6 +143,67 @@ data class AnonCredential(
 
     override var revoked: Boolean? = null
 
+    override suspend fun presentation(request: ByteArray, options: List<CredentialOperationsOptions>): String {
+        var schemaDownloader: Api? = null
+        var definitionDownloader: Api? = null
+        var linkSecret: String? = null
+
+        for (option in options) {
+            when (option) {
+                is CredentialOperationsOptions.SchemaDownloader -> schemaDownloader = option.api
+                is CredentialOperationsOptions.CredentialDefinitionDownloader -> definitionDownloader = option.api
+                is CredentialOperationsOptions.LinkSecret -> linkSecret = option.secret
+                else -> {}
+            }
+        }
+        if (linkSecret == null) {
+            throw UnknownError.SomethingWentWrongError()
+        }
+        if (schemaDownloader == null) {
+            throw UnknownError.SomethingWentWrongError()
+        }
+        if (definitionDownloader == null) {
+            throw UnknownError.SomethingWentWrongError()
+        }
+
+        val presentationRequest = PresentationRequest(request.toString())
+        val cred = anoncreds_uniffi.Credential(this.id)
+
+        val requestedAttributes = extractRequestedAttributes(request.toString())
+        val requestedPredicates = extractRequestedPredicatesKeys(request.toString())
+
+        val credentialRequests = anoncreds_uniffi.RequestedCredential(
+            cred = cred,
+            timestamp = null,
+            revState = null,
+            requestedAttributes = requestedAttributes,
+            requestedPredicates = requestedPredicates
+        )
+        val schemaId = this.schemaID
+        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+        // .replace("host.docker.internal", "192.168.68.114")
+        val schema = getSchema(schemaId, schemaDownloader)
+
+        val schemaMap: Map<String, Schema> = mapOf(Pair(this.schemaID, schema))
+
+        val credDefId = this.credentialDefinitionID
+        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
+        // .replace("host.docker.internal", "192.168.68.114")
+        val credentialDefinition = getCredentialDefinition(credDefId, definitionDownloader)
+        val credDefinition: Map<String, CredentialDefinition> = mapOf(
+            Pair(this.credentialDefinitionID, credentialDefinition)
+        )
+
+        return Prover().createPresentation(
+            presReq = presentationRequest,
+            requestedCredentials = listOf(credentialRequests),
+            selfAttestedAttributes = null,
+            linkSecret = linkSecret,
+            schemas = schemaMap,
+            credDefs = credDefinition
+        ).toJson()
+    }
+
     /**
      * Converts the current credential object into a storable credential object.
      *
@@ -180,6 +259,82 @@ data class AnonCredential(
                 return c
             }
         }
+    }
+
+    /**
+     * Converts the map of [anoncreds_uniffi.AttributeInfoValue] values to a list of [RequestedAttribute].
+     *
+     * @return The list of [RequestedAttribute].
+     */
+    private fun extractRequestedAttributes(jsonString: String): Map<String, Boolean> {
+        val jsonElement: JsonElement = Json.parseToJsonElement(jsonString)
+        val jsonObject: JsonObject = jsonElement.jsonObject
+        val requestedAttributes = jsonObject["requested_attributes"]?.jsonObject ?: JsonObject(mapOf())
+        val resultMap = requestedAttributes.keys.associateWith { true }
+
+        return resultMap
+    }
+
+    /**
+     * Converts the map of [anoncreds_uniffi.PredicateInfoValue] values to a list of [RequestedPredicate].
+     *
+     * @receiver The map of [anoncreds_uniffi.PredicateInfoValue] values.
+     * @return The list of [RequestedPredicate].
+     */
+    private fun extractRequestedPredicatesKeys(jsonString: String): List<String> {
+        val jsonElement: JsonElement = Json.parseToJsonElement(jsonString)
+        val jsonObject: JsonObject = jsonElement.jsonObject
+        val requestedPredicates = jsonObject["requested_predicates"]?.jsonObject ?: JsonObject(mapOf())
+        val keysList = requestedPredicates.keys.toList()
+
+        return keysList
+    }
+
+    /**
+     * Retrieves the credential definition for the specified ID.
+     *
+     * @param id The ID of the credential definition.
+     * @return The credential definition.
+     */
+    private suspend fun getCredentialDefinition(id: String, api: Api): CredentialDefinition {
+        val result = api.request(
+            HttpMethod.Get.value,
+            id,
+            emptyArray(),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+            null
+        )
+        if (result.status == 200) {
+            return CredentialDefinition(result.jsonString)
+        }
+        throw PolluxError.InvalidCredentialDefinitionError()
+    }
+
+    private suspend fun getSchema(schemaId: String, api: Api): Schema {
+        val result = api.request(
+            HttpMethod.Get.value,
+            schemaId,
+            emptyArray(),
+            arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+            null
+        )
+
+        if (result.status == 200) {
+            val schema = (Json.parseToJsonElement(result.jsonString) as JsonObject)
+            if (schema.containsKey("attrNames") && schema.containsKey("issuerId")) {
+                val name = schema["name"]?.jsonPrimitive?.content
+                val version = schema["version"]?.jsonPrimitive?.content
+                val attrs = schema["attrNames"]
+                val attrNames = attrs?.jsonArray?.map { value -> value.jsonPrimitive.content }
+                val issuerId =
+                    schema["issuerId"]?.jsonPrimitive?.content
+                if (name == null || version == null || attrNames == null || issuerId == null) {
+                    throw PolluxError.InvalidCredentialError()
+                }
+                return Schema(result.jsonString)
+            }
+        }
+        throw PolluxError.InvalidCredentialDefinitionError()
     }
 
     companion object {

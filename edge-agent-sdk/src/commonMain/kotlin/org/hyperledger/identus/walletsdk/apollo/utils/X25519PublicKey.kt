@@ -1,5 +1,7 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
+import org.bouncycastle.crypto.params.X25519PublicKeyParameters
+import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
@@ -10,6 +12,8 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PEMKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PEMKeyType
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import java.security.KeyFactory
+import java.security.spec.X509EncodedKeySpec
 
 /**
  * Class representing a public key for the X25519 curve.
@@ -86,4 +90,11 @@ class X25519PublicKey(nativeValue: ByteArray) : PublicKey(), ExportableKey, Stor
      */
     override val restorationIdentifier: String
         get() = "x25519+pub"
+
+    override fun jca(): java.security.PublicKey {
+        val publicKeyParams = X25519PublicKeyParameters(raw, 0)
+        val x509Encoded = publicKeyParams.encoded
+        val keyFactory = KeyFactory.getInstance("X25519", BouncyCastleProvider())
+        return keyFactory.generatePublic(X509EncodedKeySpec(x509Encoded))
+    }
 }

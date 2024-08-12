@@ -2,20 +2,13 @@
 
 package org.hyperledger.identus.walletsdk.pollux
 
-import anoncreds_wrapper.CredentialDefinition
-import anoncreds_wrapper.CredentialDefinitionId
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequest
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.CredentialRequests
-import anoncreds_wrapper.LinkSecret
-import anoncreds_wrapper.Presentation
-import anoncreds_wrapper.PresentationRequest
-import anoncreds_wrapper.Prover
-import anoncreds_wrapper.RequestedAttribute
-import anoncreds_wrapper.RequestedPredicate
-import anoncreds_wrapper.Schema
-import anoncreds_wrapper.SchemaId
+import anoncreds_uniffi.CredentialDefinition
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequest
+import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.PresentationRequest
+import anoncreds_uniffi.Prover
+import anoncreds_uniffi.Schema
 import com.apicatalog.jsonld.JsonLd
 import com.apicatalog.jsonld.document.JsonDocument
 import com.apicatalog.rdf.Rdf
@@ -27,54 +20,10 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
-import org.hyperledger.identus.apollo.base64.base64UrlDecoded
-import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
-import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
-import org.hyperledger.identus.apollo.utils.KMMEllipticCurve
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.setl.rdf.normalization.RdfNormalize
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
-import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
-import org.didcommx.didcomm.common.Typ
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
-import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
-import org.hyperledger.identus.walletsdk.domain.models.Api
-import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
-import org.hyperledger.identus.walletsdk.domain.models.Credential
-import org.hyperledger.identus.walletsdk.domain.models.CredentialType
-import org.hyperledger.identus.walletsdk.domain.models.DID
-import org.hyperledger.identus.walletsdk.domain.models.PolluxError
-import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.domain.models.httpClient
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.VerifiableKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
-import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
-import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
-import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
 import java.io.ByteArrayInputStream
 import java.io.StringWriter
 import java.math.BigInteger
@@ -83,32 +32,75 @@ import java.security.interfaces.ECPrivateKey
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECParameterSpec
 import java.security.spec.ECPoint
-import java.security.spec.ECPrivateKeySpec
 import java.security.spec.ECPublicKeySpec
 import java.util.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
+import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
+import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
-import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
-import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
-import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
+import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
+import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
-import org.hyperledger.identus.walletsdk.domain.models.RequestedPredicates
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.DescriptorItemFormat
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
-import org.hyperledger.identus.walletsdk.pluto.RestorationID
-import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
+import org.hyperledger.identus.walletsdk.domain.models.KeyValue
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.RequestedPredicates
+import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
+import org.hyperledger.identus.walletsdk.domain.models.httpClient
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.VerifiableKey
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.pluto.RestorationID
+import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.pollux.models.DescriptorItemFormat
+import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.JWTProofType
+import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
+import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
 import org.hyperledger.identus.walletsdk.pollux.utils.Bitstring
 
 /**
@@ -152,12 +144,16 @@ open class PolluxImpl(
     override suspend fun parseCredential(
         jsonData: String,
         type: CredentialType,
-        linkSecret: LinkSecret?,
+        linkSecret: String?,
         credentialMetadata: CredentialRequestMetadata?
     ): Credential {
         return when (type) {
             CredentialType.JWT -> {
                 JWTCredential.fromJwtString(jsonData)
+            }
+
+            CredentialType.SDJWT -> {
+                SDJWTCredential.fromSDJwtString(jsonData)
             }
 
             CredentialType.ANONCREDS_ISSUE -> {
@@ -168,31 +164,32 @@ open class PolluxImpl(
                     throw Error("Invalid credential metadata")
                 }
 
-                val cred = anoncreds_wrapper.Credential(jsonData)
-                val credentialDefinition = getCredentialDefinition(cred.getCredDefId())
+                val cred = anoncreds_uniffi.Credential(jsonData)
+                val credentialDefinition = getCredentialDefinition(cred.credDefId())
                 val prover = Prover()
                 val processedCredential = prover.processCredential(
-                    credential = cred,
-                    credRequestMetadata = credentialMetadata,
+                    cred = cred,
+                    credReqMetadata = credentialMetadata,
                     linkSecret = linkSecret,
                     credDef = credentialDefinition,
                     revRegDef = null
                 )
 
                 val values: Map<String, AnonCredential.Attribute> =
-                    processedCredential.getValues().values.mapValues {
-                        AnonCredential.Attribute(raw = it.value.raw, encoded = it.value.encoded)
+                    processedCredential.values().mapValues {
+                        AnonCredential.Attribute(raw = it.key, encoded = it.value)
                     }
 
                 return AnonCredential(
-                    schemaID = processedCredential.getSchemaId(),
-                    credentialDefinitionID = processedCredential.getCredDefId(),
-                    signatureJson = processedCredential.getSignatureJson(),
-                    signatureCorrectnessProofJson = processedCredential.getSignatureCorrectnessProofJson(),
-                    revocationRegistryId = processedCredential.getRevRegId(),
-                    revocationRegistryJson = processedCredential.getRevRegJson(),
-                    witnessJson = processedCredential.getWitnessJson() ?: "",
-                    json = processedCredential.getJson(),
+                    schemaID = processedCredential.schemaId(),
+                    credentialDefinitionID = processedCredential.credDefId(),
+                    signatureJson = processedCredential.toJsonElement().jsonObject["signature"]?.toString() ?: "",
+                    signatureCorrectnessProofJson = processedCredential.toJsonElement().jsonObject["signature_correctness_proof"]?.toString()
+                        ?: "",
+                    revocationRegistryId = processedCredential.revRegId(),
+                    revocationRegistryJson = processedCredential.toJsonElement().jsonObject["rev_reg"]?.toString(),
+                    witnessJson = processedCredential.toJsonElement().jsonObject["witness"]?.toString(),
+                    json = processedCredential.toJson(),
                     values = values
                 )
             }
@@ -217,6 +214,10 @@ open class PolluxImpl(
     ): Credential {
         val cred: Credential
         when (restorationIdentifier) {
+            "sd-jwt+credential" -> {
+                cred = SDJWTCredential.fromSDJwtString(credentialData.decodeToString())
+            }
+
             RestorationID.JWT.value -> {
                 cred = JWTCredential.fromJwtString(credentialData.decodeToString())
             }
@@ -268,100 +269,15 @@ open class PolluxImpl(
      * @return The created verifiable presentation JWT.
      */
     @Throws(PolluxError.NoDomainOrChallengeFound::class)
-    override fun createVerifiablePresentationJWT(
+    override fun processCredentialRequestSDJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
-        credential: Credential,
-        requestPresentationJson: JsonObject
+        offerJson: JsonObject
     ): String {
         val parsedPrivateKey = parsePrivateKey(privateKey)
-        val domain =
-            getDomain(requestPresentationJson) ?: throw PolluxError.NoDomainOrChallengeFound()
-        val challenge =
-            getChallenge(requestPresentationJson) ?: throw PolluxError.NoDomainOrChallengeFound()
-        return signClaimsProofPresentationJWT(
-            subjectDID,
-            parsedPrivateKey,
-            credential,
-            domain,
-            challenge
-        )
-    }
-
-    /**
-     * Converts the map of [anoncreds_wrapper.AttributeInfoValue] values to a list of [RequestedAttribute].
-     *
-     * @return The list of [RequestedAttribute].
-     */
-    private fun Map<String, anoncreds_wrapper.AttributeInfoValue>.toListRequestedAttribute(): List<RequestedAttribute> {
-        return this.keys.toList().map {
-            RequestedAttribute(
-                referent = it,
-                revealed = true
-            )
-        }
-    }
-
-    /**
-     * Converts the map of [anoncreds_wrapper.PredicateInfoValue] values to a list of [RequestedPredicate].
-     *
-     * @receiver The map of [anoncreds_wrapper.PredicateInfoValue] values.
-     * @return The list of [RequestedPredicate].
-     */
-    private fun Map<String, anoncreds_wrapper.PredicateInfoValue>.toListRequestedPredicate(): List<RequestedPredicate> {
-        return this.keys.toList().map {
-            RequestedPredicate(it)
-        }
-    }
-
-    override suspend fun createVerifiablePresentationAnoncred(
-        request: RequestPresentation,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation {
-        if (request.attachments.isEmpty()) {
-            throw PolluxError.RequestPresentationHasWrongAttachments("Attachment cannot be empty")
-        }
-        if (request.attachments[0].data !is AttachmentBase64) {
-            throw PolluxError.RequestPresentationHasWrongAttachments("Attachment data must be AttachmentBase64")
-        }
-        val attachmentBase64 = request.attachments[0].data as AttachmentBase64
-        val presentationRequest = PresentationRequest(attachmentBase64.base64.base64UrlDecoded)
-        val cred = anoncreds_wrapper.Credential(credential.id)
-
-        val requestedAttributes =
-            presentationRequest.getRequestedAttributes().toListRequestedAttribute()
-        val requestedPredicate =
-            presentationRequest.getRequestedPredicates().toListRequestedPredicate()
-
-        val credentialRequests = CredentialRequests(
-            credential = cred,
-            requestedAttribute = requestedAttributes,
-            requestedPredicate = requestedPredicate
-        )
-        val schemaId = credential.schemaID
-        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
-        // .replace("host.docker.internal", "192.168.68.114")
-        val schema = getSchema(schemaId)
-
-        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(credential.schemaID, schema))
-
-        val credDefId = credential.credentialDefinitionID
-        // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
-        // .replace("host.docker.internal", "192.168.68.114")
-        val credentialDefinition = getCredentialDefinition(credDefId)
-        val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
-            Pair(credential.credentialDefinitionID, credentialDefinition)
-        )
-
-        return Prover().createPresentation(
-            presentationRequest = presentationRequest,
-            credentials = listOf(credentialRequests),
-            selfAttested = null,
-            linkSecret = linkSecret,
-            schemas = schemaMap,
-            credentialDefinitions = credDefinition
-        )
+        val domain = getDomain(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
+        val challenge = getChallenge(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
+        return signClaimsRequestCredentialJWT(subjectDID, parsedPrivateKey, domain, challenge)
     }
 
     /**
@@ -433,10 +349,10 @@ open class PolluxImpl(
     override suspend fun processCredentialRequestAnoncreds(
         did: DID,
         offer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretName: String
     ): Pair<CredentialRequest, CredentialRequestMetadata> {
-        val credentialDefinition = getCredentialDefinition(offer.getCredDefId())
+        val credentialDefinition = getCredentialDefinition(offer.credDefId())
 
         return createAnonCredentialRequest(
             did = did,
@@ -461,7 +377,7 @@ open class PolluxImpl(
         did: DID,
         credentialDefinition: CredentialDefinition,
         credentialOffer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretId: String
     ): Pair<CredentialRequest, CredentialRequestMetadata> {
         val credentialRequest = Prover().createCredentialRequest(
@@ -470,7 +386,7 @@ open class PolluxImpl(
             credDef = credentialDefinition,
             linkSecret = linkSecret,
             linkSecretId = linkSecretId,
-            credentialOffer = credentialOffer
+            credOffer = credentialOffer
         )
         return Pair(credentialRequest.request, credentialRequest.metadata)
     }
@@ -481,7 +397,7 @@ open class PolluxImpl(
      * @param id The ID of the credential definition.
      * @return The credential definition.
      */
-    override suspend fun getCredentialDefinition(id: String): CredentialDefinition {
+    suspend fun getCredentialDefinition(id: String): CredentialDefinition {
         val result = api.request(
             HttpMethod.Get.value,
             id,
@@ -505,21 +421,7 @@ open class PolluxImpl(
         )
 
         if (result.status == 200) {
-            val schema = (Json.parseToJsonElement(result.jsonString) as JsonObject)
-            if (schema.containsKey("attrNames") && schema.containsKey("issuerId")) {
-                val name = schema["name"]?.jsonPrimitive?.content
-                val version = schema["version"]?.jsonPrimitive?.content
-                val attrs = schema["attrNames"]
-                val attrNames = attrs?.jsonArray?.map { value -> value.jsonPrimitive.content }
-                val issuerId =
-                    schema["issuerId"]?.jsonPrimitive?.content
-                return Schema(
-                    name = name ?: throw PolluxError.InvalidCredentialError(),
-                    version = version ?: throw PolluxError.InvalidCredentialError(),
-                    attrNames = attrNames ?: throw PolluxError.InvalidCredentialError(),
-                    issuerId = issuerId ?: throw PolluxError.InvalidCredentialError()
-                )
-            }
+            return Schema(result.jsonString)
         }
         throw PolluxError.InvalidCredentialDefinitionError()
     }
@@ -685,22 +587,11 @@ open class PolluxImpl(
      * @return The parsed ECPrivateKey.
      */
     internal fun parsePrivateKey(privateKey: PrivateKey): ECPrivateKey {
-        val curveName = KMMEllipticCurve.SECP256k1.value
-        val sp = ECNamedCurveTable.getParameterSpec(curveName)
-        val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
-        val privateKeySpec = ECPrivateKeySpec(BigInteger(1, privateKey.getValue()), params)
-        val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
-        return keyFactory.generatePrivate(privateKeySpec) as ECPrivateKey
+        return privateKey.jca() as ECPrivateKey
     }
 
     private fun parsePublicKey(publicKey: PublicKey): ECPublicKey {
-        val curveName = KMMEllipticCurve.SECP256k1.value
-        val sp = ECNamedCurveTable.getParameterSpec(curveName)
-        val params: ECParameterSpec = ECNamedCurveSpec(sp.name, sp.curve, sp.g, sp.n, sp.h)
-
-        val publicKeySpec = ECPublicKeySpec(params.generator, params)
-        val keyFactory = KeyFactory.getInstance(EC, BouncyCastleProvider())
-        return keyFactory.generatePublic(publicKeySpec) as ECPublicKey
+        return publicKey.jca() as ECPublicKey
     }
 
     /**
@@ -752,6 +643,26 @@ open class PolluxImpl(
      * @return The signed JWT as a string.
      */
     internal fun signClaimsProofPresentationJWT(
+        subjectDID: DID,
+        privateKey: ECPrivateKey,
+        credential: Credential,
+        domain: String,
+        challenge: String
+    ): String {
+        return signClaims(subjectDID, privateKey, domain, challenge, credential)
+    }
+
+    /**
+     * Signs the claims for a proof presentation JSON Web Token (JWT).
+     *
+     * @param subjectDID The DID of the subject for whom the JWT is being created.
+     * @param privateKey The private key used to sign the JWT.
+     * @param credential The credential to be included in the presentation.
+     * @param domain The domain of the JWT.
+     * @param challenge The challenge value for the JWT.
+     * @return The signed JWT as a string.
+     */
+    internal fun signClaimsProofPresentationSDJWT(
         subjectDID: DID,
         privateKey: ECPrivateKey,
         credential: Credential,
@@ -815,7 +726,7 @@ open class PolluxImpl(
         type: CredentialType,
         presentationClaims: PresentationClaims,
         options: PresentationOptions
-    ): PresentationDefinitionRequest {
+    ): String {
         val format: JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat
         val inputDescriptor: JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor
         when (type) {
@@ -879,14 +790,16 @@ open class PolluxImpl(
                     format = format
                 )
 
-                return JWTPresentationDefinitionRequest(
-                    presentationDefinition = JWTPresentationDefinitionRequest.PresentationDefinition(
-                        inputDescriptors = arrayOf(inputDescriptor),
-                        format = format
-                    ),
-                    options = JWTPresentationDefinitionRequest.PresentationDefinitionOptions(
-                        domain = options.domain,
-                        challenge = options.challenge
+                return Json.encodeToString(
+                    JWTPresentationDefinitionRequest(
+                        presentationDefinition = JWTPresentationDefinitionRequest.PresentationDefinition(
+                            inputDescriptors = arrayOf(inputDescriptor),
+                            format = format
+                        ),
+                        options = JWTPresentationDefinitionRequest.PresentationDefinitionOptions(
+                            domain = options.domain,
+                            challenge = options.challenge
+                        )
                     )
                 )
             }
@@ -930,12 +843,14 @@ open class PolluxImpl(
                     )
                 }
 
-                return AnoncredsPresentationDefinitionRequest(
-                    nonce = options.nonce,
-                    name = "anoncreds_presentation_request",
-                    version = "0.1",
-                    requestedPredicates = mapPredicate,
-                    requestedAttributes = presentationClaims.attributes
+                return Json.encodeToString(
+                    AnoncredsPresentationDefinitionRequest(
+                        nonce = options.nonce,
+                        name = "anoncreds_presentation_request",
+                        version = "0.1",
+                        requestedPredicates = mapPredicate,
+                        requestedAttributes = presentationClaims.attributes
+                    )
                 )
             }
 
@@ -949,10 +864,10 @@ open class PolluxImpl(
     }
 
     override suspend fun createJWTPresentationSubmission(
-        presentationDefinitionRequest: JWTPresentationDefinitionRequest,
+        presentationDefinitionRequest: String,
         credential: Credential,
         privateKey: PrivateKey
-    ): PresentationSubmission {
+    ): String {
         if (credential::class != JWTCredential::class) {
             throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be JWTCredential")
         }
@@ -961,8 +876,10 @@ open class PolluxImpl(
         }
         privateKey as Secp256k1PrivateKey
         credential as JWTCredential
+        val jwtPresentationDefinitionRequest =
+            Json.decodeFromString<JWTPresentationDefinitionRequest>(presentationDefinitionRequest)
         val descriptorItems =
-            presentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
+            jwtPresentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
                 if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
                     throw PolluxError.InvalidCredentialDefinitionError()
                 }
@@ -987,84 +904,145 @@ open class PolluxImpl(
                 )
             }
             val signedChallenge =
-                privateKey.sign(presentationDefinitionRequest.options.challenge.encodeToByteArray())
+                privateKey.sign(jwtPresentationDefinitionRequest.options.challenge.encodeToByteArray())
 
             val ecPrivateKey = parsePrivateKey(privateKey)
             val presentationJwt = signClaimsProofPresentationJWT(
                 subjectDID = DID(subject),
                 privateKey = ecPrivateKey,
                 credential = credential,
-                domain = presentationDefinitionRequest.options.domain,
-                challenge = presentationDefinitionRequest.options.challenge
+                domain = jwtPresentationDefinitionRequest.options.domain,
+                challenge = jwtPresentationDefinitionRequest.options.challenge
             )
 
-            return PresentationSubmission(
-                presentationSubmission = PresentationSubmission.Submission(
-                    definitionId = presentationDefinitionRequest.presentationDefinition.id
-                        ?: UUID.randomUUID().toString(),
-                    descriptorMap = descriptorItems
-                ),
-                verifiablePresentation = arrayOf(presentationJwt)
+            return Json.encodeToString(
+                PresentationSubmission(
+                    presentationSubmission = PresentationSubmission.Submission(
+                        definitionId = jwtPresentationDefinitionRequest.presentationDefinition.id
+                            ?: UUID.randomUUID().toString(),
+                        descriptorMap = descriptorItems
+                    ),
+                    verifiablePresentation = arrayOf(presentationJwt)
+                )
             )
         } ?: throw PolluxError.NullField("CredentialSubject")
     }
 
     override suspend fun createAnoncredsPresentationSubmission(
-        presentationDefinitionRequest: AnoncredsPresentationDefinitionRequest,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation {
+        presentationDefinitionRequest: String,
+        credential: Credential,
+        linkSecret: String
+    ): String {
         if (credential::class != AnonCredential::class) {
             throw PolluxError.CredentialTypeNotSupportedError("Credential type not supported, must be AnonCredential")
         }
+        credential as AnonCredential
 
-        val presentationRequest = PresentationRequest(Json.encodeToString(presentationDefinitionRequest))
-        val cred = anoncreds_wrapper.Credential(credential.id)
+        val anoncredsPresentationDefinitionRequest =
+            Json.decodeFromString<AnoncredsPresentationDefinitionRequest>(presentationDefinitionRequest)
+        val presentationRequest = PresentationRequest(Json.encodeToString(anoncredsPresentationDefinitionRequest))
+        val cred = anoncreds_uniffi.Credential(credential.id)
 
-        val requestedAttributes =
-            presentationRequest.getRequestedAttributes().toListRequestedAttribute()
-        val requestedPredicate =
-            presentationRequest.getRequestedPredicates().toListRequestedPredicate()
+        val requestedAttributes = extractRequestedAttributes(anoncredsPresentationDefinitionRequest.toString())
+        val requestedPredicates = extractRequestedPredicatesKeys(anoncredsPresentationDefinitionRequest.toString())
 
-        val credentialRequests = CredentialRequests(
-            credential = cred,
-            requestedAttribute = requestedAttributes,
-            requestedPredicate = requestedPredicate
+        val credentialRequests = anoncreds_uniffi.RequestedCredential(
+            cred = cred,
+            timestamp = null,
+            revState = null,
+            requestedAttributes = requestedAttributes,
+            requestedPredicates = requestedPredicates
         )
+
         val schemaId = credential.schemaID
         // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
         // .replace("host.docker.internal", "192.168.68.114")
         val schema = getSchema(schemaId)
 
-        val schemaMap: Map<SchemaId, Schema> = mapOf(Pair(credential.schemaID, schema))
+        val schemaMap: Map<String, Schema> = mapOf(Pair(credential.schemaID, schema))
 
         val credDefId = credential.credentialDefinitionID
         // When testing using a local instance of an agent, we need to replace the host.docker.internal with the local IP
         // .replace("host.docker.internal", "192.168.68.114")
         val credentialDefinition = getCredentialDefinition(credDefId)
-        val credDefinition: Map<CredentialDefinitionId, CredentialDefinition> = mapOf(
+        val credDefinition: Map<String, CredentialDefinition> = mapOf(
             Pair(credential.credentialDefinitionID, credentialDefinition)
         )
         return Prover().createPresentation(
-            presentationRequest = presentationRequest,
-            credentials = listOf(credentialRequests),
-            selfAttested = null,
+            presReq = presentationRequest,
+            requestedCredentials = listOf(credentialRequests),
+            selfAttestedAttributes = null,
             linkSecret = linkSecret,
             schemas = schemaMap,
-            credentialDefinitions = credDefinition
-        )
+            credDefs = credDefinition
+        ).toJson()
+    }
+
+    /**
+     * Converts the map of [anoncreds_uniffi.AttributeInfoValue] values to a list of [RequestedAttribute].
+     *
+     * @return The list of [RequestedAttribute].
+     */
+    private fun extractRequestedAttributes(jsonString: String): Map<String, Boolean> {
+        val jsonElement: JsonElement = Json.parseToJsonElement(jsonString)
+        val jsonObject: JsonObject = jsonElement.jsonObject
+        val requestedAttributes = jsonObject["requested_attributes"]?.jsonObject ?: JsonObject(mapOf())
+        val resultMap = requestedAttributes.keys.associateWith { true }
+
+        return resultMap
+    }
+
+    /**
+     * Converts the map of [anoncreds_uniffi.PredicateInfoValue] values to a list of [RequestedPredicate].
+     * @receiver The map of [anoncreds_uniffi.PredicateInfoValue] values.
+     */
+    private fun extractRequestedPredicatesKeys(jsonString: String): List<String> {
+        val jsonElement: JsonElement = Json.parseToJsonElement(jsonString)
+        val jsonObject: JsonObject = jsonElement.jsonObject
+        val requestedPredicates = jsonObject["requested_predicates"]?.jsonObject ?: JsonObject(mapOf())
+        val keysList = requestedPredicates.keys.toList()
+
+        return keysList
     }
 
     override suspend fun verifyPresentationSubmission(
-        presentationSubmission: PresentationSubmission,
+        presentationSubmissionString: String,
         options: PresentationSubmissionOptions
     ): Boolean {
+        val presentationSubmissionJsonObject =
+            Json.decodeFromString<JsonElement>(presentationSubmissionString).jsonObject
+        val presentationSubmission =
+            presentationSubmissionJsonObject["presentation_submission"]?.let { presentationSubmissionField ->
+                val submission =
+                    Json.decodeFromJsonElement<PresentationSubmission.Submission>(
+                        presentationSubmissionField
+                    )
+                var arrayStrings: Array<String> = arrayOf()
+
+                if (submission.descriptorMap.isNotEmpty()) {
+                    val firstDescriptorItem = submission.descriptorMap.first()
+                    // Assume the path denotes a direct key in the JSON and strip out JSONPath or XPath specific characters if any.
+                    val path = firstDescriptorItem.path.removePrefix("$.")
+                        .removeSuffix("[0]") // Adjust based on actual path format
+                    arrayStrings =
+                        presentationSubmissionJsonObject[path]?.jsonArray?.map { it.jsonPrimitive.content }
+                            ?.toTypedArray()
+                            ?: arrayOf()
+                }
+                return@let PresentationSubmission(submission, arrayStrings)
+            } ?: throw PolluxError.VerificationUnsuccessful("Presentation is missing presentation_submission")
+
         if (options::class == PresentationSubmissionOptionsJWT::class) {
+//            val presentationDefinitionRequest =
+//                (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest as JWTPresentationDefinitionRequest
+//            presentationDefinitionRequest.presentationDefinition
+//            val inputDescriptors =
+//                presentationDefinitionRequest.presentationDefinition.inputDescriptors
+            val presentationDefinitionRequestString =
+                (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest
             val presentationDefinitionRequest =
-                (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest as JWTPresentationDefinitionRequest
-            presentationDefinitionRequest.presentationDefinition
-            val inputDescriptors =
-                presentationDefinitionRequest.presentationDefinition.inputDescriptors
+                Json.decodeFromString<JWTPresentationDefinitionRequest>(presentationDefinitionRequestString)
+            val inputDescriptors = presentationDefinitionRequest.presentationDefinition.inputDescriptors
             val descriptorMap = DescriptorPath(Json.encodeToJsonElement(presentationSubmission))
             val descriptorMaps = presentationSubmission.presentationSubmission.descriptorMap
             descriptorMaps.forEach { descriptorItem ->

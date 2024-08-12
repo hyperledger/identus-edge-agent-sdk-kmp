@@ -1,6 +1,4 @@
-@file:Suppress("ktlint:standard:import-ordering")
-
-package org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
+package org.hyperledger.identus.walletsdk.pollux.models
 
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
@@ -12,9 +10,9 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
-import java.util.UUID
 import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
 import org.hyperledger.identus.walletsdk.domain.models.RequestedPredicates
+import java.util.UUID
 
 @Serializable
 sealed interface PresentationDefinitionRequest

@@ -1,5 +1,9 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.pluto
 
+import java.util.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
@@ -22,21 +26,24 @@ import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
+import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.IndexKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.descriptor
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.deserialize
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.serialize
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
-import java.util.*
-import kotlin.jvm.Throws
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -47,6 +54,7 @@ import kotlin.time.toDuration
  * @param backup The Pluto backup object containing the data to be restored.
  */
 open class PlutoRestoreTask(
+    private val castor: Castor,
     private val pluto: Pluto,
     private val backup: BackupV0_0_1
 ) {
@@ -56,13 +64,13 @@ open class PlutoRestoreTask(
      * This method should be called to initialize or restore the necessary components.
      */
     fun run() {
-        restoreCredentials()
         restoreDids()
         restoreDidPairs()
-        restoreKeys()
-        restoreLinkSecret()
-        restoreMessages()
         restoreMediators()
+        restoreLinkSecret()
+        restoreCredentials()
+        restoreKeys()
+        restoreMessages()
     }
 
     /**
@@ -74,7 +82,7 @@ open class PlutoRestoreTask(
      * @throws UnknownError.SomethingWentWrongError if an unknown recovery id is encountered while restoring a credential.
      */
     private fun restoreCredentials() {
-        this.backup.credentials.map {
+        val credentials = this.backup.credentials.map {
             when (it.recoveryId) {
                 BackUpRestorationId.JWT.value -> {
                     val jwtString = it.data.base64UrlDecoded
@@ -92,7 +100,8 @@ open class PlutoRestoreTask(
                     throw UnknownError.SomethingWentWrongError("Unknown recovery id: ${it.recoveryId}")
                 }
             }
-        }.forEach {
+        }
+        credentials.forEach {
             pluto.storeCredential(it)
         }
     }
@@ -169,14 +178,23 @@ open class PlutoRestoreTask(
         }.forEach {
             if (it.third is DID) {
                 if (it.third.toString().contains("peer")) {
-                    val metaId = (it.third as DID).toString()
-                    pluto.storePrivateKeys(
-                        it.first as StorableKey,
-                        it.third as DID,
-                        (it.first.keySpecification[IndexKey().property])?.toInt(),
-                        metaId
-                    )
-                    pluto.storePeerDID(it.third as DID)
+                    val did = (it.third as DID)
+                    val keyId = did.toString()
+                    if (keyId.contains("#")) {
+                        val simpleDid = keyId.split("#").first()
+                        pluto.storePrivateKeys(
+                            it.first as StorableKey,
+                            DID(simpleDid),
+                            (it.first.keySpecification[IndexKey().property])?.toInt(),
+                            keyId
+                        )
+                    } else {
+                        // This else is for jwe coming from TS/Swift which do not use didUrl for private key id
+                        // and is a requirement for us.
+                        runBlocking {
+                            resolveDIDForPrivateKey(keyId, it.first)
+                        }
+                    }
                 } else {
                     pluto.storePrismDIDAndPrivateKeys(
                         it.third as DID,
@@ -191,12 +209,43 @@ open class PlutoRestoreTask(
         }
     }
 
+    private suspend fun resolveDIDForPrivateKey(did: String, privateKey: PrivateKey) {
+        val document = castor.resolveDID(did)
+        val listOfVerificationMethods: MutableList<DIDDocument.VerificationMethod> =
+            mutableListOf()
+        document.coreProperties.forEach {
+            if (it is DIDDocument.Authentication) {
+                listOfVerificationMethods.addAll(it.verificationMethods)
+            }
+            if (it is DIDDocument.KeyAgreement) {
+                listOfVerificationMethods.addAll(it.verificationMethods)
+            }
+        }
+        val verificationMethods =
+            DIDDocument.VerificationMethods(listOfVerificationMethods.toTypedArray())
+
+        verificationMethods.values.forEach {
+            if (it.type.contains("X25519") && privateKey is X25519PrivateKey ||
+                it.type.contains("Ed25519") && privateKey is Ed25519PrivateKey
+            ) {
+                pluto.storePrivateKeys(
+                    privateKey as StorableKey,
+                    DID(did),
+                    (privateKey.keySpecification[IndexKey().property])?.toInt(),
+                    it.id.toString()
+                )
+            }
+        }
+    }
+
     /**
      * Restores the link secret stored in the backup.
      * If the backup object has a link secret, it is decoded from base64 URL encoding and stored using the pluto.storeLinkSecret method.
      */
     private fun restoreLinkSecret() {
-        pluto.storeLinkSecret(this.backup.linkSecret)
+        if (this.backup.linkSecret != null) {
+            pluto.storeLinkSecret(this.backup.linkSecret)
+        }
     }
 
     /**
@@ -271,14 +320,13 @@ open class PlutoRestoreTask(
      * @throws IndexOutOfBoundsException If the input string is not in the required format `x:y:z`
      */
     @Throws(IndexOutOfBoundsException::class)
-    private fun String.toDID(alias: String? = null): DID {
-        return DID(
+    private fun String.toDID(alias: String? = null): DID =
+        DID(
             DID.getSchemaFromString(this),
             DID.getMethodFromString(this),
             DID.getMethodIdFromString(this),
             alias
         )
-    }
 
     /**
      * Represents the various types of backup restoration IDs that can be used.
@@ -295,13 +343,12 @@ open class PlutoRestoreTask(
          *
          * @return The corresponding RestorationID object based on the current BackUpRestorationId.
          */
-        fun toRestorationId(): RestorationID {
-            return when (this) {
+        fun toRestorationId(): RestorationID =
+            when (this) {
                 JWT -> RestorationID.JWT
                 ANONCRED -> RestorationID.ANONCRED
                 W3C -> RestorationID.W3C
             }
-        }
     }
 
     /**
@@ -520,8 +567,8 @@ open class PlutoRestoreTask(
          *
          * @return The converted Message object.
          */
-        fun toMessage(): Message {
-            return Message(
+        fun toMessage(): Message =
+            Message(
                 id,
                 piuri,
                 from,
@@ -537,7 +584,6 @@ open class PlutoRestoreTask(
                 ack,
                 direction
             )
-        }
 
         /**
          * Serializer for the [Message.Direction] enum class.
@@ -571,9 +617,8 @@ open class PlutoRestoreTask(
              * @param decoder The decoder used for deserialization.
              * @return The deserialized Message.Direction value.
              */
-            override fun deserialize(decoder: Decoder): Message.Direction {
-                return Message.Direction.fromValue(decoder.decodeInt())
-            }
+            override fun deserialize(decoder: Decoder): Message.Direction =
+                Message.Direction.fromValue(decoder.decodeInt())
         }
 
         /**
@@ -722,9 +767,8 @@ open class PlutoRestoreTask(
              * @param decoder The Decoder object used for deserialization.
              * @return A new instance of DID.
              */
-            override fun deserialize(decoder: Decoder): DID {
-                return DID(decoder.decodeString())
-            }
+            override fun deserialize(decoder: Decoder): DID =
+                DID(decoder.decodeString())
         }
     }
 }

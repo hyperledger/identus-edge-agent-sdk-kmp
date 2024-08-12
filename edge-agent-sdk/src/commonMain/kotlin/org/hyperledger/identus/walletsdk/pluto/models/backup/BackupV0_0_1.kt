@@ -1,4 +1,4 @@
-package org.hyperledger.identus.walletsdk.pluto.backup.models
+package org.hyperledger.identus.walletsdk.pluto.models.backup
 
 import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -32,7 +32,7 @@ constructor(
     val keys: List<Key>,
     val messages: List<String>,
     @SerialName("link_secret")
-    val linkSecret: String,
+    val linkSecret: String?,
     val mediators: List<Mediator>
 ) {
 

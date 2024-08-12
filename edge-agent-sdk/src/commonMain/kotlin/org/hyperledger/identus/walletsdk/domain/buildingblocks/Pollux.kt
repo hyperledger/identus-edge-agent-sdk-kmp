@@ -2,17 +2,12 @@
 
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
-import anoncreds_wrapper.CredentialDefinition
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequest
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.LinkSecret
-import anoncreds_wrapper.Presentation
-import anoncreds_wrapper.Schema
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
+// TODO: This domain interfaces cannot have dependencies to outside of domain classes
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequest
+import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.Schema
 import java.security.interfaces.ECPublicKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -22,11 +17,8 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 
 /**
  * The `Pollux` interface represents a set of operations for working with verifiable credentials.
@@ -45,7 +37,7 @@ interface Pollux {
     suspend fun parseCredential(
         jsonData: String,
         type: CredentialType,
-        linkSecret: LinkSecret? = null,
+        linkSecret: String? = null,
         credentialMetadata: CredentialRequestMetadata?
     ): Credential
 
@@ -64,6 +56,20 @@ interface Pollux {
     ): String
 
     /**
+     * Processes the SDJWT credential request and returns a string representation of the processed result.
+     *
+     * @param subjectDID The DID of the subject for whom the request is being processed.
+     * @param privateKey The private key used for signing the JWT.
+     * @param offerJson The JSON object representing the credential offer.
+     * @return The string representation of the processed result.
+     */
+    fun processCredentialRequestSDJWT(
+        subjectDID: DID,
+        privateKey: PrivateKey,
+        offerJson: JsonObject
+    ): String
+
+    /**
      * Processes a credential request for anonymous credentials.
      *
      * @param did The DID of the subject requesting the credential.
@@ -75,31 +81,38 @@ interface Pollux {
     suspend fun processCredentialRequestAnoncreds(
         did: DID,
         offer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretName: String
     ): Pair<CredentialRequest, CredentialRequestMetadata>
 
-    /**
-     * Creates a verifiable presentation JSON Web Token (JWT) for the given subjectDID, privateKey, credential, and requestPresentationJson.
-     *
-     * @param subjectDID The DID of the subject for whom the presentation is being created.
-     * @param privateKey The private key used to sign the JWT.
-     * @param credential The credential to be included in the presentation.
-     * @param requestPresentationJson The JSON object representing the request presentation.
-     * @return The created verifiable presentation JWT.
-     */
-    fun createVerifiablePresentationJWT(
-        subjectDID: DID,
-        privateKey: PrivateKey,
-        credential: Credential,
-        requestPresentationJson: JsonObject
-    ): String
-
-    suspend fun createVerifiablePresentationAnoncred(
-        request: RequestPresentation,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation
+//    /**
+//     * Creates a verifiable presentation JSON Web Token (JWT) for the given subjectDID, privateKey, credential, and requestPresentationJson.
+//     *
+//     * @param subjectDID The DID of the subject for whom the presentation is being created.
+//     * @param privateKey The private key used to sign the JWT.
+//     * @param credential The credential to be included in the presentation.
+//     * @param requestPresentationJson The JSON object representing the request presentation.
+//     * @return The created verifiable presentation JWT.
+//     */
+//    fun createVerifiablePresentationJWT(
+//        subjectDID: DID,
+//        privateKey: PrivateKey,
+//        credential: Credential,
+//        requestPresentationJson: JsonObject
+//    ): String
+//
+//    fun createVerifiablePresentationSDJWT(
+//        subjectDID: DID,
+//        privateKey: PrivateKey,
+//        credential: Credential,
+//        requestPresentationJson: JsonObject
+//    ): String
+//
+//    suspend fun createVerifiablePresentationAnoncred(
+//        request: RequestPresentation,
+//        credential: AnonCredential,
+//        linkSecret: LinkSecret
+//    ): Presentation
 
     /**
      * Restores a credential using the provided restoration identifier and credential data.
@@ -127,13 +140,13 @@ interface Pollux {
      */
     fun extractCredentialFormatFromMessage(formats: Array<AttachmentDescriptor>): CredentialType
 
-    /**
-     * Retrieves the credential definition for the specified ID.
-     *
-     * @param id The ID of the credential definition.
-     * @return The credential definition.
-     */
-    suspend fun getCredentialDefinition(id: String): CredentialDefinition
+//    /**
+//     * Retrieves the credential definition for the specified ID.
+//     *
+//     * @param id The ID of the credential definition.
+//     * @return The credential definition.
+//     */
+//    suspend fun getCredentialDefinition(id: String): CredentialDefinition
 
     suspend fun getSchema(schemaId: String): Schema
 
@@ -141,22 +154,22 @@ interface Pollux {
         type: CredentialType,
         presentationClaims: PresentationClaims,
         options: PresentationOptions
-    ): PresentationDefinitionRequest
+    ): String
 
     suspend fun createJWTPresentationSubmission(
-        presentationDefinitionRequest: JWTPresentationDefinitionRequest,
+        presentationDefinitionRequest: String,
         credential: Credential,
         privateKey: PrivateKey
-    ): PresentationSubmission
+    ): String
 
     suspend fun createAnoncredsPresentationSubmission(
-        presentationDefinitionRequest: AnoncredsPresentationDefinitionRequest,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation
+        presentationDefinitionRequest: String,
+        credential: Credential,
+        linkSecret: String
+    ): String
 
     suspend fun verifyPresentationSubmission(
-        presentationSubmission: PresentationSubmission,
+        presentationSubmissionString: String,
         options: PresentationSubmissionOptions
     ): Boolean
 

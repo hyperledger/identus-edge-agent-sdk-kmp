@@ -22,6 +22,7 @@ import org.hyperledger.identus.walletsdk.apollo.utils.X25519PublicKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
 import org.hyperledger.identus.walletsdk.domain.models.Curve
+import org.hyperledger.identus.walletsdk.domain.models.PlutoError
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.SeedWords
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
@@ -37,6 +38,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.RawKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 
 /**
@@ -450,6 +452,64 @@ class ApolloImpl : Apollo {
 
             else -> {
                 throw ApolloError.InvalidKeyType(key.kty)
+            }
+        }
+    }
+
+    /**
+     * Restores a private key from StorablePrivateKey.
+     *
+     * @param storablePrivateKey The StorablePrivateKey to restore the key from.
+     * @return The restored Key object.
+     */
+    @Deprecated(
+        "This method has been deprecated and should no longer be used.",
+        ReplaceWith("restorePrivateKey(restoreIdentifier, privateKeyData)"),
+        DeprecationLevel.ERROR
+    )
+    override fun restorePrivateKey(storablePrivateKey: StorablePrivateKey): PrivateKey {
+        return when (storablePrivateKey.restorationIdentifier) {
+            "secp256k1+priv" -> {
+                Secp256k1PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
+            }
+
+            "ed25519+priv" -> {
+                Ed25519PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
+            }
+
+            "x25519+priv" -> {
+                X25519PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
+            }
+
+            else -> {
+                throw PlutoError.InvalidRestorationIdentifier()
+            }
+        }
+    }
+
+    /**
+     * Restores a private key from StorablePrivateKey.
+     *
+     * @param restorationIdentifier The restoration identifier to know which type of key it is.
+     * @param privateKeyData The private key data encoded in bas64 to restore a private key.
+     * @return The restored Key object.
+     */
+    override fun restorePrivateKey(restorationIdentifier: String, privateKeyData: String): PrivateKey {
+        return when (restorationIdentifier) {
+            "secp256k1+priv" -> {
+                Secp256k1PrivateKey(privateKeyData.base64UrlDecodedBytes)
+            }
+
+            "ed25519+priv" -> {
+                Ed25519PrivateKey(privateKeyData.base64UrlDecodedBytes)
+            }
+
+            "x25519+priv" -> {
+                X25519PrivateKey(privateKeyData.base64UrlDecodedBytes)
+            }
+
+            else -> {
+                throw PlutoError.InvalidRestorationIdentifier()
             }
         }
     }

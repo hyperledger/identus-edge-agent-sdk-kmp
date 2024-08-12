@@ -9,7 +9,6 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import org.hyperledger.identus.walletsdk.domain.models.Credential
-import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.CredentialDialogBinding
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.FragmentMessagesBinding
 import org.hyperledger.identus.walletsdk.sampleapp.ui.messages.InitiateVerificationDialogFragment

@@ -12,7 +12,7 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pluto
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 
 /**
@@ -42,7 +42,7 @@ open class PlutoBackupTask(private val pluto: Pluto) {
                     dids = dids.await(),
                     didPairs = didPairs.await(),
                     keys = privateKeys.await(),
-                    linkSecret = linkSecret.await()!!,
+                    linkSecret = linkSecret.await(),
                     messages = messages.await(),
                     mediators = mediator.await()
                 )

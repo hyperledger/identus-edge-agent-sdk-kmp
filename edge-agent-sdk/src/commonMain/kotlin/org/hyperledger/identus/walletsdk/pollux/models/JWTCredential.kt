@@ -1,5 +1,12 @@
 package org.hyperledger.identus.walletsdk.pollux.models
 
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.JWSHeader
+import com.nimbusds.jose.crypto.ECDSASigner
+import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
+import com.nimbusds.jose.jwk.Curve
+import com.nimbusds.jwt.JWTClaimsSet
+import com.nimbusds.jwt.SignedJWT
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.SerialName
@@ -10,6 +17,7 @@ import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.encodeToJsonElement
@@ -20,10 +28,26 @@ import org.hyperledger.identus.walletsdk.domain.VC
 import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
+import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
+import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiablePresentation
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
+import org.hyperledger.identus.walletsdk.pollux.CHALLENGE
+import org.hyperledger.identus.walletsdk.pollux.CONTEXT
+import org.hyperledger.identus.walletsdk.pollux.CONTEXT_URL
+import org.hyperledger.identus.walletsdk.pollux.DOMAIN
+import org.hyperledger.identus.walletsdk.pollux.NONCE
+import org.hyperledger.identus.walletsdk.pollux.OPTIONS
+import org.hyperledger.identus.walletsdk.pollux.TYPE
+import org.hyperledger.identus.walletsdk.pollux.VERIFIABLE_CREDENTIAL
+import org.hyperledger.identus.walletsdk.pollux.VERIFIABLE_PRESENTATION
+import org.hyperledger.identus.walletsdk.pollux.VP
+import java.security.PrivateKey
+import java.security.interfaces.ECPrivateKey
 
 @Serializable
 /**
@@ -52,7 +76,7 @@ data class JWTCredential @JvmOverloads constructor(
     @SerialName(VC)
     override var verifiableCredential: JWTVerifiableCredential? = null,
     var nonce: String? = null
-) : Credential, JWTPayload {
+) : Credential, JWTPayload, ProvableCredential {
 
     @Transient
     override val issuer: String = iss
@@ -102,6 +126,37 @@ data class JWTCredential @JvmOverloads constructor(
         }
 
     override var revoked: Boolean? = false
+    override suspend fun presentation(request: ByteArray, options: List<CredentialOperationsOptions>): String {
+        var exportableKeyOption: org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey? = null
+        var subjectDID: DID? = null
+
+        for (option in options) {
+            when (option) {
+                is CredentialOperationsOptions.SubjectDID -> subjectDID = option.did
+                is CredentialOperationsOptions.ExportableKey -> exportableKeyOption = option.key
+                else -> {}
+            }
+        }
+        if (subjectDID == null) {
+            throw PolluxError.InvalidPrismDID()
+        }
+        if (exportableKeyOption == null) {
+            throw PolluxError.WrongKeyProvided("Secp256k1", actual = "null")
+        }
+        val jsonString = String(request, Charsets.UTF_8)
+        val requestJson = Json.parseToJsonElement(jsonString).jsonObject
+        val domain =
+            getDomain(requestJson) ?: throw PolluxError.NoDomainOrChallengeFound()
+        val challenge =
+            getChallenge(requestJson) ?: throw PolluxError.NoDomainOrChallengeFound()
+        return signClaimsProofPresentationJWT(
+            subjectDID,
+            exportableKeyOption.jca() as ECPrivateKey,
+            this,
+            domain,
+            challenge
+        )
+    }
 
     /**
      * Converts the current instance of [JWTCredential] to a [StorableCredential].
@@ -183,6 +238,96 @@ data class JWTCredential @JvmOverloads constructor(
                 return c
             }
         }
+    }
+
+    /**
+     * Returns the domain from the given JsonObject.
+     *
+     * @param jsonObject The JsonObject from which to retrieve the domain.
+     * @return The domain as a String, or null if not found.
+     */
+    private fun getDomain(jsonObject: JsonObject): String? {
+        return jsonObject[OPTIONS]?.jsonObject?.get(DOMAIN)?.jsonPrimitive?.content
+    }
+
+    /**
+     * Retrieves the challenge value from the given JsonObject.
+     *
+     * @param jsonObject The JsonObject from which to retrieve the challenge.
+     * @return The challenge value as a String, or null if not found in the JsonObject.
+     */
+    private fun getChallenge(jsonObject: JsonObject): String? {
+        return jsonObject[OPTIONS]?.jsonObject?.get(CHALLENGE)?.jsonPrimitive?.content
+    }
+
+    /**
+     * Signs the claims for a proof presentation JSON Web Token (JWT).
+     *
+     * @param subjectDID The DID of the subject for whom the JWT is being created.
+     * @param privateKey The private key used to sign the JWT.
+     * @param credential The credential to be included in the presentation.
+     * @param domain The domain of the JWT.
+     * @param challenge The challenge value for the JWT.
+     * @return The signed JWT as a string.
+     */
+    internal fun signClaimsProofPresentationJWT(
+        subjectDID: DID,
+        privateKey: ECPrivateKey,
+        credential: Credential,
+        domain: String,
+        challenge: String
+    ): String {
+        return signClaims(subjectDID, privateKey, domain, challenge, credential)
+    }
+
+    /**
+     * Signs the claims for a JWT.
+     *
+     * @param subjectDID The DID of the subject for whom the JWT is being created.
+     * @param privateKey The private key used to sign the JWT.
+     * @param domain The domain of the JWT.
+     * @param challenge The challenge value for the JWT.
+     * @param credential The optional credential to be included in the JWT.
+     * @return The signed JWT as a string.
+     */
+    private fun signClaims(
+        subjectDID: DID,
+        privateKey: ECPrivateKey,
+        domain: String,
+        challenge: String,
+        credential: Credential? = null
+    ): String {
+        val presentation: MutableMap<String, Collection<String>> = mutableMapOf(
+            CONTEXT to setOf(CONTEXT_URL),
+            TYPE to setOf(VERIFIABLE_PRESENTATION)
+        )
+        credential?.let {
+            presentation[VERIFIABLE_CREDENTIAL] = listOf(it.id)
+        }
+
+        val claims = JWTClaimsSet.Builder()
+            .issuer(subjectDID.toString())
+            .audience(domain)
+            .claim(NONCE, challenge)
+            .claim(VP, presentation)
+            .build()
+
+        // Generate a JWS header with the ES256K algorithm
+        val header = JWSHeader.Builder(JWSAlgorithm.ES256K)
+            .build()
+
+        // Sign the JWT with the private key
+        val jwsObject = SignedJWT(header, claims)
+        val signer = ECDSASigner(
+            privateKey as PrivateKey,
+            Curve.SECP256K1
+        )
+        val provider = BouncyCastleProviderSingleton.getInstance()
+        signer.jcaContext.provider = provider
+        jwsObject.sign(signer)
+
+        // Serialize the JWS object to a string
+        return jwsObject.serialize()
     }
 
     /**

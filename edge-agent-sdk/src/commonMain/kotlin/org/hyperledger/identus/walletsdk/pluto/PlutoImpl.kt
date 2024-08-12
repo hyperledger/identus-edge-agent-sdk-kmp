@@ -6,6 +6,7 @@ import app.cash.sqldelight.ColumnAdapter
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import app.cash.sqldelight.db.AfterVersion
+import java.util.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -33,11 +34,12 @@ import org.hyperledger.identus.walletsdk.domain.models.UnknownError
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pluto.data.isConnected
+import org.hyperledger.identus.walletsdk.pluto.models.DidKeyLink
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
-import java.util.UUID
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import org.hyperledger.identus.walletsdk.pluto.data.DID as DIDDB
 import org.hyperledger.identus.walletsdk.pluto.data.DIDPair as DIDPairDB
@@ -183,7 +185,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 alias
             )
         )
-        privateKeys.map { privateKey ->
+        privateKeys.forEach { privateKey ->
             storePrivateKeys(privateKey, did, keyPathIndex)
         }
     }
@@ -375,21 +377,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     }
 
     /**
-     * This method is used to store credential metadata.
+     * Stores the metadata associated with a credential request.
      *
+     * @param name the unique name used to retrieve the stored metadata.
      * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
      *
      * @deprecated This method has been deprecated and should no longer be used.
-     * @see storeCredentialMetadata("", metadata) for the replacement method that should be used.
+     * @see storeCredentialMetadata(name, linkSecretName, json) for the replacement method that should be used.
      */
     @Deprecated(
         "This method has been deprecated and should no longer be used.",
-        ReplaceWith("storeCredentialMetadata(\"\", metadata)"),
+        ReplaceWith("storeCredentialMetadata(name, linkSecretName, json)"),
         DeprecationLevel.ERROR
     )
-    override fun storeCredentialMetadata(metadata: CredentialRequestMeta) {
+    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
         getInstance().credentialMetadataQueries.insert(
-            id = UUID.randomUUID().toString(),
+            id = name,
             linkSecretName = metadata.linkSecretName,
             json = metadata.json
         )
@@ -399,13 +402,14 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * Stores the metadata associated with a credential request.
      *
      * @param name the unique name used to retrieve the stored metadata.
-     * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
+     * @param linkSecretName The link secret name as String.
+     * @param json The json string.
      */
-    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
+    override fun storeCredentialMetadata(name: String, linkSecretName: String, json: String) {
         getInstance().credentialMetadataQueries.insert(
             id = name,
-            linkSecretName = metadata.linkSecretName,
-            json = metadata.json
+            linkSecretName = linkSecretName,
+            json = json
         )
     }
 
@@ -436,7 +440,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> {
         return getInstance().dIDQueries
-            .fetchDIDInfoByDID(did.methodId)
+            .fetchDIDInfoByDID(did.toString())
             .asFlow()
             .mapLatest {
                 try {
@@ -473,30 +477,19 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * @param did The DID for which to retrieve private keys.
      * @return A flow that emits a list of nullable [PrivateKey] objects. In case a private key is not found, null is emitted.
      */
-    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<PrivateKey?>> {
+    override fun getDIDPrivateKeysByDID(did: DID): Flow<List<StorablePrivateKey>> {
         return getInstance().privateKeyQueries
             .fetchPrivateKeyByDID(did.toString())
             .asFlow()
             .map {
                 it.executeAsList()
                     .map { storableKey ->
-                        when (storableKey.restorationIdentifier) {
-                            "secp256k1+priv" -> {
-                                Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                            }
-
-                            "ed25519+priv" -> {
-                                Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                            }
-
-                            "x25519+priv" -> {
-                                X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                            }
-
-                            else -> {
-                                throw PlutoError.InvalidRestorationIdentifier()
-                            }
-                        }
+                        StorablePrivateKey(
+                            id = storableKey.id,
+                            restorationIdentifier = storableKey.restorationIdentifier,
+                            data = storableKey.data_,
+                            keyPathIndex = storableKey.keyPathIndex
+                        )
                     }
             }
     }
@@ -508,29 +501,18 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
      * @return A [Flow] that emits the private key as a nullable [PrivateKey] object. If no private key is found,
      * null is emitted.
      */
-    override fun getDIDPrivateKeyByID(id: String): Flow<PrivateKey?> {
+    override fun getDIDPrivateKeyByID(id: String): Flow<StorablePrivateKey?> {
         return getInstance().privateKeyQueries
             .fetchPrivateKeyByID(id)
             .asFlow()
             .map {
                 it.executeAsList().firstOrNull()?.let { storableKey ->
-                    when (storableKey.restorationIdentifier) {
-                        "secp256k1+priv" -> {
-                            Secp256k1PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                        }
-
-                        "ed25519+priv" -> {
-                            Ed25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                        }
-
-                        "x25519+priv" -> {
-                            X25519PrivateKey(storableKey.data_.base64UrlDecodedBytes)
-                        }
-
-                        else -> {
-                            throw PlutoError.InvalidRestorationIdentifier()
-                        }
-                    }
+                    StorablePrivateKey(
+                        id = storableKey.id,
+                        restorationIdentifier = storableKey.restorationIdentifier,
+                        data = storableKey.data_,
+                        keyPathIndex = storableKey.keyPathIndex
+                    )
                 }
             }
     }
@@ -1234,5 +1216,38 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
             }
         val keys = keysWithDID + keysWithNoDID
         return flowOf(keys)
+    }
+
+    override fun getAllPrivateKeys(): Flow<List<StorablePrivateKey>> {
+        return getInstance().privateKeyQueries
+            .fetchAllPrivateKeys()
+            .asFlow()
+            .map {
+                it.executeAsList()
+                    .map { storableKey ->
+                        StorablePrivateKey(
+                            id = storableKey.id,
+                            restorationIdentifier = storableKey.restorationIdentifier,
+                            data = storableKey.data_,
+                            keyPathIndex = storableKey.keyPathIndex
+                        )
+                    }
+            }
+    }
+
+    fun getAllDIDKeyLinkData(): Flow<List<DidKeyLink>> {
+        return getInstance().dIDKeyLinkQueries
+            .fetchAll()
+            .asFlow()
+            .map { didKeyLinks ->
+                didKeyLinks.executeAsList().map { didKeyLink ->
+                    DidKeyLink(
+                        id = didKeyLink.id.toInt(),
+                        didId = didKeyLink.didId,
+                        keyId = didKeyLink.keyId,
+                        alias = didKeyLink.alias
+                    )
+                }
+            }
     }
 }

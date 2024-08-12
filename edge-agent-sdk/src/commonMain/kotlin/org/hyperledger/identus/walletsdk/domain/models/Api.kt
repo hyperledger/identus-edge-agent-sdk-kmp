@@ -1,6 +1,5 @@
 package org.hyperledger.identus.walletsdk.domain.models
 
-import org.hyperledger.identus.walletsdk.edgeagent.shared.KeyValue
 import io.ktor.client.HttpClient as KtorClient
 
 /**

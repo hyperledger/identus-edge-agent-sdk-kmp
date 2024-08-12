@@ -2,11 +2,9 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.LinkSecret
-import anoncreds_wrapper.Presentation
-import anoncreds_wrapper.Schema
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.Schema
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -17,17 +15,11 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDDocumentCoreProperty
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import java.security.interfaces.ECPublicKey
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
 
 class PolluxMock : Pollux {
 
@@ -37,7 +29,7 @@ class PolluxMock : Pollux {
     override suspend fun parseCredential(
         jsonData: String,
         type: CredentialType,
-        linkSecret: LinkSecret?,
+        linkSecret: String?,
         credentialMetadata: CredentialRequestMetadata?
     ): Credential {
         TODO("Not yet implemented")
@@ -47,20 +39,7 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun createVerifiablePresentationJWT(
-        subjectDID: DID,
-        privateKey: PrivateKey,
-        credential: Credential,
-        requestPresentationJson: JsonObject
-    ): String {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun createVerifiablePresentationAnoncred(
-        request: RequestPresentation,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation {
+    override fun processCredentialRequestSDJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
         TODO("Not yet implemented")
     }
 
@@ -75,9 +54,9 @@ class PolluxMock : Pollux {
     override suspend fun processCredentialRequestAnoncreds(
         did: DID,
         offer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretName: String
-    ): Pair<anoncreds_wrapper.CredentialRequest, CredentialRequestMetadata> {
+    ): Pair<anoncreds_uniffi.CredentialRequest, CredentialRequestMetadata> {
         TODO("Not yet implemented")
         // return processCredentialRequestAnoncredsReturn ?: throw Exception("Return not defined")
     }
@@ -90,10 +69,6 @@ class PolluxMock : Pollux {
         return extractedCredentialFormatFromMessageReturn ?: throw Exception("Return not defined")
     }
 
-    override suspend fun getCredentialDefinition(id: String): anoncreds_wrapper.CredentialDefinition {
-        TODO("Not yet implemented")
-    }
-
     override suspend fun getSchema(schemaId: String): Schema {
         TODO("Not yet implemented")
     }
@@ -102,28 +77,28 @@ class PolluxMock : Pollux {
         type: CredentialType,
         presentationClaims: PresentationClaims,
         options: PresentationOptions
-    ): PresentationDefinitionRequest {
+    ): String {
         TODO("Not yet implemented")
     }
 
     override suspend fun createJWTPresentationSubmission(
-        presentationDefinitionRequest: JWTPresentationDefinitionRequest,
+        presentationDefinitionRequest: String,
         credential: Credential,
         privateKey: PrivateKey
-    ): PresentationSubmission {
+    ): String {
         TODO("Not yet implemented")
     }
 
     override suspend fun createAnoncredsPresentationSubmission(
-        presentationDefinitionRequest: AnoncredsPresentationDefinitionRequest,
-        credential: AnonCredential,
-        linkSecret: LinkSecret
-    ): Presentation {
+        presentationDefinitionRequest: String,
+        credential: Credential,
+        linkSecret: String
+    ): String {
         TODO("Not yet implemented")
     }
 
     override suspend fun verifyPresentationSubmission(
-        presentationSubmission: PresentationSubmission,
+        presentationSubmissionString: String,
         options: PresentationSubmissionOptions
     ): Boolean {
         TODO("Not yet implemented")

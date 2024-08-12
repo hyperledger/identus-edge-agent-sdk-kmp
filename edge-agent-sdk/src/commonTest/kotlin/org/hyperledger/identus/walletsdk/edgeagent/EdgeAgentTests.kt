@@ -2,18 +2,30 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import anoncreds_wrapper.LinkSecret
+import anoncreds_uniffi.createLinkSecret
+import com.nimbusds.jose.EncryptionMethod
+import com.nimbusds.jose.JWEAlgorithm
+import com.nimbusds.jose.JWEObject
 import io.ktor.http.HttpStatusCode
+import java.security.interfaces.ECPublicKey
+import java.util.*
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
+import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
+import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
+import org.hyperledger.identus.walletsdk.apollo.utils.X25519KeyPair
+import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.hyperledger.identus.walletsdk.domain.DIDCOMM_MESSAGING
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
@@ -22,6 +34,8 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Api
+import org.hyperledger.identus.walletsdk.domain.models.ApolloError
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
@@ -29,6 +43,7 @@ import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.DIDPair
 import org.hyperledger.identus.walletsdk.domain.models.DIDResolver
 import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
 import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
@@ -36,70 +51,110 @@ import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
 import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
+import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationPathKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.CredentialPreview
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
+import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
+import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
+import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
+import org.hyperledger.identus.walletsdk.pluto.RestorationID
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.junit.Assert.assertNotEquals
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.junit.runners.JUnit4
+import org.mockito.Mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.MockitoAnnotations
 import org.mockito.kotlin.any
 import org.mockito.kotlin.argumentCaptor
 import org.mockito.kotlin.mock
-import java.security.interfaces.ECPublicKey
-import java.util.*
-import kotlin.test.BeforeTest
-import kotlin.test.Test
+import org.mockito.kotlin.spy
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
+@RunWith(JUnit4::class)
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class EdgeAgentTests {
 
-    lateinit var apolloMock: ApolloMock
-    lateinit var castorMock: CastorMock
-    lateinit var plutoMock: PlutoMock
-    lateinit var mercuryMock: MercuryMock
-    lateinit var polluxMock: PolluxMock
-    lateinit var mediationHandlerMock: MediationHandlerMock
-    lateinit var connectionManager: ConnectionManager
-    lateinit var json: Json
+    @Mock
+    lateinit var apolloMock: Apollo
 
-    @BeforeTest
+    @Mock
+    lateinit var plutoMock: Pluto
+
+    @Mock
+    lateinit var mercuryMock: Mercury
+
+    @Mock
+    lateinit var polluxMock: Pollux
+
+    @Mock
+    lateinit var castorMock: Castor
+
+    @Mock
+    lateinit var connectionManagerMock: ConnectionManager
+
+    @Mock
+    lateinit var mediationHandlerMock: MediationHandler
+
+    lateinit var apolloMockOld: ApolloMock
+    lateinit var castorMockOld: CastorMock
+    lateinit var plutoMockOld: PlutoMock
+    lateinit var mercuryMockOld: MercuryMock
+    lateinit var polluxMockOld: PolluxMock
+    lateinit var mediationHandlerMockOld: MediationHandlerMock
+    lateinit var connectionManagerOld: ConnectionManager
+    lateinit var json: Json
+    lateinit var seed: Seed
+
+    @Before
     fun setup() {
-        apolloMock = ApolloMock()
-        castorMock = CastorMock()
-        plutoMock = PlutoMock()
-        mercuryMock = MercuryMock()
-        polluxMock = PolluxMock()
-        mediationHandlerMock = MediationHandlerMock()
+        MockitoAnnotations.openMocks(this)
+        seed = Seed(MnemonicHelper.createRandomSeed())
+        apolloMockOld = ApolloMock()
+        castorMockOld = CastorMock()
+        plutoMockOld = PlutoMock()
+        mercuryMockOld = MercuryMock()
+        polluxMockOld = PolluxMock()
+        mediationHandlerMockOld = MediationHandlerMock()
         // Pairing will be removed in the future
-        connectionManager =
+        connectionManagerOld =
             ConnectionManagerImpl(
-                mercuryMock,
-                castorMock,
-                plutoMock,
-                mediationHandlerMock,
+                mercuryMockOld,
+                castorMockOld,
+                plutoMockOld,
+                mediationHandlerMockOld,
                 mutableListOf(),
-                polluxMock
+                polluxMockOld
             )
         json = Json {
             ignoreUnknownKeys = true
@@ -109,52 +164,226 @@ class EdgeAgentTests {
     }
 
     @Test
+    fun `EdgeAgent start should create peer did and register mediator if no mediator available`() = runTest {
+        val connectionManager = ConnectionManagerImpl(
+            mercuryMockOld,
+            castorMockOld,
+            plutoMock,
+            mediationHandlerMock,
+            mutableListOf(),
+            polluxMock
+        )
+
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManager,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+
+        val mediator = Mediator(
+            mediatorDID = DID("did:peer:asdf"),
+            hostDID = DID("did:peer:asdf"),
+            routingDID = DID("did:peer:asdf")
+        )
+        `when`(mediationHandlerMock.bootRegisteredMediator()).thenReturn(null)
+        `when`(mediationHandlerMock.achieveMediation(any())).thenReturn(flow { emit(mediator) })
+        `when`(mediationHandlerMock.mediator).thenReturn(mediator)
+        `when`(mediationHandlerMock.mediatorDID).thenReturn(mediator.mediatorDID)
+
+        `when`(agent.createNewPeerDID(updateMediator = false)).thenReturn(DID("did:peer:asdf"))
+        agent.start()
+
+        assertEquals(EdgeAgent.State.RUNNING, agent.state)
+    }
+
+    @Test
+    fun `EdgeAgent start should throw MediationRequestFailedError if mediatiorhandler mediator is null`() = runTest {
+        val connectionManager = ConnectionManagerImpl(
+            mercuryMockOld,
+            castorMockOld,
+            plutoMock,
+            mediationHandlerMock,
+            mutableListOf(),
+            polluxMock
+        )
+
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManager,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+
+        val mediator = Mediator(
+            mediatorDID = DID("did:peer:asdf"),
+            hostDID = DID("did:peer:asdf"),
+            routingDID = DID("did:peer:asdf")
+        )
+        `when`(mediationHandlerMock.bootRegisteredMediator()).thenReturn(null)
+        `when`(mediationHandlerMock.achieveMediation(any())).thenReturn(flow { emit(mediator) })
+        `when`(mediationHandlerMock.mediator).thenReturn(null)
+
+        `when`(agent.createNewPeerDID(updateMediator = false)).thenReturn(DID("did:peer:asdf"))
+
+        assertFailsWith(EdgeAgentError.MediationRequestFailedError::class) {
+            agent.start()
+            assertEquals(EdgeAgent.State.STOPPED, agent.state)
+        }
+    }
+
+    @Test
+    fun `EdgeAgent stop should change the state to stop`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMock,
+                pluto = plutoMock,
+                mercury = mercuryMockOld,
+                pollux = polluxMock,
+                connectionManager = connectionManagerMock,
+                seed = seed,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+        agent.stop()
+        assertEquals(EdgeAgent.State.STOPPED, agent.state)
+    }
+
+    @Test
+    fun `EdgeAgent setupMediatorHandler should stop the agent and replace the current mediatior handler`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerMock,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+        val mediatorHandlerMock2 = mock<MediationHandler>()
+        agent.setupMediatorHandler(mediatorHandlerMock2)
+        assertEquals(EdgeAgent.State.STOPPED, agent.state)
+        assertEquals(agent.connectionManager.mediationHandler, mediatorHandlerMock2)
+    }
+
+    @Test
+    fun `EdgeAgent setupMediatorDID create a new mediator handler and call setup mediator handler`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerMock,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+
+        val mediatorHandler = agent.connectionManager.mediationHandler
+        agent.setupMediatorDID(DID("did:peer:asdf"))
+        assertEquals(EdgeAgent.State.STOPPED, agent.state)
+        assertNotEquals(agent.connectionManager.mediationHandler, mediatorHandler)
+    }
+
+    @Test
+    fun `EdgeAgent send message should call connection manager send message`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerMock,
+                seed = null,
+                api = null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
+        )
+
+        val message = Json.decodeFromString<Message>(
+            """{"id":"e430e4af-455e-4a15-9f2f-5bd8e5f350b8","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":\"http:\\/\\/192.168.68.113:8000\\/cloud-agent\\/schema-registry\\/schemas\\/5667190d-640c-36af-a9f1-f4ed2587e766\\/schema\",\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"age\",\"value\":\"18\"},{\"media_type\":null,\"name\":\"name\",\"value\":\"Cristian\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242264","expires_time_plus":"1721328667","attachments":[{"id":"ee903fe0-2c49-4356-9b41-cfccc979c0a1","data":{"base64":"eyJzY2hlbWFfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy81NjY3MTkwZC02NDBjLTM2YWYtYTlmMS1mNGVkMjU4N2U3NjYvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2RhNmExZDgtMmIyMy0zMTM4LWIwMmEtYWIwYmI0OGY4MGY5L2RlZmluaXRpb24iLCJrZXlfY29ycmVjdG5lc3NfcHJvb2YiOnsiYyI6IjM0MjE0MzM4OTA5MDk4MTU5ODIyNTA3MjQ4Njk3NjUyNTIyMzc1NzM2ODM0OTM1MDg0NjM5MTYzNTUyNjgwMjc3MjQyOTcxODI5ODUwIiwieHpfY2FwIjoiODAwNzA3NDcxNzUyOTQ3MTI1NDIxNTU2ODI1ODYyNDc5NzE1OTE0OTE3ODE4NTY4MDI1NjU5Mzk1NDcyMTAzMzQ0NjAwMDI4NzU4MzczMTA5Mjg0NzEzNDg5MDg1OTk3NzE5NDcwOTc5MDQ1NzA3NTY1ODA4MDczNzYxMjI0OTI3MzcyMDk1MTU2MzAxODE3MzgzNDE5NzE4NzM0NDk2MDQwMjc1MzM2MTg0ODIzNzQ4NTg0NzgzNjIxNzE1NTQwOTI3Nzk0ODQyMTA2NDM1NDEwNzc4MDg2ODg1MTc5MzQzMjEzMjU3NTk2ODM2NjU5NzYwMTI4NzI5ODI5MTk2MzI0MjQwMzgyOTc3MzczNjU3MTA0NjQ5NjE4MjU0MDMzMDk4Njc0OTkxMzIwMzc2NTEyMTUyOTk3Mzg0Mzk5MzY0OTc3MDM4NzU2ODcwOTU3NTcyMDM0NTM0NTY1MDM5OTY0MTYzNDgzNDEyMTEzNzc0NzA5MTU2NTcxMjcxNTI3ODY2NzQwNzU1Nzc2MzIzOTgxNTE5NzEzNjQ1MjQ4Njc5NzgyOTM3NTcyOTI4NDI1NzQ0NjE3MjMwNzk2MzYwNzE5MDA3Mzc0ODgwNTI2ODA4ODIzODg2NTMwMzE2MzgyOTI1MDcxOTYzMjUwMzgyNzU4MDA5Mjk1MzI1NDgzODIyNTg0OTIyMDkwMTcwMTAxOTY5OTk5MTg1MzAxMDA1NDM2MjYyMDI4NDIxOTA0NjU5MzY4OTU3OTQyNTAwNDkxNzI5MjY0MTMzMzE5Nzg0NDIwNjQ0NDUxMTUyNjA2MDI2MDg1MDkwNDYzNzAzMTQzNDczMTcxMjg3OTUxMTM0NTM1MDY0NDc0NjQ5NDE5MzUzMDQ4MzQwOTk4MTY2NjYwNDkyMDE5ODQyNDU2NDM5MTcxNjM2IiwieHJfY2FwIjpbWyJhZ2UiLCI3MjA2NjI4MDAzNzAwMjM5MzM5NjAzNjUxNDQ1MTY2NDE0MjcwNTA0ODM4ODAwMzYxMjE0NjQ3MjA1ODYwOTczMTg4MTQ0OTE2OTkwOTE3NTIyNjU4Mzg3Njg1MTcwMzkyMDcyMjk0MTUxMDUwODk1Njc0MTU0OTYwMDMyMDM0Mzg2MzEzMzY0MTMwMDQwNzI5ODQwMjcxMzcyNjc4NTI0NjE0NjUxNDcxNDU0NTg4MzgwMzI2OTMwODQ0Njc4Nzg3MzA3NzY3ODk2NjY5NTE2MDY1Njc3MDA3MjQyMDEwMjQyMDAwNTg4NjgxMTczNDUxNjg4NTU5MDEwMjQyNTgyMTg4MTY5MTUyNjUwNzY4NzgxNjMyMjgwNTgyODI1NjM3MjY0NzUwMTA3NTU2NDQzNTgyNzMwNDIxMjE3NTI4OTgyNTE5MzA3NzQ0ODAxNTYyNTYyMzQzNTcyNzU4NDEzNjc1NzY0ODQwOTY5MTY3NTE3ODcyNjk2MDY1MDM2MDU1MzgwMDg2NjcyNjUzMDEyMTIxMDk2MTA5OTQyMTg1NjM2ODk3MDE3Mjc5NDg3NjEyNDczNzc4NDUxMjkxMjE3NDg3ODQxOTc1NjI2MDczMjI0ODQ1MjI4NDM1OTk0MjI2MTg1MDc1NDI4MjA3OTg5MzAwMjExMzI5OTM4NjQxMzEwMTk5MjcwNTE0NjA2ODU5NDEzNDY1NzE1MjQyNjk0ODc0ODkwNDAzNDk5MzUxOTIxMDY4OTMwODE1ODY5ODM5NDYyMTE0MDI2MjM3MzY5OTAwMzE2MTA0NzYwMDAwNzk2NjcxOTUzNTAxMjcxMTI3MjM4NzM5NDI0Mjc2ODQyODkwNjQwNDY3NjYxNDEzODQ5Mzc5NzEwNzcxNjg0NzU4NTY1NzY2MDY4NzgwNjY0NjI3MjgiXSxbIm1hc3Rlcl9zZWNyZXQiLCI3ODg0ODQyMDE4MzA5NzY5NTg2MDY2Mjc5NDAwNjAzNjIzNjE4NzcxNTc3MjQ1NDk5NzQ5MzE0MzgyNTUyMzMzMjE4MzA3ODk1NzU4MDk2OTc3NjUzNjQ3MDcwNjk5MDE0OTY4OTUwMDg0OTk2MjMwNDAwODA4OTM0MzQ1MzQwMDcyMzY2NDg5NDYxNDg4MDk0MDgyOTk1OTU3MjUwMTg5NTkxMjg2NDQyMDg4MTMwNDA5MDA4Mjc5MzgxMjUzMDIxOTE0MTc5Nzc5MTAyNTcwNjIxNDQ0MDU0NzcxNjY5Mjk5NjQzNTcwODg5NjY1ODQzOTY2ODA1MjM1ODgxNzQ1OTQ3OTQ4NDQ2ODU1MDY4ODU4ODUzMDg2MTQ5NjMxMjA1ODcwMTIzODc1NDg3MTM0NjAxMDQwODA4Njg2MzQ4NDUwOTA0MTI4MTI4Nzk1MjUzMjczMjU3ODc4NjM4MjAxNTcyOTExMDQxNTQ4NDc0MTMzMDMyMTIyMTMyODExNjQ0NjAzNjg0MDU5MDk2ODM2NjU1NjQzMTI2NDU0NTAwNDM2MTgxNjQxMjkyNjQ4MTQ3MjYxODUyNzY5NjIyMzE5Mjk2NjI0NDU3OTg2NzI5NzMwNzE3NDEyNTE2MzEyNjQwNTM0OTE3NzEwNzE4Njc2MTMwODExMTI2NjQwMTkyODg4NjI2ODI2NTcwNzA1OTUxNTUyODI5NDY2NzY5NjUxNTcxNTI2OTMzNDUyNjY0ODk5NTExNzM0ODk0Njc3OTY5NjI0OTgzODI3MTgzMDg2NjA0NTE0NDE3MDE2MDgxNDE2Nzk0NDgwMDIwNDU2ODMxNzUyNjM2NTk1NzcwNjgwODQ0MDE0MjIyOTc2MjE5NzIzODg1MjAxNTg1ODk0MDQwMDA3MTQ5MjkwMDAxNTc4MjMxMDQiXSxbIm5hbWUiLCI4NjIxNzg3ODk1MzA5MzExOTQ3Njc0OTU5NDA4MjIzMTg5ODgwNDEzNTQ2NzIyOTYyODg5NjI0NzgwMjE1MDc4NDc3OTMxNTk5MDk5MzIwODkyNzY2NjM4NjExNDYyOTMzNTg3NjgwMTU0ODQ4ODgxMTY5MzY5NTc3OTk1NTI1ODQ2NDA1NjcyNDUyMzIyMTcyNjQ4MTc4OTEwMTg2ODkwNzYwNzM2MjMwNzA0MDA3NzU1OTA0OTIyNTUwODQ0MjkxNzgwOTk1NDAyNzUyNTU0NTAwNjg1NTY5NzYzMDc4ODY5NDU0NDI3NzY5NzU0Mzc5ODg5NzAzODQzNDM4ODcyMjMyOTc0MjIzODc5MzY5MTYzOTI1NjY3NjY5MzQyOTUwOTk5MjMwOTY1NDQ1MTkwOTM5Mzk5NzM1NjE1MTk2OTY2MzUyMTMwMzQ5MTE0NDE5OTIwMTk3NDIyMjA0ODQ2MTc2OTI3NTMwMDQ3NDkxNjI1NzAwODQ5NDc1MzQzNzk3MjU0MDYwNjc3MTA4MzkxOTU3MzU0MDAzOTAyNzMzMzEzMDI1ODE5Njk3MTIzMTc2NTg3MTU5NzQ5ODkxODg5MzU3Mjk0OTUyNDMwMDY2MTE5MjgzNzA1NTAwMTcxNTc3ODMzMzk3OTE1Mzc5OTA2NTA1MDExMjczODM2NTM3OTA2NjkyMjg2MTk5NDgzMjA3NDc1MzM2MjE1Njc4MTA1NDY5MDc3MTMyNDAwNDM4NTgyOTAyMjMwMzI5MDc4NjA4NTI4NDgzNDEwODI1NDkzNDcwMjI5MjA3MzA1NTk0ODUwMTg4ODUwMjEyNTQ0NzI0NDgyOTExOTQ3NTQ4NzIzMzMxMzYyNTI3MjA0Mzg3MzE1Mjk1MDU4Njk5MDk3NDc3MjQzMTczOTE0Njk5MDAzOTkzNTQiXV19LCJub25jZSI6IjM2MDY2NjE3NzQwNTA3NzY5NTI5NTMxNyJ9"},"format":"anoncreds/credential-offer@v1.0"}],"thid":"3a1c143b-7ab7-470d-99cf-bc5f31771388","ack":[]}"""
+        )
+        agent.sendMessage(message)
+        verify(connectionManagerMock).sendMessage(message)
+    }
+
+    @Test
     fun testCreateNewPrismDID_shouldCreateNewDID_whenCalled() = runTest {
-        val seed = Seed(MnemonicHelper.createRandomSeed())
         val validDID = DID("did", "test", "123")
-        castorMock.createPrismDIDReturn = validDID
+        castorMockOld.createPrismDIDReturn = validDID
         val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
+            mercury = mercuryMockOld,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = seed,
             api = null,
             logger = PrismLoggerMock(),
             agentOptions = AgentOptions()
         )
-        plutoMock.getPrismLastKeyPathIndexReturn = flow { emit(0) }
+        plutoMockOld.getPrismLastKeyPathIndexReturn = flow { emit(0) }
         val newDID = agent.createNewPrismDID()
         assertEquals(newDID, validDID)
-        assertEquals(newDID, plutoMock.storedPrismDID.first())
-        assertTrue { plutoMock.wasGetPrismLastKeyPathIndexCalled }
-        assertTrue { plutoMock.wasStorePrismDIDAndPrivateKeysCalled }
+        assertEquals(newDID, plutoMockOld.storedPrismDID.first())
+        assertTrue { plutoMockOld.wasGetPrismLastKeyPathIndexCalled }
+        assertTrue { plutoMockOld.wasStorePrismDIDAndPrivateKeysCalled }
     }
 
     @Test
     fun testCreateNewPeerDID_shouldCreateNewDID_whenCalled() = runTest {
-        val validDID = DID("did", "test", "123")
-        castorMock.createPeerDIDReturn = validDID
-        val agent = EdgeAgent(
-            apolloMock,
-            castorMock,
-            plutoMock,
-            mercuryMock,
-            polluxMock,
-            connectionManager,
-            null,
-            null,
-            logger = PrismLoggerMock(),
-            agentOptions = AgentOptions()
+        val agent = spy(
+            EdgeAgent(
+                apolloMock,
+                castorMock,
+                plutoMock,
+                mercuryMockOld,
+                polluxMock,
+                connectionManagerMock,
+                seed,
+                null,
+                logger = PrismLoggerMock(),
+                agentOptions = AgentOptions()
+            )
         )
 
+        val did = DID("did:peer:asdf")
+        `when`(castorMock.createPeerDID(any(), any())).thenReturn(did)
+        `when`(castorMock.resolveDID(any())).thenReturn(DIDDocument(did, emptyArray()))
         val newDID = agent.createNewPeerDID(services = emptyArray(), updateMediator = false)
 
-        assertEquals(newDID, validDID)
-        assertEquals(newDID, plutoMock.storedPeerDID.first())
-        assertTrue { plutoMock.wasStorePeerDIDAndPrivateKeysCalled }
+        assertEquals(did, newDID)
     }
 
     @Test
@@ -164,10 +393,10 @@ class EdgeAgentTests {
         val agent = EdgeAgent(
             apollo,
             castor,
-            plutoMock,
-            mercuryMock,
-            polluxMock,
-            connectionManager,
+            plutoMockOld,
+            mercuryMockOld,
+            polluxMockOld,
+            connectionManagerOld,
             null,
             null,
             logger = PrismLoggerMock(),
@@ -198,12 +427,12 @@ class EdgeAgentTests {
     fun testPrismAgentOnboardingInvitation_shouldAcceptOnboardingInvitation_whenStatusIs200() =
         runTest {
             val agent = EdgeAgent(
-                apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
-                mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
                 logger = PrismLoggerMock()
@@ -225,12 +454,12 @@ class EdgeAgentTests {
         runTest {
             val api = ApiMock(HttpStatusCode.BadRequest, "{\"success\":\"true\"}")
             val agent = EdgeAgent(
-                apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
-                mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = api,
                 logger = PrismLoggerMock()
@@ -252,12 +481,12 @@ class EdgeAgentTests {
     fun testPrismAgentOnboardingInvitation_shouldRejectOnboardingInvitation_whenBodyIsWrong() =
         runTest {
             val agent = EdgeAgent(
-                apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
-                mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
                 logger = PrismLoggerMock()
@@ -278,66 +507,164 @@ class EdgeAgentTests {
     fun testPrismAgentSignWith_whenNoPrivateKeyAvailable_thenThrowCannotFindDIDPrivateKey() =
         runTest {
             val agent = EdgeAgent(
-                apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
-                mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = null,
                 logger = PrismLoggerMock()
             )
 
-            plutoMock.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
+            plutoMockOld.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
 
             val did = DID("did", "peer", "asdf1234asdf1234")
             val messageString = "This is a message"
-            assertFalse { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
+            assertFalse { plutoMockOld.wasGetDIDPrivateKeysByDIDCalled }
             assertFailsWith(EdgeAgentError.CannotFindDIDPrivateKey::class, null) {
                 agent.signWith(did, messageString.toByteArray())
             }
         }
 
     @Test
-    fun testPrismAgentSignWith_whenPrivateKeyAvailable_thenSignatureReturned() = runTest {
+    fun testPrismAgentSignWith_whenSecp256k1PrivateKey_thenSignatureReturned() = runTest {
+        val apolloMock = mock<Apollo>()
+        val plutoMock = mock<Pluto>()
         val agent = EdgeAgent(
             apollo = apolloMock,
             castor = castorMock,
             pluto = plutoMock,
-            mercury = mercuryMock,
+            mercury = mercuryMockOld,
             pollux = polluxMock,
-            connectionManager = connectionManager,
-            seed = null,
+            connectionManager = connectionManagerMock,
+            seed = seed,
             api = null,
             logger = PrismLoggerMock(),
             agentOptions = AgentOptions()
         )
 
-        val privateKeys = listOf(
-            Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(MnemonicHelper.createRandomSeed()),
-                curve = KeyCurve(Curve.SECP256K1)
-            ).privateKey
+        val privateKey = Secp256k1KeyPair.generateKeyPair(
+            seed = seed,
+            curve = KeyCurve(Curve.SECP256K1)
+        ).privateKey
+        val storablePrivateKeys = listOf(
+            StorablePrivateKey(
+                id = UUID.randomUUID().toString(),
+                restorationIdentifier = "secp256k1+priv",
+                data = privateKey.raw.base64UrlEncoded,
+                keyPathIndex = 0
+            )
         )
-        plutoMock.getDIDPrivateKeysReturn = flow { emit(privateKeys) }
+        // Mock getDIDPrivateKeysByDID response
+        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+        `when`(
+            apolloMock.restorePrivateKey(
+                storablePrivateKeys.first().restorationIdentifier,
+                storablePrivateKeys.first().data
+            )
+        ).thenReturn(privateKey)
 
         val did = DID("did", "peer", "asdf1234asdf1234")
         val messageString = "This is a message"
 
         assertEquals(Signature::class, agent.signWith(did, messageString.toByteArray())::class)
-        assertTrue { plutoMock.wasGetDIDPrivateKeysByDIDCalled }
+        verify(plutoMock).getDIDPrivateKeysByDID(any())
+    }
+
+    @Test
+    fun testPrismAgentSignWith_whenEd25519PrivateKey_thenSignatureReturned() = runTest {
+        val agent = EdgeAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            mercury = mercuryMockOld,
+            pollux = polluxMock,
+            connectionManager = connectionManagerMock,
+            seed = seed,
+            api = null,
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
+        )
+
+        val privateKey: Ed25519PrivateKey = Ed25519KeyPair.generateKeyPair().privateKey as Ed25519PrivateKey
+
+        val storablePrivateKeys = listOf(
+            StorablePrivateKey(
+                id = UUID.randomUUID().toString(),
+                restorationIdentifier = "ed25519+priv",
+                data = privateKey.raw.base64UrlEncoded,
+                keyPathIndex = 0
+            )
+        )
+        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+        `when`(
+            apolloMock.restorePrivateKey(
+                storablePrivateKeys.first().restorationIdentifier,
+                storablePrivateKeys.first().data
+            )
+        ).thenReturn(privateKey)
+
+        val did = DID("did", "peer", "asdf1234asdf1234")
+        val message = "This is a message".toByteArray()
+
+        val expectedSignature = Signature(privateKey.sign(message))
+
+        val signature = agent.signWith(did, message)
+        assertEquals(expectedSignature, signature)
+    }
+
+    @Test
+    fun testPrismAgentSignWith_whenPrivateKeyCurveNotSupported_thenThrowInvalidSpecificKeyCurve() = runTest {
+        val agent = EdgeAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            mercury = mercuryMockOld,
+            pollux = polluxMock,
+            connectionManager = connectionManagerMock,
+            seed = seed,
+            api = null,
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
+        )
+
+        val privateKey = X25519KeyPair.generateKeyPair().privateKey
+
+        val storablePrivateKeys = listOf(
+            StorablePrivateKey(
+                id = UUID.randomUUID().toString(),
+                restorationIdentifier = "x25519+priv",
+                data = privateKey.raw.base64UrlEncoded,
+                keyPathIndex = 0
+            )
+        )
+        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+        `when`(
+            apolloMock.restorePrivateKey(
+                storablePrivateKeys.first().restorationIdentifier,
+                storablePrivateKeys.first().data
+            )
+        ).thenReturn(privateKey)
+
+        val did = DID("did", "peer", "asdf1234asdf1234")
+        val message = "This is a message".toByteArray()
+
+        assertFailsWith(ApolloError.InvalidSpecificKeyCurve::class) {
+            agent.signWith(did, message)
+        }
     }
 
     @Test
     fun testParseInvitation_whenOutOfBand_thenReturnsOutOfBandInvitationObject() = runTest {
         val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
+            mercury = mercuryMockOld,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -379,12 +706,12 @@ class EdgeAgentTests {
     fun testParseInvitation_whenOutOfBandWrongBody_thenThrowsUnknownInvitationTypeError() =
         runTest {
             val agent = EdgeAgent(
-                apollo = apolloMock,
-                castor = castorMock,
-                pluto = plutoMock,
-                mercury = mercuryMock,
-                pollux = polluxMock,
-                connectionManager = connectionManager,
+                apollo = apolloMockOld,
+                castor = castorMockOld,
+                pluto = plutoMockOld,
+                mercury = mercuryMockOld,
+                pollux = polluxMockOld,
+                connectionManager = connectionManagerOld,
                 seed = null,
                 api = null,
                 logger = PrismLoggerMock()
@@ -407,14 +734,14 @@ class EdgeAgentTests {
     @Test
     fun testStartPrismAgent_whenCalled_thenStatusIsRunning() = runTest {
         val getLinkSecretReturn = flow<String> { emit("linkSecret") }
-        plutoMock.getLinkSecretReturn = getLinkSecretReturn
+        plutoMockOld.getLinkSecretReturn = getLinkSecretReturn
         val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
+            mercury = mercuryMockOld,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -428,12 +755,12 @@ class EdgeAgentTests {
     @Test
     fun testStopPrismAgent_whenCalled_thenStatusIsStopped() = runTest {
         val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
+            mercury = mercuryMockOld,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -448,12 +775,12 @@ class EdgeAgentTests {
         val oob =
             "https://my.domain.com/path?_oob=eyJpZCI6ImQzNjM3NzlhLWYyMmItNGFiNC1hYjY0LTkxZjkxNjgzNzYwNyIsInR5cGUiOiJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzIuMC9pbnZpdGF0aW9uIiwiZnJvbSI6ImRpZDpwZWVyOjIuRXo2TFNjcGZReGJ2VEhLaGpvbzVvMzlmc254VEp1RTRobVp3ckROUE5BVzI0dmFORi5WejZNa3UzSkpVTDNkaHpYQXB0RWpuUDFpNkF0TDlTNGlwRTNYOHM3MWV4MW9WVGNHLlNleUowSWpvaVpHMGlMQ0p6SWpvaWFIUjBjSE02THk5ck9ITXRaR1YyTG1GMFlXeGhjSEpwYzIwdWFXOHZjSEpwYzIwdFlXZGxiblF2Wkdsa1kyOXRiU0lzSW5JaU9sdGRMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDAiLCJib2R5Ijp7ImdvYWxfY29kZSI6ImlvLmF0YWxhcHJpc20uY29ubmVjdCIsImdvYWwiOiJFc3RhYmxpc2ggYSB0cnVzdCBjb25uZWN0aW9uIGJldHdlZW4gdHdvIHBlZXJzIHVzaW5nIHRoZSBwcm90b2NvbCAnaHR0cHM6Ly9hdGFsYXByaXNtLmlvL21lcmN1cnkvY29ubmVjdGlvbnMvMS4wL3JlcXVlc3QnIiwiYWNjZXB0IjpbXX19"
         val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = polluxMock,
-            connectionManager = connectionManager,
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
+            mercury = mercuryMockOld,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = null,
             logger = PrismLoggerMock(),
@@ -464,65 +791,147 @@ class EdgeAgentTests {
         assert((x as OutOfBandInvitation).type == ProtocolType.Didcomminvitation)
     }
 
-    @AndroidIgnore
+    // Commented out as it should be moved to instrumentation tests to be albe to test the anoncreds-rs library
+//    @AndroidIgnore
+//    @Test
+//    fun testPrepareRequestCredentialWithIssuer_whenAnoncredOfferCredential_thenProcessed() = runTest {
+//        val apiMock: Api = ApiMock(
+//            HttpStatusCode(200, "Ok"),
+//            getCredentialDefinitionResponse
+//        )
+//        val pollux = PolluxImpl(apolloMockOld, castorMockOld, apiMock)
+//        plutoMockOld.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
+//
+//        val agent = EdgeAgent(
+//            apollo = apolloMockOld,
+//            castor = castorMockOld,
+//            pluto = plutoMockOld,
+//            mercury = mercuryMock,
+//            pollux = pollux,
+//            connectionManager = connectionManagerOld,
+//            seed = null,
+//            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+//            logger = PrismLoggerMock(),
+//            agentOptions = AgentOptions()
+//        )
+//
+//        val message = Json.decodeFromString<Message>(
+//            """{"id":"e430e4af-455e-4a15-9f2f-5bd8e5f350b8","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":\"http:\\/\\/192.168.68.113:8000\\/cloud-agent\\/schema-registry\\/schemas\\/5667190d-640c-36af-a9f1-f4ed2587e766\\/schema\",\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"age\",\"value\":\"18\"},{\"media_type\":null,\"name\":\"name\",\"value\":\"Cristian\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242264","expires_time_plus":"1721328667","attachments":[{"id":"ee903fe0-2c49-4356-9b41-cfccc979c0a1","data":{"base64":"eyJzY2hlbWFfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy81NjY3MTkwZC02NDBjLTM2YWYtYTlmMS1mNGVkMjU4N2U3NjYvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2RhNmExZDgtMmIyMy0zMTM4LWIwMmEtYWIwYmI0OGY4MGY5L2RlZmluaXRpb24iLCJrZXlfY29ycmVjdG5lc3NfcHJvb2YiOnsiYyI6IjM0MjE0MzM4OTA5MDk4MTU5ODIyNTA3MjQ4Njk3NjUyNTIyMzc1NzM2ODM0OTM1MDg0NjM5MTYzNTUyNjgwMjc3MjQyOTcxODI5ODUwIiwieHpfY2FwIjoiODAwNzA3NDcxNzUyOTQ3MTI1NDIxNTU2ODI1ODYyNDc5NzE1OTE0OTE3ODE4NTY4MDI1NjU5Mzk1NDcyMTAzMzQ0NjAwMDI4NzU4MzczMTA5Mjg0NzEzNDg5MDg1OTk3NzE5NDcwOTc5MDQ1NzA3NTY1ODA4MDczNzYxMjI0OTI3MzcyMDk1MTU2MzAxODE3MzgzNDE5NzE4NzM0NDk2MDQwMjc1MzM2MTg0ODIzNzQ4NTg0NzgzNjIxNzE1NTQwOTI3Nzk0ODQyMTA2NDM1NDEwNzc4MDg2ODg1MTc5MzQzMjEzMjU3NTk2ODM2NjU5NzYwMTI4NzI5ODI5MTk2MzI0MjQwMzgyOTc3MzczNjU3MTA0NjQ5NjE4MjU0MDMzMDk4Njc0OTkxMzIwMzc2NTEyMTUyOTk3Mzg0Mzk5MzY0OTc3MDM4NzU2ODcwOTU3NTcyMDM0NTM0NTY1MDM5OTY0MTYzNDgzNDEyMTEzNzc0NzA5MTU2NTcxMjcxNTI3ODY2NzQwNzU1Nzc2MzIzOTgxNTE5NzEzNjQ1MjQ4Njc5NzgyOTM3NTcyOTI4NDI1NzQ0NjE3MjMwNzk2MzYwNzE5MDA3Mzc0ODgwNTI2ODA4ODIzODg2NTMwMzE2MzgyOTI1MDcxOTYzMjUwMzgyNzU4MDA5Mjk1MzI1NDgzODIyNTg0OTIyMDkwMTcwMTAxOTY5OTk5MTg1MzAxMDA1NDM2MjYyMDI4NDIxOTA0NjU5MzY4OTU3OTQyNTAwNDkxNzI5MjY0MTMzMzE5Nzg0NDIwNjQ0NDUxMTUyNjA2MDI2MDg1MDkwNDYzNzAzMTQzNDczMTcxMjg3OTUxMTM0NTM1MDY0NDc0NjQ5NDE5MzUzMDQ4MzQwOTk4MTY2NjYwNDkyMDE5ODQyNDU2NDM5MTcxNjM2IiwieHJfY2FwIjpbWyJhZ2UiLCI3MjA2NjI4MDAzNzAwMjM5MzM5NjAzNjUxNDQ1MTY2NDE0MjcwNTA0ODM4ODAwMzYxMjE0NjQ3MjA1ODYwOTczMTg4MTQ0OTE2OTkwOTE3NTIyNjU4Mzg3Njg1MTcwMzkyMDcyMjk0MTUxMDUwODk1Njc0MTU0OTYwMDMyMDM0Mzg2MzEzMzY0MTMwMDQwNzI5ODQwMjcxMzcyNjc4NTI0NjE0NjUxNDcxNDU0NTg4MzgwMzI2OTMwODQ0Njc4Nzg3MzA3NzY3ODk2NjY5NTE2MDY1Njc3MDA3MjQyMDEwMjQyMDAwNTg4NjgxMTczNDUxNjg4NTU5MDEwMjQyNTgyMTg4MTY5MTUyNjUwNzY4NzgxNjMyMjgwNTgyODI1NjM3MjY0NzUwMTA3NTU2NDQzNTgyNzMwNDIxMjE3NTI4OTgyNTE5MzA3NzQ0ODAxNTYyNTYyMzQzNTcyNzU4NDEzNjc1NzY0ODQwOTY5MTY3NTE3ODcyNjk2MDY1MDM2MDU1MzgwMDg2NjcyNjUzMDEyMTIxMDk2MTA5OTQyMTg1NjM2ODk3MDE3Mjc5NDg3NjEyNDczNzc4NDUxMjkxMjE3NDg3ODQxOTc1NjI2MDczMjI0ODQ1MjI4NDM1OTk0MjI2MTg1MDc1NDI4MjA3OTg5MzAwMjExMzI5OTM4NjQxMzEwMTk5MjcwNTE0NjA2ODU5NDEzNDY1NzE1MjQyNjk0ODc0ODkwNDAzNDk5MzUxOTIxMDY4OTMwODE1ODY5ODM5NDYyMTE0MDI2MjM3MzY5OTAwMzE2MTA0NzYwMDAwNzk2NjcxOTUzNTAxMjcxMTI3MjM4NzM5NDI0Mjc2ODQyODkwNjQwNDY3NjYxNDEzODQ5Mzc5NzEwNzcxNjg0NzU4NTY1NzY2MDY4NzgwNjY0NjI3MjgiXSxbIm1hc3Rlcl9zZWNyZXQiLCI3ODg0ODQyMDE4MzA5NzY5NTg2MDY2Mjc5NDAwNjAzNjIzNjE4NzcxNTc3MjQ1NDk5NzQ5MzE0MzgyNTUyMzMzMjE4MzA3ODk1NzU4MDk2OTc3NjUzNjQ3MDcwNjk5MDE0OTY4OTUwMDg0OTk2MjMwNDAwODA4OTM0MzQ1MzQwMDcyMzY2NDg5NDYxNDg4MDk0MDgyOTk1OTU3MjUwMTg5NTkxMjg2NDQyMDg4MTMwNDA5MDA4Mjc5MzgxMjUzMDIxOTE0MTc5Nzc5MTAyNTcwNjIxNDQ0MDU0NzcxNjY5Mjk5NjQzNTcwODg5NjY1ODQzOTY2ODA1MjM1ODgxNzQ1OTQ3OTQ4NDQ2ODU1MDY4ODU4ODUzMDg2MTQ5NjMxMjA1ODcwMTIzODc1NDg3MTM0NjAxMDQwODA4Njg2MzQ4NDUwOTA0MTI4MTI4Nzk1MjUzMjczMjU3ODc4NjM4MjAxNTcyOTExMDQxNTQ4NDc0MTMzMDMyMTIyMTMyODExNjQ0NjAzNjg0MDU5MDk2ODM2NjU1NjQzMTI2NDU0NTAwNDM2MTgxNjQxMjkyNjQ4MTQ3MjYxODUyNzY5NjIyMzE5Mjk2NjI0NDU3OTg2NzI5NzMwNzE3NDEyNTE2MzEyNjQwNTM0OTE3NzEwNzE4Njc2MTMwODExMTI2NjQwMTkyODg4NjI2ODI2NTcwNzA1OTUxNTUyODI5NDY2NzY5NjUxNTcxNTI2OTMzNDUyNjY0ODk5NTExNzM0ODk0Njc3OTY5NjI0OTgzODI3MTgzMDg2NjA0NTE0NDE3MDE2MDgxNDE2Nzk0NDgwMDIwNDU2ODMxNzUyNjM2NTk1NzcwNjgwODQ0MDE0MjIyOTc2MjE5NzIzODg1MjAxNTg1ODk0MDQwMDA3MTQ5MjkwMDAxNTc4MjMxMDQiXSxbIm5hbWUiLCI4NjIxNzg3ODk1MzA5MzExOTQ3Njc0OTU5NDA4MjIzMTg5ODgwNDEzNTQ2NzIyOTYyODg5NjI0NzgwMjE1MDc4NDc3OTMxNTk5MDk5MzIwODkyNzY2NjM4NjExNDYyOTMzNTg3NjgwMTU0ODQ4ODgxMTY5MzY5NTc3OTk1NTI1ODQ2NDA1NjcyNDUyMzIyMTcyNjQ4MTc4OTEwMTg2ODkwNzYwNzM2MjMwNzA0MDA3NzU1OTA0OTIyNTUwODQ0MjkxNzgwOTk1NDAyNzUyNTU0NTAwNjg1NTY5NzYzMDc4ODY5NDU0NDI3NzY5NzU0Mzc5ODg5NzAzODQzNDM4ODcyMjMyOTc0MjIzODc5MzY5MTYzOTI1NjY3NjY5MzQyOTUwOTk5MjMwOTY1NDQ1MTkwOTM5Mzk5NzM1NjE1MTk2OTY2MzUyMTMwMzQ5MTE0NDE5OTIwMTk3NDIyMjA0ODQ2MTc2OTI3NTMwMDQ3NDkxNjI1NzAwODQ5NDc1MzQzNzk3MjU0MDYwNjc3MTA4MzkxOTU3MzU0MDAzOTAyNzMzMzEzMDI1ODE5Njk3MTIzMTc2NTg3MTU5NzQ5ODkxODg5MzU3Mjk0OTUyNDMwMDY2MTE5MjgzNzA1NTAwMTcxNTc3ODMzMzk3OTE1Mzc5OTA2NTA1MDExMjczODM2NTM3OTA2NjkyMjg2MTk5NDgzMjA3NDc1MzM2MjE1Njc4MTA1NDY5MDc3MTMyNDAwNDM4NTgyOTAyMjMwMzI5MDc4NjA4NTI4NDgzNDEwODI1NDkzNDcwMjI5MjA3MzA1NTk0ODUwMTg4ODUwMjEyNTQ0NzI0NDgyOTExOTQ3NTQ4NzIzMzMxMzYyNTI3MjA0Mzg3MzE1Mjk1MDU4Njk5MDk3NDc3MjQzMTczOTE0Njk5MDAzOTkzNTQiXV19LCJub25jZSI6IjM2MDY2NjE3NzQwNTA3NzY5NTI5NTMxNyJ9"},"format":"anoncreds/credential-offer@v1.0"}],"thid":"3a1c143b-7ab7-470d-99cf-bc5f31771388","ack":[]}"""
+//        )
+//        val offerCredential = OfferCredential.fromMessage(message)
+//        val subjectDid =
+//            DID("did:prism:6f23ddace519b68dfc0fa06e992db40f2f3c584af382ce446fa2fd0e042e5dea:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvxJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvw")
+//
+//        val requestCredential =
+//            agent.prepareRequestCredentialWithIssuer(did = subjectDid, offer = offerCredential)
+//
+//        assertEquals(offerCredential.from, requestCredential.to)
+//        assertEquals(offerCredential.to, requestCredential.from)
+//        assertTrue(requestCredential.attachments.size == 1)
+//        assertEquals(requestCredential.attachments[0].format, CredentialType.ANONCREDS_REQUEST.type)
+//        assertEquals(offerCredential.thid, requestCredential.thid)
+//    }
+
     @Test
-    fun testAnoncreds_whenOfferReceived_thenProcessed() = runTest {
-        val fromDID = DID("did:prism:asdf42sf")
-        val toDID = DID("did:prism:asdf42sf")
-
-        val apiMock: Api = ApiMock(
-            HttpStatusCode(200, "Ok"),
-            getCredentialDefinitionResponse
-        )
-        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
-        plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
-
+    fun testPrepareRequestCredentialWithIssuer_whenJwtOfferCredential_thenProcessed() = runTest {
+        val seed =
+            Seed("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA".base64UrlDecodedBytes)
         val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
+            apollo = apolloMockOld,
+            castor = castorMockOld,
             pluto = plutoMock,
-            mercury = mercuryMock,
-            pollux = pollux,
-            connectionManager = connectionManager,
-            seed = null,
+            mercury = mercuryMockOld,
+            pollux = polluxMock,
+            connectionManager = connectionManagerOld,
+            seed = seed,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
             logger = PrismLoggerMock(),
             agentOptions = AgentOptions()
         )
 
-        val attachmentDescriptor =
-            AttachmentDescriptor(
-                mediaType = "application/json",
-                format = CredentialType.ANONCREDS_OFFER.type,
-                data = AttachmentBase64(
-                    "eyJzY2hlbWFfaWQiOiJodHRwOi8vaG9zdC5kb2NrZXIuaW50ZXJuYWw6ODAwMC9wcmlzbS1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy81ZTBkNWE5My00YmZkLTMxMTEtYTk1Ni01ZDViYzgyZjc2Y2MiLCJjcmVkX2RlZl9pZCI6Imh0dHA6Ly8xOTIuMTY4LjY4LjEwMjo4MDAwL3ByaXNtLWFnZW50L2NyZWRlbnRpYWwtZGVmaW5pdGlvbi1yZWdpc3RyeS9kZWZpbml0aW9ucy81ZTI5NWNmMi00MjI2LTNjN2QtYjI3Zi04N2JlMTYwNjQ3NmQvZGVmaW5pdGlvbiIsImtleV9jb3JyZWN0bmVzc19wcm9vZiI6eyJjIjoiMTAyNTI4NDk1NTgzODg5MzkwMDcxMzk2OTI1ODg2NzI1MDk2MDMwNjY4ODgwOTMzNzQ5NTUzODEyNTY3MzE0NjQ0ODE0ODU2Nzk2NjI4IiwieHpfY2FwIjoiMTA4NzM1NDQ3NTAzNTQwNDc2MDIyOTAzNTYxNDY1Nzk4NzExMDA5MTU3MDcwOTY1MjMzNzIyNTAzMzg1NDY2NjIyNjYxNDgyMDkzMjAyMjg2ODcxMDQ5MDM3MDA5NzA1ODg3OTUzMDY5NjczNjA4Mzg5MTQ4NzY5ODI1NjMyNTU3NTk0Mzg3NDI2MjkzODY5OTIxNTg4MTM0MzI1OTczODg5NDY1NjYzNzM4ODA4ODg5NTE3Njc4MzIwOTYxNTk0NDg5MjYxNzI3ODAxMTc1OTMxMTQ2MjcwNDk3MzE5NTc4MTc4NDg3Nzg3MTAxNzg1ODMwMjE2NjgzODk2ODE1ODUyNjgzNDc5NjUxMzQ5NDY3MzUzNzM4MjM0NjE4NTMyODIyMzU1MTQ3ODcxOTU5NTU5ODgzNTUxOTQ5OTkwODY0ODEzNTYyODU3NzU5NDU4MTg1MDI5MDI3NTI1NTMzMDQyMDQ5MjEwMDA4NTg3MTc2MzQwNTg4Nzc2Mjc0MzgxMDU2MzM5ODE0OTAzMTMyNjI2MzIyMzc3MjAwMjYwMjM4NDcwNjcyMzI4NDQ4NzIyOTk4NDc1MDIwMzA4MjY2NDIzODUyNzA3Njk2OTQyNjk3NDc3MzI0MDUzOTM0MjQ3NDU4MDcxNjkyMDM5OTQ4MDkxMDg5MjA0NDQ2MDkyODY0Njc1NTQyMDA0Nzk1MDUyNjMzNzczMTQyMDc4Mzg0MTA1MDQzMDY4NjQ3Nzg3NzY3MDE1MDc5MjE1OTEzNTIzODIxOTU4NDQ2NTAxODY2ODY1OTE1NzEwNjY1NDU1MzU4ODEwNTY0OTk3MDUwNjAzNDc4NDE0MzA4NDQzMzc3Njg3ODUyMzc4NDgwNzg3MTQ1MDY2MTQ5MzA5MTM0NzMyNDg4NzQzMTg1NDgxMzU5MzA1NTM3MiIsInhyX2NhcCI6W1siZGF0ZW9maXNzdWFuY2UiLCIxODg0NTYwNDI1ODExNzgxNjE2Njc5NjAyMzA5ODExOTI5NzEyNDA4MDA0MzkxMDEyNzk3ODAxODA0MzU0MzQ0MTI3NDI2MTk0ODg5NDI3MjU3NjQzMzg2MTkxNTY0NDM5ODUzOTQ2NTg4MzkyNjMwNzEwMzA1OTM2OTAxNDA3NjYwOTk2NDc5ODkxNTgzNDE2NDkxODYyNzA3MTczOTA2OTg4ODEzNDE5ODQyMDg1MDM1MTg1OTA0MzQ2MTU4OTM2NDIyOTY5OTMwODg4Njg3NTc0MDcyMzY5MDc2NjkxNTk4MjkyMDkwNDA3Mjg5ODM2NDc2ODQyNTc2MjI3MzAzNDAwOTI4MjkwMDM0NTYwNjk5NTg1NTMzMzkxNDg0OTMwMDQ3NTEwMzMxNDQxNjAyMzEwNjM3NDg2MjY2OTIyNTIyNTIxMzQ2ODM5ODkxMDg1ODM3NTczMzAzMjkyNzMyNTA5Mzc0MTI0ODgzMTA0MjEzNzYzMDA3NzMwOTY4Mzg4MDc0NzE3ODc5NDM5NjE5Njg1NzY4MjU1OTg4MjY0NjMxMTk1MTU3MjE3NjExMTE0NzE3Njc4NjUzMTc0NDc2MTc4MjA4NTIwNzk2MDkwNzI2MzE1MjIzMDU4MTk4NjM3NjU4NDU2NTA3NDcyNzA4MDI0OTgzMjUzNjQyMDAwNDI0MjQyNTUyMDcwNzUzMTg3MDI3MTE0MTI1NzQ0MzExNzMxOTM1NjgwNDE1MTk5NzI4OTE2NjgxNTY2MzY2NjkxNDQyMzE4OTE3NDAxMzA0MzMzNzI5ODU0MzQ2MTAwNDI2NDE1MzEwMzYwNjQ4NDg3NDYzNzgxNjI5NDQ2ODU3ODg2NjgzNTIzODk2ODcyMTExNDg3MjUwNjgwMDQzOTIxMzgyMDM1MDkxMTg4NzE1MDAwNTIzIl0sWyJlbWFpbGFkZHJlc3MiLCIxNTUwMTI2ODAwMjA1MzI5Mzg3NzcyNjA4OTY3NDk0NDIyOTc0MjU1MTI1NDU0NTEyOTc3NjExNTgyNDE2Nzc1MDg2OTA1NjIzNDUzMTIxNDg0NzM0MzkyNDQ4NzEyNTQyNTYwODUyMjUzNzcyODI2NTYyNjg5NzY1NjYwMzM3OTUyNTEyODQ4MDA1Mzk1NTQxMzcwMTI1Mzk4NDg4OTIxNDM4NDUwNzMxMzYwNTcwMzQ2MjMyNDEyODgzMzQ5NjU4MjMxOTQ5OTgwMTUwMTI2NTQ3Nzg0NTM2ODE2NzM0Njc2Mzg1NDA2OTM1MDQ4NDQ0NDM1ODY2MzYwNTk2MjE3NTM4Njg1NTg5MDE3NDY1NTg2MzI1MDQxNzc1OTcwMzQ1NjY1MjM3MzcyMDA3MjAxNTczNDAwODk3NDA3MDA0OTY1Nzk1MDE3MDQ2NDI5MzM5MzMwMTg2NjAwNzE1MjE3Mjg3ODk3Mjg1MDk1MTEwMzExMDYxODU1OTE1NjQ3Nzk3MTkyNTc4NDI1MDgzMjAwMTIwNDEyNTU4NDM2MjQyNTc0ODIzNjE4NTAxODY5NTQxNzAwMTU5NjMyNDkwNDgxMzY3ODU2NjA5MTAwNjA4MzI0MDcyODk3MjA3NDQxNzgwNDc1Njg4MTk4ODI3MDE1MjE2MDA5OTA4NjY0NTYwODk5MDMzODYxNjk1NTg2OTE1NzI4NjYwMDkzMjM3Njk4NzUzODMwOTAxODQ2MDE1OTU0NzEzNTc5MTc5NDgyMDMyNjIxMTEyNjA3NDcyOTM5NzYyNjM4OTgzMDkyNDE0NTgzMzMyODI2MjUzMTE3NDMwNTAwOTI2NTcwODcxNjI2MzYyMTQxNTM0NzUwMDQwMTkxNzEzMzE4OTQ1NTIwNDUzOTI5Mjk5Nzk3ODc2NDEyNzI3MzgiXSxbImZhbWlseW5hbWUiLCIyMDM1NjQzMjQ2ODM3MTA2MDc3MzEzNTkwOTY1Nzc2ODc1ODkwMjM0MTI0MDQ2MjcyOTc0OTQ0MDMxOTIxNzQ4NjQ1ODA0NDc2MjExODc4NTA1MTEzODE5NzYzMjM3MjczMTM4MjgzNDE1MTE2ODYyMzMwNTg0Mjc4NzcxNjg5NjMyNTIyNzE4NjYzMzkwOTg2MjI0NTA3NDg3OTc3MDk2MDMxMTAzMDY1MDQzNjI5Nzk3NjAzMjM2MTc1ODczOTA0MzUwMjMyNjU1Mjc2NzEzNjIxOTUwNzExNjExMzMzODM5OTE0OTU2MzEyNzM4NDkyNjI5NjQ3Nzk2NTk4NDUzOTM2MTY1NjIwNDI1MTc4OTU0NzE2MjE1OTUzNzQyNjM4NDk0NzA3NzMxNjM2NTc0OTI0Njc4MTk5NDQzMjY1MDU4NDM4MTc3NjE0NTM3NjE5NTI0NzY0MDkxNTY1NzUxODg0OTkzMTU4ODc3NjIxMjMxNzc5MDkzOTIyNzQ0NzM4Nzk5OTEwOTg0OTczOTMyMzYwNzM0OTA3NTQ1NTAxOTE2OTUyOTU3MTEwNTczMjQzODA5MDA1NzE5MjU5MTg1MzgwODI4NTU2MzgwMDA1NzU4MTkzNjIwMzc5MzA5NTk1NTgyMTAxMDEwOTg2MDkyNTE3NjM4Njc3NDYwMTQ5MzQ5ODc5NjYyMzc0MTQ0NzUwMDkyODAzNTE1OTUwMzc0MzkzMTAzMTY5MDYzNTE4ODczNTMzMjAxMjAxMjg4NzU3NjczNzk2OTAzOTAzMTEyNzYyMDgxNjE0MzY1NjgwNjEyNzQ1OTEyMTQ4Mjg0NTQ2MzgxOTA4NDAzNzExMDYwNzc0NDQzNDQyMjc3NTU5MjcyMjkzMDg2MzEzMzg5MDQ4ODA0MzA5OTg0NjgyMDA4MDgxMTYiXSxbImRyaXZpbmdsaWNlbnNlaWQiLCIyMzg0Nzk3NTUyNDQ2NTQ0Nzk3NjQyNTc0NjMyMDU3MjgwODIyODkwODgxNjY4NDQyMTczNDY5OTQ4MDYwOTU0ODU2MjY4MDU2MzQ4MTEyMjQ3MzA4NzYwMDQwNTAxODY4NzE3NDQ4MTI1MDI0NDc2MTcwOTU5Njg0Njc1NzY0MjAwMjc5MTcyMzAwOTgzMTQ1MjgzMDAwMzQzNjIxOTEzNTYwNjA5MzQzNTQyNDM2ODQzNDI0NzkwMzUxNjgwMjg3MDAwNzc4ODM5ODQwMDI0NjA4NDg4NTA5MDQ3MjU3MDI0ODU1Njc5ODk3ODc3NTk5NjU2MTc2NDAwMzk1MTQ0MzY5NjkyNzU4MzIxOTc0MzQyODk2MzY4NzEwMTA3ODIyMTQ4NTM2MzIwMDI0NjYwMzUzNTk1MzA5MDgxMTIwNDQyMTgzNDQ3NzE5NzA5Nzc4MjQxNTI2NDQ4MjU5NTY1NTYyNDUxODYyMDk2OTQzMTUwMzk4ODQ1OTM0ODA3OTM4NjE0MTE4Mzk2MjA5NTc5NDM0OTU2MDk2NzY3OTAzMTE4MDc4MTk1NjE1NzI4MDgwNjA3NzMyOTczMTg2NzU0MTA3Mjc2MTM4OTk1NDQzMzQxNzAxMDQ5OTY3NTc0ODA1MjM2MjEyNTIyNDc0MDI5NTcyOTc0OTk4MjA2NDExMDM5MzQxODY4MzIwMTgwMDU5MzQ4ODE4MDQ5NTgyNjU4ODg0OTI2Nzk2OTAzMzc1OTY4NjMwNjA0MDgwOTE2MTc1ODIzMDIyNjc3ODc5MzE4MDgyODUwNzgwMzQyNDU0ODI4OTEzMTA4Nzk1MDg4NjA1Mzk1NjUxMzM0NTMyNDU3NzUxNjQxNTUwOTE5NDQ4NDAzODM1OTI0NDg5NzYzMjE4NDUyNzUzMzY0NjAzMzE3NzgxMDA0Il0sWyJkcml2aW5nY2xhc3MiLCI3MTMwODIxMTg0NjAwNjAwNjE1Nzk1NDU5NjkyNDYwMzE1NzM4ODA5NTU0MjA0NTQ4OTI1NjA2MzkyNzQ2MjE3MDQyMDI1OTExNjE2NTM4ODQ0ODgyMDgwNjM5MTQ0MjAwMDA2NzIwMzY4MjUzNzMzMzM0ODk1NTQ0NjU5ODU1ODk3MzQzNjc1MzMxNjUwMDI2NjgwNzc1MjgxMzgxMzY0MzcyNTE3ODgzMDI5NTE1MDM2MjQ1ODIyOTUwNzU3MDYwNTk2Nzc5MDE0ODUzODIzMTczNTU0NjczMTk0NjAxODU0MTk2NDQ1NDI3MzIxNTk1Mjk4NTg0OTI5MDM3NTMyMzk3NDMxODE1MDk0Mzk3MjQyODUwMTQ3NjY3NTc0NDM1OTY5ODMzMzE2NDc1MTY0MDM4NjIxMzk1Mzk0ODAxOTg3MzIyOTc0NDY0MjYxNTQyODMxNzI0OTQwNDQ5NjQyMjI5OTA3MzIwNzY2Njg0Nzk0NTgwMDExNzc4NzM0NzI5OTk0MjkxMjAxMDA3NTY5NTE5ODg0ODU3MzU2OTY5NzIwMDUwMTk5OTE3MDk3MjIzOTU3Mjc0MzI2MjkxNjc2Mjc1OTIzOTI1NTQ2MTMxODIxNDE2NDc3MDE3OTk2NzE1OTU3MzAxOTM4MzMyNzU0MzE5OTA0ODkxNDExNDU0MjkzNjMwMDU1NTg4MTUwNjA3ODQ4MTM1MDU1Njk5OTM2OTAxNzAzNTAwNjM2MzgxNDQ5ODAzMTM2NzAyODQwNDcyMjY1MDAzNTczNzk4MDM1NzYyNjIzMzAwOTQzNTQ3Mjk1NDA4OTkxODgyNDMxODEwNzIwNzE3NDE3NjIxNjYxNzUyNzEzNzM2ODQ2MDY4NzExNDk4OTkxMjc2NDcyMDgxNDAzMjEyMzUwNDEzNDA0MjQyNDQiXSxbIm1hc3Rlcl9zZWNyZXQiLCIxNDQ0ODk0NjYyMjg1MjAwNjE4ODEwMjI2MTUxMTk3NjIwMjc0OTgwNTk0NzkzMzU3ODY0MDg1NDA0MzcxNzY2MTA0NzI5OTg0ODI3MjgyNzA4NTkzODUyMDU1NDUwNTUzOTc3MzA3MDQwMTY5NDA1ODgwMTEwMzMxMDU3MDMxNjc4OTM2NDQ2MDQ3NDE4NzE0NDc5OTA3Mjg5MTExMTkxMzA5MDQ2MTMzMzAxMTIzNTk4MTAyMzg0NjQ5ODA3NTQwOTY4NjQ5NzU2MjY4NDAwNDc2NDk5ODY2NDg1MjMxNjkzMDEyMjUxNzA5ODE3OTE3MTMyNjUxNjExNDM0NzkzMTI4NDM5MjQ1NjY3ODE1NjQ2NDUxOTg1ODAyNTg3NDYwMDk4ODk2MDc3OTA3ODUwNTE4NzI4MzMxNzAyMTQ2OTk0NzQzMDUxMDM5ODkwNjA3MzE5NzYyNjkyNTY4NjcwOTY5NDA1OTU2NDU5ODMxMTU5Njg2MTk1OTM3ODM0OTUyNzM2NjY4MDU5NDUxNDM5MTQ3NDI0Njg0ODY2OTg1ODE0Nzg5MzY5NTE0NDczOTExNTA1NjM1OTUwMjg1OTU0NzI3ODE4OTk2MjI4NDI4NTU5NjY3MjM5MDcxNTkwMTI2NzYxOTQ4MDQ5NTE2OTY1MTg4OTE1MTkzMTYxMjk4MDU4NDAwMjk3MDQ2MzQ0NTg2ODk5OTQ2MTA0MDM0ODc2MjkxMjU1NDMxNzYyMTcyMTc3MTEwODk5OTgxOTU1MjM0MDE0NzM2ODgzNTczMjQ1OTA3MTUxNzAzMjM1MDY2MjU0NDU2NzU5NDUxNDIzODcxNTA5NzgwMzA5NDAxODYzNDc4OTgxMjU0MDMwNjE2NDYxNTg4NjU0NjgxMDg5OTk4OTE4NjA2NTc4MjM0ODc5OTg1NjcxIl1dfSwibm9uY2UiOiIxMTE2NzA0MDg4NDcyOTA3NTIzNjkwNDkwIn0="
-                )
-            )
+        `when`(plutoMock.getPrismDIDKeyPathIndex(any())).thenReturn(flow { emit(2) })
 
-        val offerCredential = OfferCredential(
-            body = OfferCredential.Body(
-                credentialPreview = CredentialPreview(
-                    attributes = arrayOf(
-                        CredentialPreview.Attribute(
-                            name = "Name",
-                            value = "Value",
-                            mediaType = "application/json"
-                        )
-                    )
-                )
-            ),
-            attachments = arrayOf(attachmentDescriptor),
-            thid = "1",
-            from = fromDID,
-            to = toDID
+        `when`(polluxMock.extractCredentialFormatFromMessage(any())).thenReturn(CredentialType.JWT)
+
+        val jwtString =
+            """eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MGE0YjU1MjE2OWUzMTU4NzgxNzQxZmJiZWZmZTgxMjEyNzg0ZDMyZDkwY2Y4ZjI2MjI5MjNmMTFmNmVjZDk2NjpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRTGd6aHN1T3FoQXlJbXktYzhvOVptSUo0aVlfR2M4dHZOSVQzbDF3NThmMkJKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFMZ3poc3VPcWhBeUlteS1jOG85Wm1JSjRpWV9HYzh0dk5JVDNsMXc1OGYyQSIsImF1ZCI6ImRvbWFpbiIsInZwIjp7IkBjb250ZXh0IjpbImh0dHBzOlwvXC93d3cudzMub3JnXC8yMDE4XC9jcmVkZW50aWFsc1wvdjEiXSwidHlwZSI6WyJWZXJpZmlhYmxlUHJlc2VudGF0aW9uIl19LCJub25jZSI6ImVhNzBmMzIwLTgwYjYtNGE5My1iMjkzLTJmNjE2NWRmNmRlYyJ9.iAQ3iwiz9-0fCO28TPGUG0y8y1xN9mgTYPTud8sL_p8Qrz8MwtS2NCvl_CR-vCnh1jzi5AJIo99AbFkGYkZ6XQ"""
+        `when`(polluxMock.processCredentialRequestJWT(any(), any(), any())).thenReturn(jwtString)
+
+        val message = Json.decodeFromString<Message>(
+            """{"id":"a77e5336-f4bb-4ccb-ae6f-2929ed53bbc3","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":null,\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"familyName\",\"value\":\"demo\"},{\"media_type\":null,\"name\":\"drivingClass\",\"value\":\"1\"},{\"media_type\":null,\"name\":\"dateOfIssuance\",\"value\":\"01\\/01\\/2024\"},{\"media_type\":null,\"name\":\"emailAddress\",\"value\":\"demo@email.com\"},{\"media_type\":null,\"name\":\"drivingLicenseID\",\"value\":\"A1221332\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242627","expires_time_plus":"1721329026","attachments":[{"id":"d2c693e7-c217-46e5-92ba-6a0880a89416","data":{"data":"{\"options\":{\"domain\":\"domain\",\"challenge\":\"ea70f320-80b6-4a93-b293-2f6165df6dec\"},\"presentation_definition\":{\"purpose\":null,\"format\":{\"jwt\":{\"proof_type\":[],\"alg\":[\"ES256K\"]},\"ldp\":null},\"name\":null,\"input_descriptors\":[],\"id\":\"aa81d240-9d95-4f2c-bc94-09101c2081c0\"}}"},"format":"prism/jwt"}],"thid":"8b58db48-d243-45b8-a0f1-9862323b7e77","ack":[]}"""
         )
+        val offerCredential = OfferCredential.fromMessage(message)
+        val subjectDID = DID("did:prism:asdf42sf")
+
         val requestCredential =
-            agent.prepareRequestCredentialWithIssuer(did = toDID, offer = offerCredential)
+            agent.prepareRequestCredentialWithIssuer(did = subjectDID, offer = offerCredential)
+
         assertEquals(offerCredential.from, requestCredential.to)
         assertEquals(offerCredential.to, requestCredential.from)
         assertTrue(requestCredential.attachments.size == 1)
-        assertEquals(requestCredential.attachments[0].format, CredentialType.ANONCREDS_REQUEST.type)
+        assertEquals(requestCredential.attachments[0].format, CredentialType.JWT.type)
+        assertTrue(requestCredential.attachments[0].data is AttachmentBase64)
         assertEquals(offerCredential.thid, requestCredential.thid)
+    }
+
+    @Test
+    fun testPrepareRequestCredentialWithIssuer_whenDIDNotPrism_thenThrowException() = runTest {
+        val seed =
+            Seed("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA".base64UrlDecodedBytes)
+        val agent = EdgeAgent(
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMock,
+            mercury = mercuryMockOld,
+            pollux = polluxMock,
+            connectionManager = connectionManagerOld,
+            seed = seed,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
+        )
+
+        val message = Json.decodeFromString<Message>(
+            """{"id":"a77e5336-f4bb-4ccb-ae6f-2929ed53bbc3","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":null,\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"familyName\",\"value\":\"demo\"},{\"media_type\":null,\"name\":\"drivingClass\",\"value\":\"1\"},{\"media_type\":null,\"name\":\"dateOfIssuance\",\"value\":\"01\\/01\\/2024\"},{\"media_type\":null,\"name\":\"emailAddress\",\"value\":\"demo@email.com\"},{\"media_type\":null,\"name\":\"drivingLicenseID\",\"value\":\"A1221332\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242627","expires_time_plus":"1721329026","attachments":[{"id":"d2c693e7-c217-46e5-92ba-6a0880a89416","data":{"data":"{\"options\":{\"domain\":\"domain\",\"challenge\":\"ea70f320-80b6-4a93-b293-2f6165df6dec\"},\"presentation_definition\":{\"purpose\":null,\"format\":{\"jwt\":{\"proof_type\":[],\"alg\":[\"ES256K\"]},\"ldp\":null},\"name\":null,\"input_descriptors\":[],\"id\":\"aa81d240-9d95-4f2c-bc94-09101c2081c0\"}}"},"format":"prism/jwt"}],"thid":"8b58db48-d243-45b8-a0f1-9862323b7e77","ack":[]}"""
+        )
+        val offerCredential = OfferCredential.fromMessage(message)
+        val subjectDID = DID("did:peer:asdf42sf")
+
+        assertFailsWith(PolluxError.InvalidPrismDID::class) {
+            agent.prepareRequestCredentialWithIssuer(did = subjectDID, offer = offerCredential)
+        }
+    }
+
+    @Test
+    fun testPrepareRequestCredentialWithIssuer_whenCredentialTypeNotSupported_thenThrowException() = runTest {
+        val seed =
+            Seed("Rb8j6NVmA120auCQT6tP35rZ6-hgHvhcZCYmKmU1Avc4b5Tc7XoPeDdSWZYjLXuHn4w0f--Ulm1WkU1tLzwUEA".base64UrlDecodedBytes)
+        val agent = EdgeAgent(
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMock,
+            mercury = mercuryMockOld,
+            pollux = polluxMock,
+            connectionManager = connectionManagerOld,
+            seed = seed,
+            api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
+            logger = PrismLoggerMock(),
+            agentOptions = AgentOptions()
+        )
+
+        `when`(plutoMock.getPrismDIDKeyPathIndex(any())).thenReturn(flow { emit(2) })
+
+        `when`(polluxMock.extractCredentialFormatFromMessage(any())).thenReturn(CredentialType.PRESENTATION_EXCHANGE_SUBMISSION)
+
+        val message = Json.decodeFromString<Message>(
+            """{"id":"a77e5336-f4bb-4ccb-ae6f-2929ed53bbc3","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":null,\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"familyName\",\"value\":\"demo\"},{\"media_type\":null,\"name\":\"drivingClass\",\"value\":\"1\"},{\"media_type\":null,\"name\":\"dateOfIssuance\",\"value\":\"01\\/01\\/2024\"},{\"media_type\":null,\"name\":\"emailAddress\",\"value\":\"demo@email.com\"},{\"media_type\":null,\"name\":\"drivingLicenseID\",\"value\":\"A1221332\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242627","expires_time_plus":"1721329026","attachments":[{"id":"d2c693e7-c217-46e5-92ba-6a0880a89416","data":{"data":"{\"options\":{\"domain\":\"domain\",\"challenge\":\"ea70f320-80b6-4a93-b293-2f6165df6dec\"},\"presentation_definition\":{\"purpose\":null,\"format\":{\"jwt\":{\"proof_type\":[],\"alg\":[\"ES256K\"]},\"ldp\":null},\"name\":null,\"input_descriptors\":[],\"id\":\"aa81d240-9d95-4f2c-bc94-09101c2081c0\"}}"},"format":"prism/jwt"}],"thid":"8b58db48-d243-45b8-a0f1-9862323b7e77","ack":[]}"""
+        )
+        val offerCredential = OfferCredential.fromMessage(message)
+        val subjectDID = DID("did:prism:asdf42sf")
+
+        assertFailsWith(EdgeAgentError.InvalidCredentialError::class) {
+            agent.prepareRequestCredentialWithIssuer(did = subjectDID, offer = offerCredential)
+        }
     }
 
     @AndroidIgnore
@@ -535,21 +944,21 @@ class EdgeAgentTests {
             HttpStatusCode(200, "Ok"),
             getCredentialDefinitionResponse
         )
-        val pollux = PolluxImpl(apolloMock, castorMock, apiMock)
-        plutoMock.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
+        val pollux = PolluxImpl(apolloMockOld, castorMockOld, apiMock)
+        plutoMockOld.getLinkSecretReturn = flow { emit(createLinkSecret()) }
         val meta = CredentialRequestMeta(
             linkSecretName = "1",
             json = "{\"link_secret_blinding_data\":{\"v_prime\":\"1234\",\"vr_prime\":\"1234\"},\"nonce\":\"411729288962137159046778\",\"link_secret_name\":\"link:secret:id\"}"
         )
-        plutoMock.getCredentialMetadataReturn = flow { emit(meta) }
+        plutoMockOld.getCredentialMetadataReturn = flow { emit(meta) }
 
         val agent = EdgeAgent(
-            apollo = apolloMock,
-            castor = castorMock,
-            pluto = plutoMock,
-            mercury = mercuryMock,
+            apollo = apolloMockOld,
+            castor = castorMockOld,
+            pluto = plutoMockOld,
+            mercury = mercuryMockOld,
             pollux = pollux,
-            connectionManager = connectionManager,
+            connectionManager = connectionManagerOld,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
             logger = PrismLoggerMock(),
@@ -606,7 +1015,6 @@ class EdgeAgentTests {
         val mercuryMock = mock<Mercury>()
         val polluxMock = mock<Pollux>()
         val connectionManagerMock = mock<ConnectionManager>()
-        val seed = Seed(MnemonicHelper.createRandomSeed())
 
         val mediatorHandlerMock = mock<MediationHandler>()
         `when`(connectionManagerMock.mediationHandler).thenReturn(mediatorHandlerMock)
@@ -663,12 +1071,10 @@ class EdgeAgentTests {
         `when`(castorMock.createPeerDID(any(), any())).thenReturn(DID(newPeerDid))
 
         val definitionJson =
-            "{\"presentation_definition\":{\"id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"input_descriptors\":[{\"id\":\"wa_driver_license\",\"name\":\"Washington State Business License\",\"purpose\":\"We can only allow licensed Washington State business representatives into the WA Business Conference\",\"constraints\":{\"fields\":[{\"path\":[\"\$.credentialSubject.dateOfBirth\",\"\$.credentialSubject.dob\",\"\$.vc.credentialSubject.dateOfBirth\",\"\$.vc.credentialSubject.dob\"]}]}}],\"format\":{\"jwt\":{\"alg\":[\"ES256K\"]}}},\"options\":{\"domain\":\"domain\",\"challenge\":\"challenge\"}}"
-        val presentationDefinitionRequest: JWTPresentationDefinitionRequest =
-            Json.decodeFromString(definitionJson)
+            """{"presentation_definition":{"id":"32f54163-7166-48f1-93d8-ff217bdb0653","input_descriptors":[{"id":"wa_driver_license","name":"Washington State Business License","purpose":"We can only allow licensed Washington State business representatives into the WA Business Conference","constraints":{"fields":[{"path":["${'$'}.credentialSubject.dateOfBirth","${'$'}.credentialSubject.dob","${'$'}.vc.credentialSubject.dateOfBirth","${'$'}.vc.credentialSubject.dob"]}]}}],"format":{"jwt":{"alg":["ES256K"]}}},"options":{"domain":"domain","challenge":"challenge"}}"""
         // Mock createPresentationDefinitionRequest
         `when`(polluxMock.createPresentationDefinitionRequest(any(), any(), any())).thenReturn(
-            presentationDefinitionRequest
+            definitionJson
         )
 
         val toDid = "did:peer:fdsafdsa"
@@ -690,8 +1096,8 @@ class EdgeAgentTests {
         assertEquals(toDid, sentMessage.to.toString())
         assertEquals(1, sentMessage.attachments.size)
         assertTrue(sentMessage.attachments.first().data::class == AttachmentBase64::class)
-        val base64Attachment = sentMessage.attachments.first().data as AttachmentBase64
-        assertEquals(definitionJson, base64Attachment.base64.base64UrlDecoded)
+        val attachmentJsonData = sentMessage.attachments.first().data.getDataAsJsonString()
+        assertEquals(definitionJson, attachmentJsonData)
     }
 
     @Test
@@ -764,8 +1170,7 @@ class EdgeAgentTests {
 
         val definitionJson =
             "{\"nonce\":\"asdf1234\",\"name\":\"anoncreds_presentation_request\",\"version\":\"0.1\",\"requested_predicates\":{\"age\":{\"name\":\"age\",\"p_type\":\">=\",\"p_value\":\"18\"},\"income\":{\"name\":\"income\",\"p_type\":\"<\",\"p_value\":\"99000\"}},\"requested_attributes\":{\"name\":{\"name\":\"name\",\"restrictions\":{}}}}"
-        val presentationDefinitionRequest: AnoncredsPresentationDefinitionRequest =
-            Json.decodeFromString(definitionJson)
+        val presentationDefinitionRequest = definitionJson
         // Mock createPresentationDefinitionRequest
         `when`(polluxMock.createPresentationDefinitionRequest(any(), any(), any())).thenReturn(
             presentationDefinitionRequest
@@ -824,7 +1229,6 @@ class EdgeAgentTests {
             val mercuryMock = mock<Mercury>()
             val polluxMock = mock<Pollux>()
             val connectionManagerMock = mock<ConnectionManager>()
-            val seed = Seed(MnemonicHelper.createRandomSeed())
 
             val mediatorHandlerMock = mock<MediationHandler>()
             `when`(connectionManagerMock.mediationHandler).thenReturn(mediatorHandlerMock)
@@ -848,7 +1252,7 @@ class EdgeAgentTests {
                 logger = PrismLoggerMock()
             )
             val msg = Json.decodeFromString<Message>(
-                "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
+                "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19\"},\"format\":\"dif/presentation-exchange/fail_test@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
             )
             val credential = AnonCredential(
                 schemaID = "",
@@ -870,35 +1274,17 @@ class EdgeAgentTests {
         }
 
     @Test
-    fun testHandlePresentationDefinitionRequest_whenWrongAttachmentType_thenThrowPresentationRequestAttachmentNotSupported() =
+    fun testHandlePresentation_whenWrongPresentationSubmission_thenThrowMissingOrNullFieldError() =
         runTest {
             val apiMock = mock<Api>()
             `when`(apiMock.request(any(), any(), any(), any(), any()))
                 .thenReturn(HttpResponse(200, "Ok"))
 
-            val apolloMock = mock<Apollo>()
-            val castorMock = mock<Castor>()
-            val plutoMock = mock<Pluto>()
-            val mercuryMock = mock<Mercury>()
-            val polluxMock = mock<Pollux>()
-            val connectionManagerMock = mock<ConnectionManager>()
-            val seed = Seed(MnemonicHelper.createRandomSeed())
-
-            val mediatorHandlerMock = mock<MediationHandler>()
-            `when`(connectionManagerMock.mediationHandler).thenReturn(mediatorHandlerMock)
-            val mediator = Mediator(
-                id = UUID.randomUUID().toString(),
-                mediatorDID = DID("did:peer:mediatordid"),
-                hostDID = DID("did:peer:hostdid"),
-                routingDID = DID("did:peer:routingdid")
-            )
-            `when`(mediatorHandlerMock.mediator).thenReturn(mediator)
-
             val agent = EdgeAgent(
                 apollo = apolloMock,
                 castor = castorMock,
                 pluto = plutoMock,
-                mercury = mercuryMock,
+                mercury = mercuryMockOld,
                 pollux = polluxMock,
                 connectionManager = connectionManagerMock,
                 seed = seed,
@@ -906,16 +1292,13 @@ class EdgeAgentTests {
                 logger = PrismLoggerMock()
             )
             val msg = Json.decodeFromString<Message>(
-                "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData\",\"data\":\"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
+                "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"eyJ2ZXJpZmlhYmxlUHJlc2VudGF0aW9uIjpbImV5SmhiR2NpT2lKRlV6STFOa3NpZlEuZXlKcGMzTWlPaUprYVdRNmNISnBjMjA2TWpVM01UbGhPVFppTVRVeE1qQTNNVFk1T0RGaE9EUXpNR0ZrTUdOaU9UWTRaR1ExTXpRd056TTFPVE5qT0dOa00yWXhaREkzWVRZNE1EUmxZelV3WlRwRGNHOURRM0JqUTBWc2IwdENWM1JzWlZNd2VFVkJTa05VZDI5S1l6SldhbU5FU1RGT2JYTjRSV2xCUlc5VFEyNDFkSGxFWVRaWk5uSXRTVzFUY1hCS09Ga3hiV28zU2tNelgyOVZla1V3VG5sNVJXbERRbTluYzJkT1lXVlNaR05EVWtkUWJHVTRNbFoyT1hSS1prNTNiRFp5WnpaV1kyaFNNMDl4YUdsV1lsUmhPRk5YZDI5SFdWaFdNR0ZETUhoRlFWSkRWSGR2U21NeVZtcGpSRWt4VG0xemVFVnBSRTFyUW1RMlJuUnBiMHByTTFoUFJuVXRYMk41TlZodFVpMDBkRlZSTWs1TVIybFhPR0ZKVTI5dGExSnZaelpUWkdVNVVIZHVSekJSTUZOQ1ZHMUdVMVJFWWxOTFFuWkpWalpEVkV4WWNtcEpTblIwWlVkSmJVRlRXRUZ2U0dKWFJucGtSMVo1VFVKQlFsRnJPRXREV0U1c1dUTkJlVTVVV25KTlVrbG5UemN4TUcxME1WZGZhWGhFZVZGTk0zaEpjemRVY0dwTVEwNVBSRkY0WjFab2VEVnphR1pMVGxneGIyRkpTRmRRY25jM1NWVkxiR1pwWWxGMGVEWkthelJVVTJwblkxZE9UMlpqVDNSVk9VUTVVSFZhTjFRNWRDSXNJbk4xWWlJNkltUnBaRHB3Y21semJUcGlaV1ZoTlRJek5HRm1ORFk0TURRM01UUmtPR1ZoT0dWak56ZGlOalpqWXpkbU0yVTRNVFZqTmpoaFltSTBOelZtTWpVMFkyWTVZek13TmpJMk56WXpPa056WTBKRGMxRkNSVzFSUzBReVJqRmtSMmhzWW01U2NGa3lSakJoVnpsMVRVSkJSVkZyT0V0RFdFNXNXVE5CZVU1VVduSk5Va2xuWlZObkxUSlBUekZLWkc1d2VsVlBRbWwwZWtscFkxaGtabnBsUVdOVVpsZEJUaTFaUTJWMVEySjVTV0ZKU2xFMFIxUkpNekIwWVZacGQyTm9WRE5sTUc1TVdFSlRORE5DTkdvNWFteHpiRXR2TWxwc1pGaDZha1ZzZDB0Q01qRm9Zek5TYkdOcVFWRkJWVXBRUTJkc2VscFhUbmROYWxVeVlYcEZVMGxJYTI5UWRHcHFkRk5ZV2paak1VUm5XWEpqZVVsdVJqTllPRE5uU0VVek1XZEVabTFCYm5KbmJUaHBSMmxEVlU5Q2EzbE9PVXhYYkZselNFbFZPVE4wU25reGQxVjFUbmRsU1Y5Wk5XSktVM0ZPYlZwWVZqZzBkeUlzSW01aVppSTZNVFk0TlRZek1UazVOU3dpWlhod0lqb3hOamcxTmpNMU5UazFMQ0oyWXlJNmV5SmpjbVZrWlc1MGFXRnNVM1ZpYW1WamRDSTZleUpoWkdScGRHbHZibUZzVUhKdmNESWlPaUpVWlhOME15SXNJbWxrSWpvaVpHbGtPbkJ5YVhOdE9tSmxaV0UxTWpNMFlXWTBOamd3TkRjeE5HUTRaV0U0WldNM04ySTJObU5qTjJZelpUZ3hOV00yT0dGaVlqUTNOV1l5TlRSalpqbGpNekEyTWpZM05qTTZRM05qUWtOelVVSkZiVkZMUkRKR01XUkhhR3hpYmxKd1dUSkdNR0ZYT1hWTlFrRkZVV3M0UzBOWVRteFpNMEY1VGxSYWNrMVNTV2RsVTJjdE1rOVBNVXBrYm5CNlZVOUNhWFI2U1dsaldHUm1lbVZCWTFSbVYwRk9MVmxEWlhWRFlubEpZVWxLVVRSSFZFa3pNSFJoVm1sM1kyaFVNMlV3Ymt4WVFsTTBNMEkwYWpscWJITnNTMjh5V214a1dIcHFSV3gzUzBJeU1XaGpNMUpzWTJwQlVVRlZTbEJEWjJ4NldsZE9kMDFxVlRKaGVrVlRTVWhyYjFCMGFtcDBVMWhhTm1NeFJHZFpjbU41U1c1R00xZzRNMmRJUlRNeFowUm1iVUZ1Y21kdE9HbEhhVU5WVDBKcmVVNDVURmRzV1hOSVNWVTVNM1JLZVRGM1ZYVk9kMlZKWDFrMVlrcFRjVTV0V2xoV09EUjNJbjBzSW5SNWNHVWlPbHNpVm1WeWFXWnBZV0pzWlVOeVpXUmxiblJwWVd3aVhTd2lRR052Ym5SbGVIUWlPbHNpYUhSMGNITTZYQzljTDNkM2R5NTNNeTV2Y21kY0x6SXdNVGhjTDJOeVpXUmxiblJwWVd4elhDOTJNU0pkZlgwLngwU0YxN1kwVkNEbXQ3SGNlT2RUeGZIbG9mc1ptWTE4Um42VlFiMC1yLWtfQm0zaFRpMS1rMnZrZGpCMjVoZHh5VEN2eGFtLUFrQVAtQWczQWhuNU5nIl19\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
             )
-            val credential = JWTCredential.fromJwtString(
-                "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
-            )
-            assertFailsWith(EdgeAgentError.AttachmentTypeNotSupported::class) {
-                agent.preparePresentationForRequestProof(
-                    RequestPresentation.fromMessage(msg),
-                    credential
-                )
+            `when`(plutoMock.getMessageByThidAndPiuri(any(), any()))
+                .thenReturn(flow { emit(null) })
+
+            assertFailsWith(EdgeAgentError.MissingOrNullFieldError::class) {
+                agent.handlePresentation(msg)
             }
         }
 
@@ -932,27 +1315,39 @@ class EdgeAgentTests {
             val mercuryMock = mock<Mercury>()
             val polluxMock = mock<Pollux>()
             val connectionManagerMock = mock<ConnectionManager>()
-            val seed = Seed(MnemonicHelper.createRandomSeed())
 
-            val privateKeys = listOf(
-                Secp256k1KeyPair.generateKeyPair(
-                    seed = Seed(MnemonicHelper.createRandomSeed()),
-                    curve = KeyCurve(Curve.SECP256K1)
-                ).privateKey
+            val privateKey = Secp256k1KeyPair.generateKeyPair(
+                seed = seed,
+                curve = KeyCurve(Curve.SECP256K1)
+            ).privateKey
+            val storablePrivateKeys = listOf(
+                StorablePrivateKey(
+                    id = UUID.randomUUID().toString(),
+                    restorationIdentifier = "secp256k1+priv",
+                    data = privateKey.raw.base64UrlEncoded,
+                    keyPathIndex = 0
+                )
             )
             // Mock getDIDPrivateKeysByDID response
-            `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(privateKeys) })
+            `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+            `when`(
+                apolloMock.restorePrivateKey(
+                    storablePrivateKeys.first().restorationIdentifier,
+                    storablePrivateKeys.first().data
+                )
+            ).thenReturn(privateKey)
 
             val presentationSubmissionString =
-                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
-            val presentationSubmission = Json.decodeFromString<PresentationSubmission>(presentationSubmissionString)
+                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
+            val presentationSubmission = presentationSubmissionString
 
-            val presentationDefinitionRequest = Json.decodeFromString<JWTPresentationDefinitionRequest>("""{"presentation_definition":{"id":"32f54163-7166-48f1-93d8-ff217bdb0653","input_descriptors":[{"id":"wa_driver_license","name":"Washington State Business License","purpose":"We can only allow licensed Washington State business representatives into the WA Business Conference","constraints":{"fields":[{"path":["${'$'}.credentialSubject.dateOfBirth","${'$'}.credentialSubject.dob","${'$'}.vc.credentialSubject.dateOfBirth","${'$'}.vc.credentialSubject.dob"]}]}}],"format":{"jwt":{"alg":["ES256K"]}}},"options":{"domain":"domain","challenge":"challenge"}}""")
+            val presentationDefinitionRequest = """{"presentation_definition":{"id":"32f54163-7166-48f1-93d8-ff217bdb0653","input_descriptors":[{"id":"wa_driver_license","name":"Washington State Business License","purpose":"We can only allow licensed Washington State business representatives into the WA Business Conference","constraints":{"fields":[{"path":["${'$'}.credentialSubject.dateOfBirth","${'$'}.credentialSubject.dob","${'$'}.vc.credentialSubject.dateOfBirth","${'$'}.vc.credentialSubject.dob"]}]}}],"format":{"jwt":{"alg":["ES256K"]}}},"options":{"domain":"domain","challenge":"challenge"}}"""
             val credential = JWTCredential.fromJwtString(
                 "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
             )
             // Mock createPresentationSubmission response
-            `when`(polluxMock.createJWTPresentationSubmission(presentationDefinitionRequest, credential, privateKeys.first())).thenReturn(
+            `when`(polluxMock.createJWTPresentationSubmission(any(), any(), any())).thenReturn(
+//            `when`(polluxMock.createJWTPresentationSubmission(presentationDefinitionRequest, credential, privateKeys.first())).thenReturn(
                 presentationSubmission
             )
 
@@ -968,7 +1363,7 @@ class EdgeAgentTests {
                 logger = PrismLoggerMock()
             )
             val msg = Json.decodeFromString<Message>(
-                "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
+                """{"id":"00000000-685c-4004-0000-000036ac64ee","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"asdfasdf"},"to":{"method":"peer","methodId":"fdsafdsa"},"fromPrior":null,"body":"{}","createdTime":"2024-03-08T19:27:38.196506Z","expiresTimePlus":"2024-03-09T19:27:38.196559Z","attachments":[{"id":"00000000-9c2e-4249-0000-0000c1176949","mediaType":"application/json","data":{"type":"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64","base64":"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19"},"format":"dif/presentation-exchange/definitions@v1.0"}],"thid":"00000000-ef9d-4722-0000-00003b1bc908","ack":[]}"""
             )
             val presentation = agent.preparePresentationForRequestProof(
                 RequestPresentation.fromMessage(msg),
@@ -982,9 +1377,14 @@ class EdgeAgentTests {
             val attachmentDescriptor = presentation.attachments.first()
             val attachmentData = attachmentDescriptor.data
             assertTrue(attachmentData is AttachmentBase64)
+            val expectedPresentationSubmission =
+                Json.decodeFromString<PresentationSubmission>(presentationSubmissionString)
+            val attachmentDataString = attachmentData.base64.base64UrlDecoded
+            val actualPresentationSubmission = Json.decodeFromString<PresentationSubmission>(attachmentDataString)
+
             assertEquals(
-                presentationSubmissionString.base64UrlEncoded,
-                attachmentData.base64
+                expectedPresentationSubmission,
+                actualPresentationSubmission
             )
         }
 
@@ -995,13 +1395,8 @@ class EdgeAgentTests {
             `when`(apiMock.request(any(), any(), any(), any(), any()))
                 .thenReturn(HttpResponse(200, "Ok"))
 
-            val apolloMock = mock<Apollo>()
-            val castorMock = mock<Castor>()
-            val plutoMock = mock<Pluto>()
-            val mercuryMock = mock<Mercury>()
-            val polluxMock = mock<Pollux>()
+            val provableCredentialMock = mock<ProvableCredential>()
             val connectionManagerMock = mock<ConnectionManager>()
-            val seed = Seed(MnemonicHelper.createRandomSeed())
 
             val json = Json {
                 ignoreUnknownKeys = true
@@ -1014,7 +1409,7 @@ class EdgeAgentTests {
                 apollo = apolloMock,
                 castor = castorMock,
                 pluto = plutoMock,
-                mercury = mercuryMock,
+                mercury = mercuryMockOld,
                 pollux = polluxMock,
                 connectionManager = connectionManagerMock,
                 seed = seed,
@@ -1030,7 +1425,7 @@ class EdgeAgentTests {
             `when`(plutoMock.getPrismDIDKeyPathIndex(DID(credential.subject!!))).thenReturn(pathIndexFlow)
 
             val testVerifiablePresentationJWTPayload = "testPayload"
-            `when`(polluxMock.createVerifiablePresentationJWT(any(), any(), any(), any())).thenReturn(
+            `when`(polluxMock.createJWTPresentationSubmission(any(), any(), any())).thenReturn(
                 testVerifiablePresentationJWTPayload
             )
 
@@ -1047,8 +1442,8 @@ class EdgeAgentTests {
             val attachmentData = attachmentDescriptor.data
             assertTrue(attachmentData is AttachmentBase64)
             assertEquals(
-                testVerifiablePresentationJWTPayload,
-                attachmentData.base64.base64UrlDecoded
+                3,
+                attachmentData.base64.base64UrlDecoded.split(".").count()
             )
         }
 
@@ -1073,12 +1468,18 @@ class EdgeAgentTests {
                     curve = KeyCurve(Curve.SECP256K1)
                 ).privateKey
             )
-            // Mock getDIDPrivateKeysByDID response
-            `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(privateKeys) })
-
-            val presentationSubmission = Json.decodeFromString<PresentationSubmission>(
-                "{\"presentation_submission\":{\"id\":\"00000000-c224-45d7-0000-0000732f4932\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
+            val storablePrivateKeys = listOf(
+                StorablePrivateKey(
+                    id = UUID.randomUUID().toString(),
+                    restorationIdentifier = "secp256k1+priv",
+                    data = privateKeys.first().raw.base64UrlEncoded,
+                    keyPathIndex = 0
+                )
             )
+            // Mock getDIDPrivateKeysByDID response
+            `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+
+            val presentationSubmission = """{"presentation_submission":{"id":"00000000-c224-45d7-0000-0000732f4932","definition_id":"32f54163-7166-48f1-93d8-ff217bdb0653","descriptor_map":[{"id":"wa_driver_license","format":"jwt","path":"${'$'}.verifiablePresentation[0]"}]},"verifiablePresentation":["eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"]}"""
             // Mock createPresentationSubmission response
             `when`(polluxMock.createJWTPresentationSubmission(any(), any(), any())).thenReturn(
                 presentationSubmission
@@ -1145,16 +1546,27 @@ class EdgeAgentTests {
         val mercuryMock = mock<Mercury>()
         val polluxMock = mock<Pollux>()
         val connectionManagerMock = mock<ConnectionManager>()
-        val seed = Seed(MnemonicHelper.createRandomSeed())
 
-        val privateKeys = listOf(
-            Secp256k1KeyPair.generateKeyPair(
-                seed = Seed(MnemonicHelper.createRandomSeed()),
-                curve = KeyCurve(Curve.SECP256K1)
-            ).privateKey
+        val privateKey = Secp256k1KeyPair.generateKeyPair(
+            seed = seed,
+            curve = KeyCurve(Curve.SECP256K1)
+        ).privateKey
+        val storablePrivateKeys = listOf(
+            StorablePrivateKey(
+                id = UUID.randomUUID().toString(),
+                restorationIdentifier = "secp256k1+priv",
+                data = privateKey.raw.base64UrlEncoded,
+                keyPathIndex = 0
+            )
         )
         // Mock getDIDPrivateKeysByDID response
-        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(privateKeys) })
+        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+        `when`(
+            apolloMock.restorePrivateKey(
+                storablePrivateKeys.first().restorationIdentifier,
+                storablePrivateKeys.first().data
+            )
+        ).thenReturn(privateKey)
 
         val requestMsg = Json.decodeFromString<Message>(
             "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
@@ -1166,9 +1578,9 @@ class EdgeAgentTests {
             )
         ).thenReturn(flow { emit(requestMsg) })
 
-        val presentationSubmission = Json.decodeFromString<PresentationSubmission>(
-            "{\"presentation_submission\":{\"id\":\"015a6303-3a16-4813-a657-54a12ff5dab4\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"\$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
-        )
+        val presentationSubmission =
+            "{\"presentation_submission\":{\"id\":\"015a6303-3a16-4813-a657-54a12ff5dab4\",\"definition_id\":\"32f54163-7166-48f1-93d8-ff217bdb0653\",\"descriptor_map\":[{\"id\":\"wa_driver_license\",\"format\":\"jwt\",\"path\":\"$.verifiablePresentation[0]\"}]},\"verifiablePresentation\":[\"eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng\"]}"
+
         // Mock createPresentationSubmission response
         `when`(polluxMock.createJWTPresentationSubmission(any(), any(), any())).thenReturn(
             presentationSubmission
@@ -1243,6 +1655,451 @@ class EdgeAgentTests {
         assertTrue(agent.handlePresentation(msg))
     }
 
+    @Test
+    fun `EdgeAgent backup wallet should generate a JWE with the proper algorithm and encryption method`() = runTest {
+        val agent = EdgeAgent(
+            apollo = apolloMock,
+            castor = castorMock,
+            pluto = plutoMock,
+            mercury = mercuryMock,
+            pollux = polluxMock,
+            connectionManager = connectionManagerMock,
+            seed = seed,
+            api = null,
+            logger = PrismLoggerMock()
+        )
+        `when`(
+            apolloMock.createPrivateKey(
+                mapOf(
+                    TypeKey().property to KeyTypes.Curve25519,
+                    CurveKey().property to Curve.X25519.value,
+                    SeedKey().property to seed.value.base64UrlEncoded,
+                    DerivationPathKey().property to "m/0'/0'/0'"
+                )
+            )
+        ).thenReturn(
+            X25519PrivateKey(
+                byteArrayOf(
+                    32,
+                    28,
+                    -51,
+                    70,
+                    102,
+                    -26,
+                    -24,
+                    -94,
+                    -14,
+                    -51,
+                    -68,
+                    -39,
+                    -61,
+                    -51,
+                    21,
+                    -60,
+                    94,
+                    -51,
+                    115,
+                    -79,
+                    72,
+                    77,
+                    -39,
+                    45,
+                    126,
+                    -26,
+                    27,
+                    -10,
+                    35,
+                    25,
+                    -48,
+                    90
+                )
+            )
+        )
+
+        `when`(plutoMock.getAllDIDs()).thenReturn(flow { emit(Json.decodeFromString<List<DID>>(getDids)) })
+        `when`(plutoMock.getAllCredentials()).thenReturn(
+            flow {
+                @Serializable
+                data class CredentialMock(
+                    val restorationId: String,
+                    val credentialData: String,
+                    val revoked: Boolean
+                )
+
+                fun String.toRestorationId(): RestorationID =
+                    RestorationID.entries.first {
+                        it.value == this
+                    }
+
+                val credentials = Json.decodeFromString<List<CredentialMock>>(getCredentials).map {
+                    val currentCredential = when (it.restorationId.toRestorationId()) {
+                        RestorationID.JWT -> {
+                            val jwtString = it.credentialData.base64UrlDecoded
+                            JWTCredential.fromJwtString(jwtString).toStorableCredential()
+                        }
+
+                        RestorationID.ANONCRED -> {
+                            val data = it.credentialData.base64UrlDecodedBytes
+                            PlutoRestoreTask.AnonCredentialBackUp.fromStorableData(data)
+                                .toAnonCredential().toStorableCredential()
+                        }
+
+                        RestorationID.W3C -> {
+                            throw Exception("This should never happen in this test class")
+                        }
+                    }
+                    CredentialRecovery(
+                        restorationId = it.restorationId,
+                        credentialData = currentCredential.credentialData,
+                        revoked = it.revoked
+                    )
+                }
+                emit(
+                    credentials
+                )
+            }
+        )
+        `when`(plutoMock.getAllDidPairs()).thenReturn(
+            flow {
+                emit(
+                    Json.decodeFromString<List<DIDPair>>(
+                        getDidPairs
+                    )
+                )
+            }
+        )
+        `when`(plutoMock.getAllKeysForBackUp()).thenReturn(
+            flow {
+                emit(
+                    Json.decodeFromString<List<BackupV0_0_1.Key>>(
+                        getPrivateKeys
+                    )
+                )
+            }
+        )
+        `when`(plutoMock.getLinkSecret()).thenReturn(
+            flow {
+                emit(
+                    Json.decodeFromString<String?>(
+                        getLinkSecret
+                    )
+                )
+            }
+        )
+        `when`(plutoMock.getAllMessages()).thenReturn(
+            flow {
+                emit(
+                    Json.decodeFromString<List<Message>>(
+                        getMessages
+                    )
+                )
+            }
+        )
+        `when`(plutoMock.getAllMediators()).thenReturn(
+            flow {
+                emit(
+                    Json.decodeFromString<List<Mediator>>(
+                        getMediator
+                    )
+                )
+            }
+        )
+
+        val jwe = agent.backupWallet(plutoBackupTask = PlutoBackupTask(plutoMock))
+        val jweObject = JWEObject.parse(jwe)
+        assertEquals(JWEAlgorithm.ECDH_ES_A256KW, jweObject.header.algorithm)
+        assertEquals(EncryptionMethod.A256CBC_HS512, jweObject.header.encryptionMethod)
+    }
+
+    @Test
+    fun `test AttachementData getDataAsString`() = runTest {
+        val message = Json.decodeFromString<Message>(
+            """{"id":"e430e4af-455e-4a15-9f2f-5bd8e5f350b8","piuri":"https://didcomm.org/issue-credential/3.0/offer-credential","from":{"method":"peer","methodId":"2.Ez6LSm5hETc4CS4X8RxYYKjoS2B3CM8TyzbgRrE7kGrdymHdq.Vz6MkoP2VXs4N7iNsKTzEKtZbnfu6yDH1x2ajGtCmNmc6qdMW.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSd8irQSWjjMfvg53kcaDY6Q2doPEvQwscjSzidgWoFUVK.Vz6Mksu4QVe8oKwJEDPgxRg2bFa3QWrZR1EZGC9xq8xk9twYX.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":\"http:\\/\\/192.168.68.113:8000\\/cloud-agent\\/schema-registry\\/schemas\\/5667190d-640c-36af-a9f1-f4ed2587e766\\/schema\",\"type\":\"https:\\/\\/didcomm.org\\/issue-credential\\/3.0\\/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"age\",\"value\":\"18\"},{\"media_type\":null,\"name\":\"name\",\"value\":\"Cristian\"}]}},\"replacement_id\":null,\"comment\":null}","created_time":"1721242264","expires_time_plus":"1721328667","attachments":[{"id":"ee903fe0-2c49-4356-9b41-cfccc979c0a1","data":{"base64":"eyJzY2hlbWFfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy81NjY3MTkwZC02NDBjLTM2YWYtYTlmMS1mNGVkMjU4N2U3NjYvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9jbG91ZC1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2RhNmExZDgtMmIyMy0zMTM4LWIwMmEtYWIwYmI0OGY4MGY5L2RlZmluaXRpb24iLCJrZXlfY29ycmVjdG5lc3NfcHJvb2YiOnsiYyI6IjM0MjE0MzM4OTA5MDk4MTU5ODIyNTA3MjQ4Njk3NjUyNTIyMzc1NzM2ODM0OTM1MDg0NjM5MTYzNTUyNjgwMjc3MjQyOTcxODI5ODUwIiwieHpfY2FwIjoiODAwNzA3NDcxNzUyOTQ3MTI1NDIxNTU2ODI1ODYyNDc5NzE1OTE0OTE3ODE4NTY4MDI1NjU5Mzk1NDcyMTAzMzQ0NjAwMDI4NzU4MzczMTA5Mjg0NzEzNDg5MDg1OTk3NzE5NDcwOTc5MDQ1NzA3NTY1ODA4MDczNzYxMjI0OTI3MzcyMDk1MTU2MzAxODE3MzgzNDE5NzE4NzM0NDk2MDQwMjc1MzM2MTg0ODIzNzQ4NTg0NzgzNjIxNzE1NTQwOTI3Nzk0ODQyMTA2NDM1NDEwNzc4MDg2ODg1MTc5MzQzMjEzMjU3NTk2ODM2NjU5NzYwMTI4NzI5ODI5MTk2MzI0MjQwMzgyOTc3MzczNjU3MTA0NjQ5NjE4MjU0MDMzMDk4Njc0OTkxMzIwMzc2NTEyMTUyOTk3Mzg0Mzk5MzY0OTc3MDM4NzU2ODcwOTU3NTcyMDM0NTM0NTY1MDM5OTY0MTYzNDgzNDEyMTEzNzc0NzA5MTU2NTcxMjcxNTI3ODY2NzQwNzU1Nzc2MzIzOTgxNTE5NzEzNjQ1MjQ4Njc5NzgyOTM3NTcyOTI4NDI1NzQ0NjE3MjMwNzk2MzYwNzE5MDA3Mzc0ODgwNTI2ODA4ODIzODg2NTMwMzE2MzgyOTI1MDcxOTYzMjUwMzgyNzU4MDA5Mjk1MzI1NDgzODIyNTg0OTIyMDkwMTcwMTAxOTY5OTk5MTg1MzAxMDA1NDM2MjYyMDI4NDIxOTA0NjU5MzY4OTU3OTQyNTAwNDkxNzI5MjY0MTMzMzE5Nzg0NDIwNjQ0NDUxMTUyNjA2MDI2MDg1MDkwNDYzNzAzMTQzNDczMTcxMjg3OTUxMTM0NTM1MDY0NDc0NjQ5NDE5MzUzMDQ4MzQwOTk4MTY2NjYwNDkyMDE5ODQyNDU2NDM5MTcxNjM2IiwieHJfY2FwIjpbWyJhZ2UiLCI3MjA2NjI4MDAzNzAwMjM5MzM5NjAzNjUxNDQ1MTY2NDE0MjcwNTA0ODM4ODAwMzYxMjE0NjQ3MjA1ODYwOTczMTg4MTQ0OTE2OTkwOTE3NTIyNjU4Mzg3Njg1MTcwMzkyMDcyMjk0MTUxMDUwODk1Njc0MTU0OTYwMDMyMDM0Mzg2MzEzMzY0MTMwMDQwNzI5ODQwMjcxMzcyNjc4NTI0NjE0NjUxNDcxNDU0NTg4MzgwMzI2OTMwODQ0Njc4Nzg3MzA3NzY3ODk2NjY5NTE2MDY1Njc3MDA3MjQyMDEwMjQyMDAwNTg4NjgxMTczNDUxNjg4NTU5MDEwMjQyNTgyMTg4MTY5MTUyNjUwNzY4NzgxNjMyMjgwNTgyODI1NjM3MjY0NzUwMTA3NTU2NDQzNTgyNzMwNDIxMjE3NTI4OTgyNTE5MzA3NzQ0ODAxNTYyNTYyMzQzNTcyNzU4NDEzNjc1NzY0ODQwOTY5MTY3NTE3ODcyNjk2MDY1MDM2MDU1MzgwMDg2NjcyNjUzMDEyMTIxMDk2MTA5OTQyMTg1NjM2ODk3MDE3Mjc5NDg3NjEyNDczNzc4NDUxMjkxMjE3NDg3ODQxOTc1NjI2MDczMjI0ODQ1MjI4NDM1OTk0MjI2MTg1MDc1NDI4MjA3OTg5MzAwMjExMzI5OTM4NjQxMzEwMTk5MjcwNTE0NjA2ODU5NDEzNDY1NzE1MjQyNjk0ODc0ODkwNDAzNDk5MzUxOTIxMDY4OTMwODE1ODY5ODM5NDYyMTE0MDI2MjM3MzY5OTAwMzE2MTA0NzYwMDAwNzk2NjcxOTUzNTAxMjcxMTI3MjM4NzM5NDI0Mjc2ODQyODkwNjQwNDY3NjYxNDEzODQ5Mzc5NzEwNzcxNjg0NzU4NTY1NzY2MDY4NzgwNjY0NjI3MjgiXSxbIm1hc3Rlcl9zZWNyZXQiLCI3ODg0ODQyMDE4MzA5NzY5NTg2MDY2Mjc5NDAwNjAzNjIzNjE4NzcxNTc3MjQ1NDk5NzQ5MzE0MzgyNTUyMzMzMjE4MzA3ODk1NzU4MDk2OTc3NjUzNjQ3MDcwNjk5MDE0OTY4OTUwMDg0OTk2MjMwNDAwODA4OTM0MzQ1MzQwMDcyMzY2NDg5NDYxNDg4MDk0MDgyOTk1OTU3MjUwMTg5NTkxMjg2NDQyMDg4MTMwNDA5MDA4Mjc5MzgxMjUzMDIxOTE0MTc5Nzc5MTAyNTcwNjIxNDQ0MDU0NzcxNjY5Mjk5NjQzNTcwODg5NjY1ODQzOTY2ODA1MjM1ODgxNzQ1OTQ3OTQ4NDQ2ODU1MDY4ODU4ODUzMDg2MTQ5NjMxMjA1ODcwMTIzODc1NDg3MTM0NjAxMDQwODA4Njg2MzQ4NDUwOTA0MTI4MTI4Nzk1MjUzMjczMjU3ODc4NjM4MjAxNTcyOTExMDQxNTQ4NDc0MTMzMDMyMTIyMTMyODExNjQ0NjAzNjg0MDU5MDk2ODM2NjU1NjQzMTI2NDU0NTAwNDM2MTgxNjQxMjkyNjQ4MTQ3MjYxODUyNzY5NjIyMzE5Mjk2NjI0NDU3OTg2NzI5NzMwNzE3NDEyNTE2MzEyNjQwNTM0OTE3NzEwNzE4Njc2MTMwODExMTI2NjQwMTkyODg4NjI2ODI2NTcwNzA1OTUxNTUyODI5NDY2NzY5NjUxNTcxNTI2OTMzNDUyNjY0ODk5NTExNzM0ODk0Njc3OTY5NjI0OTgzODI3MTgzMDg2NjA0NTE0NDE3MDE2MDgxNDE2Nzk0NDgwMDIwNDU2ODMxNzUyNjM2NTk1NzcwNjgwODQ0MDE0MjIyOTc2MjE5NzIzODg1MjAxNTg1ODk0MDQwMDA3MTQ5MjkwMDAxNTc4MjMxMDQiXSxbIm5hbWUiLCI4NjIxNzg3ODk1MzA5MzExOTQ3Njc0OTU5NDA4MjIzMTg5ODgwNDEzNTQ2NzIyOTYyODg5NjI0NzgwMjE1MDc4NDc3OTMxNTk5MDk5MzIwODkyNzY2NjM4NjExNDYyOTMzNTg3NjgwMTU0ODQ4ODgxMTY5MzY5NTc3OTk1NTI1ODQ2NDA1NjcyNDUyMzIyMTcyNjQ4MTc4OTEwMTg2ODkwNzYwNzM2MjMwNzA0MDA3NzU1OTA0OTIyNTUwODQ0MjkxNzgwOTk1NDAyNzUyNTU0NTAwNjg1NTY5NzYzMDc4ODY5NDU0NDI3NzY5NzU0Mzc5ODg5NzAzODQzNDM4ODcyMjMyOTc0MjIzODc5MzY5MTYzOTI1NjY3NjY5MzQyOTUwOTk5MjMwOTY1NDQ1MTkwOTM5Mzk5NzM1NjE1MTk2OTY2MzUyMTMwMzQ5MTE0NDE5OTIwMTk3NDIyMjA0ODQ2MTc2OTI3NTMwMDQ3NDkxNjI1NzAwODQ5NDc1MzQzNzk3MjU0MDYwNjc3MTA4MzkxOTU3MzU0MDAzOTAyNzMzMzEzMDI1ODE5Njk3MTIzMTc2NTg3MTU5NzQ5ODkxODg5MzU3Mjk0OTUyNDMwMDY2MTE5MjgzNzA1NTAwMTcxNTc3ODMzMzk3OTE1Mzc5OTA2NTA1MDExMjczODM2NTM3OTA2NjkyMjg2MTk5NDgzMjA3NDc1MzM2MjE1Njc4MTA1NDY5MDc3MTMyNDAwNDM4NTgyOTAyMjMwMzI5MDc4NjA4NTI4NDgzNDEwODI1NDkzNDcwMjI5MjA3MzA1NTk0ODUwMTg4ODUwMjEyNTQ0NzI0NDgyOTExOTQ3NTQ4NzIzMzMxMzYyNTI3MjA0Mzg3MzE1Mjk1MDU4Njk5MDk3NDc3MjQzMTczOTE0Njk5MDAzOTkzNTQiXV19LCJub25jZSI6IjM2MDY2NjE3NzQwNTA3NzY5NTI5NTMxNyJ9"},"format":"anoncreds/credential-offer@v1.0"}],"thid":"3a1c143b-7ab7-470d-99cf-bc5f31771388","ack":[]}"""
+        )
+
+        val expectedAttachmentDataString =
+            """{"schema_id":"http://192.168.68.113:8000/cloud-agent/schema-registry/schemas/5667190d-640c-36af-a9f1-f4ed2587e766/schema","cred_def_id":"http://192.168.68.113:8000/cloud-agent/credential-definition-registry/definitions/3da6a1d8-2b23-3138-b02a-ab0bb48f80f9/definition","key_correctness_proof":{"c":"34214338909098159822507248697652522375736834935084639163552680277242971829850","xz_cap":"800707471752947125421556825862479715914917818568025659395472103344600028758373109284713489085997719470979045707565808073761224927372095156301817383419718734496040275336184823748584783621715540927794842106435410778086885179343213257596836659760128729829196324240382977373657104649618254033098674991320376512152997384399364977038756870957572034534565039964163483412113774709156571271527866740755776323981519713645248679782937572928425744617230796360719007374880526808823886530316382925071963250382758009295325483822584922090170101969999185301005436262028421904659368957942500491729264133319784420644451152606026085090463703143473171287951134535064474649419353048340998166660492019842456439171636","xr_cap":[["age","720662800370023933960365144516641427050483880036121464720586097318814491699091752265838768517039207229415105089567415496003203438631336413004072984027137267852461465147145458838032693084467878730776789666951606567700724201024200058868117345168855901024258218816915265076878163228058282563726475010755644358273042121752898251930774480156256234357275841367576484096916751787269606503605538008667265301212109610994218563689701727948761247377845129121748784197562607322484522843599422618507542820798930021132993864131019927051460685941346571524269487489040349935192106893081586983946211402623736990031610476000079667195350127112723873942427684289064046766141384937971077168475856576606878066462728"],["master_secret","788484201830976958606627940060362361877157724549974931438255233321830789575809697765364707069901496895008499623040080893434534007236648946148809408299595725018959128644208813040900827938125302191417977910257062144405477166929964357088966584396680523588174594794844685506885885308614963120587012387548713460104080868634845090412812879525327325787863820157291104154847413303212213281164460368405909683665564312645450043618164129264814726185276962231929662445798672973071741251631264053491771071867613081112664019288862682657070595155282946676965157152693345266489951173489467796962498382718308660451441701608141679448002045683175263659577068084401422297621972388520158589404000714929000157823104"],["name","862178789530931194767495940822318988041354672296288962478021507847793159909932089276663861146293358768015484888116936957799552584640567245232217264817891018689076073623070400775590492255084429178099540275255450068556976307886945442776975437988970384343887223297422387936916392566766934295099923096544519093939973561519696635213034911441992019742220484617692753004749162570084947534379725406067710839195735400390273331302581969712317658715974989188935729495243006611928370550017157783339791537990650501127383653790669228619948320747533621567810546907713240043858290223032907860852848341082549347022920730559485018885021254472448291194754872333136252720438731529505869909747724317391469900399354"]]},"nonce":"360666177405077695295317"}"""
+        val attachments = message.attachments
+        val attachmentDataString = attachments.first().data.getDataAsJsonString()
+        assertNotNull(attachmentDataString)
+        assertEquals(expectedAttachmentDataString, attachmentDataString)
+
+        val expectedJsonData =
+            """{"options":{"domain":"https://prism-verifier.com","challenge":"11c91493-01b3-4c4d-ac36-b336bab5bddf"},"presentation_definition":{"purpose":null,"format":null,"name":null,"input_descriptors":[],"id":"56108c4a-ca57-40b6-89f0-1e1a2fa186fd"}}"""
+        val requestPresentationJson =
+            """{"id":"581f9d51-bb0c-4bcd-a851-487a14d30cc6","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"2.Ez6LScuoWiuQHfk4Js2aMC4Qs8rD5zNUfmiNfWMCb2pWR3FAc.Vz6MkvKtf2JqqcxhC1MPmWbWPrxqt8A4v44zri36XHgNmsmgV.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},"to":{"method":"peer","methodId":"2.Ez6LSmuL2dNc6wg5HpqDcDBXnNDG6TawcrBuxZbFkW9Hberjq.Vz6MkvcyMv5VAbTTttvNpo3YYku9Y8VMR9kRw8SFjAX8ic7JU.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},"fromPrior":"null","body":{"goal_code":"Request Proof Presentation","comment":null,"proof_types":[],"will_confirm":false},"createdTime":"1718228880","expiresTimePlus":"2024-06-13T21:48:02.636794Z","attachments":[{"id":"e784ac49-bb2d-4445-9cac-edd365664c73","data":{"type":"org.hyperledger.identus.walletsdk.domain.models.AttachmentJsonData","data":"{\"options\":{\"domain\":\"https://prism-verifier.com\",\"challenge\":\"11c91493-01b3-4c4d-ac36-b336bab5bddf\"},\"presentation_definition\":{\"purpose\":null,\"format\":null,\"name\":null,\"input_descriptors\":[],\"id\":\"56108c4a-ca57-40b6-89f0-1e1a2fa186fd\"}}"},"format":"prism/jwt"}],"thid":"c7cdff93-2706-4023-8d3c-3ce850ab0b2d","ack":[]}"""
+        val requestPresentation = json.decodeFromString<RequestPresentation>(requestPresentationJson)
+        val attachmentDataString1 = requestPresentation.attachments.first().data.getDataAsJsonString()
+        assertNotNull(attachmentDataString1)
+        assertEquals(expectedJsonData, attachmentDataString1)
+
+        val message1 = Message(
+            piuri = ProtocolType.DidcommRequestPresentation.value,
+            body = "",
+            attachments = arrayOf(
+                AttachmentDescriptor(
+                    data = AttachmentData.AttachmentHeader("")
+                )
+            )
+        )
+        val attachments1 = message1.attachments
+        assertFailsWith<EdgeAgentError.AttachmentTypeNotSupported> {
+            attachments1.first().data.getDataAsJsonString()
+        }
+    }
+
     val getCredentialDefinitionResponse =
         "{\"schemaId\":\"http://host.docker.internal:8000/prism-agent/schema-registry/schemas/5e0d5a93-4bfd-3111-a956-5d5bc82f76cc\",\"type\":\"CL\",\"tag\":\"licence\",\"value\":{\"primary\":{\"n\":\"105195159277979097653318357586659371305119697478469834190626350283715795188687389523188659352120689851168860621983864738336838773213022505168653440146374011050277159372491059901432822905781969400722059341786498751125483895348734607382548396665339315322605154516776326303787844694026898270194867398625429469096229269732265502538641116512214652017416624138065704599041020588805936844771273861390913500753293895219370960892829297672575154196820931047049021760519166121287056337193413235473255257349024671869248216238831094979209384406168241010010012567685965827447177652200129684927663161550376084422586141212281146491949\",\"s\":\"85376740935726732134199731472843597191822272986425414914465211197069650618238336366149699822721009443794877925725075553195071288777117865451699414058058985000654277974066307286552934230286237253977472401290858765904161191229985245519871949378628131263513153683765553672655918133136828182050729012388157183851720391379381006921499997765191873729408614024320763554099291141052786589157823043612948619201525441997065264492145372001259366749278235381762443117203343617927241093647322654346302447381494008414208398219626199373278313446814209403507903682881070548386699522575055488393512785511441688197244526708647113340516\",\"r\":{\"dateofissuance\":\"16159515692057558658031632775257139859912833740243870833808276956469677196577164655991169139545328065546186056342530531355718904597216453319851305621683589202769847381737819412615902541110462703838858425423753481085962114120185123089078513531045426316918036549403698066078445947881055316312848598741184161901260446303171175343050250045452903485086185722998336149005743485268486377824763449026501058416292877646187105446333888525480394665310217044483841168928926515929150167890936706159800372381200383816724043496032886366767166850459338411710056171379538841845247931898550165532492578625954615979453881721709564750235\",\"drivingclass\":\"83649701835078373520097916558245060224505938113940626586910000950978790663411517512280043632278010831292224659523658613504637416710001103641231226266903556936380105758523760424939825687213460920436570466066231912959327201876189240504388424799892400351592593406285436824571943165913587899115814843543998396726679289422080229750418336051741708013580146373647528674381958028243228435161765957312248113519708734663989428761879029086059388435772829434952754093999424834120341657211221855300108096057633128467059590470639772605075954658131680801785637700237403873940041665483384938586320674338994185073499523485570537331062\",\"emailaddress\":\"96995643129591814391344614133120459563648002327749700279517548454036811217735867585059116635583558148259032071807493674533230465312311981127622542797279917256478867847832932893748528200469349058284133058865149153179959849308383505167342565738382180666525211256221655129861213392455759272915565057394420728271409215556596974900718332893753172173500744392522771654048192448229319313386967045678744665093451560743782910263014930200762027209565313884859542996067229707388839912195826334964819133016500346618083969320902775088800287566711941842968839787149808739739233388585677095545116231323172342995837636586249573194609\",\"drivinglicenseid\":\"102840929811153624977554462471309185033977661854754815794111114507549576719389525167082631547450413573293352276930065480432301200611396989595571202142654033217842162456070556560693402484110499573693863745648118310258284468114751958738878996458420605301017450868522680454545537837403398645500541915771765220093329728663621098538954397330411649083351383375839056527007892276284168437065687748085384178113959961057476582871100422859953560730152958588610850909069434658487744782540788968302663076149478487413357533660817020800754493642858564081116318655661240523146995256712471572605700346459123074377380656921337264554594\",\"familyname\":\"2428690037146701497427424649573806616639612325136606164619283916796880313617677563507218774958436668407050506838114136163250163675016510113975582318007560622124292458766639319715064358235569650961433812439763343736699708535945693241909905707497180931492818502593885932421170612418693515054756633264933222189766691632082890045477718331705366111669009551578289182848340651375008362238266590844461708981816856194045325523248527964502118319210042254240848590574645476930113881493472578612352948284862674703949781070309344526122291448990325949065193279599181502524961004046979227803224474342778516917124487012958845744311\",\"master_secret\":\"96236339155824229583363924057798366491998077727991424922911165403434522806469328114407334094535810942859512352089785125683335350062474092708044674085769524387654467267128528564551803293661877480971961092735622606052503557881856409855812611523475975566606131897917979412576797874632169829901968854843162299366867885636535326810998541141840561418097240137120398317445832694001031827068485975315937269024666370665530455146256019590700349556357390218401217383173228376078058967743472704019765210324846681867991543267171763037513180046865961560351035005185946817643006206395175857900512245900162751815626427008481585714891\"},\"rctxt\":\"54359809198312125478916383106913469635175253891208897419510030559787479974126666313900084654632259260010008369569778456071591398552341004538623276997178295939490854663263886825856426285604332554317424030793691008221895556474599466123873279022389276698551452690414982831059651505731449763128921782866843113361548859434294057249048041670761184683271568216202174527891374770703485794299697663353847310928998125365841476766767508733046891626759537001358973715760759776149482147060701775948253839125589216812475133616408444838011643485797584321993661048373877626880635937563283836661934456534313802815974883441215836680800\",\"z\":\"99592262675748359673042256590146366586480829950402370244401571195191609039150608482506917768910598228167758026656953725016982562881531475875469671976107506976812319765644401707559997823702387678953647104105378063905395973550729717937712350758544336716556268064226491839700352305793370980462034813589488455836259737325502578253339820590260554457468082536249525493340350556649403477875367398139579018197084796440810685458274393317299082017275568964540311198115802021902455672385575542594821996060452628805634468222196284384514736044680778624637228114693554834388824212714580770066729185685978935409859595244639193538156\"}},\"issuerId\":\"did:prism:604ba1764ab89993f9a74625cc4f3e04737919639293eb382cc7adc53767f550\"}"
+
+    val getLinkSecret =
+        "\"40960368705011900020984253500979753785333739067716460047393316855560515114468\""
+    val getDids = """
+        [{"method":"peer","methodId":"2.Ez6LSok96TA4orHQXSMHZj3mqyUuVLMfLfGGqj27i1giErbXL.Vz6Mku5mY1GuJ9AN2vvDwjMv5QUC2zqKVRPCcbmJVYTFTCFmr"},{"method":"peer","methodId":"2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHBzOi8vc2l0LXByaXNtLW1lZGlhdG9yLmF0YWxhcHJpc20uaW8iLCJhIjpbImRpZGNvbW0vdjIiXX19.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6IndzczovL3NpdC1wcmlzbS1tZWRpYXRvci5hdGFsYXByaXNtLmlvL3dzIiwiYSI6WyJkaWRjb21tL3YyIl19fQ"},{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},{"method":"prism","methodId":"6f23ddace519b68dfc0fa06e992db40f2f3c584af382ce446fa2fd0e042e5dea:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvxJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvw"},{"method":"prism","methodId":"0a4b552169e3158781741fbbeffe81212784d32d90cf8f2622923f11f6ecd966:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2BJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2A"}]
+        """
+    val getDidPairs = """
+        [{"holder":{"method":"peer", "methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"}, "receiver":{"method":"peer", "methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"}, "name":""}]
+        """
+    val getPrivateKeys = """
+        [
+            {
+                "key":"{\"kty\":\"OKP\",\"d\":\"j1BaK2P1iHMt9hwb6GzZCcpjkKrYmBPX5LPI4aFLTT0\",\"crv\":\"Ed25519\",\"x\":\"2V3e1LsSkcjwvlX2Y9Fp2jbg_j5lan-nZJRxYy_sUjk\"}",
+                "did":"did:peer:2.Ez6LSok96TA4orHQXSMHZj3mqyUuVLMfLfGGqj27i1giErbXL.Vz6Mku5mY1GuJ9AN2vvDwjMv5QUC2zqKVRPCcbmJVYTFTCFmr#key-2",
+                "index":0,
+                "recovery_id":"ed25519+priv"
+            },
+            {
+                "key":"{\"kty\":\"OKP\",\"d\":\"6BQsylDTirk7C6bacJuaH28tx6jXmNZv7LojNN2Tgnw\",\"crv\":\"X25519\",\"x\":\"s1A5vv8L6_8NhtPr7L_CaE72WVkt6UNnoj2mtqS11H8\"}",
+                "did":"did:peer:2.Ez6LSok96TA4orHQXSMHZj3mqyUuVLMfLfGGqj27i1giErbXL.Vz6Mku5mY1GuJ9AN2vvDwjMv5QUC2zqKVRPCcbmJVYTFTCFmr#key-1",
+                "index":0,
+                "recovery_id":"x25519+priv"
+            },
+            {
+                "key":"{\"kty\":\"OKP\",\"d\":\"wE2pfN2Y0iwqa2py22NKZJvvq7nZZ_Ff9yYyvBTUhig\",\"crv\":\"Ed25519\",\"x\":\"fDrwZceyjKWYnvstPyk_b353dgOQ8_YOs1TK12h0trE\"}",
+                "did":"did:peer:2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ#key-2",
+                "index":0,
+                "recovery_id":"ed25519+priv"
+            },
+            {
+                "key":"{\"kty\":\"OKP\",\"d\":\"IMLHcfmNSp6A4ZSqpxModc3maH5O-k3Jwpt1PeMkGXU\",\"crv\":\"X25519\",\"x\":\"zZOgc8btEWstmzAlrFmHZAQB7z9OmsWUMqdMlLnEuSk\"}",
+                "did":"did:peer:2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ#key-1",
+                "index":0,
+                "recovery_id":"x25519+priv"
+            },
+            {
+                "key":"{\"kty\":\"EC\",\"d\":\"drF7QtIgnKGMpQTm2BxomRFeKkgHWV4r2lfYCVUYPns\",\"crv\":\"secp256k1\",\"x\":\"HCsBIrRm0CrRmvoxV4t5tbuzj9iTLpGF0J2ZN30CF78\",\"y\":\"MuTzhhijGiKuc_Ajm7iasGJwSETvhjK7SEukKBLMMOM\"}",
+                "did":"did:prism:6f23ddace519b68dfc0fa06e992db40f2f3c584af382ce446fa2fd0e042e5dea:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvxJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQMcKwEitGbQKtGa-jFXi3m1u7OP2JMukYXQnZk3fQIXvw",
+                "index":1,
+                "recovery_id":"secp256k1+priv"
+            },
+            {
+                "key":"{\"kty\":\"EC\",\"d\":\"QPFq8rgWb8jDBBVOpR9_tnzy0mW1RwMLBL5x1DUle-k\",\"crv\":\"secp256k1\",\"x\":\"4M4bLjqoQMiJsvnPKPWZiCeImPxnPLbzSE95dcOfH9g\",\"y\":\"vld5MJHizoXDITRfAjkFiKs8PAbGbM21cNCfzFyanYQ\"}",
+                "did":"did:prism:0a4b552169e3158781741fbbeffe81212784d32d90cf8f2622923f11f6ecd966:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2BJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2A",
+                "index":2,
+                "recovery_id":"secp256k1+priv"
+            }
+        ]
+        """
+    val getCredentials = """
+        [
+            {
+                "restorationId":"jwt+credential",
+                "credentialData":"ZXlKaGJHY2lPaUpGVXpJMU5rc2lmUS5leUpwYzNNaU9pSmthV1E2Y0hKcGMyMDZNek0zWlRobVpURTBOR0ZoWTJWa00yTmhNMlJrTlRrME5qSTBNRFJtTkRVNU9UWmxNMkl5TWpGaFltTTBNVEJoTnpJMVpXRTJOalV6TkRnNU56SmlZanBEY210Q1EzSlpRa1ZxYjB0Q2JVWXhaRWRuZEUxU1FVVlRhVFJMUTFoT2JGa3pRWGxPVkZweVRWSkphRUYyZVdjeFlUTjFjSFZtYkZCTGN6aEtSMWhLVTNOeFYxcGpWRzlHUVhrM1JqTlNURkJqUWxrMFYyNXpSV3B6UzBJeWJIcGpNMVpzVEZSRlVVRnJiM1ZEWjJ4NldsZE9kMDFxVlRKaGVrVlRTVkZQWVZCVWJ6TTVUbmgyVW1oWFVXNWlWV2hvVFhNNWJURkllRUp0Y1Y5aFpXTkhNMHRUVEdaaU5XZ3pVa2szUTJka2RGbFlUakJhV0VsM1JVRkdTMHhuYjBwak1sWnFZMFJKTVU1dGMzaEZhVVZFWjNwb09FbERZMVpoTlZsTlpqWXpSRkZhTTE5MWRUTk9Nek5zU1hWR1NHSm9YMDlLVWxWSWJXZDJZeUlzSW5OMVlpSTZJbVJwWkRwd2NtbHpiVG93WVRSaU5UVXlNVFk1WlRNeE5UZzNPREUzTkRGbVltSmxabVpsT0RFeU1USTNPRFJrTXpKa09UQmpaamhtTWpZeU1qa3lNMll4TVdZMlpXTmtPVFkyT2tOdlZVSkRiMGxDUldwelMwSXlNV2hqTTFKc1kycEJVVUZWYjNWRFoyeDZXbGRPZDAxcVZUSmhla1ZUU1ZGTVozcG9jM1ZQY1doQmVVbHRlUzFqT0c4NVdtMUpTalJwV1Y5SFl6aDBkazVKVkROc01YYzFPR1l5UWtwRVEyYzVhR1JZVW05YVZ6VXdZVmRPYUdSSGJIWmlha0ZSUWtWdmRVTm5iSHBhVjA1M1RXcFZNbUY2UlZOSlVVeG5lbWh6ZFU5eGFFRjVTVzE1TFdNNGJ6bGFiVWxLTkdsWlgwZGpPSFIyVGtsVU0yd3hkelU0WmpKQklpd2libUptSWpveE56RTRNek0wTVRVeExDSjJZeUk2ZXlKamNtVmtaVzUwYVdGc1UzVmlhbVZqZENJNmV5SmxiV0ZwYkVGa1pISmxjM01pT2lKa1pXMXZRR1Z0WVdsc0xtTnZiU0lzSW1SeWFYWnBibWREYkdGemN5STZJakVpTENKbVlXMXBiSGxPWVcxbElqb2laR1Z0YnlJc0ltUnlhWFpwYm1kTWFXTmxibk5sU1VRaU9pSkJNVEl5TVRNek1pSXNJbWxrSWpvaVpHbGtPbkJ5YVhOdE9qQmhOR0kxTlRJeE5qbGxNekUxT0RjNE1UYzBNV1ppWW1WbVptVTRNVEl4TWpjNE5HUXpNbVE1TUdObU9HWXlOakl5T1RJelpqRXhaalpsWTJRNU5qWTZRMjlWUWtOdlNVSkZhbk5MUWpJeGFHTXpVbXhqYWtGUlFWVnZkVU5uYkhwYVYwNTNUV3BWTW1GNlJWTkpVVXhuZW1oemRVOXhhRUY1U1cxNUxXTTRiemxhYlVsS05HbFpYMGRqT0hSMlRrbFVNMnd4ZHpVNFpqSkNTa1JEWnpsb1pGaFNiMXBYTlRCaFYwNW9aRWRzZG1KcVFWRkNSVzkxUTJkc2VscFhUbmROYWxVeVlYcEZVMGxSVEdkNmFITjFUM0ZvUVhsSmJYa3RZemh2T1ZwdFNVbzBhVmxmUjJNNGRIWk9TVlF6YkRGM05UaG1Na0VpTENKa1lYUmxUMlpKYzNOMVlXNWpaU0k2SWpBeFhDOHdNVnd2TWpBeU5DSjlMQ0owZVhCbElqcGJJbFpsY21sbWFXRmliR1ZEY21Wa1pXNTBhV0ZzSWwwc0lrQmpiMjUwWlhoMElqcGJJbWgwZEhCek9sd3ZYQzkzZDNjdWR6TXViM0puWEM4eU1ERTRYQzlqY21Wa1pXNTBhV0ZzYzF3dmRqRWlYU3dpWTNKbFpHVnVkR2xoYkZOMFlYUjFjeUk2ZXlKemRHRjBkWE5RZFhKd2IzTmxJam9pVW1WMmIyTmhkR2x2YmlJc0luTjBZWFIxYzB4cGMzUkpibVJsZUNJNk5Td2lhV1FpT2lKb2RIUndPbHd2WEM4eE9USXVNVFk0TGpZNExqRXhNem80TURBd1hDOXdjbWx6YlMxaFoyVnVkRnd2WTNKbFpHVnVkR2xoYkMxemRHRjBkWE5jTHpNNVlqQmlOekkyTFRCbU5tVXRORGxtTnkwNVl6VXlMVFl5WVRjNE1UY3hOelZsT0NNMUlpd2lkSGx3WlNJNklsTjBZWFIxYzB4cGMzUXlNREl4Ulc1MGNua2lMQ0p6ZEdGMGRYTk1hWE4wUTNKbFpHVnVkR2xoYkNJNkltaDBkSEE2WEM5Y0x6RTVNaTR4TmpndU5qZ3VNVEV6T2pnd01EQmNMM0J5YVhOdExXRm5aVzUwWEM5amNtVmtaVzUwYVdGc0xYTjBZWFIxYzF3dk16bGlNR0kzTWpZdE1HWTJaUzAwT1dZM0xUbGpOVEl0TmpKaE56Z3hOekUzTldVNEluMTlmUS5maW5ESHhybHRxbU9CcXBEZ3Zfa0NMVk02dnZCRFU3YWRoY01UV3Y2VTRwMlBha3puc0htbDl2TXpxNGpidWlfTXAwZDFoTm0tUXVVcFRMSUFiY2Z1QQ",
+                "revoked": false
+            },
+            {
+                "restorationId":"anon+credential",
+                "credentialData":"eyJzY2hlbWFfaWQiOiJodHRwOi8vaG9zdC5kb2NrZXIuaW50ZXJuYWw6ODAwMC9wcmlzbS1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy9mNTJlYmM2MS02MTQ2LTMyMzgtOTljNS1hM2ZkNjkzYjk2Zjcvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9wcmlzbS1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2Y0ZWEwOTgtODdiNi0zMDJhLWE3MjYtZjkzZmU5MzhjZjI0L2RlZmluaXRpb24iLCJ2YWx1ZXMiOnsiZW1haWxhZGRyZXNzIjp7InJhdyI6ImNyaXN0aWFuLmNhc3Ryb0Bpb2hrLmlvIiwiZW5jb2RlZCI6IjM2MzQyMzgzNzQ1NTM4Njg0NzkxOTMwNTAzMzYyNTczOTQ0MjQzNzA2MjA3NTE4NzU5MDI1MTY5MTAyODM3MDAxMzM0NjExMzcyNzQzIn19LCJzaWduYXR1cmUiOnsicF9jcmVkZW50aWFsIjp7Im1fMiI6IjEwODg5NjAwNjg2NTY2NzkwOTA2Njc3NTU5ODIxNjY4NjU5NjUyNDE3MzYxNjcwNTYzMzgzNDMwMDEzMDYxNDU4NDMzMzIyNTUxODIwMyIsImEiOiIzNDIxODA5NzM3MzQ2MTYyNDQ5NzIzOTI1NDYxNTg4ODY1NTYzMDg1NTIyNDY0OTY0MDI4NzQwMjAxNzUzNTQ4ODcyNzQ4NDUyMzg4OTM3MDM2Mjk1MzIxOTg4OTU1OTgwMjg4OTMyNTcyNzc4NTgyNDcwODIzNDc3MjQ5NTcwMzA3NTkyNjU3ODQ0MjAyMDY5MDI5Nzk5NjQ2NzI3Mjk2OTQ5OTg4NDMzMDMzMzAzNDUzMDI3NTkzMjc5ODYyMzAwNTg2MzA4MjgyNTI4MjMzODQ5MTAyOTAyODE2MzA1MTEwODE5NTU2MDEyNzU0NDUxMjAzNTAzODUyMDUyMjczMzg1NjIyMTU2NDk5MTYxNzg1Mjc1MDcxNjQ2ODYyNTcwNTk3Nzg1MDU0NDcyNTY2ODUyODc1NjA3NjUzMzQxMDQwODM2Njg5MzAxMjEyOTc3NDkyMjA1MTk0Mjg0MzEzODQyNzMyMzM4NTcwMTgwNjAzMDEyOTA0ODAwMDQxNDIzMTg1ODQ2ODgzNjM2Mjk0MDI0MDczNTQ5MDgzMDg4NTMzOTQ3NDUzMTM1MTkyNzYyODYzNzg3NDE2NTYxNzEyNDczNTE4OTcyNTU2ODYzNjQ4NTYwMjI2NDE2Nzk1MjgyODQ1OTk3MjU4ODkyMjE2OTA2MDcxNzUwODM5NTgwNTg4MzYzMTAxMDY5NjA4MzA3MDIzNzc2NDU5Mzg1MjA2NDQ3ODcxMjU3MzY3MTI4MDIyNzAxODM2MzI2MTEzNTcxMDAyOTc3Njk1MzgwODE2MDE5MzgxOTQxNDQ4MDk0MDU3ODYwNDMwIiwiZSI6IjI1OTM0NDcyMzA1NTA2MjA1OTkwNzAyNTQ5MTQ4MDY5NzU3MTkzODI3Nzg4OTUxNTE1MjMwNjI0OTcyODU4MzEwNTY2NTgwMDcxMzMwNjc1OTE0OTk4MTY5MDU1OTE5Mzk4NzE0MzAxMjM2NzkxMzIwNjI5OTMyMzg5OTY5Njk0MjIxMzIzNTk1Njc0MjkzMDE0MDYwMzc0NDMwNTk3MDc5NzA2NTE4MjI5MjY3MjY2NjI5OSIsInYiOiI5Mzk3ODc5ODYxNTE4MTM5MDkyMTczOTQ0NTk1NTYxNTMzMjM4ODc0MTU2MTEzMTMzMDA2MDg2MDg0Njc1NzM5MDYwODA3MzYxOTM0OTAyMzg1MTYyODM5Mjg5Mjc2NjkwMTYyMzIxOTg4OTA3Njg0Mzk3OTE1Mzk5MTU4OTgxOTAxMTE1ODg0MTE4NDc5NzY1ODQzNjI2MjQzNDg3NjUwMzY5NjY1Mzk2MDc1NDA2NTkwNzQzMzU0NzQzODg3MzU1OTQ4NDY5MzQ0ODE1MTY1NTUyOTE2NzIzNDgzNDQ2MzIzNDIwNzAzNDczNTc4NDgzMDY3Njg3NTc4Njg1NTU2MTM1MDUyMjA3OTUwODA4MjAzMDE4NDkxODI5MjQxMTY3Mjc1Nzg1MzE5NjM4MzM4MTA5MDQyNDI3NjA2NDQ4NjczNDMyMjAyMDEyODQwNzczMTA5ODk4MDI1MTk0NTg0MDAzNTk5MjY2NTgxNzgwNjUwMjcxOTE0NDAzNjA2ODg4MTMwNjgwOTI3NzI2NDM3MDkxNTc4Nzk1MjM3MjUxMzE0Mjg2ODE5ODI4NDkwODg2OTY2NDM1MDcwMDk3MjczMDkzMzE2NjgwMDE2ODcxMTUyMjE0NTExNzM2MzE2ODAxMjY5NDE4OTEzNTA0ODg4NjI5Njg2MTgzNTg1NzA4OTkxNjY0MjE5MjcyNzA1NjEzNzUxMjY2MDExNTUxOTA2ODkwNDU5MDY5MjA5NTk1MTE3OTAzMDI5MTMxNDY4ODg0MjI4MTA2ODcxOTc0NzA3MjI0ODA1MjIzODMyOTMzODMwNzgzNjM3NDM5NDA4MTEzNTMxMjM3NjA3NTMyMzM2ODQ1Nzk2MzA1MjA3Nzk4MDg5MzQzMDc2NDAzMzIyMTEyODk5NDA3ODI1OTA5NDcxOTcwNTk2MDczNTk3MzI0NTg2NDU4MTEyMzc0ODIxMDAwMTIyMzY2NTE5NjE2MDI1NzkyOTI1NTM2OTI3Mjk2NDM0MDExOTI2NDI2Njg3NDYyODQzMDczMzg3NzE5NTczMTIyMjkyNzIwNjcyMTExODE2NTkwMTIwOTEyNTM1OTkyNzk3In19LCJzaWduYXR1cmVfY29ycmVjdG5lc3NfcHJvb2YiOnsic2UiOiIxMjc3MjU5MTIxMDkwMDA1NDExNTY3NDIwNTkwODEyNDQ5MzE1Mzg3ODE4ODU2NjY5MjE5MTAzNTE1NzEwNDY5Nzk5ODIwNDc2OTIxMTMwODQ4Nzg1OTMzNjU2MDE2MDE1NjI3MjExNzU5NTg4Nzc1Mzg5NDc0MTY3NTkyMzE0OTI1NTc4MjgyOTkxMzY5ODM0OTEwMjY4NDA3MDcxNjc3NzUwMjA2NDY4MDAzMjAxMDM3NjU1MDgzNDQ1ODkzNTYwNjM1NjE0MzgwMTQ5MDU0NDExMTg4MjMwNjg1MDA1NDA1ODgwNTE3NjkzNjE2NDk0MTk5NDA2NDQ1MjE2OTIwMDA2Nzk1NzQ5MDQ4NjQwOTMyNTE1NjQ4MTkyNDU0MDk3MTQxNDE3NjY0Nzc0NDMxMzg5MDA1NDUwMTM4NDcyNjQ1NzU3NzMzMjY0MzI4MTQ1MzcyMjcwODgyODIxMjA5Nzg4NjAyMzQ4NDc1OTMzNTU3NzU4MzkzMzMzNTU5ODEyOTQ4MjcyMjcxODEwMzk0OTE0MzQ2NTg5NTU4NjkxMTE0NzgzOTM5Njk1MDgzMjU5MjMwNzU3MTU5MjEwODU3MDY4ODIyNTgzNTY1OTE3ODc4MjQxNjU0MTU4NjY4NjUyMzc2NzAyNzExMTQyMDcwNzA0MDc2MzQ3MzU0NjAyMTI4MTE5MjgyNzQ3NjUxOTg3OTg2MjAwMDgzNzk2OTUwODk1MzExNTA5NDMxNzkwNTcxNzUwMTUxOTkzMjgwMzkyODgyMjE2MTIyMDA5NTc3MzEwMDI4NzYyMDY0MTAwNTg3MTQ0NTMwNiIsImMiOiI5Mzc5MzI3MTk1Mjc5MTYzNzQyMjg2MTE0MzgwMjMzNjcwMzg5NzI5MTcyNjA1MDUwMjQ0MDU5OTI3MDQwNjM1MjA4OTgzNjAyOTkxOSJ9fQ",
+                "revoked": false
+            }
+        ]
+        """
+    val getMessages = """
+        [
+    {
+        "id":"49d81234-8d78-4c12-8894-ae3a624deaa1",
+        "piuri":"https://atalaprism.io/mercury/connections/1.0/request",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":null,
+        "body":"{\"accept\":[]}",
+        "created_time":"1718334045301",
+        "expires_time_plus":"1718420445301",
+        "attachments":[
+            
+        ],
+        "thid":"635e1e59-54b2-4cce-b635-f70f6a4b0268",
+        "ack":[
+            
+        ],
+        "direction":"SENT"
+    },
+    {
+        "id":"76170446-761a-48e5-a869-1800089c6024",
+        "piuri":"https://atalaprism.io/mercury/connections/1.0/response",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":"null",
+        "body":"{\"goal\":null,\"goal_code\":null,\"accept\":[]}",
+        "created_time":"1718334045",
+        "expires_time_plus":"1718420447030",
+        "attachments":[
+            
+        ],
+        "thid":"635e1e59-54b2-4cce-b635-f70f6a4b0268",
+        "ack":[
+            
+        ]
+    },
+    {
+        "id":"99383a8d-6943-40ad-87dd-b224dff3c80c",
+        "piuri":"https://didcomm.org/issue-credential/3.0/offer-credential",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":"null",
+        "body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":\"http://host.docker.internal:8000/prism-agent/schema-registry/schemas/f52ebc61-6146-3238-99c5-a3fd693b96f7/schema\",\"type\":\"https://didcomm.org/issue-credential/3.0/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"emailaddress\",\"value\":\"cristian.castro@iohk.io\"}]}},\"replacement_id\":null,\"comment\":null}",
+        "created_time":"1718334097",
+        "expires_time_plus":"1718420498750",
+        "attachments":[
+            {
+                "id":"3235ce90-8625-4668-9262-19c03d710fc4",
+                "data":{
+                    "base64":"eyJzY2hlbWFfaWQiOiJodHRwOi8vaG9zdC5kb2NrZXIuaW50ZXJuYWw6ODAwMC9wcmlzbS1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy9mNTJlYmM2MS02MTQ2LTMyMzgtOTljNS1hM2ZkNjkzYjk2Zjcvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9wcmlzbS1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2Y0ZWEwOTgtODdiNi0zMDJhLWE3MjYtZjkzZmU5MzhjZjI0L2RlZmluaXRpb24iLCJrZXlfY29ycmVjdG5lc3NfcHJvb2YiOnsiYyI6IjMwMDUwNzUwNjk4MDg5NzU1NDU4NDI4Njk1MDI2NTYxODQxOTAwMDEyMzUzNDQxMzY0NTQ5NTA3ODA1ODk5MzE1NDc0MDE1NzQ3NTcwIiwieHpfY2FwIjoiNTI1Njg5NDA1MjQ0MTg0ODQyODY5ODA1NDcxODY0ODkzODMwMDkxNTAwMDQyMjYwNDUxNzQ5NjQzMjExOTc0Nzc0Mzk5ODc0NDUwMjcyMzgxNjA4MjMzNzczODE5MjQ1OTIxNjA5MzY1OTk5MjEzNjQxOTc2MjU2ODk3OTM0NDY2MDA4NjY1NDY3ODU4NDQ2NzgwMTkyNDU1MzA2NTc5Njc5NTk1MDEwNTk0NTE0MTQ0MjkzNTQ2NzA2NTkzMTAxMDQ5MTY2NjM4MDcxMTcyMjY1Nzk3NzQ1MTQ1MzA5MTcwODUzNzI2MjY4OTg0NDc5OTQ2NjU0Nzc5NDI3NDg2NjQ4MjU2ODMwODgyMDM1MDU5ODExMjk4MjI5NDEwODYwMDA5MjI1NjUxODU3MjA5ODQyNzEzNDYxNDc1NzYxMTgyMzkyMDE5OTE2NTczNDk3NTM1ODYwNzM2NTI1NTcwOTg1NzMxMjY1Nzc4MjM3MjYyNTg1Mzg2MDM3ODI3NzkzMDQ3NjYzMTk5MjkwNjg4MTQ4NDEwMzcwMjE4MDY5NDAwOTE5Njc0ODU5NzQxMzY0OTQ0MzM1MjUyMDQ5MTUzMDI5NjI5MDc2NDE5OTU0MDY5NzIxMTMxNDU4ODU5NjcyNzc3NjUwOTYzNzY1ODIzNTE5OTY5Mzk0ODAyMzAwNDgwMjI4MzU4ODM1MzY4ODY1NzgxMjAzNjE0NjM5NjkyNjU3NjY3MTE2NjA1NTE0Njg4MjU2NDQwMjUxNzE2MjI1ODUwMDI1NTA0MjAxMzI1NTQyMDY0MzMzMTUxNjg5MTg1Mjc2NzQ3NzIyNzU1NjU4NTgxMzc4NjY0OTM2NTU3Mzk3NTg2MjQ1NzIzNDQ1NTE3NTgyMjM1NDY2MDk5NjYxOTEzNDI5MjA0ODMwMjQ0MTg5ODcxIiwieHJfY2FwIjpbWyJlbWFpbGFkZHJlc3MiLCI3NTExNTAzNTA1NTIyMTA5NzcyNDAyODA3OTQ5OTUxMTMxMTMxNjQ5NDE4NDY4NDExMzUxODgxOTA2Mzg2ODA0NTE1NjMyNjA1NDI0NzA0MTA0OTAxOTk1NjgxOTMwMDI5NTc2MTQ3NjkzNzc2MzY4NTgwMDUzMDE2MTUzODI1NjU5MDk3MjAwMjQyNDU3MDU0MjM3NjYyOTM5MDIyOTM5MTcyNzM5OTY5MTc1NTE5NjY5NzAwNzA2MzMzNjY5ODQxMDA1NTkyNzQxNjEwNDMxNDY4MDM2ODI3ODE0NTg0OTU3NDY5MTkzMTUxNDYyNzM0NTE5MzMwNzUyNzM3MzA4ODY5NzQwODMyMTM5NjQ2MzI0NDQwOTE4NDMyNTAyMzQ1MTg0ODYxODE5MzQ4OTMwOTg2NjAzMzYxMTE3NDIwNDY0NTgwNDIwNDA1OTA1MDI5MzExMjM0OTcyMzQyNzQ4MDI2NTk1NDMzMDcyOTk3NzUxMTEzNzc2NTI0ODMzNTU4Mjg3NTYwODg1ODc0MjY4ODQzMTA1OTY1MjM0MTg5ODg0NDc1MDU3ODM5MDg1NjkwMzcwMzU2NzczOTA0MDY2NTk2MjgzNTY2NTIxMjEzNjUxMTI3OTcwOTMyODkxMTU3MTAzMjM3NTE5NDMzMzgzOTg3MDU1MTg1MDUwMTE1MjQ2NTI3MDkzMTE4MTUyOTc0OTgwMDkyNTAxNDM1OTAwMTc2NDgxNzYzODc3NjI2OTU0ODU3ODQ2NzU4MTk1MTM1MTk2MDI3NjAzNzY2Mjc5MTM5MzEyNzY5MTI0MTE2ODA0Nzk2OTc3MTYwNDY2MTgwMDMyODE2MTI0ODA2MzYwMTYyNDI0Mzg0OTYwMzkyNjg5MjgzMTQ2NzQ4NzM5NDA5NTA5MDU2NTEyMDcyMjU5Mzk5MjEiXSxbIm1hc3Rlcl9zZWNyZXQiLCIxMTYxNDE3NjMxMjc2NTg2MzgzMTE0MjA4OTY5NzY2NjkxNjk4MTIxNDE4MTAxMDAzMjk5NjUxNDIzMzkyMDk0NzgwMTYwMTQ2MTQ3MDgzMTUzOTUzMjcxMDU4MTk3NDk5MDkyOTQ5NDIyNjA4OTgxODE4Mjg1MzMwOTQ2NTg1MjcwMjk1MjkyMTIwNjM0MTMwODIyNTMwNzQyNjkyODIxMTI5MzI5ODQ4NDU5NDY1NzE1Nzc2MjE3MjAyODA5NDEwNDgwMDg0MjEwMDU4OTU4NDAxNDQxNjMyNjU0NDc1OTU4NTgwNzU3MTIyNDc3NjczMTYxNzgxMjc2Mzc3NjA2ODg5NDk5NDg0NDA1NDY0ODU3NTUwNjQwNDcxNjMyNjIzNzMyMzUxNjk2Njg0Mzk5NzE3NjIwNDQ3NDUzMDUzMzE0NzgyODU2Nzc3MTc3MzI2Njk1MDk0ODM4ODUyODIyMjEyMTMxMTAxODgyMzM4NjQ1ODgyMDg2MTA3NjAyOTA5OTE2NTQ5MDQwOTk3NDE1NTk1OTU4Mjk0ODgzODg1ODQxNTUyMDcyMDI3NDA2NTc2MjUwMzAzNDMwMDMzODM4OTQ4NzgyMzA2MzY2NzAyMjUyMDcxMzE4NTE5NjQ4OTk5NzQ5ODQwODYzOTcyOTY5MDU1NTE3ODI4NDUzMDQ4MDkyMDU1OTQ3NDI2Mjk3MzI1NjIxMTE3OTU0NzE1MTUxMzYzNjUwODc4OTM1NTMzNTM2NzMzNjY1OTExMjAzNzkwMDY1NDg4MjMyNzUyMTkwMjU4NTA3MDMzMDYwMjU4NzgwMTU1MTA2NTQ2OTM5Mzc0ODI3MjQyODE3MjQ5NjUwMzE4OTY2MzkyNTYwNjEwMjMyMzg5NTUyMzU0NDI2ODU3OTA5MDI3NzU1Nzg1NTczMzA4MTEiXV19LCJub25jZSI6IjMzNTY5Njg3NzUyNDI0NzQzNzc2NTU0MCJ9"
+                },
+                "format":"anoncreds/credential-offer@v1.0"
+            }
+        ],
+        "thid":"177d90ac-f7ac-41b1-af88-2dd8106633cb",
+        "ack":[
+            
+        ]
+    },
+    {
+        "id":"b6b4786a-8568-4ef4-9aa6-91e3657748e4",
+        "piuri":"https://didcomm.org/issue-credential/3.0/request-credential",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":null,
+        "body":"{\"goalCode\":\"Offer Credential\"}",
+        "created_time":"1718334102032",
+        "expires_time_plus":"1718420502032",
+        "attachments":[
+            {
+                "id":"a6ebb2df-326e-4bc6-9e62-3d668dabea3b",
+                "media_type":"application/json",
+                "data":{
+                    "base64":"eyJlbnRyb3B5IjoiZGlkOnByaXNtOjZmMjNkZGFjZTUxOWI2OGRmYzBmYTA2ZTk5MmRiNDBmMmYzYzU4NGFmMzgyY2U0NDZmYTJmZDBlMDQyZTVkZWE6Q29VQkNvSUJFanNLQjIxaGMzUmxjakFRQVVvdUNnbHpaV053TWpVMmF6RVNJUU1jS3dFaXRHYlFLdEdhLWpGWGkzbTF1N09QMkpNdWtZWFFuWmszZlFJWHZ4SkRDZzloZFhSb1pXNTBhV05oZEdsdmJqQVFCRW91Q2dselpXTndNalUyYXpFU0lRTWNLd0VpdEdiUUt0R2EtakZYaTNtMXU3T1AySk11a1lYUW5aazNmUUlYdnciLCJjcmVkX2RlZl9pZCI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL3ByaXNtLWFnZW50L2NyZWRlbnRpYWwtZGVmaW5pdGlvbi1yZWdpc3RyeS9kZWZpbml0aW9ucy8zZjRlYTA5OC04N2I2LTMwMmEtYTcyNi1mOTNmZTkzOGNmMjQvZGVmaW5pdGlvbiIsImJsaW5kZWRfbXMiOnsidSI6IjgwOTQ1NTUxODIxMzU3OTIyMTY0MTY5Njk5MDk2NDM0NzM4MzA2ODI3NDEyNzYxNzU1NDY3OTE5MjkyODQyNDAzNjMzOTAwMjIzNzM4NjE4MjE5NjQzMjYxNzAzMTMxMzg2MDc5NTI0NTI0ODA1NzQxMjE3NDA2MzAzNDE1ODQ4Njk5OTI3MjYzNTYxNjQ0NDQxODgzNjI3NDA4ODQzMDI3NzUwOTgxNjQxNTQ2NTk4NDE1ODY4MTY1MzAxNjYxNjQ1Nzc5NjE2ODg4OTY1Njg5NDIyMzc0MDcxMjA0Njg2NjY2MDI3NzIyNTUzNzgyOTU1ODMzMzAyODM0MjE3ODczNDI2NDI1NzM5MDY3NDU3MTIzNDcwNzg4MjMzNTkwMTY1NDIzNzQxMzM0NzA0NzU2ODM5OTE0OTczNjMzMjAxODgwNzQ4ODMyNDkxNjkyMTczOTQxMDM0NzQyOTk0MDA5OTk1NzQzNzU2NTY0ODgwODk2ODQxNjcyODE1OTA1ODM1MTkxMDg3MTA1ODU5OTk0MzUyOTA1OTk5NjA5NzczMzk3ODY1NDc4NDE2NjM5NzI2Mzk2ODE4MzM5NzM0ODcyODI1MDk2NzAxNDc4OTc5NzM3NzUwNjkyOTczOTAzNjgwMTcyMTM2ODE1NjE2ODQ5MzQ5NDk2NzM1MDI2OTQyOTI5NDUwNDIwNjkxMDUwMjQzMzg1OTcxMjE3NDQwMjY2NTYwMTU0NDkwOTc0Mjg2MTQxMjA2ODI4NzEzMDk3OTIwNjIyNTAzMTQ3NDM3MjI5Mzg0NzAyMjkzNjMxMTg0MDY0Mzg2MzE4IiwidXIiOm51bGwsImhpZGRlbl9hdHRyaWJ1dGVzIjpbIm1hc3Rlcl9zZWNyZXQiXSwiY29tbWl0dGVkX2F0dHJpYnV0ZXMiOnt9fSwiYmxpbmRlZF9tc19jb3JyZWN0bmVzc19wcm9vZiI6eyJjIjoiMzgxMTAzNDU1ODE3NjY5MjI3Mzg4OTE3MjAxMzQwNDc1MjUyNTUyOTA4NDQ0Mzg1NTQyNzQzMTAzMDE1NDAyMTI0MjUyOTg0NzcyODkiLCJ2X2Rhc2hfY2FwIjoiMjQ2MjAwMDk2OTkyMjcwNzYzMTgzOTMzMTEzMzExMDY3NzI0NjAwODgwMzE2MjM2NDQ0OTI5NDE4MjMyNTgxODU0ODA2NDk1ODI2MTYyMTE5MDk5MzkxNDEyODU5NTE2NTE3NjUwMTk5ODA4ODM2NzA4MzE0NTIzNTY2Mzk4MjkwNjI4ODkzNzQ0MDExODUzMDI0NDU4NDc1OTQ1OTI4ODYxODA2NjA4NjUwNTYyMzU3NDM1Nzc4NDUyNTQwOTY2OTM3Njk4MjY1MjQ5NjcxNjc0NjAwMzYxNTMyNDU4NjQ2MDcxOTYxNTAzNjE4NjMyMDczMzA3NzExMjc2MzcyMjAyNzQxNTgxNzA5MDcwNjQxNzU5OTAzNzk1MDA2NDYwMDI3NjAxMjI4NjAzNjM0MDkxNDcwMDkwNzEzMzUyODQyMjU3NDgzNDA1OTE4NDY5NTM1NTgxNzMyODgwMjQyNDk2NTEzOTAzMjM2MjYxMzcxMjYyNjM1NDI0NjE2Mjk3NTI2MzU5MjI1MzM2MzYzOTQ1NzQ0NTI5Mjg2NDQ4ODI2NTk3MDg0NzYxMDQwNTE5NDI1MzgyMzg2ODQ2MjM1NDU5NzI0MzMzMzc3ODEwNzcwNDc0MzMyMzIyMjk2MDc1MDE3ODQ0OTUwMDc5ODkxMzUwODU5ODEzMDc3MTkxMzQ1MTUxODU5MTcwMDk3Mzg5NzcxODQ2MTk4ODE0MjAzOTc0NjEzNDI3MDI3NzY1MzYyNDk4MjMwNjA0MzczNzgzNDExMzg1OTQyNzQ1MTQ3NzM5NzY5MTMxNzAyNTI4NzM2MTg2NjY1NTc0NTQ2MjkzNjQwOTYwOTkyOTYwMjQ0ODIyOTI2MTgzOTg4NTg2NjY1ODU3OTIwOTQ0MTQ0ODQxMTU4MjA0ODY0OTg1MTc1NDc1NjQ3MTc0Nzc3ODQ3NTk3Nzc3NjExNTUyOTQ5IiwibV9jYXBzIjp7Im1hc3Rlcl9zZWNyZXQiOiIxMzU5MDY0NjM1NDk5NjEwOTUyNTg2NzAyMDgzMjQzMDY2MDEwNjA1MjY3MDQyNjI4ODUwOTE0OTIxNzAxNDE0Mzg2MzYxMjQzMDg0NDg0ODEyNzA5NTUyMjY5NTA4NTg1ODg4MDI1OTUzODUzMDA4NDc4OTcwODg0OTMzMzE5ODkyOTI4NjA1MTcxNTY5NDU0OTE3NDE5NTAyMDI3NjczODAzODUzOTE0ODg0NTQ1MjQ4NCJ9LCJyX2NhcHMiOnt9fSwibm9uY2UiOiI5NTgwMjEwNzc4NDA2MzYxNDUwNDk2ODEifQ"
+                },
+                "format":"anoncreds/credential-request@v1.0"
+            }
+        ],
+        "thid":"177d90ac-f7ac-41b1-af88-2dd8106633cb",
+        "ack":[
+            
+        ],
+        "direction":"SENT"
+    },
+    {
+        "id":"5d2e5e11-4b6a-424b-921b-e89c3df596d7",
+        "piuri":"https://didcomm.org/issue-credential/3.0/issue-credential",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":"null",
+        "body":"{\"goal_code\":\"Issue Credential\",\"replacement_id\":null,\"more_available\":null,\"comment\":null}",
+        "created_time":"1718334107",
+        "expires_time_plus":"1718420509304",
+        "attachments":[
+            {
+                "id":"a62c5510-37b7-4593-81eb-9190d9e14e3a",
+                "data":{
+                    "base64":"eyJzY2hlbWFfaWQiOiJodHRwOi8vaG9zdC5kb2NrZXIuaW50ZXJuYWw6ODAwMC9wcmlzbS1hZ2VudC9zY2hlbWEtcmVnaXN0cnkvc2NoZW1hcy9mNTJlYmM2MS02MTQ2LTMyMzgtOTljNS1hM2ZkNjkzYjk2Zjcvc2NoZW1hIiwiY3JlZF9kZWZfaWQiOiJodHRwOi8vMTkyLjE2OC42OC4xMTM6ODAwMC9wcmlzbS1hZ2VudC9jcmVkZW50aWFsLWRlZmluaXRpb24tcmVnaXN0cnkvZGVmaW5pdGlvbnMvM2Y0ZWEwOTgtODdiNi0zMDJhLWE3MjYtZjkzZmU5MzhjZjI0L2RlZmluaXRpb24iLCJyZXZfcmVnX2lkIjpudWxsLCJ2YWx1ZXMiOnsiZW1haWxhZGRyZXNzIjp7InJhdyI6ImNyaXN0aWFuLmNhc3Ryb0Bpb2hrLmlvIiwiZW5jb2RlZCI6IjM2MzQyMzgzNzQ1NTM4Njg0NzkxOTMwNTAzMzYyNTczOTQ0MjQzNzA2MjA3NTE4NzU5MDI1MTY5MTAyODM3MDAxMzM0NjExMzcyNzQzIn19LCJzaWduYXR1cmUiOnsicF9jcmVkZW50aWFsIjp7Im1fMiI6IjEwODg5NjAwNjg2NTY2NzkwOTA2Njc3NTU5ODIxNjY4NjU5NjUyNDE3MzYxNjcwNTYzMzgzNDMwMDEzMDYxNDU4NDMzMzIyNTUxODIwMyIsImEiOiIzNDIxODA5NzM3MzQ2MTYyNDQ5NzIzOTI1NDYxNTg4ODY1NTYzMDg1NTIyNDY0OTY0MDI4NzQwMjAxNzUzNTQ4ODcyNzQ4NDUyMzg4OTM3MDM2Mjk1MzIxOTg4OTU1OTgwMjg4OTMyNTcyNzc4NTgyNDcwODIzNDc3MjQ5NTcwMzA3NTkyNjU3ODQ0MjAyMDY5MDI5Nzk5NjQ2NzI3Mjk2OTQ5OTg4NDMzMDMzMzAzNDUzMDI3NTkzMjc5ODYyMzAwNTg2MzA4MjgyNTI4MjMzODQ5MTAyOTAyODE2MzA1MTEwODE5NTU2MDEyNzU0NDUxMjAzNTAzODUyMDUyMjczMzg1NjIyMTU2NDk5MTYxNzg1Mjc1MDcxNjQ2ODYyNTcwNTk3Nzg1MDU0NDcyNTY2ODUyODc1NjA3NjUzMzQxMDQwODM2Njg5MzAxMjEyOTc3NDkyMjA1MTk0Mjg0MzEzODQyNzMyMzM4NTcwMTgwNjAzMDEyOTA0ODAwMDQxNDIzMTg1ODQ2ODgzNjM2Mjk0MDI0MDczNTQ5MDgzMDg4NTMzOTQ3NDUzMTM1MTkyNzYyODYzNzg3NDE2NTYxNzEyNDczNTE4OTcyNTU2ODYzNjQ4NTYwMjI2NDE2Nzk1MjgyODQ1OTk3MjU4ODkyMjE2OTA2MDcxNzUwODM5NTgwNTg4MzYzMTAxMDY5NjA4MzA3MDIzNzc2NDU5Mzg1MjA2NDQ3ODcxMjU3MzY3MTI4MDIyNzAxODM2MzI2MTEzNTcxMDAyOTc3Njk1MzgwODE2MDE5MzgxOTQxNDQ4MDk0MDU3ODYwNDMwIiwiZSI6IjI1OTM0NDcyMzA1NTA2MjA1OTkwNzAyNTQ5MTQ4MDY5NzU3MTkzODI3Nzg4OTUxNTE1MjMwNjI0OTcyODU4MzEwNTY2NTgwMDcxMzMwNjc1OTE0OTk4MTY5MDU1OTE5Mzk4NzE0MzAxMjM2NzkxMzIwNjI5OTMyMzg5OTY5Njk0MjIxMzIzNTk1Njc0MjkzMDE0MDYwMzc0NDMwNTk3MDc5NzA2NTE4MjI5MjY3MjY2NjI5OSIsInYiOiI5Mzk3ODc5ODYxNTE4MTM5MDkyMTczOTQ0NTk1NTYxNTMzMjM4ODc0MTU2MTEzMTMzMDA2MDg2MDg0Njc1NzM5MDYwODA3MzYxOTM0OTAyMzg1MTYyODM5Mjg5Mjc2NjkwMTYyMzIxOTg4OTA3Njg0Mzk3OTE1Mzk5MTU4OTgxOTAxMTE1ODg0MTE4NDc5NzY1ODQzNjI2MjQzNDg3NjUwMzY5NjY1Mzk2MDc1NDA2NTkwNzM2ODk0NTUzMjY4OTMwODA1NzIxNDYxNTMxMjE2NzM1NDA3MzI3MDQ2MTAxMDk3NjY1OTMwMjI3MDY4Njk4MDQyNTUzNzYwNjM2MDI5NjU3ODMzODQzMDkyMTQ1MDkyNDUzODM3MDAwMTgzNjk0NDgyNzkwODk2MzA2ODE0MTYyNTIxMDE5NDA2NDg0NzEzODY2ODA2NDc1MDIxMTIwOTg2NTg1MDU1NTAyODg5MDY2NjIxNjQ1NzI3ODUyODI1NDA5NjAwNzkwNzA0MDM2NjEzMTQ1ODIzNjU3NzU4NzM4NTA1NDQyOTkwMTk0NjM1Mjk3NDI3Mzk1NzQ2MjM5MzkxMjg3NzUxODU4NjY1NzU3OTI3MjkyOTQyODgxMzgzNTQ1NDU4NzI1NTQ2NDkyODUxNjU2NzM4MjI3MDMyMjcxMDY3MDMzMjAxNjU1Mzk4MzU4MTQ2NTkwNjE2ODA0ODU0MDA5NzIwMTEzOTgwODYxMzMyOTQ3OTU0NzIyMTYzODI1MjAzMjAzMzc5ODMzMzc4OTU0NTk1OTQ1MzMwOTUxNjI4ODE0NTIwNjM2Nzc5MDM5NjQwMzg2ODY4NTAxOTQzOTU5OTkwNDY3MTMzNDQ4NzA2NjM5MzMxMTgwNTQwNzEzODg2NTA1MzEzODc5MDI2NjkyMTIyODc0NzcxOTMxMjY0NDE0OTM1NDEwNTI0NDg1Mjk2NjgyNzI1ODU4OTUyMTQzNzI4ODgyNjMyNjA4NTA0ODAxNjYyMTU0NTUzMjc2NDExMzE4NzU0ODEzNjc3MTU2MTc3MDQ5ODI2MTcyNDUyNzAxMTMxNDM2MDYxMDMyNzMxMTMyMjYxNjQwNDIxIn0sInJfY3JlZGVudGlhbCI6bnVsbH0sInNpZ25hdHVyZV9jb3JyZWN0bmVzc19wcm9vZiI6eyJzZSI6IjEyNzcyNTkxMjEwOTAwMDU0MTE1Njc0MjA1OTA4MTI0NDkzMTUzODc4MTg4NTY2NjkyMTkxMDM1MTU3MTA0Njk3OTk4MjA0NzY5MjExMzA4NDg3ODU5MzM2NTYwMTYwMTU2MjcyMTE3NTk1ODg3NzUzODk0NzQxNjc1OTIzMTQ5MjU1NzgyODI5OTEzNjk4MzQ5MTAyNjg0MDcwNzE2Nzc3NTAyMDY0NjgwMDMyMDEwMzc2NTUwODM0NDU4OTM1NjA2MzU2MTQzODAxNDkwNTQ0MTExODgyMzA2ODUwMDU0MDU4ODA1MTc2OTM2MTY0OTQxOTk0MDY0NDUyMTY5MjAwMDY3OTU3NDkwNDg2NDA5MzI1MTU2NDgxOTI0NTQwOTcxNDE0MTc2NjQ3NzQ0MzEzODkwMDU0NTAxMzg0NzI2NDU3NTc3MzMyNjQzMjgxNDUzNzIyNzA4ODI4MjEyMDk3ODg2MDIzNDg0NzU5MzM1NTc3NTgzOTMzMzM1NTk4MTI5NDgyNzIyNzE4MTAzOTQ5MTQzNDY1ODk1NTg2OTExMTQ3ODM5Mzk2OTUwODMyNTkyMzA3NTcxNTkyMTA4NTcwNjg4MjI1ODM1NjU5MTc4NzgyNDE2NTQxNTg2Njg2NTIzNzY3MDI3MTExNDIwNzA3MDQwNzYzNDczNTQ2MDIxMjgxMTkyODI3NDc2NTE5ODc5ODYyMDAwODM3OTY5NTA4OTUzMTE1MDk0MzE3OTA1NzE3NTAxNTE5OTMyODAzOTI4ODIyMTYxMjIwMDk1NzczMTAwMjg3NjIwNjQxMDA1ODcxNDQ1MzA2IiwiYyI6IjkzNzkzMjcxOTUyNzkxNjM3NDIyODYxMTQzODAyMzM2NzAzODk3MjkxNzI2MDUwNTAyNDQwNTk5MjcwNDA2MzUyMDg5ODM2MDI5OTE5In0sInJldl9yZWciOm51bGwsIndpdG5lc3MiOm51bGx9"
+                },
+                "format":"anoncreds/credential@v1.0"
+            }
+        ],
+        "thid":"177d90ac-f7ac-41b1-af88-2dd8106633cb",
+        "ack":[
+            
+        ]
+    },
+    {
+        "id":"cf1734d1-51d5-4275-9a40-18c36f44fb03",
+        "piuri":"https://didcomm.org/issue-credential/3.0/offer-credential",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":"null",
+        "body":"{\"multiple_available\":null,\"goal_code\":\"Offer Credential\",\"credential_preview\":{\"schema_id\":null,\"type\":\"https://didcomm.org/issue-credential/3.0/credential-credential\",\"body\":{\"attributes\":[{\"media_type\":null,\"name\":\"familyName\",\"value\":\"demo\"},{\"media_type\":null,\"name\":\"drivingClass\",\"value\":\"1\"},{\"media_type\":null,\"name\":\"dateOfIssuance\",\"value\":\"01/01/2024\"},{\"media_type\":null,\"name\":\"emailAddress\",\"value\":\"demo@email.com\"},{\"media_type\":null,\"name\":\"drivingLicenseID\",\"value\":\"A1221332\"}]}},\"replacement_id\":null,\"comment\":null}",
+        "created_time":"1718334142",
+        "expires_time_plus":"1718420545527",
+        "attachments":[
+            {
+                "id":"6ba0515b-0f68-4c0a-8ecb-487d01dec978",
+                "data":{
+                    "data":"{\"options\":{\"domain\":\"domain\",\"challenge\":\"fd8c7f98-8473-42ba-83a8-5cfa460c55b9\"},\"presentation_definition\":{\"purpose\":null,\"format\":{\"jwt\":{\"proof_type\":[],\"alg\":[\"ES256K\"]},\"ldp\":null},\"name\":null,\"input_descriptors\":[],\"id\":\"3cb224c2-cb61-4f5d-ae5f-2fa89572597d\"}}"
+                },
+                "format":"prism/jwt"
+            }
+        ],
+        "thid":"7524fc50-d834-4a1f-a617-f36dd1d571bd",
+        "ack":[
+            
+        ]
+    },
+    {
+        "id":"b3ec0d9c-c28b-4489-8b2d-3c936c32c665",
+        "piuri":"https://didcomm.org/issue-credential/3.0/request-credential",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":null,
+        "body":"{\"goalCode\":\"Offer Credential\"}",
+        "created_time":"1718334149224",
+        "expires_time_plus":"1718420549224",
+        "attachments":[
+            {
+                "id":"02ae8939-6a48-4828-bbf9-10a68c0c4006",
+                "media_type":"prism/jwt",
+                "data":{
+                    "base64":"ZXlKaGJHY2lPaUpGVXpJMU5rc2lmUS5leUpwYzNNaU9pSmthV1E2Y0hKcGMyMDZNR0UwWWpVMU1qRTJPV1V6TVRVNE56Z3hOelF4Wm1KaVpXWm1aVGd4TWpFeU56ZzBaRE15WkRrd1kyWTRaakkyTWpJNU1qTm1NVEZtTm1WalpEazJOanBEYjFWQ1EyOUpRa1ZxYzB0Q01qRm9Zek5TYkdOcVFWRkJWVzkxUTJkc2VscFhUbmROYWxVeVlYcEZVMGxSVEdkNmFITjFUM0ZvUVhsSmJYa3RZemh2T1ZwdFNVbzBhVmxmUjJNNGRIWk9TVlF6YkRGM05UaG1Na0pLUkVObk9XaGtXRkp2V2xjMU1HRlhUbWhrUjJ4MlltcEJVVUpGYjNWRFoyeDZXbGRPZDAxcVZUSmhla1ZUU1ZGTVozcG9jM1ZQY1doQmVVbHRlUzFqT0c4NVdtMUpTalJwV1Y5SFl6aDBkazVKVkROc01YYzFPR1l5UVNJc0ltRjFaQ0k2SW1SdmJXRnBiaUlzSW5ad0lqcDdJa0JqYjI1MFpYaDBJanBiSW1oMGRIQnpPbHd2WEM5M2QzY3Vkek11YjNKblhDOHlNREU0WEM5amNtVmtaVzUwYVdGc2Mxd3ZkakVpWFN3aWRIbHdaU0k2V3lKV1pYSnBabWxoWW14bFVISmxjMlZ1ZEdGMGFXOXVJbDE5TENKdWIyNWpaU0k2SW1aa09HTTNaams0TFRnME56TXROREppWVMwNE0yRTRMVFZqWm1FME5qQmpOVFZpT1NKOS5mejg3SFNSYU5xb0d0Y3lXXzNkd2JRanE0ckR3LXlTME9ST1dnQ1I5LTBlM0RMTk4wM1p6UHVzejkzQnMza08wR2JrU3NaN1VLWGliZlBqNlpoQ3lPUQ"
+                }
+            }
+        ],
+        "thid":"7524fc50-d834-4a1f-a617-f36dd1d571bd",
+        "ack":[
+            
+        ],
+        "direction":"SENT"
+    },
+    {
+        "id":"e21457cc-d550-40f5-80ac-0e9d265adb47",
+        "piuri":"https://didcomm.org/issue-credential/3.0/issue-credential",
+        "from":{"method":"peer","methodId":"2.Ez6LSqWfJdwLMDmpew7Yd8AQS2MxDwvSCNpjaZ7EQVst8rkfA.Vz6MknpCj4WomXhC2eur8nf4wnoFzHpCA6EAFU6afEmmrUVRA.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6ImRpZDpwZWVyOjIuRXo2TFNnaHdTRTQzN3duREUxcHQzWDZoVkRVUXpTanNIemlucFgzWEZ2TWpSQW03eS5WejZNa2hoMWU1Q0VZWXE2SkJVY1RaNkNwMnJhbkNXUnJ2N1lheDNMZTRONTlSNmRkLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQnpPaTh2YzJsMExYQnlhWE50TFcxbFpHbGhkRzl5TG1GMFlXeGhjSEpwYzIwdWFXOGlMQ0poSWpwYkltUnBaR052YlcwdmRqSWlYWDE5LlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW5kemN6b3ZMM05wZEMxd2NtbHpiUzF0WldScFlYUnZjaTVoZEdGc1lYQnlhWE50TG1sdkwzZHpJaXdpWVNJNld5SmthV1JqYjIxdEwzWXlJbDE5ZlEiLCJyIjpbXSwiYSI6W119fQ"},
+        "to":{"method":"peer","methodId":"2.Ez6LSrhfy5nfumryQUhCU9CRFZvEy3zZV2pUedwpUoYbeiZbq.Vz6MksfNehMay3PPDQEfaaeCotpgC5z9hCnbF6s8uYWUGjSYh.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjY4LjExMzo4MDAwL2RpZGNvbW0iLCJyIjpbXSwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+        "fromPrior":"null",
+        "body":"{\"goal_code\":null,\"replacement_id\":null,\"more_available\":null,\"comment\":null}",
+        "created_time":"1718334153",
+        "expires_time_plus":"1718420555892",
+        "attachments":[
+            {
+                "id":"69856638-0bd4-4d4c-be10-5b4c2fb56b03",
+                "data":{
+                    "base64":"ZXlKaGJHY2lPaUpGVXpJMU5rc2lmUS5leUpwYzNNaU9pSmthV1E2Y0hKcGMyMDZNek0zWlRobVpURTBOR0ZoWTJWa00yTmhNMlJrTlRrME5qSTBNRFJtTkRVNU9UWmxNMkl5TWpGaFltTTBNVEJoTnpJMVpXRTJOalV6TkRnNU56SmlZanBEY210Q1EzSlpRa1ZxYjB0Q2JVWXhaRWRuZEUxU1FVVlRhVFJMUTFoT2JGa3pRWGxPVkZweVRWSkphRUYyZVdjeFlUTjFjSFZtYkZCTGN6aEtSMWhLVTNOeFYxcGpWRzlHUVhrM1JqTlNURkJqUWxrMFYyNXpSV3B6UzBJeWJIcGpNMVpzVEZSRlVVRnJiM1ZEWjJ4NldsZE9kMDFxVlRKaGVrVlRTVkZQWVZCVWJ6TTVUbmgyVW1oWFVXNWlWV2hvVFhNNWJURkllRUp0Y1Y5aFpXTkhNMHRUVEdaaU5XZ3pVa2szUTJka2RGbFlUakJhV0VsM1JVRkdTMHhuYjBwak1sWnFZMFJKTVU1dGMzaEZhVVZFWjNwb09FbERZMVpoTlZsTlpqWXpSRkZhTTE5MWRUTk9Nek5zU1hWR1NHSm9YMDlLVWxWSWJXZDJZeUlzSW5OMVlpSTZJbVJwWkRwd2NtbHpiVG93WVRSaU5UVXlNVFk1WlRNeE5UZzNPREUzTkRGbVltSmxabVpsT0RFeU1USTNPRFJrTXpKa09UQmpaamhtTWpZeU1qa3lNMll4TVdZMlpXTmtPVFkyT2tOdlZVSkRiMGxDUldwelMwSXlNV2hqTTFKc1kycEJVVUZWYjNWRFoyeDZXbGRPZDAxcVZUSmhla1ZUU1ZGTVozcG9jM1ZQY1doQmVVbHRlUzFqT0c4NVdtMUpTalJwV1Y5SFl6aDBkazVKVkROc01YYzFPR1l5UWtwRVEyYzVhR1JZVW05YVZ6VXdZVmRPYUdSSGJIWmlha0ZSUWtWdmRVTm5iSHBhVjA1M1RXcFZNbUY2UlZOSlVVeG5lbWh6ZFU5eGFFRjVTVzE1TFdNNGJ6bGFiVWxLTkdsWlgwZGpPSFIyVGtsVU0yd3hkelU0WmpKQklpd2libUptSWpveE56RTRNek0wTVRVeExDSjJZeUk2ZXlKamNtVmtaVzUwYVdGc1UzVmlhbVZqZENJNmV5SmxiV0ZwYkVGa1pISmxjM01pT2lKa1pXMXZRR1Z0WVdsc0xtTnZiU0lzSW1SeWFYWnBibWREYkdGemN5STZJakVpTENKbVlXMXBiSGxPWVcxbElqb2laR1Z0YnlJc0ltUnlhWFpwYm1kTWFXTmxibk5sU1VRaU9pSkJNVEl5TVRNek1pSXNJbWxrSWpvaVpHbGtPbkJ5YVhOdE9qQmhOR0kxTlRJeE5qbGxNekUxT0RjNE1UYzBNV1ppWW1WbVptVTRNVEl4TWpjNE5HUXpNbVE1TUdObU9HWXlOakl5T1RJelpqRXhaalpsWTJRNU5qWTZRMjlWUWtOdlNVSkZhbk5MUWpJeGFHTXpVbXhqYWtGUlFWVnZkVU5uYkhwYVYwNTNUV3BWTW1GNlJWTkpVVXhuZW1oemRVOXhhRUY1U1cxNUxXTTRiemxhYlVsS05HbFpYMGRqT0hSMlRrbFVNMnd4ZHpVNFpqSkNTa1JEWnpsb1pGaFNiMXBYTlRCaFYwNW9aRWRzZG1KcVFWRkNSVzkxUTJkc2VscFhUbmROYWxVeVlYcEZVMGxSVEdkNmFITjFUM0ZvUVhsSmJYa3RZemh2T1ZwdFNVbzBhVmxmUjJNNGRIWk9TVlF6YkRGM05UaG1Na0VpTENKa1lYUmxUMlpKYzNOMVlXNWpaU0k2SWpBeFhDOHdNVnd2TWpBeU5DSjlMQ0owZVhCbElqcGJJbFpsY21sbWFXRmliR1ZEY21Wa1pXNTBhV0ZzSWwwc0lrQmpiMjUwWlhoMElqcGJJbWgwZEhCek9sd3ZYQzkzZDNjdWR6TXViM0puWEM4eU1ERTRYQzlqY21Wa1pXNTBhV0ZzYzF3dmRqRWlYU3dpWTNKbFpHVnVkR2xoYkZOMFlYUjFjeUk2ZXlKemRHRjBkWE5RZFhKd2IzTmxJam9pVW1WMmIyTmhkR2x2YmlJc0luTjBZWFIxYzB4cGMzUkpibVJsZUNJNk5Td2lhV1FpT2lKb2RIUndPbHd2WEM4eE9USXVNVFk0TGpZNExqRXhNem80TURBd1hDOXdjbWx6YlMxaFoyVnVkRnd2WTNKbFpHVnVkR2xoYkMxemRHRjBkWE5jTHpNNVlqQmlOekkyTFRCbU5tVXRORGxtTnkwNVl6VXlMVFl5WVRjNE1UY3hOelZsT0NNMUlpd2lkSGx3WlNJNklsTjBZWFIxYzB4cGMzUXlNREl4Ulc1MGNua2lMQ0p6ZEdGMGRYTk1hWE4wUTNKbFpHVnVkR2xoYkNJNkltaDBkSEE2WEM5Y0x6RTVNaTR4TmpndU5qZ3VNVEV6T2pnd01EQmNMM0J5YVhOdExXRm5aVzUwWEM5amNtVmtaVzUwYVdGc0xYTjBZWFIxYzF3dk16bGlNR0kzTWpZdE1HWTJaUzAwT1dZM0xUbGpOVEl0TmpKaE56Z3hOekUzTldVNEluMTlmUS5maW5ESHhybHRxbU9CcXBEZ3Zfa0NMVk02dnZCRFU3YWRoY01UV3Y2VTRwMlBha3puc0htbDl2TXpxNGpidWlfTXAwZDFoTm0tUXVVcFRMSUFiY2Z1QQ=="
+                },
+                "format":"prism/jwt"
+            }
+        ],
+        "thid":"7524fc50-d834-4a1f-a617-f36dd1d571bd",
+        "ack":[
+            
+        ]
+    }
+]
+        """
+    val getMediator = """
+        [
+            {
+                "mediator_did":{"method":"peer","methodId":"2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHBzOi8vc2l0LXByaXNtLW1lZGlhdG9yLmF0YWxhcHJpc20uaW8iLCJhIjpbImRpZGNvbW0vdjIiXX19.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6IndzczovL3NpdC1wcmlzbS1tZWRpYXRvci5hdGFsYXByaXNtLmlvL3dzIiwiYSI6WyJkaWRjb21tL3YyIl19fQ"},
+                "holder_did":{"method":"peer","methodId":"2.Ez6LSok96TA4orHQXSMHZj3mqyUuVLMfLfGGqj27i1giErbXL.Vz6Mku5mY1GuJ9AN2vvDwjMv5QUC2zqKVRPCcbmJVYTFTCFmr"},
+                "routing_did":{"method":"peer","methodId":"2.Ez6LSghwSE437wnDE1pt3X6hVDUQzSjsHzinpX3XFvMjRAm7y.Vz6Mkhh1e5CEYYq6JBUcTZ6Cp2ranCWRrv7Yax3Le4N59R6dd.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHBzOi8vc2l0LXByaXNtLW1lZGlhdG9yLmF0YWxhcHJpc20uaW8iLCJhIjpbImRpZGNvbW0vdjIiXX19.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6IndzczovL3NpdC1wcmlzbS1tZWRpYXRvci5hdGFsYXByaXNtLmlvL3dzIiwiYSI6WyJkaWRjb21tL3YyIl19fQ"}
+            }
+        ]
+        """
 }
