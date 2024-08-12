@@ -2,9 +2,9 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.LinkSecret
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.createLinkSecret
 import com.nimbusds.jose.EncryptionMethod
 import com.nimbusds.jose.JWEAlgorithm
 import com.nimbusds.jose.JWEDecrypter
@@ -693,7 +693,7 @@ open class EdgeAgent {
                 val credentialRequest = pair.first
                 val credentialRequestMetadata = pair.second
 
-                val json = credentialRequest.getJson()
+                val json = credentialRequest.toJson()
 
                 val metadata =
                     CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
@@ -984,7 +984,7 @@ open class EdgeAgent {
                 presentationString = credential.presentation(
                     requestData.encodeToByteArray(),
                     listOf(
-                        CredentialOperationsOptions.LinkSecret("", linkSecret.getValue()),
+                        CredentialOperationsOptions.LinkSecret("", linkSecret),
                         CredentialOperationsOptions.SchemaDownloader(api),
                         CredentialOperationsOptions.CredentialDefinitionDownloader(api)
                     )
@@ -1298,14 +1298,14 @@ open class EdgeAgent {
      *
      * @return The retrieved or newly created link secret object.
      */
-    private suspend fun getLinkSecret(): LinkSecret {
+    private suspend fun getLinkSecret(): String {
         val linkSecret = pluto.getLinkSecret().firstOrNull()
         return if (linkSecret == null) {
-            val linkSecretObj = LinkSecret()
-            pluto.storeLinkSecret(linkSecretObj.getValue())
+            val linkSecretObj = createLinkSecret()
+            pluto.storeLinkSecret(linkSecretObj)
             linkSecretObj
         } else {
-            LinkSecret.newFromValue(linkSecret)
+            linkSecret
         }
     }
 
