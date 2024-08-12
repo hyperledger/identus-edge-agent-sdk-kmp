@@ -48,6 +48,13 @@ allprojects {
         maven {
             url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
         }
+        maven {
+            setUrl("https://maven.pkg.github.com/hyperledger/aries-uniffi-wrappers")
+            credentials {
+                username = System.getenv("ATALA_GITHUB_ACTOR")
+                password = System.getenv("ATALA_GITHUB_TOKEN")
+            }
+        }
     }
 
     configurations.all {

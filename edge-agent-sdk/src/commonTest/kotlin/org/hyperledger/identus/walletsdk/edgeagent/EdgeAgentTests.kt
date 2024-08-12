@@ -2,7 +2,7 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import anoncreds_wrapper.LinkSecret
+import anoncreds_uniffi.createLinkSecret
 import com.nimbusds.jose.EncryptionMethod
 import com.nimbusds.jose.JWEAlgorithm
 import com.nimbusds.jose.JWEObject
@@ -942,7 +942,7 @@ class EdgeAgentTests {
             getCredentialDefinitionResponse
         )
         val pollux = PolluxImpl(apolloMockOld, castorMockOld, apiMock)
-        plutoMockOld.getLinkSecretReturn = flow { emit(LinkSecret().getValue()) }
+        plutoMockOld.getLinkSecretReturn = flow { emit(createLinkSecret()) }
         val meta = CredentialRequestMeta(
             linkSecretName = "1",
             json = "{\"link_secret_blinding_data\":{\"v_prime\":\"1234\",\"vr_prime\":\"1234\"},\"nonce\":\"411729288962137159046778\",\"link_secret_name\":\"link:secret:id\"}"

@@ -1,8 +1,7 @@
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.LinkSecret
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequestMetadata
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -27,7 +26,7 @@ class PolluxMock : Pollux {
     override suspend fun parseCredential(
         jsonData: String,
         type: CredentialType,
-        linkSecret: LinkSecret?,
+        linkSecret: String?,
         credentialMetadata: CredentialRequestMetadata?
     ): Credential {
         TODO("Not yet implemented")
@@ -52,9 +51,9 @@ class PolluxMock : Pollux {
     override suspend fun processCredentialRequestAnoncreds(
         did: DID,
         offer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretName: String
-    ): Pair<anoncreds_wrapper.CredentialRequest, CredentialRequestMetadata> {
+    ): Pair<anoncreds_uniffi.CredentialRequest, CredentialRequestMetadata> {
         TODO("Not yet implemented")
         // return processCredentialRequestAnoncredsReturn ?: throw Exception("Return not defined")
     }

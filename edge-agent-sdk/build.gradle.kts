@@ -125,7 +125,7 @@ kotlin {
 
                 api("org.lighthousegames:logging:1.1.2")
 
-                implementation("io.iohk.atala.prism.anoncredskmp:anoncreds-kmp:0.4.6")
+                implementation("org.hyperledger:anoncreds_uniffi:0.2.0-wrapper.1")
                 implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
                 implementation("eu.europa.ec.eudi:eudi-lib-jvm-sdjwt-kt:0.4.0") {
