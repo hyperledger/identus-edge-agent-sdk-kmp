@@ -1,7 +1,6 @@
 package org.hyperledger.identus.walletsdk.pollux.models
 
 import anoncreds_uniffi.CredentialRequestMetadata
-import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 

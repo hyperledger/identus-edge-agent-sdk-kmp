@@ -1197,7 +1197,9 @@ class EdgeAgentTests {
                 attributes = mapOf(
                     "name" to RequestedAttributes(
                         name = "name",
-                        emptyMap()
+                        names = setOf(),
+                        emptyMap(),
+                        null
                     )
                 )
             ),
