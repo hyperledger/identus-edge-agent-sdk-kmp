@@ -61,8 +61,7 @@ fetchMessageByThidAndPiuri:
 SELECT *
 FROM Message
 WHERE `thid` = :thid
-AND `type` = :piuri
-AND `isReceived` = 0;
+AND `type` = :piuri;
 
 fetchAllMessagesByType:
 SELECT *

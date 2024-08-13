@@ -26,6 +26,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
 import java.time.LocalDateTime
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
@@ -116,11 +117,19 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 type = CredentialType.ANONCREDS_PROOF_REQUEST,
                 toDID = DID(toDID),
                 presentationClaims = AnoncredsPresentationClaims(
-                    predicates = emptyMap(),
+                    predicates = mapOf(
+                        "0_age" to AnoncredsInputFieldFilter(
+                            type = "string",
+                            name = "age",
+                            gte = 18
+                        )
+                    ),
                     attributes = mapOf(
-                        "attribute1" to RequestedAttributes(
-                            "age",
-                            emptyMap()
+                        "0_name" to RequestedAttributes(
+                            "name",
+                            setOf("name"),
+                            emptyMap(),
+                            null
                         )
                     )
                 )

@@ -2,6 +2,7 @@ package org.hyperledger.identus.walletsdk.pollux.models
 
 import anoncreds_uniffi.CredentialRequestMetadata
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 
 /**
@@ -24,7 +25,7 @@ data class CredentialRequestMeta(
         @JvmStatic
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
-                linkSecretName = metadata.toJsonElement().jsonObject["link_secret_name"]?.toString()?.replace("\"", "") ?: "",
+                linkSecretName = Json.parseToJsonElement(metadata.toJson()).jsonObject["link_secret_name"]?.toString()?.replace("\"", "") ?: "",
                 json = metadata.toJson()
             )
         }

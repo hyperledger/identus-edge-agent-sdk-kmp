@@ -419,7 +419,10 @@ object InputFieldFilterSerializer : KSerializer<InputFieldFilter> {
 @Serializable
 data class RequestedAttributes(
     val name: String,
-    val restrictions: Map<String, String>
+    val names: Set<String>,
+    val restrictions: Map<String, String>,
+    @SerialName("non_revoked")
+    val nonRevoked: NonRevoked?
 )
 
 @Serializable
@@ -428,5 +431,14 @@ data class RequestedPredicates(
     @SerialName("p_type")
     val pType: String,
     @SerialName("p_value")
-    val pValue: Int
+    val pValue: Int,
+    val restrictions: Map<String, String>,
+    @SerialName("non_revoked")
+    val nonRevoked: NonRevoked?
+)
+
+@Serializable
+data class NonRevoked(
+    val from: Long,
+    val to: Long
 )

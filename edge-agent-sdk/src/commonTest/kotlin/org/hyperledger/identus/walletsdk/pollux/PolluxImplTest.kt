@@ -55,8 +55,8 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.pollux.models.PresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
@@ -66,7 +66,6 @@ import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
-import kotlin.test.BeforeTest
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -84,7 +83,7 @@ class PolluxImplTest {
     @Mock
     lateinit var loggerMock: PrismLogger
 
-    @BeforeTest
+    @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
         apollo = ApolloImpl()
@@ -188,8 +187,7 @@ class PolluxImplTest {
                 )
             )
 
-            val definitionRequest = Json.decodeFromString<PresentationDefinitionRequest>(definitionRequestString)
-            definitionRequest as JWTPresentationDefinitionRequest
+            val definitionRequest = Json.decodeFromString<JWTPresentationDefinitionRequest>(definitionRequestString)
             assertEquals(1, definitionRequest.presentationDefinition.inputDescriptors.size)
             assertEquals(
                 1,
@@ -367,10 +365,9 @@ class PolluxImplTest {
                     ),
                 )
             )
-            val presentationDefinitionRequest = Json.decodeFromString<PresentationDefinitionRequest>(vtc.first)
+            val presentationDefinitionRequest = Json.decodeFromString<JWTPresentationDefinitionRequest>(vtc.first)
             val presentationSubmissionProof = Json.decodeFromString<PresentationSubmission>(vtc.second)
 
-            presentationDefinitionRequest as JWTPresentationDefinitionRequest
             assertEquals(
                 presentationDefinitionRequest.presentationDefinition.id,
                 presentationSubmissionProof.presentationSubmission.definitionId
@@ -764,19 +761,19 @@ class PolluxImplTest {
         val nonce = "asdf1234"
 
         pollux = PolluxImpl(apollo, castorMock, api)
-        val definitionRequest = pollux.createPresentationDefinitionRequest(
+        val definitionRequestString = pollux.createPresentationDefinitionRequest(
             type = CredentialType.ANONCREDS_PROOF_REQUEST,
             presentationClaims = AnoncredsPresentationClaims(
                 predicates = mapOf(
                     "age" to AnoncredsInputFieldFilter(
                         type = "string",
                         name = "age",
-                        gte = "18"
+                        gte = 18
                     ),
                     "income" to AnoncredsInputFieldFilter(
                         type = "string",
                         name = "income",
-                        lt = "99000"
+                        lt = 99000
                     )
                 ),
                 attributes = mapOf(
@@ -790,7 +787,8 @@ class PolluxImplTest {
                 nonce = nonce
             )
         )
-        definitionRequest as AnoncredsPresentationDefinitionRequest
+
+        val definitionRequest = Json.decodeFromString<AnoncredsPresentationDefinitionRequest>(definitionRequestString)
 
         assertEquals("anoncreds_presentation_request", definitionRequest.name)
         assertEquals(nonce, definitionRequest.nonce)
