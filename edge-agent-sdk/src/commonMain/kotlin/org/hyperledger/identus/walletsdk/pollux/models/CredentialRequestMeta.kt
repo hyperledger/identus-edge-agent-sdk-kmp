@@ -24,7 +24,8 @@ data class CredentialRequestMeta(
         @JvmStatic
         fun fromCredentialRequestMetadata(metadata: CredentialRequestMetadata): CredentialRequestMeta {
             return CredentialRequestMeta(
-                linkSecretName = Json.parseToJsonElement(metadata.toJson()).jsonObject["link_secret_name"]?.toString()?.replace("\"", "") ?: "",
+                linkSecretName = Json.parseToJsonElement(metadata.toJson()).jsonObject["link_secret_name"]?.toString()
+                    ?.replace("\"", "") ?: "",
                 json = metadata.toJson()
             )
         }

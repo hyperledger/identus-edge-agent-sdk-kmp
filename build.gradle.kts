@@ -51,8 +51,8 @@ allprojects {
         maven {
             setUrl("https://maven.pkg.github.com/hyperledger/aries-uniffi-wrappers")
             credentials {
-                username = System.getenv("ATALA_GITHUB_ACTOR")
-                password = System.getenv("ATALA_GITHUB_TOKEN")
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
             }
         }
     }
