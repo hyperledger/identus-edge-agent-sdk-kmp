@@ -2,12 +2,11 @@
 
 package org.hyperledger.identus.walletsdk.pollux
 
-import anoncreds_wrapper.CredentialDefinition
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequest
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.LinkSecret
-import anoncreds_wrapper.Prover
+import anoncreds_uniffi.CredentialDefinition
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequest
+import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.Prover
 import com.apicatalog.jsonld.JsonLd
 import com.apicatalog.jsonld.document.JsonDocument
 import com.apicatalog.rdf.Rdf
@@ -19,6 +18,7 @@ import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
+import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.setl.rdf.normalization.RdfNormalize
@@ -135,7 +135,7 @@ open class PolluxImpl(
     override suspend fun parseCredential(
         jsonData: String,
         type: CredentialType,
-        linkSecret: LinkSecret?,
+        linkSecret: String?,
         credentialMetadata: CredentialRequestMetadata?
     ): Credential {
         return when (type) {
@@ -155,31 +155,31 @@ open class PolluxImpl(
                     throw Error("Invalid credential metadata")
                 }
 
-                val cred = anoncreds_wrapper.Credential(jsonData)
-                val credentialDefinition = getCredentialDefinition(cred.getCredDefId())
+                val cred = anoncreds_uniffi.Credential(jsonData)
+                val credentialDefinition = getCredentialDefinition(cred.credDefId())
                 val prover = Prover()
                 val processedCredential = prover.processCredential(
-                    credential = cred,
-                    credRequestMetadata = credentialMetadata,
+                    cred = cred,
+                    credReqMetadata = credentialMetadata,
                     linkSecret = linkSecret,
                     credDef = credentialDefinition,
                     revRegDef = null
                 )
 
                 val values: Map<String, AnonCredential.Attribute> =
-                    processedCredential.getValues().values.mapValues {
-                        AnonCredential.Attribute(raw = it.value.raw, encoded = it.value.encoded)
+                    processedCredential.values().mapValues {
+                        AnonCredential.Attribute(raw = it.key, encoded = it.value)
                     }
 
                 return AnonCredential(
-                    schemaID = processedCredential.getSchemaId(),
-                    credentialDefinitionID = processedCredential.getCredDefId(),
-                    signatureJson = processedCredential.getSignatureJson(),
-                    signatureCorrectnessProofJson = processedCredential.getSignatureCorrectnessProofJson(),
-                    revocationRegistryId = processedCredential.getRevRegId(),
-                    revocationRegistryJson = processedCredential.getRevRegJson(),
-                    witnessJson = processedCredential.getWitnessJson() ?: "",
-                    json = processedCredential.getJson(),
+                    schemaID = processedCredential.schemaId(),
+                    credentialDefinitionID = processedCredential.credDefId(),
+                    signatureJson = processedCredential.toJsonElement().jsonObject["signature"]?.toString() ?: "",
+                    signatureCorrectnessProofJson = processedCredential.toJsonElement().jsonObject["signature_correctness_proof"]?.toString() ?: "",
+                    revocationRegistryId = processedCredential.revRegId(),
+                    revocationRegistryJson = processedCredential.toJsonElement().jsonObject["rev_reg"]?.toString(),
+                    witnessJson = processedCredential.toJsonElement().jsonObject["witness"]?.toString(),
+                    json = processedCredential.toJson(),
                     values = values
                 )
             }
@@ -339,10 +339,10 @@ open class PolluxImpl(
     override suspend fun processCredentialRequestAnoncreds(
         did: DID,
         offer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretName: String
     ): Pair<CredentialRequest, CredentialRequestMetadata> {
-        val credentialDefinition = getCredentialDefinition(offer.getCredDefId())
+        val credentialDefinition = getCredentialDefinition(offer.credDefId())
 
         return createAnonCredentialRequest(
             did = did,
@@ -367,7 +367,7 @@ open class PolluxImpl(
         did: DID,
         credentialDefinition: CredentialDefinition,
         credentialOffer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretId: String
     ): Pair<CredentialRequest, CredentialRequestMetadata> {
         val credentialRequest = Prover().createCredentialRequest(
@@ -376,7 +376,7 @@ open class PolluxImpl(
             credDef = credentialDefinition,
             linkSecret = linkSecret,
             linkSecretId = linkSecretId,
-            credentialOffer = credentialOffer
+            credOffer = credentialOffer
         )
         return Pair(credentialRequest.request, credentialRequest.metadata)
     }

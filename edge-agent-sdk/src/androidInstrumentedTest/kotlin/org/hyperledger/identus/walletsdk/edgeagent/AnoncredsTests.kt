@@ -3,7 +3,7 @@
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import anoncreds_wrapper.LinkSecret
+import anoncreds_uniffi.LinkSecret
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import io.ktor.http.HttpHeaders
