@@ -159,12 +159,12 @@ sealed class EdgeAgentError : KnownPrismError() {
             get() = "$type not supported, must be one of the following: ${supportedTypes.joinToString(", ")}"
     }
 
-    class PresentationDefinitionRequestNotSupported(private val credentialType: String, private val expectedType: String) :
+    class CredentialNotValidForPresentationRequest() :
         EdgeAgentError() {
         override val code: Int
-            get() = 127
+            get() = 614
 
         override val message: String
-            get() = "With $credentialType, PresentationDefinitionRequest must be an instance of: $expectedType}"
+            get() = "This credential does not fulfill the criteria required by the request."
     }
 }

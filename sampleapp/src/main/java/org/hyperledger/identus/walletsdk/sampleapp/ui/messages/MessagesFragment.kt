@@ -135,6 +135,16 @@ class MessagesFragment : Fragment() {
                     ).show()
                 }
             }
+        viewModel.streamError()
+            .observe(this.viewLifecycleOwner) { error ->
+                AlertDialog.Builder(context)
+                    .setTitle("An error occurred")
+                    .setMessage(error)
+                    .setNeutralButton("Ok") { dialogInterface, _ ->
+                        dialogInterface.dismiss()
+                    }
+                    .show()
+            }
     }
 
     companion object {
