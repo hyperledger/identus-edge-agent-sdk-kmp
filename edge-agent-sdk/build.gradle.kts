@@ -110,7 +110,8 @@ kotlin {
 
                 implementation("io.iohk.atala.prism.didcomm:didpeer:$didpeerVersion")
 
-                implementation("io.iohk.atala.prism.apollo:apollo:$apolloVersion")
+                implementation("org.hyperledger.identus.apollo:apollo:$apolloVersion")
+
                 implementation("org.kotlincrypto.hash:sha2:0.4.0")
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
