@@ -1,9 +1,9 @@
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequest
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.LinkSecret
+// TODO: This domain interfaces cannot have dependencies to outside of domain classes
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequest
+import anoncreds_uniffi.CredentialRequestMetadata
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -34,7 +34,7 @@ interface Pollux {
     suspend fun parseCredential(
         jsonData: String,
         type: CredentialType,
-        linkSecret: LinkSecret? = null,
+        linkSecret: String? = null,
         credentialMetadata: CredentialRequestMetadata?
     ): Credential
 
@@ -78,7 +78,7 @@ interface Pollux {
     suspend fun processCredentialRequestAnoncreds(
         did: DID,
         offer: CredentialOffer,
-        linkSecret: LinkSecret,
+        linkSecret: String,
         linkSecretName: String
     ): Pair<CredentialRequest, CredentialRequestMetadata>
 

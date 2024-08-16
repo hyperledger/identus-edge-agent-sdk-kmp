@@ -12,8 +12,8 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 
 class PlutoMock : Pluto {

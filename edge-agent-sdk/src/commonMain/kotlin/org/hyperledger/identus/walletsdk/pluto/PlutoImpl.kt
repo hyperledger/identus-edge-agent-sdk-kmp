@@ -35,9 +35,10 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pluto.data.isConnected
+import org.hyperledger.identus.walletsdk.pluto.models.DidKeyLink
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pluto.data.AvailableClaims as AvailableClaimsDB
 import org.hyperledger.identus.walletsdk.pluto.data.DID as DIDDB
@@ -184,7 +185,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                 alias
             )
         )
-        privateKeys.map { privateKey ->
+        privateKeys.forEach { privateKey ->
             storePrivateKeys(privateKey, did, keyPathIndex)
         }
     }
@@ -439,7 +440,7 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun getDIDInfoByDID(did: DID): Flow<PrismDIDInfo?> {
         return getInstance().dIDQueries
-            .fetchDIDInfoByDID(did.methodId)
+            .fetchDIDInfoByDID(did.toString())
             .asFlow()
             .mapLatest {
                 try {
@@ -1231,6 +1232,22 @@ class PlutoImpl(private val connection: DbConnection) : Pluto {
                             keyPathIndex = storableKey.keyPathIndex
                         )
                     }
+            }
+    }
+
+    fun getAllDIDKeyLinkData(): Flow<List<DidKeyLink>> {
+        return getInstance().dIDKeyLinkQueries
+            .fetchAll()
+            .asFlow()
+            .map { didKeyLinks ->
+                didKeyLinks.executeAsList().map { didKeyLink ->
+                    DidKeyLink(
+                        id = didKeyLink.id.toInt(),
+                        didId = didKeyLink.didId,
+                        keyId = didKeyLink.keyId,
+                        alias = didKeyLink.alias
+                    )
+                }
             }
     }
 }

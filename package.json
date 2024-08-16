@@ -7,20 +7,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm.git"
+    "url": "git+https://github.com/hyperledger/identus-edge-agent-sdk-kmp.git"
   },
   "author": "IOG",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/issues"
+    "url": "https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues"
   },
-  "homepage": "https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm#readme",
+  "homepage": "https://github.com/hyperledger/identus-edge-agent-sdk-kmp#readme",
   "devDependencies": {
     "@semantic-release/changelog": "^6.0.2",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.1",
-    "gradle-semantic-release-plugin": "^1.7.4",
-    "semantic-release": "^19.0.5",
-    "semantic-release-slack-bot": "^3.5.3"
+    "gradle-semantic-release-plugin": "^1.9.2",
+    "semantic-release": "^24.0.0",
+    "semantic-release-slack-bot": "^4.0.2"
   }
 }

@@ -41,7 +41,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.descriptor
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.deserialize
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.JsonAsStringSerializer.serialize
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import kotlin.time.DurationUnit

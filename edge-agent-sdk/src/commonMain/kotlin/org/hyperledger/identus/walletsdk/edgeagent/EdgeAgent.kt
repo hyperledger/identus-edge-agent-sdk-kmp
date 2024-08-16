@@ -2,9 +2,9 @@
 
 package org.hyperledger.identus.walletsdk.edgeagent
 
-import anoncreds_wrapper.CredentialOffer
-import anoncreds_wrapper.CredentialRequestMetadata
-import anoncreds_wrapper.LinkSecret
+import anoncreds_uniffi.CredentialOffer
+import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.createLinkSecret
 import com.nimbusds.jose.EncryptionMethod
 import com.nimbusds.jose.JWEAlgorithm
 import com.nimbusds.jose.JWEDecrypter
@@ -56,7 +56,6 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -110,7 +109,7 @@ import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.kotlincrypto.hash.sha2.SHA256
 import kotlin.text.encodeToByteArray
@@ -677,10 +676,7 @@ open class EdgeAgent {
             CredentialType.ANONCREDS_OFFER -> {
                 val linkSecret = getLinkSecret()
                 val offerDataString = offer.attachments.firstNotNullOf {
-                    when (it.data) {
-                        is AttachmentData.AttachmentBase64 -> it.data.base64
-                        else -> null
-                    }
+                    it.data.getDataAsJsonString()
                 }
                 if (offer.thid == null) {
                     throw EdgeAgentError.MissingOrNullFieldError("thid", "OfferCredential")
@@ -696,7 +692,7 @@ open class EdgeAgent {
                 val credentialRequest = pair.first
                 val credentialRequestMetadata = pair.second
 
-                val json = credentialRequest.getJson()
+                val json = credentialRequest.toJson()
 
                 val metadata =
                     CredentialRequestMeta.fromCredentialRequestMetadata(credentialRequestMetadata)
@@ -736,10 +732,9 @@ open class EdgeAgent {
     @Throws(UnknownError.SomethingWentWrongError::class)
     suspend fun processIssuedCredentialMessage(message: IssueCredential): Credential {
         val credentialType = pollux.extractCredentialFormatFromMessage(message.attachments)
-        val attachment = message.attachments.firstOrNull()?.data as? AttachmentBase64
+        val attachmentData = message.attachments.firstOrNull()?.data?.getDataAsJsonString()
 
-        return attachment?.let {
-            val credentialData = it.base64.base64UrlDecoded
+        return attachmentData?.let { credentialData ->
             if (message.thid != null) {
                 val linkSecret = if (credentialType == CredentialType.ANONCREDS_ISSUE) {
                     getLinkSecret()
@@ -969,8 +964,6 @@ open class EdgeAgent {
         var presentationString: String?
         when (attachmentFormat) {
             CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type -> {
-                request.attachments.find { it.data::class == AttachmentBase64::class }
-                    ?: throw EdgeAgentError.AttachmentTypeNotSupported()
                 // Presentation Exchange
                 return handlePresentationDefinitionRequest(request, credential)
             }
@@ -990,7 +983,7 @@ open class EdgeAgent {
                 presentationString = credential.presentation(
                     requestData.encodeToByteArray(),
                     listOf(
-                        CredentialOperationsOptions.LinkSecret("", linkSecret.getValue()),
+                        CredentialOperationsOptions.LinkSecret("", linkSecret),
                         CredentialOperationsOptions.SchemaDownloader(api),
                         CredentialOperationsOptions.CredentialDefinitionDownloader(api)
                     )
@@ -1107,12 +1100,7 @@ open class EdgeAgent {
             throw EdgeAgentError.InvalidCredentialError(credential)
         }
 
-        val msgAttachmentDescriptor =
-            requestPresentation.attachments.find { it.data::class == AttachmentBase64::class }
-                ?: throw EdgeAgentError.AttachmentTypeNotSupported()
-
-        val attachmentBase64 = msgAttachmentDescriptor.data as AttachmentBase64
-        val presentationDefinitionRequestString = attachmentBase64.base64.base64UrlDecoded
+        val presentationDefinitionRequestString = requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
 
         val didString =
             credential.subject ?: throw Exception("Credential must contain subject")
@@ -1146,21 +1134,15 @@ open class EdgeAgent {
             throw EdgeAgentError.MissingOrNullFieldError("thid", "presentation message")
         }
         val presentation = Presentation.fromMessage(msg)
-        val msgAttachmentDescriptor =
-            presentation.attachments.find { it.data::class == AttachmentBase64::class }
-                ?: throw EdgeAgentError.AttachmentTypeNotSupported()
-        val attachmentBase64 = msgAttachmentDescriptor.data as AttachmentBase64
 
-        val presentationSubmissionString = attachmentBase64.base64.base64UrlDecoded
+        val presentationSubmissionString = presentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
 
         val presentationDefinitionRequest =
             pluto.getMessageByThidAndPiuri(msg.thid, ProtocolType.DidcommRequestPresentation.value)
                 .firstOrNull()
                 ?.let { message ->
                     val requestPresentation = RequestPresentation.fromMessage(message)
-                    val attachmentDescriptor = requestPresentation.attachments.first()
-                    val base64 = (attachmentDescriptor.data as AttachmentBase64).base64
-                    base64.base64UrlDecoded
+                    requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
                 } ?: throw EdgeAgentError.MissingOrNullFieldError("thid", "presentation message")
         return pollux.verifyPresentationSubmission(
             presentationSubmissionString = presentationSubmissionString,
@@ -1315,14 +1297,14 @@ open class EdgeAgent {
      *
      * @return The retrieved or newly created link secret object.
      */
-    private suspend fun getLinkSecret(): LinkSecret {
+    private suspend fun getLinkSecret(): String {
         val linkSecret = pluto.getLinkSecret().firstOrNull()
         return if (linkSecret == null) {
-            val linkSecretObj = LinkSecret()
-            pluto.storeLinkSecret(linkSecretObj.getValue())
+            val linkSecretObj = createLinkSecret()
+            pluto.storeLinkSecret(linkSecretObj)
             linkSecretObj
         } else {
-            LinkSecret.newFromValue(linkSecret)
+            linkSecret
         }
     }
 

@@ -33,7 +33,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.edgeagent.MediationHandlerMock
 import org.hyperledger.identus.walletsdk.edgeagent.MercuryMock
 import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
-import org.hyperledger.identus.walletsdk.pluto.backup.models.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.junit.Before
