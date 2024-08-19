@@ -23,6 +23,7 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
 import java.net.UnknownHostException
+import java.security.SecureRandom
 import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +40,6 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -84,8 +84,8 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
@@ -99,8 +99,10 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.DIDCommIn
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.InvitationType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.Presentation
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsAnoncreds
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.logger.LogComponent
@@ -110,9 +112,10 @@ import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
+import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
+import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.kotlincrypto.hash.sha2.SHA256
-import kotlin.text.encodeToByteArray
 
 /**
  * Check if the passed URL is valid or not.
@@ -681,7 +684,7 @@ open class EdgeAgent {
                 if (offer.thid == null) {
                     throw EdgeAgentError.MissingOrNullFieldError("thid", "OfferCredential")
                 }
-                val anonOffer = CredentialOffer(offerDataString.base64UrlDecoded)
+                val anonOffer = CredentialOffer(offerDataString)
                 val pair = pollux.processCredentialRequestAnoncreds(
                     did = did,
                     offer = anonOffer,
@@ -953,7 +956,7 @@ open class EdgeAgent {
      * @return Presentation message prepared to send.
      * @throws EdgeAgentError if there is a problem creating the presentation.
      **/
-    @Throws(PolluxError.InvalidPrismDID::class)
+    @Throws(PolluxError.InvalidPrismDID::class, EdgeAgentError.CredentialNotValidForPresentationRequest::class)
     suspend fun <T> preparePresentationForRequestProof(
         request: RequestPresentation,
         credential: T
@@ -980,14 +983,18 @@ open class EdgeAgent {
                     }
                 }.first()
                 val linkSecret = getLinkSecret()
-                presentationString = credential.presentation(
-                    requestData.encodeToByteArray(),
-                    listOf(
-                        CredentialOperationsOptions.LinkSecret("", linkSecret),
-                        CredentialOperationsOptions.SchemaDownloader(api),
-                        CredentialOperationsOptions.CredentialDefinitionDownloader(api)
+                try {
+                    presentationString = credential.presentation(
+                        requestData.encodeToByteArray(),
+                        listOf(
+                            CredentialOperationsOptions.LinkSecret("", linkSecret),
+                            CredentialOperationsOptions.SchemaDownloader(api),
+                            CredentialOperationsOptions.CredentialDefinitionDownloader(api)
+                        )
                     )
-                )
+                } catch (e: Exception) {
+                    throw EdgeAgentError.CredentialNotValidForPresentationRequest()
+                }
             }
 
             CredentialType.JWT.type -> {
@@ -1010,13 +1017,17 @@ open class EdgeAgent {
                         else -> null
                     }
                 }
-                presentationString = credential.presentation(
-                    requestData.encodeToByteArray(),
-                    listOf(
-                        CredentialOperationsOptions.SubjectDID(subjectDID),
-                        CredentialOperationsOptions.ExportableKey(keyPair.privateKey)
+                try {
+                    presentationString = credential.presentation(
+                        requestData.encodeToByteArray(),
+                        listOf(
+                            CredentialOperationsOptions.SubjectDID(subjectDID),
+                            CredentialOperationsOptions.ExportableKey(keyPair.privateKey)
+                        )
                     )
-                )
+                } catch (e: Exception) {
+                    throw EdgeAgentError.CredentialNotValidForPresentationRequest()
+                }
                 mediaType = JWT_MEDIA_TYPE
             }
 
@@ -1027,11 +1038,14 @@ open class EdgeAgent {
                         else -> null
                     }
                 }.first().encodeToByteArray()
-                presentationString = credential.presentation(
-                    requestData,
-                    listOf(CredentialOperationsOptions.DisclosingClaims(listOf(credential.claims.toString())))
-                )
-
+                try {
+                    presentationString = credential.presentation(
+                        requestData,
+                        listOf(CredentialOperationsOptions.DisclosingClaims(listOf(credential.claims.toString())))
+                    )
+                } catch (e: Exception) {
+                    throw EdgeAgentError.CredentialNotValidForPresentationRequest()
+                }
                 mediaType = SD_JWT_VC_TYPE
             }
 
@@ -1059,27 +1073,61 @@ open class EdgeAgent {
         type: CredentialType,
         toDID: DID,
         presentationClaims: PresentationClaims,
-        domain: String,
-        challenge: String
+        domain: String? = null,
+        challenge: String? = null
     ) {
         val didDocument = this.castor.resolveDID(toDID.toString())
         val newPeerDID = createNewPeerDID(services = didDocument.services, updateMediator = true)
 
-        val presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
-            type = type,
-            presentationClaims = presentationClaims,
-            options = PresentationOptions(
-                jwt = arrayOf("ES256K"),
-                domain = domain,
-                challenge = challenge
-            )
-        )
+        val presentationDefinitionRequest: String
+        val attachmentDescriptor: AttachmentDescriptor
+        when (type) {
+            CredentialType.JWT -> {
+                if (domain == null) {
+                    throw EdgeAgentError.MissingOrNullFieldError("Domain", "initiatePresentationRequest parameters")
+                }
+                if (challenge == null) {
+                    throw EdgeAgentError.MissingOrNullFieldError("Challenge", "initiatePresentationRequest parameters")
+                }
 
-        val attachmentDescriptor = AttachmentDescriptor(
-            mediaType = "application/json",
-            format = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
-            data = AttachmentBase64(presentationDefinitionRequest.base64UrlEncoded)
-        )
+                presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
+                    type = type,
+                    presentationClaims = presentationClaims,
+                    options = JWTPresentationOptions(
+                        jwt = arrayOf("ES256K"),
+                        domain = domain,
+                        challenge = challenge
+                    )
+                )
+                attachmentDescriptor = AttachmentDescriptor(
+                    mediaType = "application/json",
+                    format = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+                    data = AttachmentBase64(presentationDefinitionRequest.base64UrlEncoded)
+                )
+            }
+
+            CredentialType.ANONCREDS_PROOF_REQUEST -> {
+                presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
+                    type = type,
+                    presentationClaims = presentationClaims,
+                    options = AnoncredsPresentationOptions(
+                        nonce = generateNonce()
+                    )
+                )
+                attachmentDescriptor = AttachmentDescriptor(
+                    mediaType = "application/json",
+                    format = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+                    data = AttachmentBase64(presentationDefinitionRequest.base64UrlEncoded)
+                )
+            }
+
+            else -> {
+                throw EdgeAgentError.CredentialTypeNotSupported(
+                    type.type,
+                    arrayOf(CredentialType.JWT.type, CredentialType.ANONCREDS_PROOF_REQUEST.type)
+                )
+            }
+        }
 
         val presentationRequest = RequestPresentation(
             body = RequestPresentation.Body(proofTypes = emptyArray()),
@@ -1096,37 +1144,65 @@ open class EdgeAgent {
         requestPresentation: RequestPresentation,
         credential: Credential
     ): Presentation {
-        if (credential !is ProvableCredential) {
-            throw EdgeAgentError.InvalidCredentialError(credential)
+        try {
+            if (credential !is ProvableCredential) {
+                throw EdgeAgentError.InvalidCredentialError(credential)
+            }
+
+            val presentationDefinitionRequestString =
+                requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
+            if (presentationDefinitionRequestString.contains("jwt")) {
+                // If the json can be used to instantiate a JWTPresentationDefinitionRequest, process the request
+                // as JWT.
+                val didString =
+                    credential.subject ?: throw Exception("Credential must contain subject")
+
+                val storablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
+                    ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
+                val privateKey =
+                    apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
+                val presentationSubmissionProof = pollux.createJWTPresentationSubmission(
+                    presentationDefinitionRequest = presentationDefinitionRequestString,
+                    credential = credential,
+                    privateKey = privateKey,
+                )
+
+                val attachmentDescriptor = AttachmentDescriptor(
+                    mediaType = "application/json",
+                    format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
+                    data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
+                )
+                return Presentation(
+                    body = Presentation.Body(),
+                    attachments = arrayOf(attachmentDescriptor),
+                    thid = requestPresentation.thid ?: requestPresentation.id,
+                    from = requestPresentation.to,
+                    to = requestPresentation.from
+                )
+            } else {
+                val linkSecret = getLinkSecret()
+                val presentationSubmissionProof = pollux.createAnoncredsPresentationSubmission(
+                    presentationDefinitionRequest = presentationDefinitionRequestString,
+                    credential = credential,
+                    linkSecret = linkSecret
+                )
+
+                val attachmentDescriptor = AttachmentDescriptor(
+                    mediaType = "application/json",
+                    format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
+                    data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
+                )
+                return Presentation(
+                    body = Presentation.Body(),
+                    attachments = arrayOf(attachmentDescriptor),
+                    thid = requestPresentation.thid ?: requestPresentation.id,
+                    from = requestPresentation.to,
+                    to = requestPresentation.from
+                )
+            }
+        } catch (e: Exception) {
+            throw EdgeAgentError.CredentialNotValidForPresentationRequest()
         }
-
-        val presentationDefinitionRequestString = requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
-
-        val didString =
-            credential.subject ?: throw Exception("Credential must contain subject")
-
-        val storablePrivateKey: StorablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
-            ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
-        val privateKey = apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
-
-        val presentationSubmissionProof = pollux.createPresentationSubmission(
-            presentationDefinitionRequestString = presentationDefinitionRequestString,
-            credential = credential,
-            privateKey = privateKey
-        )
-
-        val attachmentDescriptor = AttachmentDescriptor(
-            mediaType = "application/json",
-            format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
-            data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
-        )
-        return Presentation(
-            body = Presentation.Body(),
-            attachments = arrayOf(attachmentDescriptor),
-            thid = requestPresentation.thid ?: requestPresentation.id,
-            from = requestPresentation.to,
-            to = requestPresentation.from
-        )
     }
 
     suspend fun handlePresentation(msg: Message): Boolean {
@@ -1144,11 +1220,31 @@ open class EdgeAgent {
                     val requestPresentation = RequestPresentation.fromMessage(message)
                     requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
                 } ?: throw EdgeAgentError.MissingOrNullFieldError("thid", "presentation message")
+
+        var isJwt = false
+        var isAnoncreds = false
+        try {
+            Json.decodeFromString<JWTPresentationDefinitionRequest>(presentationDefinitionRequest)
+            isJwt = true
+        } catch (_: Exception) {
+            try {
+                Json.decodeFromString<AnoncredsPresentationDefinitionRequest>(presentationDefinitionRequest)
+                isAnoncreds = true
+            } catch (_: Exception) {
+            }
+        }
+
+        val presentationSubmissionOptions =
+            if (isJwt) {
+                PresentationSubmissionOptionsJWT(presentationDefinitionRequest)
+            } else if (isAnoncreds) {
+                PresentationSubmissionOptionsAnoncreds(presentationDefinitionRequest)
+            } else {
+                throw Exception("Presentation definition request is neither JWT nor Anoncreds")
+            }
         return pollux.verifyPresentationSubmission(
             presentationSubmissionString = presentationSubmissionString,
-            options = PresentationSubmissionOptionsJWT(
-                presentationDefinitionRequest
-            )
+            options = presentationSubmissionOptions
         )
     }
 
@@ -1306,6 +1402,13 @@ open class EdgeAgent {
         } else {
             linkSecret
         }
+    }
+
+    private fun generateNonce(size: Int = 16): String {
+        val random = SecureRandom()
+        val nonce = ByteArray(size)
+        random.nextBytes(nonce)
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(nonce)
     }
 
     /**

@@ -12,7 +12,9 @@ sealed class CredentialOperationsOptions {
     data class Entropy(val entropy: String) : CredentialOperationsOptions()
     data class SignableKey(val key: SignableKey?) : CredentialOperationsOptions()
     data class ExportableKey(val key: PrivateKey?) : CredentialOperationsOptions()
-    data class ZkpPresentationParams(val attributes: Map<String, Boolean>, val predicates: List<String>) : CredentialOperationsOptions()
+    data class ZkpPresentationParams(val attributes: Map<String, Boolean>, val predicates: List<String>) :
+        CredentialOperationsOptions()
+
     data class DisclosingClaims(val claims: List<String>) : CredentialOperationsOptions()
     data class Custom(val key: String, val data: ByteArray) : CredentialOperationsOptions()
 }

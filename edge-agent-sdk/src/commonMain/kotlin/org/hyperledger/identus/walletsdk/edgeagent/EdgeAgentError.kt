@@ -125,4 +125,22 @@ sealed class EdgeAgentError : KnownPrismError() {
         override val message: String = ""
             get() = "$field from $parent is missing or null, and is mandatory"
     }
+
+    class CredentialTypeNotSupported(private val type: String, private val supportedTypes: Array<String>) :
+        EdgeAgentError() {
+        override val code: Int
+            get() = 127
+
+        override val message: String
+            get() = "$type not supported, must be one of the following: ${supportedTypes.joinToString(", ")}"
+    }
+
+    class CredentialNotValidForPresentationRequest() :
+        EdgeAgentError() {
+        override val code: Int
+            get() = 614
+
+        override val message: String
+            get() = "This credential does not fulfill the criteria required by the request."
+    }
 }

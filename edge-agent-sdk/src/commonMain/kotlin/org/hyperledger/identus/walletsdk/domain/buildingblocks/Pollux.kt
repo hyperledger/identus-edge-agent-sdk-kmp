@@ -1,9 +1,13 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.domain.buildingblocks
 
 // TODO: This domain interfaces cannot have dependencies to outside of domain classes
 import anoncreds_uniffi.CredentialOffer
 import anoncreds_uniffi.CredentialRequest
 import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.Schema
+import java.security.interfaces.ECPublicKey
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -15,7 +19,6 @@ import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
-import java.security.interfaces.ECPublicKey
 
 /**
  * The `Pollux` interface represents a set of operations for working with verifiable credentials.
@@ -144,8 +147,8 @@ interface Pollux {
 //     * @return The credential definition.
 //     */
 //    suspend fun getCredentialDefinition(id: String): CredentialDefinition
-//
-//    suspend fun getSchema(schemaId: String): Schema
+
+    suspend fun getSchema(schemaId: String): Schema
 
     suspend fun createPresentationDefinitionRequest(
         type: CredentialType,
@@ -153,10 +156,16 @@ interface Pollux {
         options: PresentationOptions
     ): String
 
-    suspend fun createPresentationSubmission(
-        presentationDefinitionRequestString: String,
+    suspend fun createJWTPresentationSubmission(
+        presentationDefinitionRequest: String,
         credential: Credential,
         privateKey: PrivateKey
+    ): String
+
+    suspend fun createAnoncredsPresentationSubmission(
+        presentationDefinitionRequest: String,
+        credential: Credential,
+        linkSecret: String
     ): String
 
     suspend fun verifyPresentationSubmission(

@@ -4,6 +4,7 @@ import kotlinx.serialization.EncodeDefault
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.PolymorphicSerializer
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.builtins.ListSerializer
@@ -103,11 +104,18 @@ sealed interface VerifiableCredential {
     }
 }
 
-data class PresentationClaims(
+sealed interface PresentationClaims
+
+data class JWTPresentationClaims(
     val schema: String? = null,
     val issuer: String? = null,
     val claims: Map<String, InputFieldFilter>
-)
+) : PresentationClaims
+
+data class AnoncredsPresentationClaims(
+    val predicates: Map<String, AnoncredsInputFieldFilter>,
+    val attributes: Map<String, RequestedAttributes>
+) : PresentationClaims
 
 @OptIn(ExperimentalSerializationApi::class)
 @Serializable(with = InputFieldFilterSerializer::class)
@@ -143,6 +151,15 @@ data class InputFieldFilter @JvmOverloads constructor(
         return result
     }
 }
+
+data class AnoncredsInputFieldFilter(
+    val type: String,
+    val name: String,
+    val gt: Any? = null,
+    val gte: Any? = null,
+    val lt: Any? = null,
+    val lte: Any? = null
+)
 
 /**
  * Custom serializer for InputFieldFilter. Used to serialized List<Any> contained by InputFieldFilter.
@@ -398,3 +415,30 @@ object InputFieldFilterSerializer : KSerializer<InputFieldFilter> {
         compositeOutput.endStructure(descriptor)
     }
 }
+
+@Serializable
+data class RequestedAttributes(
+    val name: String,
+    val names: Set<String>,
+    val restrictions: Map<String, String>,
+    @SerialName("non_revoked")
+    val nonRevoked: NonRevoked?
+)
+
+@Serializable
+data class RequestedPredicates(
+    val name: String,
+    @SerialName("p_type")
+    val pType: String,
+    @SerialName("p_value")
+    val pValue: Int,
+    val restrictions: Map<String, String>,
+    @SerialName("non_revoked")
+    val nonRevoked: NonRevoked?
+)
+
+@Serializable
+data class NonRevoked(
+    val from: Long,
+    val to: Long
+)
