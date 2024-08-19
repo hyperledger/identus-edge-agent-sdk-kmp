@@ -92,7 +92,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
-import org.hyperledger.identus.walletsdk.pollux.utils.Bitstring
+import org.hyperledger.identus.walletsdk.pollux.utils.BitString
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -558,12 +558,12 @@ open class PolluxImpl(
                 if (encodedList != null) {
                     val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
                     val decompressedBytes = decodedBytes.gunzip()
-                    val bitString = Bitstring(decompressedBytes)
+                    val bitString = BitString(BitSet.valueOf(decompressedBytes), decompressedBytes.size * 8)
 
                     if (statusListIndex > decompressedBytes.size) {
                         throw PolluxError.StatusListOutOfBoundIndex()
                     }
-                    return bitString.get(statusListIndex)
+                    return bitString.isRevoked(statusListIndex)
                 }
             }
         }

@@ -62,7 +62,9 @@ class Sdk {
 
         (pluto as PlutoImpl).start(context)
         agent.start()
-        agent.startFetchingMessages()
+        try {
+            agent.startFetchingMessages()
+        } catch (_: Exception) {}
 
         agentStatusStream.postValue(EdgeAgent.State.RUNNING)
     }

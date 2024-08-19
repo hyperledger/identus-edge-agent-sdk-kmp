@@ -2,6 +2,7 @@
 
 package org.hyperledger.identus.walletsdk.pollux
 
+import com.ionspin.kotlin.bignum.integer.toBigInteger
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
@@ -50,6 +51,8 @@ import org.hyperledger.identus.walletsdk.domain.models.KeyValue
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.utils.BitString
+import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
@@ -59,7 +62,7 @@ import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 import kotlin.test.BeforeTest
-import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -577,7 +580,8 @@ class PolluxImplTest {
         )
         val presentationSubmission = vtc.second
 
-        val descriptorPath = DescriptorPath(Json.encodeToJsonElement(Json.decodeFromString<PresentationSubmission>(presentationSubmission)))
+        val descriptorPath =
+            DescriptorPath(Json.encodeToJsonElement(Json.decodeFromString<PresentationSubmission>(presentationSubmission)))
         val path = "\$.verifiablePresentation[0]"
         val holderJws = descriptorPath.getValue(path)
         assertNotNull(holderJws)
@@ -958,27 +962,68 @@ class PolluxImplTest {
                     "VerifiableCredential",
                     "StatusList2021Credential"
                 ],
-                "issuer": "did:prism:f3a762b1f9741f82791fbdafd0ea2bbc7b8720fcc4fba66f9fac8f896fac35d9",
-                "id": "http://192.168.68.113:8000/cloud-agent/credential-status/6c67b6c0-1bd9-47a1-85ee-f88edaa5a894",
-                "issuanceDate": 1718845277,
+                "issuer": "did:prism:4ab233a5f781ad931852de88cfef1d4997e199fa26d1738556f779c3ee885e5e",
+                "id": "http://192.168.68.113:8000/cloud-agent/credential-status/76b7e9fa-1401-40ad-b3b8-a74a2b1f51ab",
+                "issuanceDate": 1723815141,
                 "credentialSubject": {
+                    "id": "",
                     "type": "StatusList2021",
                     "statusPurpose": "Revocation",
-                    "encodedList": "H4sIAAAAAAAA_-3BIQEAAAACIJP_JzvDAjQAAAAAAAAAAAAAAAAAAADA2wCGK9BQAEAAAA=="
+                    "encodedList": "H4sIAAAAAAAA_-3BIQEAAAACIIf4f6czLEADAAAAAAAAAAAAAAAAAAAAvA07lnLoAEAAAA=="
                 },
                 "proof": {
-                    "type": "EcdsaSecp256k1Signature2019",
+                    "type": "DataIntegrityProof",
                     "proofPurpose": "assertionMethod",
-                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L3YxIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiQU5xNHdCZS1QdlY4UXEzN214THl0RnVxTFJlbG51X251SVMyMEhoZTZsYmsiLCJ5IjoiQU9nWkZmQnBmWlZuNWVuLTFBVEV2YnNyOHExMVpUWTZodEJtTC1xbXFRd3cifX0=",
-                    "created": "2024-06-20T01:01:18.063982543Z",
-                    "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..c9_mSbKooKiER7GBMj6bty8367VbIj3pRCXF_5vsbhjhe7cA4SoNtUn-DNzlwzIM5n-VMptmuWf33PEXtklEQA"
+                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L211bHRpa2V5L3YxIl0sInR5cGUiOiJNdWx0aWtleSIsInB1YmxpY0tleU11bHRpYmFzZSI6InVNRll3RUFZSEtvWkl6ajBDQVFZRks0RUVBQW9EUWdBRU9aWmRuM0dlUFpnXzAxMGZfRERzbkFEQXRDSzFFVlk2MVo4WVF2RzBiV253SDRNZE5QQjlJb1RSdWtHZkNLemhhQ21CZXEzNlJoR2hIRk1ZZ0xfQnVnPT0ifQ==",
+                    "created": "2024-08-16T13:32:21.521606927Z",
+                    "proofValue": "z381yXZ2rApe32nuRCHaS5Uvqmjwk99g45rzTZJDXX1aMLNTn9QZXgNa5wuD2F5oi5TnTpnnp94kGNEspHrd6fkyhj1rsHcxh",
+                    "cryptoSuite": "eddsa-jcs-2022"
                 }
             }
         """
 
         pollux = PolluxImpl(apollo, castorMock, api)
 
+        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 13))
+    }
+
+    @Test
+    fun testEncodedListUnGzip_whenFirstThreeRevoked_thenProvedOk() = runTest {
+        val revocationRegistryJson = """
+            {
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://w3id.org/vc/status-list/2021/v1"
+                ],
+                "type": [
+                    "VerifiableCredential",
+                    "StatusList2021Credential"
+                ],
+                "issuer": "did:prism:8c050b5928592f4dca045ec7cff7feb2066806d0f3de553d1b8548e03d20f2dc",
+                "id": "http://192.168.68.113:8000/cloud-agent/credential-status/5c6dca3f-fa9d-4a13-af4c-fd31fc9d268c",
+                "issuanceDate": 1723817424,
+                "credentialSubject": {
+                    "id": "",
+                    "type": "StatusList2021",
+                    "statusPurpose": "Revocation",
+                    "encodedList": "H4sIAAAAAAAA_-3BIQEAAAACIBf4f64zLEADAAAAAAAAAAAAAAAAAAAAvA34c39nAEAAAA=="
+                },
+                "proof": {
+                    "type": "DataIntegrityProof",
+                    "proofPurpose": "assertionMethod",
+                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L211bHRpa2V5L3YxIl0sInR5cGUiOiJNdWx0aWtleSIsInB1YmxpY0tleU11bHRpYmFzZSI6InVNRll3RUFZSEtvWkl6ajBDQVFZRks0RUVBQW9EUWdBRTJleWI5bkdPYlhscTJGVFNZUThsaS1Fc2g0RWcwR1FramZUNUFOMVgySnpfMk1rQTRSdHJLODN4Z25ISE1wd0FoTGRKdHhUdHFlZ0lOVXY1SXU5SDV3PT0ifQ==",
+                    "created": "2024-08-16T14:10:24.312462845Z",
+                    "proofValue": "zAN1rKog8b3npWyeQuM3rDqufJJzD9dwKaK7hmqw5fNytzFqKNT5QzkP768aHD1Smn1vFNDDfRfhWNEmFyq7DSDrrKXFCqQAcZ",
+                    "cryptoSuite": "eddsa-jcs-2022"
+                }
+            }
+        """
+
+        pollux = PolluxImpl(apollo, castorMock, api)
         assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 1))
+        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 2))
+        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 3))
+        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 4))
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {
