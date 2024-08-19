@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.sampleapp.ui.messages
 
 import android.app.Application
@@ -5,6 +7,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import java.time.LocalDateTime
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,21 +15,22 @@ import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.DIDCOMM_MESSAGING
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
-import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.Message
-import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
+import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
+import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
-import java.time.LocalDateTime
 import org.hyperledger.identus.walletsdk.sampleapp.db.Message as MessageEntity
 
 class MessagesViewModel(application: Application) : AndroidViewModel(application) {
@@ -39,6 +43,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     private val db: AppDatabase = DatabaseClient.getInstance()
     private val revokedCredentialsNotified: MutableList<Credential> = mutableListOf()
     private var revokedCredentials: MutableLiveData<List<Credential>> = MutableLiveData()
+    private var errorLiveData: MutableLiveData<String> = MutableLiveData()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -93,23 +98,43 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     fun sendVerificationRequest(toDID: String) {
         CoroutineScope(Dispatchers.Default).launch {
             val sdk = Sdk.getInstance()
-            sdk.agent.initiatePresentationRequest(
-                type = CredentialType.JWT,
-                toDID = DID(toDID),
-                presentationClaims = PresentationClaims(
-                    claims = mapOf(
-//                        "issuer" to InputFieldFilter(
+            // JWT presentation request
+//            sdk.agent.initiatePresentationRequest(
+//                type = CredentialType.JWT,
+//                toDID = DID(toDID),
+//                presentationClaims = JWTPresentationClaims(
+//                    claims = mapOf(
+//                        "emailAddress" to InputFieldFilter(
 //                            type = "string",
-//                            pattern = "did:prism:bc9daaeaf0ad673f5d55b3b6612a1653bc72ac1659cefa81c6eef45c1f721639"
-//                        ),
-                        "emailAddress" to InputFieldFilter(
+//                            pattern = "cristian.castro@iohk.io"
+//                        )
+//                    )
+//                ),
+//                domain = "domain",
+//                challenge = "challenge"
+//            )
+
+            // Anoncreds presentation request
+            sdk.agent.initiatePresentationRequest(
+                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                toDID = DID(toDID),
+                presentationClaims = AnoncredsPresentationClaims(
+                    predicates = mapOf(
+                        "0_age" to AnoncredsInputFieldFilter(
                             type = "string",
-                            pattern = "cristian.castro@iohk.io"
+                            name = "age",
+                            gte = 18
+                        )
+                    ),
+                    attributes = mapOf(
+                        "0_name" to RequestedAttributes(
+                            "name",
+                            setOf("name"),
+                            emptyMap(),
+                            null
                         )
                     )
-                ),
-                domain = "domain",
-                challenge = "challenge"
+                )
             )
         }
     }
@@ -124,11 +149,15 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             sdk.mercury.let { mercury ->
                 viewModelScope.launch {
                     if (credential is ProvableCredential) {
-                        val presentation = agent.preparePresentationForRequestProof(
-                            RequestPresentation.fromMessage(message),
-                            credential
-                        )
-                        sdk.agent.sendMessage(presentation.makeMessage())
+                        try {
+                            val presentation = agent.preparePresentationForRequestProof(
+                                RequestPresentation.fromMessage(message),
+                                credential
+                            )
+                            sdk.agent.sendMessage(presentation.makeMessage())
+                        } catch (e: EdgeAgentError.CredentialNotValidForPresentationRequest) {
+                            errorLiveData.postValue(e.message)
+                        }
                     }
                 }
             }
@@ -173,6 +202,10 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             }
         }
         return liveData
+    }
+
+    fun streamError(): LiveData<String> {
+        return errorLiveData
     }
 
     private suspend fun processMessages(messages: List<Message>) {

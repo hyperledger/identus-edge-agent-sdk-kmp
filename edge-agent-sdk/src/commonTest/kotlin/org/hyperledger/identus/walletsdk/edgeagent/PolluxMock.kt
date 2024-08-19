@@ -1,7 +1,10 @@
+@file:Suppress("ktlint:standard:import-ordering")
+
 package org.hyperledger.identus.walletsdk.edgeagent
 
 import anoncreds_uniffi.CredentialOffer
 import anoncreds_uniffi.CredentialRequestMetadata
+import anoncreds_uniffi.Schema
 import kotlinx.serialization.json.JsonObject
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
@@ -66,6 +69,10 @@ class PolluxMock : Pollux {
         return extractedCredentialFormatFromMessageReturn ?: throw Exception("Return not defined")
     }
 
+    override suspend fun getSchema(schemaId: String): Schema {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun createPresentationDefinitionRequest(
         type: CredentialType,
         presentationClaims: PresentationClaims,
@@ -74,10 +81,18 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override suspend fun createPresentationSubmission(
-        presentationDefinitionRequestString: String,
+    override suspend fun createJWTPresentationSubmission(
+        presentationDefinitionRequest: String,
         credential: Credential,
         privateKey: PrivateKey
+    ): String {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun createAnoncredsPresentationSubmission(
+        presentationDefinitionRequest: String,
+        credential: Credential,
+        linkSecret: String
     ): String {
         TODO("Not yet implemented")
     }

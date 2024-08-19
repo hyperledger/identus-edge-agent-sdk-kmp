@@ -5,3 +5,7 @@ interface PresentationSubmissionOptions
 data class PresentationSubmissionOptionsJWT(
     val presentationDefinitionRequest: String
 ) : PresentationSubmissionOptions
+
+data class PresentationSubmissionOptionsAnoncreds(
+    val presentationDefinitionRequest: String
+) : PresentationSubmissionOptions

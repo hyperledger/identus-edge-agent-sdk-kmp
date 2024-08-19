@@ -13,7 +13,6 @@ import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.SdkPlutoDb
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
-import org.hyperledger.identus.walletsdk.castor.resolvers.PrismDIDApiResolver
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
@@ -117,9 +116,6 @@ class Sdk {
 
     private fun createCastor(): Castor {
         val castor = CastorImpl(apollo)
-        val prismDIDApiResolver =
-            PrismDIDApiResolver(this.apollo, "https://sit-prism-agent-issuer.atalaprism.io/prism-agent")
-        castor.addResolver(prismDIDApiResolver)
         return castor
     }
 

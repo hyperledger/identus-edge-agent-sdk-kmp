@@ -9,7 +9,6 @@ import com.nimbusds.jose.crypto.ECDSASigner
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.jwt.SignedJWT
-import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -23,12 +22,15 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
@@ -36,22 +38,26 @@ import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
+import org.hyperledger.identus.walletsdk.domain.models.KeyValue
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.pollux.models.PresentationDefinitionRequest
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationOptions
-import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
-import org.hyperledger.identus.walletsdk.domain.models.KeyValue
 import org.hyperledger.identus.walletsdk.logger.PrismLogger
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
+import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
-import org.hyperledger.identus.walletsdk.pollux.utils.BitString
+import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mock
@@ -61,8 +67,6 @@ import org.mockito.kotlin.doNothing
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
-import kotlin.test.BeforeTest
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
@@ -80,7 +84,7 @@ class PolluxImplTest {
     @Mock
     lateinit var loggerMock: PrismLogger
 
-    @BeforeTest
+    @Before
     fun setup() {
         MockitoAnnotations.openMocks(this)
         apollo = ApolloImpl()
@@ -153,21 +157,21 @@ class PolluxImplTest {
         assertFailsWith(PolluxError.InvalidJWTPresentationDefinitionError::class) {
             pollux.createPresentationDefinitionRequest(
                 type = CredentialType.JWT,
-                presentationClaims = PresentationClaims(
+                presentationClaims = JWTPresentationClaims(
                     claims = mapOf()
                 ),
-                options = PresentationOptions(jwt = emptyArray(), domain = "", challenge = "")
+                options = JWTPresentationOptions(jwt = emptyArray(), domain = "", challenge = "")
             )
         }
     }
 
     @Test
-    fun testCreatePresentationDefinitionRequest_whenAllCorrect_thenPresentationDefinitionRequestCorrect() =
+    fun testCreatePresentationDefinitionRequest_whenJWT_thenPresentationDefinitionRequestCorrect() =
         runTest {
             pollux = PolluxImpl(apollo, castor, api)
             val definitionRequestString = pollux.createPresentationDefinitionRequest(
                 type = CredentialType.JWT,
-                presentationClaims = PresentationClaims(
+                presentationClaims = JWTPresentationClaims(
                     claims = mapOf(
                         "$.vc.credentialSubject.email" to InputFieldFilter(
                             type = "string",
@@ -175,7 +179,7 @@ class PolluxImplTest {
                         )
                     )
                 ),
-                options = PresentationOptions(
+                options = JWTPresentationOptions(
                     name = "Testing",
                     purpose = "Test presentation definition",
                     jwt = arrayOf("EcdsaSecp256k1Signature2019"),
@@ -184,7 +188,7 @@ class PolluxImplTest {
                 )
             )
 
-            val definitionRequest = Json.decodeFromString<PresentationDefinitionRequest>(definitionRequestString)
+            val definitionRequest = Json.decodeFromString<JWTPresentationDefinitionRequest>(definitionRequestString)
             assertEquals(1, definitionRequest.presentationDefinition.inputDescriptors.size)
             assertEquals(
                 1,
@@ -242,6 +246,8 @@ class PolluxImplTest {
             }
         """
 
+        val presentationDefinitionRequest = definitionJson
+
         val credential = AnonCredential(
             schemaID = "",
             credentialDefinitionID = "",
@@ -258,8 +264,8 @@ class PolluxImplTest {
         pollux = PolluxImpl(apollo, castor, api)
 
         assertFailsWith(PolluxError.CredentialTypeNotSupportedError::class) {
-            pollux.createPresentationSubmission(
-                presentationDefinitionRequestString = definitionJson,
+            pollux.createJWTPresentationSubmission(
+                presentationDefinitionRequest = presentationDefinitionRequest,
                 credential = credential,
                 privateKey = secpKeyPair.privateKey
             )
@@ -305,6 +311,7 @@ class PolluxImplTest {
                 }
             """
 
+            val presentationDefinitionRequest = definitionJson
             val credential = JWTCredential.fromJwtString(
                 "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
             )
@@ -313,8 +320,8 @@ class PolluxImplTest {
             pollux = PolluxImpl(apollo, castor, api)
 
             assertFailsWith(PolluxError.PrivateKeyTypeNotSupportedError::class) {
-                pollux.createPresentationSubmission(
-                    presentationDefinitionRequestString = definitionJson,
+                pollux.createJWTPresentationSubmission(
+                    presentationDefinitionRequest = presentationDefinitionRequest,
                     credential = credential,
                     privateKey = nonSecpKeyPair.privateKey
                 )
@@ -349,7 +356,7 @@ class PolluxImplTest {
                     issuerPrv = issuerKeyPair.privateKey,
                     holderPrv = holderKeyPair.privateKey,
                     subject = """{"course": "Identus Training course Certification 2024"} """,
-                    claims = PresentationClaims(
+                    claims = JWTPresentationClaims(
                         claims = mapOf(
                             "course" to InputFieldFilter(
                                 type = "string",
@@ -359,7 +366,7 @@ class PolluxImplTest {
                     ),
                 )
             )
-            val presentationDefinitionRequest = Json.decodeFromString<PresentationDefinitionRequest>(vtc.first)
+            val presentationDefinitionRequest = Json.decodeFromString<JWTPresentationDefinitionRequest>(vtc.first)
             val presentationSubmissionProof = Json.decodeFromString<PresentationSubmission>(vtc.second)
 
             assertEquals(
@@ -416,7 +423,7 @@ class PolluxImplTest {
                 issuerPrv = issuerKeyPair.privateKey,
                 holderPrv = holderKeyPair.privateKey,
                 subject = """{"course": "Identus Training course Certification 2024"} """,
-                claims = PresentationClaims(
+                claims = JWTPresentationClaims(
                     claims = mapOf(
                         "course" to InputFieldFilter(
                             type = "string",
@@ -470,7 +477,7 @@ class PolluxImplTest {
                     issuerPrv = issuerKeyPair.privateKey,
                     holderPrv = holderKeyPair.privateKey,
                     subject = """{"course": "Identus Training course Certification 2023"} """,
-                    claims = PresentationClaims(
+                    claims = JWTPresentationClaims(
                         claims = mapOf(
                             "course" to InputFieldFilter(
                                 type = "string",
@@ -526,7 +533,7 @@ class PolluxImplTest {
                 issuerPrv = issuerKeyPair.privateKey,
                 holderPrv = holderKeyPair.privateKey,
                 subject = """{"course": "Identus Training course Certification 2024"} """,
-                claims = PresentationClaims(
+                claims = JWTPresentationClaims(
                     claims = mapOf(
                         "course" to InputFieldFilter(
                             type = "string",
@@ -568,7 +575,7 @@ class PolluxImplTest {
                 issuerPrv = issuerKeyPair.privateKey,
                 holderPrv = holderKeyPair.privateKey,
                 subject = """{"course": "Identus Training course Certification 2024"} """,
-                claims = PresentationClaims(
+                claims = JWTPresentationClaims(
                     claims = mapOf(
                         "course" to InputFieldFilter(
                             type = "string",
@@ -625,8 +632,8 @@ class PolluxImplTest {
                 holder = holderDID,
                 issuerPrv = issuerKeyPair.privateKey,
                 holderPrv = holderKeyPair.privateKey,
-                subject = """{"course": "Identus Training course Certification 2024"}""",
-                claims = PresentationClaims(
+                subject = """{"course": "Identus Training course Certification 2024"} """,
+                claims = JWTPresentationClaims(
                     claims = mapOf(
                         "course" to InputFieldFilter(
                             type = "string",
@@ -679,7 +686,7 @@ class PolluxImplTest {
                 issuerPrv = issuerKeyPair.privateKey,
                 holderPrv = holderKeyPair.privateKey,
                 subject = """{"course": "Identus Training course Certification 2024"} """,
-                claims = PresentationClaims(
+                claims = JWTPresentationClaims(
                     claims = mapOf(
                         "course" to InputFieldFilter(
                             type = "string",
@@ -732,7 +739,7 @@ class PolluxImplTest {
                 issuerPrv = issuerKeyPair.privateKey,
                 holderPrv = holderKeyPair.privateKey,
                 subject = """{"course": "Identus Training course Certification 2024"} """,
-                claims = PresentationClaims(
+                claims = JWTPresentationClaims(
                     claims = mapOf(
                         "course" to InputFieldFilter(
                             type = "string",
@@ -748,6 +755,103 @@ class PolluxImplTest {
             options = PresentationSubmissionOptionsJWT(vtc.first)
         )
         assertTrue(isVerified)
+    }
+
+    @Test
+    fun testCreatePresentationDefinitionRequest_whenAnoncreds_thenPresentationDefinitionRequestCorrect() = runTest {
+        val nonce = "asdf1234"
+
+        pollux = PolluxImpl(apollo, castorMock, api)
+        val definitionRequestString = pollux.createPresentationDefinitionRequest(
+            type = CredentialType.ANONCREDS_PROOF_REQUEST,
+            presentationClaims = AnoncredsPresentationClaims(
+                predicates = mapOf(
+                    "age" to AnoncredsInputFieldFilter(
+                        type = "string",
+                        name = "age",
+                        gte = 18
+                    ),
+                    "income" to AnoncredsInputFieldFilter(
+                        type = "string",
+                        name = "income",
+                        lt = 99000
+                    )
+                ),
+                attributes = mapOf(
+                    "name" to RequestedAttributes(
+                        name = "name",
+                        names = setOf(),
+                        emptyMap(),
+                        null
+                    )
+                )
+            ),
+            options = AnoncredsPresentationOptions(
+                nonce = nonce
+            )
+        )
+
+        val definitionRequest = Json.decodeFromString<AnoncredsPresentationDefinitionRequest>(definitionRequestString)
+
+        assertEquals("anoncreds_presentation_request", definitionRequest.name)
+        assertEquals(nonce, definitionRequest.nonce)
+        assertEquals(1, definitionRequest.requestedAttributes.size)
+        assertEquals(2, definitionRequest.requestedPredicates.size)
+        val predicates = definitionRequest.requestedPredicates
+        assertEquals(">=", predicates["age"]!!.pType)
+        assertEquals(18, predicates["age"]!!.pValue)
+        assertEquals("<", predicates["income"]!!.pType)
+        assertEquals(99000, predicates["income"]!!.pValue)
+    }
+
+    @Test
+    fun testCreatePresentationDefinitionRequest_whenAnoncredsNoOptions_thenThrowException() = runTest {
+        pollux = PolluxImpl(apollo, castorMock, api)
+        assertFailsWith(PolluxError.PresentationDefinitionRequestError::class) {
+            pollux.createPresentationDefinitionRequest(
+                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                presentationClaims = AnoncredsPresentationClaims(
+                    predicates = mapOf(
+                        "age" to AnoncredsInputFieldFilter(
+                            type = "string",
+                            name = "age",
+                            gte = "18"
+                        ),
+                        "income" to AnoncredsInputFieldFilter(
+                            type = "string",
+                            name = "income",
+                            lt = "99000"
+                        )
+                    ),
+                    attributes = mapOf(
+                        "name" to RequestedAttributes(
+                            name = "name",
+                            names = setOf(),
+                            emptyMap(),
+                            null
+                        )
+                    )
+                ),
+                options = JWTPresentationOptions(domain = "domain", challenge = "challenge")
+            )
+        }
+        val nonce = "asdf1234"
+        assertFailsWith(PolluxError.PresentationDefinitionRequestError::class) {
+            pollux.createPresentationDefinitionRequest(
+                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                presentationClaims = JWTPresentationClaims(
+                    claims = mapOf(
+                        "$.vc.credentialSubject.email" to InputFieldFilter(
+                            type = "string",
+                            value = "value"
+                        )
+                    )
+                ),
+                options = AnoncredsPresentationOptions(
+                    nonce = nonce
+                )
+            )
+        }
     }
 
     private fun generateSecp256k1KeyPair(): Secp256k1KeyPair {
@@ -1081,18 +1185,18 @@ class PolluxImplTest {
         val jwtCredential = JWTCredential.fromJwtString(jwtString)
         val presentationDefinition = pollux.createPresentationDefinitionRequest(
             type = CredentialType.JWT,
-            presentationClaims = PresentationClaims(
+            presentationClaims = JWTPresentationClaims(
                 issuer = testCaseOptions.issuer.toString(),
-                claims = testCaseOptions.claims.claims
+                claims = (testCaseOptions.claims as JWTPresentationClaims).claims
             ),
-            options = PresentationOptions(domain = "domain", challenge = testCaseOptions.challenge)
+            options = JWTPresentationOptions(domain = "domain", challenge = testCaseOptions.challenge)
         )
 
         doReturn(false)
             .`when`(pollux).isCredentialRevoked(any())
 
-        val presentationSubmission = pollux.createPresentationSubmission(
-            presentationDefinitionRequestString = presentationDefinition,
+        val presentationSubmission = pollux.createJWTPresentationSubmission(
+            presentationDefinitionRequest = presentationDefinition,
             credential = jwtCredential,
             privateKey = testCaseOptions.holderPrv
         )
