@@ -10,14 +10,30 @@ import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
+import org.hyperledger.identus.walletsdk.domain.models.RequestedPredicates
 import java.util.UUID
 
 @Serializable
-data class PresentationDefinitionRequest(
+sealed interface PresentationDefinitionRequest
+
+@Serializable
+data class AnoncredsPresentationDefinitionRequest(
+    val nonce: String,
+    val name: String,
+    val version: String,
+    @SerialName("requested_predicates")
+    val requestedPredicates: Map<String, RequestedPredicates>,
+    @SerialName("requested_attributes")
+    val requestedAttributes: Map<String, RequestedAttributes>
+) : PresentationDefinitionRequest
+
+@Serializable
+data class JWTPresentationDefinitionRequest(
     @SerialName("presentation_definition")
     val presentationDefinition: PresentationDefinition,
     val options: PresentationDefinitionOptions
-) {
+) : PresentationDefinitionRequest {
 
     @Serializable
     data class PresentationDefinitionOptions(
