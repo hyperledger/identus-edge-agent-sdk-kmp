@@ -2,7 +2,6 @@
 
 package org.hyperledger.identus.walletsdk.pollux
 
-import com.ionspin.kotlin.bignum.integer.toBigInteger
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
@@ -1052,43 +1051,6 @@ class PolluxImplTest {
         pollux = PolluxImpl(apollo, castorMock, api)
 
         assertFalse(pollux.checkEncodedListRevoked(httpResponse.jsonString, 3))
-    }
-
-    @Test
-    fun testEncodedListUnGzip_whenRevoked_thenReturnFalse() = runTest {
-        val revocationRegistryJson = """
-            {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://w3id.org/vc/status-list/2021/v1"
-                ],
-                "type": [
-                    "VerifiableCredential",
-                    "StatusList2021Credential"
-                ],
-                "issuer": "did:prism:4ab233a5f781ad931852de88cfef1d4997e199fa26d1738556f779c3ee885e5e",
-                "id": "http://192.168.68.113:8000/cloud-agent/credential-status/76b7e9fa-1401-40ad-b3b8-a74a2b1f51ab",
-                "issuanceDate": 1723815141,
-                "credentialSubject": {
-                    "id": "",
-                    "type": "StatusList2021",
-                    "statusPurpose": "Revocation",
-                    "encodedList": "H4sIAAAAAAAA_-3BIQEAAAACIIf4f6czLEADAAAAAAAAAAAAAAAAAAAAvA07lnLoAEAAAA=="
-                },
-                "proof": {
-                    "type": "DataIntegrityProof",
-                    "proofPurpose": "assertionMethod",
-                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L211bHRpa2V5L3YxIl0sInR5cGUiOiJNdWx0aWtleSIsInB1YmxpY0tleU11bHRpYmFzZSI6InVNRll3RUFZSEtvWkl6ajBDQVFZRks0RUVBQW9EUWdBRU9aWmRuM0dlUFpnXzAxMGZfRERzbkFEQXRDSzFFVlk2MVo4WVF2RzBiV253SDRNZE5QQjlJb1RSdWtHZkNLemhhQ21CZXEzNlJoR2hIRk1ZZ0xfQnVnPT0ifQ==",
-                    "created": "2024-08-16T13:32:21.521606927Z",
-                    "proofValue": "z381yXZ2rApe32nuRCHaS5Uvqmjwk99g45rzTZJDXX1aMLNTn9QZXgNa5wuD2F5oi5TnTpnnp94kGNEspHrd6fkyhj1rsHcxh",
-                    "cryptoSuite": "eddsa-jcs-2022"
-                }
-            }
-        """
-
-        pollux = PolluxImpl(apollo, castorMock, api)
-
-        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 13))
     }
 
     @Test

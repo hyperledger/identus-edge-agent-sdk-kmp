@@ -24,22 +24,4 @@ class BitString(val bitSet: BitSet, val size: Int) {
         }
         return bitSet.get(index)
     }
-
-    companion object {
-        /**
-         * Reverses the bits in an 8-bit integer.
-         *
-         * @param b The integer whose bits need to be reversed.
-         * @return The integer with its bits reversed.
-         */
-        fun reverseBits(b: Int): Int {
-            var result = 0
-            for (i in 0 until 8) {
-                val bit = (b shr i) and 1
-                result = (result shl 1) or bit
-            }
-            return result
-        }
-    }
 }
-
