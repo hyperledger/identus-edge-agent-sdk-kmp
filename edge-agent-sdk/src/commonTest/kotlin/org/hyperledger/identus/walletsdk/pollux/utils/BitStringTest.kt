@@ -33,5 +33,4 @@ class BitStringTest {
             assertFalse("Index $i should not be revoked", bitString.isRevoked(i))
         }
     }
-
 }
