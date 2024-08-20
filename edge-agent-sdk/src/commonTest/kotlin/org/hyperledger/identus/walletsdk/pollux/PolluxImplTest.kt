@@ -1072,7 +1072,7 @@ class PolluxImplTest {
                     "id": "",
                     "type": "StatusList2021",
                     "statusPurpose": "Revocation",
-                    "encodedList": "H4sIAAAAAAAA_-3BIQEAAAACIBf4f64zLEADAAAAAAAAAAAAAAAAAAAAvA34c39nAEAAAA=="
+                    "encodedList": "H4sIAAAAAAAA_-3BMQ0AAAwDoCX1N_9yKqMP8DkAAAAAAAAAAAAAAAAAAABgrMaHlsQAQAAA"
                 },
                 "proof": {
                     "type": "DataIntegrityProof",
@@ -1090,6 +1090,12 @@ class PolluxImplTest {
         assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 2))
         assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 3))
         assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 4))
+        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 5))
+        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 6))
+        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 7))
+        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 8))
+        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 9))
+        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 10))
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {
