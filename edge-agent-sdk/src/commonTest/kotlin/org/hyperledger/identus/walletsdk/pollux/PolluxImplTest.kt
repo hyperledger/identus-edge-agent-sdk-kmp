@@ -56,6 +56,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefi
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.hyperledger.identus.walletsdk.pollux.utils.BitString
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -1045,6 +1046,96 @@ class PolluxImplTest {
     }
 
     @Test
+    fun testIsCredentialRevoked_whenCorrectJson_thenValidationCorrect() = runTest {
+        val response = """{
+                "proof": {
+                    "type": "EcdsaSecp256k1Signature2019",
+                    "proofPurpose": "assertionMethod",
+                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L3YxIl0sInR5cGUiOiJFY2RzYVNlY3AyNTZrMVZlcmlmaWNhdGlvbktleTIwMTkiLCJwdWJsaWNLZXlKd2siOnsiY3J2Ijoic2VjcDI1NmsxIiwia2V5X29wcyI6WyJ2ZXJpZnkiXSwia3R5IjoiRUMiLCJ4IjoiQ1hJRmwyUjE4YW1lTEQteWtTT0dLUW9DQlZiRk01b3Vsa2MydklySnRTND0iLCJ5IjoiRDJRWU5pNi1BOXoxbHhwUmpLYm9jS1NUdk5BSXNOVnNsQmpsemVnWXlVQT0ifX0=",
+                    "created": "2024-07-25T22:49:59.091957Z",
+                    "jws": "eyJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJhbGciOiJFUzI1NksifQ..FJLUBsZhGB1o_G1UwsVaoL-8agvcpoelJtAr2GlNOOqCSOd-WNEj5-FOgv0m0QcdKMokl2TxibJMg3Y-MJq4-A"
+                },
+                "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://w3id.org/vc/status-list/2021/v1"
+                ],
+                "type": [
+                    "VerifiableCredential",
+                    "StatusList2021Credential"
+                ],
+                "id": "http://localhost:8085/credential-status/01def9a2-2bcb-4bb3-8a36-6834066431d0",
+                "issuer": "did:prism:462c4811bf61d7de25b3baf86c5d2f0609b4debe53792d297bf612269bf8593a",
+                "issuanceDate": 1721947798,
+                "credentialSubject": {
+                    "type": "StatusList2021",
+                    "statusPurpose": "Revocation",
+                    "encodedList": "H4sIAAAAAAAA_-3BIQEAAAACIKf6f4UzLEADAAAAAAAAAAAAAAAAAAAAvA3PduITAEAAAA=="
+                }
+            }"""
+        val httpResponse = HttpResponse(status = HttpStatusCode.OK.value, response)
+
+        apollo = ApolloImpl()
+        val api = spy(
+            ApiImpl(
+                httpClient {
+                    install(ContentNegotiation) {
+                        json(
+                            Json {
+                                ignoreUnknownKeys = true
+                                prettyPrint = true
+                                isLenient = true
+                            }
+                        )
+                    }
+                }
+            )
+        )
+
+        pollux = PolluxImpl(apollo, castorMock, api)
+
+        doReturn(httpResponse)
+            .`when`(api).request(
+                HttpMethod.Get.value,
+                "http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464",
+                emptyArray(),
+                arrayOf(KeyValue(HttpHeaders.ContentType, Typ.Encrypted.typ)),
+                null
+            )
+
+        val credential = JWTCredential.fromJwtString(
+            "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206ZTAyZTgwOTlkNTAzNTEzNDVjNWRkODMxYTllOTExMmIzOTRhODVkMDA2NGEyZWI1OTQyOTA4MDczNGExNTliNjpDcmtCQ3JZQkVqb0tCbUYxZEdndE1SQUVTaTRLQ1hObFkzQXlOVFpyTVJJaEF1Vlljb3JmV25MMGZZdEE1dmdKSzRfLW9iM2JVRGMtdzJVT0hkTzNRRXZxRWpzS0IybHpjM1ZsTFRFUUFrb3VDZ2x6WldOd01qVTJhekVTSVFMQ3U5Tm50cXVwQmotME5DZE1BNzV6UmVCZXlhQ0pPMWFHWWVQNEJNUUhWQkk3Q2dkdFlYTjBaWEl3RUFGS0xnb0pjMlZqY0RJMU5tc3hFaUVET1dndlF4NnZSdTZ3VWI0RlljSnVhRUNqOUJqUE1KdlJwOEx3TTYxaEVUNCIsInN1YiI6ImRpZDpwcmlzbTpiZDgxZmY1NDQzNDJjMTAwNDZkZmE0YmEyOTVkNWIzNmU0Y2ZlNWE3ZWIxMjBlMTBlZTVjMjQ4NzAwNjUxMDA5OkNvVUJDb0lCRWpzS0IyMWhjM1JsY2pBUUFVb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQkpEQ2c5aGRYUm9aVzUwYVdOaGRHbHZiakFRQkVvdUNnbHpaV053TWpVMmF6RVNJUVB2NVA1eXlnclp3YUpsWXpsNTltMkhBREtUWFVMUHNSZTBrZ2VFSHZ0TGdBIiwibmJmIjoxNzE1MDAwNjc0LCJleHAiOjE3MTg2MDA2NzQsInZjIjp7ImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImVtYWlsQWRkcmVzcyI6ImNyaXN0aWFuLmNhc3Ryb0Bpb2hrLmlvIiwiaWQiOiJkaWQ6cHJpc206YmQ4MWZmNTQ0MzQyYzEwMDQ2ZGZhNGJhMjk1ZDViMzZlNGNmZTVhN2ViMTIwZTEwZWU1YzI0ODcwMDY1MTAwOTpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRUHY1UDV5eWdyWndhSmxZemw1OW0ySEFES1RYVUxQc1JlMGtnZUVIdnRMZ0JKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQSJ9LCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sIkBjb250ZXh0IjpbImh0dHBzOlwvXC93d3cudzMub3JnXC8yMDE4XC9jcmVkZW50aWFsc1wvdjEiXSwiY3JlZGVudGlhbFN0YXR1cyI6eyJzdGF0dXNQdXJwb3NlIjoiUmV2b2NhdGlvbiIsInN0YXR1c0xpc3RJbmRleCI6MjUsImlkIjoiaHR0cDpcL1wvMTAuOTEuMTAwLjEyNjo4MDAwXC9wcmlzbS1hZ2VudFwvY3JlZGVudGlhbC1zdGF0dXNcLzUxNGU4NTI4LTRiMzgtNDc3YS1iMGU0LTMyNGJiZTIyMDQ2NCMyNSIsInR5cGUiOiJTdGF0dXNMaXN0MjAyMUVudHJ5Iiwic3RhdHVzTGlzdENyZWRlbnRpYWwiOiJodHRwOlwvXC8xMC45MS4xMDAuMTI2OjgwMDBcL3ByaXNtLWFnZW50XC9jcmVkZW50aWFsLXN0YXR1c1wvNTE0ZTg1MjgtNGIzOC00NzdhLWIwZTQtMzI0YmJlMjIwNDY0In19fQ.5OmmL5tdcRKugiHVt01PJUhp9r22zgMPPALUOB41g_1_BPHE3ezqJ2QhSmScU_EOGYcKksHftdrvfoND65nSjw"
+        )
+        val vc = JWTVerifiableCredential(
+            context = credential.verifiableCredential!!.context,
+            type =  credential.verifiableCredential!!.type,
+            credentialSchema = credential.verifiableCredential!!.credentialSchema,
+            credentialSubject = credential.verifiableCredential!!.credentialSubject,
+            credentialStatus = Json.decodeFromString("""{"statusPurpose":"Revocation","statusListIndex":2,"id":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464#25","type":"StatusList2021Entry","statusListCredential":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464"}"""),
+            refreshService = credential.verifiableCredential!!.refreshService,
+            evidence = credential.verifiableCredential!!.evidence,
+            termsOfUse = credential.verifiableCredential!!.termsOfUse
+        )
+
+        credential.verifiableCredential = vc
+        val isRevoked = pollux.isCredentialRevoked(credential)
+        assertTrue(isRevoked)
+
+        val vc1 = JWTVerifiableCredential(
+            context = credential.verifiableCredential!!.context,
+            type =  credential.verifiableCredential!!.type,
+            credentialSchema = credential.verifiableCredential!!.credentialSchema,
+            credentialSubject = credential.verifiableCredential!!.credentialSubject,
+            credentialStatus = Json.decodeFromString("""{"statusPurpose":"Revocation","statusListIndex":3,"id":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464#25","type":"StatusList2021Entry","statusListCredential":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464"}"""),
+            refreshService = credential.verifiableCredential!!.refreshService,
+            evidence = credential.verifiableCredential!!.evidence,
+            termsOfUse = credential.verifiableCredential!!.termsOfUse
+        )
+
+        credential.verifiableCredential = vc1
+        assertFalse(pollux.isCredentialRevoked(credential))
+    }
+
+    @Test
     fun testEncodedListUnGzip_whenNotRevoked_thenReturnFalse() = runTest {
         val httpResponse = correctHttpResponseFetchRevocationRegistry()
 
@@ -1055,47 +1146,13 @@ class PolluxImplTest {
 
     @Test
     fun testEncodedListUnGzip_whenFirstThreeRevoked_thenProvedOk() = runTest {
-        val revocationRegistryJson = """
-            {
-                "@context": [
-                    "https://www.w3.org/2018/credentials/v1",
-                    "https://w3id.org/vc/status-list/2021/v1"
-                ],
-                "type": [
-                    "VerifiableCredential",
-                    "StatusList2021Credential"
-                ],
-                "issuer": "did:prism:8c050b5928592f4dca045ec7cff7feb2066806d0f3de553d1b8548e03d20f2dc",
-                "id": "http://192.168.68.113:8000/cloud-agent/credential-status/5c6dca3f-fa9d-4a13-af4c-fd31fc9d268c",
-                "issuanceDate": 1723817424,
-                "credentialSubject": {
-                    "id": "",
-                    "type": "StatusList2021",
-                    "statusPurpose": "Revocation",
-                    "encodedList": "H4sIAAAAAAAA_-3BMQ0AAAwDoCX1N_9yKqMP8DkAAAAAAAAAAAAAAAAAAABgrMaHlsQAQAAA"
-                },
-                "proof": {
-                    "type": "DataIntegrityProof",
-                    "proofPurpose": "assertionMethod",
-                    "verificationMethod": "data:application/json;base64,eyJAY29udGV4dCI6WyJodHRwczovL3czaWQub3JnL3NlY3VyaXR5L211bHRpa2V5L3YxIl0sInR5cGUiOiJNdWx0aWtleSIsInB1YmxpY0tleU11bHRpYmFzZSI6InVNRll3RUFZSEtvWkl6ajBDQVFZRks0RUVBQW9EUWdBRTJleWI5bkdPYlhscTJGVFNZUThsaS1Fc2g0RWcwR1FramZUNUFOMVgySnpfMk1rQTRSdHJLODN4Z25ISE1wd0FoTGRKdHhUdHFlZ0lOVXY1SXU5SDV3PT0ifQ==",
-                    "created": "2024-08-16T14:10:24.312462845Z",
-                    "proofValue": "zAN1rKog8b3npWyeQuM3rDqufJJzD9dwKaK7hmqw5fNytzFqKNT5QzkP768aHD1Smn1vFNDDfRfhWNEmFyq7DSDrrKXFCqQAcZ",
-                    "cryptoSuite": "eddsa-jcs-2022"
-                }
-            }
-        """
+        val encodedList = "H4sIAAAAAAAA_-3BIQEAAAACIKf6f4UzLEADAAAAAAAAAAAAAAAAAAAAvA3PduITAEAAAA=="
 
         pollux = PolluxImpl(apollo, castorMock, api)
-        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 1))
-        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 2))
-        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 3))
-        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 4))
-        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 5))
-        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 6))
-        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 7))
-        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 8))
-        assertTrue(pollux.checkEncodedListRevoked(revocationRegistryJson, 9))
-        assertFalse(pollux.checkEncodedListRevoked(revocationRegistryJson, 10))
+
+        assertTrue(pollux.verifyStatusListIndexForEncodedList(encodedList, 1))
+        assertTrue(pollux.verifyStatusListIndexForEncodedList(encodedList, 2))
+        assertFalse(pollux.verifyStatusListIndexForEncodedList(encodedList, 3))
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {
