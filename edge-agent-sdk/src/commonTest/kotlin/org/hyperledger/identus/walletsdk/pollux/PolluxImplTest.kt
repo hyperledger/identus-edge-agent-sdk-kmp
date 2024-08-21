@@ -56,7 +56,6 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefi
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
-import org.hyperledger.identus.walletsdk.pollux.utils.BitString
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -1107,7 +1106,7 @@ class PolluxImplTest {
         )
         val vc = JWTVerifiableCredential(
             context = credential.verifiableCredential!!.context,
-            type =  credential.verifiableCredential!!.type,
+            type = credential.verifiableCredential!!.type,
             credentialSchema = credential.verifiableCredential!!.credentialSchema,
             credentialSubject = credential.verifiableCredential!!.credentialSubject,
             credentialStatus = Json.decodeFromString("""{"statusPurpose":"Revocation","statusListIndex":2,"id":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464#25","type":"StatusList2021Entry","statusListCredential":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464"}"""),
@@ -1122,7 +1121,7 @@ class PolluxImplTest {
 
         val vc1 = JWTVerifiableCredential(
             context = credential.verifiableCredential!!.context,
-            type =  credential.verifiableCredential!!.type,
+            type = credential.verifiableCredential!!.type,
             credentialSchema = credential.verifiableCredential!!.credentialSchema,
             credentialSubject = credential.verifiableCredential!!.credentialSubject,
             credentialStatus = Json.decodeFromString("""{"statusPurpose":"Revocation","statusListIndex":3,"id":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464#25","type":"StatusList2021Entry","statusListCredential":"http://10.91.100.126:8000/prism-agent/credential-status/514e8528-4b38-477a-b0e4-324bbe220464"}"""),
