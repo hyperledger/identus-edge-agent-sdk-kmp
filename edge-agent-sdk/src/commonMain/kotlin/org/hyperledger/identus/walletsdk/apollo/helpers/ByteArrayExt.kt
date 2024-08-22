@@ -24,7 +24,7 @@ fun ByteArray.padStart(length: Int, padValue: Byte): ByteArray {
 fun ByteArray.gunzip(): ByteArray {
     val byteArrayInputStream = ByteArrayInputStream(this)
     val gzipInputStream = GZIPInputStream(byteArrayInputStream)
-    val decompressedBytes = gzipInputStream.readBytes()
+    val decompressedBytes = gzipInputStream.readAllBytes()
 
     return decompressedBytes
 }

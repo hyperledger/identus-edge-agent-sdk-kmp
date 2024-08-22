@@ -103,7 +103,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
-import org.hyperledger.identus.walletsdk.pollux.utils.Bitstring
+import org.hyperledger.identus.walletsdk.pollux.utils.BitString
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -440,8 +440,7 @@ open class PolluxImpl(
             val revocationRegistryJson = fetchRevocationRegistry(credentialStatus)
             validateProof(revocationRegistryJson)
             return checkEncodedListRevoked(revocationRegistryJson, credentialStatus.statusListIndex)
-        }
-        return false
+        } ?: return false
     }
 
     private suspend fun validateProof(revocationRegistryJson: String): Boolean {
@@ -555,18 +554,23 @@ open class PolluxImpl(
             if (credentialSubject.containsKey("encodedList")) {
                 val encodedList = credentialSubject["encodedList"]?.jsonPrimitive?.content
                 if (encodedList != null) {
-                    val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
-                    val decompressedBytes = decodedBytes.gunzip()
-                    val bitString = Bitstring(decompressedBytes)
-
-                    if (statusListIndex > decompressedBytes.size) {
-                        throw PolluxError.StatusListOutOfBoundIndex()
-                    }
-                    return bitString.get(statusListIndex)
+                    return verifyStatusListIndexForEncodedList(encodedList, statusListIndex)
                 }
             }
         }
         return false
+    }
+
+    fun verifyStatusListIndexForEncodedList(encodedList: String, statusListIndex: Int): Boolean {
+        val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
+        val decompressedBytes =
+            decodedBytes.gunzip()
+        val bitString = BitString(decompressedBytes)
+
+        if (statusListIndex > decompressedBytes.size) {
+            throw PolluxError.StatusListOutOfBoundIndex()
+        }
+        return bitString.isRevoked(statusListIndex)
     }
 
     suspend fun fetchRevocationRegistry(credentialStatus: JWTVerifiableCredential.CredentialStatus): String {
