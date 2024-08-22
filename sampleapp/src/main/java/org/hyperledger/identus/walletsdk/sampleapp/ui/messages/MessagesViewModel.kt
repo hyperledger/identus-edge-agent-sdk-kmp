@@ -192,11 +192,15 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch(handler) {
             messages.value?.find { it.id == uiMessage.id }?.let { message ->
                 val sdk = Sdk.getInstance()
-                val valid = sdk.agent.handlePresentation(message)
-                if (valid) {
-                    liveData.postValue("Valid!")
-                } else {
-                    liveData.postValue("Not valid!")
+                try {
+                    val valid = sdk.agent.handlePresentation(message)
+                    if (valid) {
+                        liveData.postValue("Valid!")
+                    } else {
+                        liveData.postValue("Not valid!")
+                    }
+                } catch (e: Exception) {
+                    liveData.postValue("Not valid. ${e.message}")
                 }
             }
         }

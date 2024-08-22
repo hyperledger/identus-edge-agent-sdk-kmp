@@ -1033,7 +1033,7 @@ open class PolluxImpl(
                                 ?.toTypedArray()
                                 ?: arrayOf()
                     }
-                    return@let PresentationSubmission(submission, arrayStrings)
+                    PresentationSubmission(submission, arrayStrings)
                 } ?: throw PolluxError.VerificationUnsuccessful("Presentation is missing presentation_submission")
 
             val presentationDefinitionRequestString =
@@ -1080,11 +1080,11 @@ open class PolluxImpl(
                     value?.let { vc ->
                         val verifiableCredential = JWTCredential.fromJwtString(vc as String)
 
-                        val isRevoked = isCredentialRevoked(verifiableCredential)
+//                        val isRevoked = isCredentialRevoked(verifiableCredential)
 
-                        if (isRevoked) {
-                            throw PolluxError.VerificationUnsuccessful("Provided credential is revoked")
-                        }
+//                        if (isRevoked) {
+//                            throw PolluxError.VerificationUnsuccessful("Provided credential is revoked")
+//                        }
 
                         if (verifiableCredential.subject != issuer) {
                             throw PolluxError.VerificationUnsuccessful("Invalid submission,")
