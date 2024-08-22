@@ -20,5 +20,5 @@ sealed class CredentialOperationsOptions {
 }
 
 interface ProvableCredential {
-    suspend fun presentation(request: ByteArray, options: List<CredentialOperationsOptions>): String
+    suspend fun presentation(attachmentFormat: String, request: ByteArray, options: List<CredentialOperationsOptions>): String
 }

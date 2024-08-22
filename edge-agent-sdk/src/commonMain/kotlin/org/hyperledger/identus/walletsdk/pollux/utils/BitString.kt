@@ -4,7 +4,7 @@ import kotlin.experimental.and
 import kotlin.experimental.inv
 import kotlin.experimental.or
 
-class Bitstring(
+class BitString(
     buffer: ByteArray,
     private val leftToRightIndexing: Boolean = false
 ) {

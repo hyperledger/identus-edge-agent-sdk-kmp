@@ -143,7 +143,7 @@ data class AnonCredential(
 
     override var revoked: Boolean? = null
 
-    override suspend fun presentation(request: ByteArray, options: List<CredentialOperationsOptions>): String {
+    override suspend fun presentation(attachmentFormat: String, request: ByteArray, options: List<CredentialOperationsOptions>): String {
         var schemaDownloader: Api? = null
         var definitionDownloader: Api? = null
         var linkSecret: String? = null

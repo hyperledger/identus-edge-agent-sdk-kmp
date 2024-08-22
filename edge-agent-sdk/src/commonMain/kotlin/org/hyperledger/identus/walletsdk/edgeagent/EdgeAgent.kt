@@ -16,6 +16,7 @@ import com.nimbusds.jose.crypto.X25519Decrypter
 import com.nimbusds.jose.crypto.X25519Encrypter
 import com.nimbusds.jose.jwk.OctetKeyPair
 import com.nimbusds.jose.util.Base64URL
+import eu.europa.ec.eudi.sdjwt.SdJwt
 import eu.europa.ec.eudi.sdjwt.vc.SD_JWT_VC_TYPE
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -986,6 +987,7 @@ open class EdgeAgent {
                 val linkSecret = getLinkSecret()
                 try {
                     presentationString = credential.presentation(
+                        attachmentFormat,
                         requestData.encodeToByteArray(),
                         listOf(
                             CredentialOperationsOptions.LinkSecret("", linkSecret),
@@ -1020,6 +1022,7 @@ open class EdgeAgent {
                 }
                 try {
                     presentationString = credential.presentation(
+                        attachmentFormat,
                         requestData.encodeToByteArray(),
                         listOf(
                             CredentialOperationsOptions.SubjectDID(subjectDID),
@@ -1041,6 +1044,7 @@ open class EdgeAgent {
                 }.first().encodeToByteArray()
                 try {
                     presentationString = credential.presentation(
+                        attachmentFormat,
                         requestData,
                         listOf(CredentialOperationsOptions.DisclosingClaims(listOf(credential.claims.toString())))
                     )
@@ -1152,7 +1156,10 @@ open class EdgeAgent {
 
             val presentationDefinitionRequestString =
                 requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
-            if (presentationDefinitionRequestString.contains("jwt")) {
+
+            if (presentationDefinitionRequestString.contains("jwt") ||
+                presentationDefinitionRequestString.contains("vc+sd-jwt")
+            ) {
                 // If the json can be used to instantiate a JWTPresentationDefinitionRequest, process the request
                 // as JWT.
                 val didString =
@@ -1162,17 +1169,22 @@ open class EdgeAgent {
                     ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
                 val privateKey =
                     apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
-                val presentationSubmissionProof = pollux.createJWTPresentationSubmission(
-                    presentationDefinitionRequest = presentationDefinitionRequestString,
-                    credential = credential,
-                    privateKey = privateKey,
+
+                val presentationString = credential.presentation(
+                    CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+                    presentationDefinitionRequestString.encodeToByteArray(),
+                    listOf(
+                        CredentialOperationsOptions.SubjectDID(DID(didString)),
+                        CredentialOperationsOptions.ExportableKey(privateKey)
+                    )
                 )
 
                 val attachmentDescriptor = AttachmentDescriptor(
                     mediaType = "application/json",
                     format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
-                    data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
+                    data = AttachmentBase64(presentationString.base64UrlEncoded)
                 )
+
                 return Presentation(
                     body = Presentation.Body(),
                     attachments = arrayOf(attachmentDescriptor),
@@ -1182,10 +1194,15 @@ open class EdgeAgent {
                 )
             } else {
                 val linkSecret = getLinkSecret()
-                val presentationSubmissionProof = pollux.createAnoncredsPresentationSubmission(
-                    presentationDefinitionRequest = presentationDefinitionRequestString,
-                    credential = credential,
-                    linkSecret = linkSecret
+
+                val presentationSubmissionProof = credential.presentation(
+                    CredentialType.ANONCREDS_PROOF_REQUEST.type,
+                    presentationDefinitionRequestString.toByteArray(),
+                    listOf(
+                        CredentialOperationsOptions.LinkSecret("", linkSecret),
+                        CredentialOperationsOptions.SchemaDownloader(api),
+                        CredentialOperationsOptions.CredentialDefinitionDownloader(api)
+                    )
                 )
 
                 val attachmentDescriptor = AttachmentDescriptor(

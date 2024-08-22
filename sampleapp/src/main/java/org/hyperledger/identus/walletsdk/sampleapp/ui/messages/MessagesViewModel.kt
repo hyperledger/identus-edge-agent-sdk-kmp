@@ -15,15 +15,14 @@ import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.DIDCOMM_MESSAGING
-import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
-import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
-import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -99,43 +98,43 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         CoroutineScope(Dispatchers.Default).launch {
             val sdk = Sdk.getInstance()
             // JWT presentation request
-//            sdk.agent.initiatePresentationRequest(
-//                type = CredentialType.JWT,
-//                toDID = DID(toDID),
-//                presentationClaims = JWTPresentationClaims(
-//                    claims = mapOf(
-//                        "emailAddress" to InputFieldFilter(
-//                            type = "string",
-//                            pattern = "cristian.castro@iohk.io"
-//                        )
-//                    )
-//                ),
-//                domain = "domain",
-//                challenge = "challenge"
-//            )
-
-            // Anoncreds presentation request
             sdk.agent.initiatePresentationRequest(
-                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                type = CredentialType.JWT,
                 toDID = DID(toDID),
-                presentationClaims = AnoncredsPresentationClaims(
-                    predicates = mapOf(
-                        "0_age" to AnoncredsInputFieldFilter(
+                presentationClaims = JWTPresentationClaims(
+                    claims = mapOf(
+                        "emailAddress" to InputFieldFilter(
                             type = "string",
-                            name = "age",
-                            gte = 18
-                        )
-                    ),
-                    attributes = mapOf(
-                        "0_name" to RequestedAttributes(
-                            "name",
-                            setOf("name"),
-                            emptyMap(),
-                            null
+                            pattern = "cristian.castro@iohk.io"
                         )
                     )
-                )
+                ),
+                domain = "domain",
+                challenge = "challenge"
             )
+
+            // Anoncreds presentation request
+//            sdk.agent.initiatePresentationRequest(
+//                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+//                toDID = DID(toDID),
+//                presentationClaims = AnoncredsPresentationClaims(
+//                    predicates = mapOf(
+//                        "0_age" to AnoncredsInputFieldFilter(
+//                            type = "string",
+//                            name = "age",
+//                            gte = 18
+//                        )
+//                    ),
+//                    attributes = mapOf(
+//                        "0_name" to RequestedAttributes(
+//                            "name",
+//                            setOf("name"),
+//                            emptyMap(),
+//                            null
+//                        )
+//                    )
+//                )
+//            )
         }
     }
 

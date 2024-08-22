@@ -63,7 +63,7 @@ data class SDJWTCredential(
 
     override var revoked: Boolean? = null
 
-    override suspend fun presentation(request: ByteArray, options: List<CredentialOperationsOptions>): String {
+    override suspend fun presentation(attachmentFormat: String, request: ByteArray, options: List<CredentialOperationsOptions>): String {
         var exportableKeyOption: PrivateKey? = null
         var disclosingClaims: List<String>? = null
 

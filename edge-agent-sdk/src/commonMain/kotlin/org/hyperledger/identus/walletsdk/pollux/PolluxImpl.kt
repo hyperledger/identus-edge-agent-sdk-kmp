@@ -103,7 +103,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
-import org.hyperledger.identus.walletsdk.pollux.utils.Bitstring
+import org.hyperledger.identus.walletsdk.pollux.utils.BitString
 
 /**
  * Class representing the implementation of the Pollux interface.
@@ -557,7 +557,7 @@ open class PolluxImpl(
                 if (encodedList != null) {
                     val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
                     val decompressedBytes = decodedBytes.gunzip()
-                    val bitString = Bitstring(decompressedBytes)
+                    val bitString = BitString(decompressedBytes)
 
                     if (statusListIndex > decompressedBytes.size) {
                         throw PolluxError.StatusListOutOfBoundIndex()
@@ -868,6 +868,7 @@ open class PolluxImpl(
         }
     }
 
+    // TODO: Deprecate, the new way to create JWT presentation submission is using the credential. ProvableCredential.presentation()
     override suspend fun createJWTPresentationSubmission(
         presentationDefinitionRequest: String,
         credential: Credential,
@@ -1035,11 +1036,6 @@ open class PolluxImpl(
                     return@let PresentationSubmission(submission, arrayStrings)
                 } ?: throw PolluxError.VerificationUnsuccessful("Presentation is missing presentation_submission")
 
-//            val presentationDefinitionRequest =
-//                (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest as JWTPresentationDefinitionRequest
-//            presentationDefinitionRequest.presentationDefinition
-//            val inputDescriptors =
-//                presentationDefinitionRequest.presentationDefinition.inputDescriptors
             val presentationDefinitionRequestString =
                 (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest
             val presentationDefinitionRequest =
