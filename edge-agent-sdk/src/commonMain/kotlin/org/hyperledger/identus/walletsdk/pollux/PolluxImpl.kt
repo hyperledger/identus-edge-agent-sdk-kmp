@@ -564,8 +564,8 @@ open class PolluxImpl(
     fun verifyStatusListIndexForEncodedList(encodedList: String, statusListIndex: Int): Boolean {
         val decodedBytes = Base64.getUrlDecoder().decode(encodedList)
         val decompressedBytes =
-            decodedBytes.gunzip().map { x -> BitString.reverseBits(x.toInt()).toByte() }.toByteArray()
-        val bitString = BitString(BitSet.valueOf(decompressedBytes), decompressedBytes.size * 8)
+            decodedBytes.gunzip()
+        val bitString = BitString(decompressedBytes)
 
         if (statusListIndex > decompressedBytes.size) {
             throw PolluxError.StatusListOutOfBoundIndex()

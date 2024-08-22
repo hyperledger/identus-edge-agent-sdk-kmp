@@ -10,8 +10,7 @@ class BitStringTest {
     @Test
     fun `test BitString with some 0s`() {
         val byteArray = byteArrayOf(0.toByte())
-        val bitSet = BitSet.valueOf(byteArray)
-        val bitString = BitString(bitSet, byteArray.size * 8)
+        val bitString = BitString(byteArray)
 
         for (i in 0 until bitString.size) {
             assertFalse("Index $i should not be revoked", bitString.isRevoked(i))
@@ -20,16 +19,13 @@ class BitStringTest {
 
     @Test
     fun `test BitString with some 1s`() {
-        val byteArray = byteArrayOf(128.toByte(), 1.toByte())
-        val bitSet = BitSet.valueOf(byteArray)
-        val bitString = BitString(bitSet, byteArray.size * 8)
+        val byteArray = byteArrayOf(128.toByte(), 3.toByte())
+        val bitString = BitString(byteArray)
 
-        assertTrue("Index 7 should be revoked", bitString.isRevoked(7))
-        assertTrue("Index 8 should be revoked", bitString.isRevoked(8))
-        for (i in 0 until 7) {
-            assertFalse("Index $i should not be revoked", bitString.isRevoked(i))
-        }
-        for (i in 9 until bitString.size) {
+        assertTrue("Index 0 should be revoked", bitString.isRevoked(0))
+        assertTrue("Index 8 should be revoked", bitString.isRevoked(14))
+        assertTrue("Index 8 should be revoked", bitString.isRevoked(15))
+        for (i in 1 until 14) {
             assertFalse("Index $i should not be revoked", bitString.isRevoked(i))
         }
     }
