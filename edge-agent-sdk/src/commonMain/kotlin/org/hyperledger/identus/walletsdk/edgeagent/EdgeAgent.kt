@@ -612,9 +612,8 @@ open class EdgeAgent {
                 }
 
                 else -> {
-                    throw ApolloError.InvalidSpecificKeyCurve(
-                        privateKey.getCurve(),
-                        arrayOf(Curve.SECP256K1.value, Curve.ED25519.value)
+                    throw ApolloError.InvalidKeyCurve(
+                        privateKey.getCurve()
                     )
                 }
             }

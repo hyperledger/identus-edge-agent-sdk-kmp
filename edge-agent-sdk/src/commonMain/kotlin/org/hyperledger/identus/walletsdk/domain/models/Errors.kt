@@ -143,44 +143,6 @@ constructor(
 ) : KnownPrismError(message, cause) {
 
     /**
-     * An implementation of the [ApolloError] class that represents an error caused by invalid mnemonic words.
-     * This error occurs when one or more mnemonic words are invalid in a PRISM API response.
-     *
-     * @param invalidWords The array of invalid mnemonic words.
-     * @property message The error message for this error, which is determined based on the presence of invalid words.
-     *                   If `invalidWords` is not null, the message will be "The following mnemonic words are invalid: [invalidWords]".
-     *                   If `invalidWords` is null, the message will be "The seed cannot be null".
-     *
-     * @see ApolloError
-     */
-    class InvalidMnemonicWord
-    @JvmOverloads
-    constructor(
-        invalidWords: Array<String>? = null
-    ) : ApolloError(
-        if (invalidWords.isNullOrEmpty()) {
-            "The following mnemonic words are invalid: $invalidWords"
-        } else {
-            "The seed cannot be null"
-        }
-    ) {
-        override val code: Int
-            get() = 11
-    }
-
-    /**
-     * Class representing an error when the message string cannot be parsed to UTF8 data.
-     *
-     * @property code The error code for CouldNotParseMessageString, which is 12.
-     *
-     * @see ApolloError
-     */
-    class CouldNotParseMessageString : ApolloError("Could not get UTF8 Data from message string") {
-        override val code: Int
-            get() = 12
-    }
-
-    /**
      * A class representing an invalid JSON Web Key (JWK) error in the PRISM SDK.
      *
      * This error indicates that the JWK provided is not in a valid format.
@@ -207,24 +169,6 @@ constructor(
         message = "Invalid key curve $invalidCurve. Valid options are: ${
             Curve.entries.map { it.value }.toTypedArray().joinToString(", ")
         }"
-    ) {
-        override val code: Int
-            get() = 14
-    }
-
-    /**
-     * Represents an error indicating that a specific key curve is invalid.
-     *
-     * @param invalidCurve The invalid key curve.
-     * @param validCurves An array of valid key curves.
-     *
-     * @see ApolloError
-     */
-    class InvalidSpecificKeyCurve(
-        invalidCurve: String,
-        validCurves: Array<String>
-    ) : ApolloError(
-        "Invalid key curve $invalidCurve. Valid options are: ${validCurves.joinToString(", ")}"
     ) {
         override val code: Int
             get() = 14
@@ -273,18 +217,6 @@ constructor(
     }
 
     /**
-     * A class representing an error that occurs when an invalid seed is used.
-     *
-     * @param message The error message.
-     *
-     * @see ApolloError
-     */
-    class InvalidSeed(message: String) : ApolloError(message) {
-        override val code: Int
-            get() = 18
-    }
-
-    /**
      * Represents an error that occurs due to invalid raw data.
      *
      * @param message A detailed error message.
@@ -303,7 +235,7 @@ constructor(
      */
     class RestorationFailedNoIdentifierOrInvalid : ApolloError("Restoration failed: no identifier or invalid") {
         override val code: Int
-            get() = 20
+            get() = 110
     }
 }
 
@@ -432,7 +364,10 @@ constructor(
      *
      * @see CastorError
      */
-    class InvalidKeyError @JvmOverloads constructor(message: String? = null) : CastorError(message)
+    class InvalidKeyError @JvmOverloads constructor(message: String? = null) : CastorError(message) {
+        override val code: Int
+            get() = 29
+    }
 
     /**
      * An error that occurs when the provided PeerDID is invalid.
@@ -440,20 +375,9 @@ constructor(
      * @see CastorError
      */
     class InvalidPeerDIDError @JvmOverloads constructor(message: String? = null, cause: Throwable? = null) :
-        CastorError(message, cause)
-
-    /**
-     * Class representing an error thrown when no resolvers are available to resolve a given DID method.
-     *
-     * @param method The method that couldn't be resolved.
-     *
-     * @see CastorError
-     */
-    class NoResolversAvailableForDIDMethod(method: String) : CastorError(
-        "No resolvers in castor are able to resolve the method $method, please provide a resolver"
-    ) {
+        CastorError(message, cause) {
         override val code: Int
-            get() = 29
+            get() = 210
     }
 
     /**
@@ -467,7 +391,7 @@ constructor(
         "Provided json cannot be parsed into DIDDocument. Missing field $field"
     ) {
         override val code: Int
-            get() = 30
+            get() = 211
     }
 
     /**
@@ -481,7 +405,7 @@ constructor(
         "$field is missing or null from $parent when it must be provided and not null."
     ) {
         override val code: Int
-            get() = 30
+            get() = 212
     }
 }
 
@@ -561,42 +485,6 @@ constructor(
         override val code: Int
             get() = 35
     }
-
-    /**
-     * A class representing an error that occurs when decoding a message with an invalid body.
-     *
-     * @see MercuryError
-     */
-    class MessageInvalidBodyDataError : MercuryError(
-        "While decoding a message, a body was found to be invalid while decoding"
-    ) {
-        override val code: Int
-            get() = 36
-    }
-
-    /**
-     * A class representing a DIDComm error in the PRISM SDK.
-     *
-     * @param customMessage The custom message associated with the error. Defaults to null.
-     * @param customUnderlyingErrors The array of underlying errors associated with the error.
-     *
-     * @see MercuryError
-     */
-    class DidCommError
-    @JvmOverloads
-    constructor(
-        customMessage: String? = null,
-        customUnderlyingErrors: Array<Error>
-    ) : MercuryError(
-        message = "DIDComm error has occurred with message: $customMessage\nErrors: ${
-            customUnderlyingErrors.joinToString(
-                separator = "\n"
-            ) { it.errorDescription ?: "" }
-        }"
-    ) {
-        override val code: Int
-            get() = 37
-    }
 }
 
 /**
@@ -610,67 +498,6 @@ constructor(
     message: String? = null,
     cause: Throwable? = null
 ) : KnownPrismError(message, cause) {
-
-    /**
-     * Represents an error that occurs when data is not persisted for a specific type while adding or making changes to another object.
-     *
-     * @param type The type of data that is not persisted.
-     * @param affecting The object to which the data is being added or modified.
-     *
-     * @see PlutoError
-     */
-    class MissingDataPersistence(type: String, affecting: String) :
-        PlutoError("$type is not persisted while trying to add or make changes to $affecting") {
-        override val code: Int
-            get() = 41
-    }
-
-    /**
-     * Represents a specific error that occurs when required fields are missing.
-     *
-     * @param type The type that requires the fields.
-     * @param fields The array of missing fields.
-     *
-     * @see PlutoError
-     */
-    class MissingRequiredFields(type: String, fields: Array<String>) :
-        PlutoError("$type requires the following fields: ${fields.joinToString(", ")}") {
-
-        override val code: Int
-            get() = 42
-    }
-
-    /**
-     * Represents a duplication error when trying to save an object with an existing ID.
-     *
-     * @param type The type of object that is being duplicated.
-     *
-     * @see PlutoError
-     */
-    class Duplication(type: String) : PlutoError("Trying to save $type with an ID that already exists") {
-        override val code: Int
-            get() = 43
-    }
-
-    /**
-     * A class representing an unknown credential type error in the Pluto SDK.
-     *
-     * @see PlutoError
-     */
-    class UnknownCredentialTypeError : PlutoError("The credential type needs to be JWT or W3C") {
-        override val code: Int
-            get() = 44
-    }
-
-    /**
-     * Represents an error that occurs when the credential JSON cannot be decoded.
-     *
-     * @see PlutoError
-     */
-    class InvalidCredentialJsonError : PlutoError("Could not decode the credential JSON") {
-        override val code: Int
-            get() = 45
-    }
 
     /**
      * An error class representing a database connection error.
@@ -823,7 +650,7 @@ constructor(
      */
     class VerificationUnsuccessful(reason: String) : PolluxError(reason) {
         override val code: Int
-            get() = 60
+            get() = 510
     }
 
     /**
@@ -834,27 +661,7 @@ constructor(
     class WrongKeyProvided(expected: String?, actual: String?) :
         PolluxError("Provided key is: $actual but should be $expected") {
         override val code: Int
-            get() = 61
-    }
-
-    /**
-     * A class representing an error when a field is null when it should not.
-     *
-     * @see PolluxError
-     */
-    class NullField(field: String) : PolluxError("Field $field must not be null") {
-        override val code: Int
-            get() = 62
-    }
-
-    /**
-     * A class representing an error when a request presentation has wrong attachments.
-     *
-     * @see PolluxError
-     */
-    class RequestPresentationHasWrongAttachments(reason: String) : PolluxError(reason) {
-        override val code: Int
-            get() = 63
+            get() = 511
     }
 
     /*
@@ -862,7 +669,7 @@ constructor(
      */
     class StatusListOutOfBoundIndex : PolluxError("Status list index is out of bound") {
         override val code: Int
-            get() = 64
+            get() = 513
     }
 
     /**
@@ -870,7 +677,7 @@ constructor(
      */
     class RevocationRegistryJsonMissingFieldError(val field: String) : PolluxError("Revocation registry json missing: $field") {
         override val code: Int
-            get() = 65
+            get() = 514
     }
 
     /**
@@ -878,7 +685,7 @@ constructor(
      */
     class UnsupportedTypeError(val type: String) : PolluxError("Unsupported type: $type") {
         override val code: Int
-            get() = 66
+            get() = 515
     }
 
     /**
@@ -886,7 +693,7 @@ constructor(
      */
     class NonNullableError(val field: String) : PolluxError("Field $field are non nullable.") {
         override val code: Int
-            get() = 67
+            get() = 516
     }
 
     /**
@@ -894,7 +701,7 @@ constructor(
      */
     class VerifyProofError() : PolluxError("The verification failed.") {
         override val code: Int
-            get() = 68
+            get() = 517
     }
 
     /**
