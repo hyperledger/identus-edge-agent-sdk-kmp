@@ -905,20 +905,19 @@ open class EdgeAgent {
     }
 
     /**
-     * Accepts an Out-of-Band (DIDComm) invitation and establishes a new connection
+     * Accepts an Out-of-Band (DIDComm), verifies if it contains attachments or not. If it does contain attachments
+     * means is a contactless request presentation. If it does not, it just creates a pair and establishes a connection.
      * @param invitation The Out-of-Band invitation to accept
      * @throws [EdgeAgentError.NoMediatorAvailableError] if there is no mediator available or other errors occur during the acceptance process
      */
     suspend fun acceptOutOfBandInvitation(invitation: OutOfBandInvitation) {
         val ownDID = createNewPeerDID(updateMediator = true)
-        // If attachments not empty, means connectionless presentation
         if (invitation.attachments.isNotEmpty()) {
+            // If attachments not empty, means connectionless presentation
             val currentMillis = getTimeMillis()
             if (currentMillis > invitation.expiresTime) {
                 throw EdgeAgentError.ExpiredInvitation()
             }
-            // Attachments contains Presentation Request
-            // Process request, and store as message
             val jsonString = invitation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
             val requestPresentationJson = Json.parseToJsonElement(jsonString).jsonObject
             if (!requestPresentationJson.containsKey("id")) {
@@ -985,6 +984,7 @@ open class EdgeAgent {
 
             pluto.storeMessage(requestPresentation.makeMessage())
         } else {
+            // Regular OOB invitation
             val pair = DIDCommConnectionRunner(invitation, pluto, ownDID, connectionManager).run()
             connectionManager.addConnection(pair)
         }
