@@ -143,4 +143,13 @@ sealed class EdgeAgentError : KnownPrismError() {
         override val message: String
             get() = "This credential does not fulfill the criteria required by the request."
     }
+
+    class ExpiredInvitation() :
+        EdgeAgentError() {
+        override val code: Int
+            get() = 615
+
+        override val message: String
+            get() = "This invitation has expired."
+    }
 }
