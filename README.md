@@ -17,10 +17,10 @@ This SDK provides a library and documentation for developers to build Android an
 Edge Agent is a self-sovereign identity (SSI) platform and service suite for verifiable data and digital identity. Built on Cardano, it offers core infrastructure for issuing DIDs (Decentralized identifiers) and verifiable credentials, alongside tools and frameworks to help expand your ecosystem.
 The complete platform is separated into multiple repositories:
 
-* [edge-agent-sdk-swift](https://github.com/input-output-hk/atala-prism-wallet-sdk-swift) - Repo that implements Edge Agent for Apple platforms in Swift.
-* [edge-agent-sdk-ts](https://github.com/input-output-hk/atala-prism-wallet-sdk-ts) - Repo that implements Edge Agent for Browser and Node.js platforms in Typescript.
-* [identus-cloud-agent](https://github.com/hyperledger/identus-cloud-agent) - Repo that contains the platform Building Blocks.
-* [mediator](https://github.com/input-output-hk/atala-prism-mediator) - Repo for DIDComm V2 Mediator
+* [edge-agent-sdk-swift](https://github.com/hyperledger/identus-edge-agent-sdk-swift/) - Repo that implements Edge Agent for Apple platforms in Swift.
+* [edge-agent-sdk-ts](https://github.com/hyperledger/identus-edge-agent-sdk-ts/) - Repo that implements Edge Agent for Browser and Node.js platforms in Typescript.
+* [identus-cloud-agent](https://github.com/hyperledger/identus-cloud-agent/) - Repo that contains the platform Building Blocks.
+* [mediator](https://github.com/hyperledger/identus-mediator/) - Repo for DIDComm V2 Mediator
 
 ### Modules / APIs
 
