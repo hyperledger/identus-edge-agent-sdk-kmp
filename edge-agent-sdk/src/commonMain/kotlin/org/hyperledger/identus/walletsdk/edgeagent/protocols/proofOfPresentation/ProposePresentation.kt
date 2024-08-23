@@ -114,30 +114,6 @@ class ProposePresentation {
     }
 
     /**
-     * Creates a proposal presentation from a request message.
-     *
-     * @param msg The request message.
-     * @return The created `ProposePresentation` object.
-     * @throws EdgeAgentError.InvalidMessageType If the message type does not represent the expected protocol.
-     */
-//    @Throws(EdgeAgentError.InvalidMessageType::class)
-//    fun makeProposalFromRequest(msg: Message): ProposePresentation {
-//        val request = RequestPresentation.fromMessage(msg)
-//
-//        return ProposePresentation(
-//            body = Body(
-//                goalCode = request.body.goalCode,
-//                comment = request.body.comment,
-//                proofTypes = request.body.proofTypes
-//            ),
-//            attachments = request.attachments,
-//            thid = msg.id,
-//            from = request.to,
-//            to = request.from
-//        )
-//    }
-
-    /**
      * Compares this object with the specified object for equality.
      *
      * @param other the object to compare for equality.
