@@ -35,6 +35,9 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
+import kotlinx.datetime.isDistantFuture
+import kotlinx.datetime.isDistantPast
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
@@ -914,10 +917,12 @@ open class EdgeAgent {
         val ownDID = createNewPeerDID(updateMediator = true)
         if (invitation.attachments.isNotEmpty()) {
             // If attachments not empty, means connectionless presentation
-            val currentMillis = getTimeMillis()
-            if (currentMillis > invitation.expiresTime) {
+            val now = Instant.fromEpochMilliseconds(getTimeMillis())
+            val expiryDate = Instant.fromEpochSeconds(invitation.expiresTime)
+            if (now > expiryDate) {
                 throw EdgeAgentError.ExpiredInvitation()
             }
+
             val jsonString = invitation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
             val requestPresentationJson = Json.parseToJsonElement(jsonString).jsonObject
             if (!requestPresentationJson.containsKey("id")) {
