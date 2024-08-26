@@ -35,6 +35,9 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.JWK
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
+import org.hyperledger.identus.walletsdk.logger.EdgeAgentLogger
+import org.hyperledger.identus.walletsdk.logger.EdgeAgentLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pluto.data.isConnected
@@ -55,7 +58,10 @@ import org.hyperledger.identus.walletsdk.pluto.data.StorableCredential as Storab
  * @property db The instance of `SdkPlutoDb` representing the connection to the database.
  * @property isConnected A flag to indicate whether the database connection is established or not.
  */
-class PlutoImpl(private val connection: DbConnection) : Pluto {
+class PlutoImpl(
+    private val connection: DbConnection,
+    private val logger: EdgeAgentLogger = EdgeAgentLoggerImpl(LogComponent.PLUTO)
+) : Pluto {
     private var db: SdkPlutoDb? = null
 
     init {

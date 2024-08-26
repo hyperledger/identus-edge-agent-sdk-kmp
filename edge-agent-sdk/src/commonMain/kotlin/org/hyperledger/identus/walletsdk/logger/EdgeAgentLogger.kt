@@ -24,10 +24,10 @@ private const val METADATA_PRIVACY_STR = "------"
 private val hashingLog = UUID.randomUUID().toString()
 
 /**
- * PrismLogger is an interface that defines methods for logging messages
+ * EdgeAgentLogger is an interface that defines methods for logging messages
  * with different log levels and metadata.
  */
-interface PrismLogger {
+interface EdgeAgentLogger {
     /**
      * Logs a debug message with optional metadata.
      *
@@ -66,22 +66,27 @@ interface PrismLogger {
      * @param error The error to be logged.
      * @param metadata An array of metadata objects to be included in the log message. Defaults to an empty array if not provided.
      *
-     * @see PrismLogger.error
+     * @see EdgeAgentLogger.error
      * @see Metadata
      */
     fun error(error: Error, metadata: Array<Metadata> = arrayOf())
 }
 
 /**
- * Implementation of the PrismLogger interface.
+ * Implementation of the EdgeAgentLogger interface.
  *
  * @property category the LogComponent category for this logger
  */
-class PrismLoggerImpl(category: LogComponent) : PrismLogger {
+class EdgeAgentLoggerImpl(category: LogComponent, private var logLevel: LogLevel = LogLevel.INFO, tag: String? = null) :
+    EdgeAgentLogger {
 
-    private val log = logging("[io.prism.kmm.sdk.$category]")
-
-    private var logLevel: LogLevel = LogLevel.INFO
+    private val log = logging(
+        if (tag != null) {
+            "$tag.$category"
+        } else {
+            "[org.hyperledger.identus.walletsdk.$category]"
+        }
+    )
 
     /**
      * Logs a debug message with optional metadata.
@@ -333,7 +338,7 @@ enum class LogLevel(val value: Int) {
  * - MERCURY
  * - PLUTO
  * - POLLUX
- * - PRISM_AGENT
+ * - EDGE_AGENT
  */
 enum class LogComponent {
     APOLLO,
@@ -341,5 +346,5 @@ enum class LogComponent {
     MERCURY,
     PLUTO,
     POLLUX,
-    PRISM_AGENT
+    EDGE_AGENT
 }

@@ -40,11 +40,16 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
+import org.hyperledger.identus.walletsdk.logger.EdgeAgentLogger
+import org.hyperledger.identus.walletsdk.logger.EdgeAgentLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.LogComponent
 
 /**
  * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
  */
-class ApolloImpl : Apollo {
+class ApolloImpl(
+    private val logger: EdgeAgentLogger = EdgeAgentLoggerImpl(LogComponent.APOLLO)
+) : Apollo {
 
     /**
      * Creates a random set of mnemonic phrases that can be used as a seed for generating a private key.

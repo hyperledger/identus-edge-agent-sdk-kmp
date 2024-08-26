@@ -50,7 +50,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
-import org.hyperledger.identus.walletsdk.logger.PrismLogger
+import org.hyperledger.identus.walletsdk.logger.EdgeAgentLogger
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
@@ -81,7 +81,7 @@ class PolluxImplTest {
     lateinit var castorMock: Castor
 
     @Mock
-    lateinit var loggerMock: PrismLogger
+    lateinit var loggerMock: EdgeAgentLogger
 
     @Before
     fun setup() {
@@ -330,7 +330,7 @@ class PolluxImplTest {
     @Test
     fun testCreatePresentationSubmission_whenAllCorrect_thenPresentationSubmissionProofWellFormed() =
         runTest {
-            val loggerMock = mock<PrismLogger>()
+            val loggerMock = mock<EdgeAgentLogger>()
             val castor: Castor = CastorImpl(apollo = ApolloImpl(), loggerMock)
 
             val issuerKeyPair =

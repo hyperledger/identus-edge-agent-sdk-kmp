@@ -107,8 +107,8 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLogger
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.EdgeAgentLogger
+import org.hyperledger.identus.walletsdk.logger.EdgeAgentLoggerImpl
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
@@ -153,7 +153,7 @@ open class EdgeAgent {
     private val edgeAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     internal var connectionManager: ConnectionManager
-    private var logger: PrismLogger
+    private var logger: EdgeAgentLogger
     private val agentOptions: AgentOptions
 
     /**
@@ -181,7 +181,7 @@ open class EdgeAgent {
         connectionManager: ConnectionManager,
         seed: Seed?,
         api: Api?,
-        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
+        logger: EdgeAgentLogger = EdgeAgentLoggerImpl(LogComponent.EDGE_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
         edgeAgentScope.launch {
@@ -235,7 +235,7 @@ open class EdgeAgent {
         seed: Seed? = null,
         api: Api? = null,
         mediatorHandler: MediationHandler,
-        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
+        logger: EdgeAgentLogger = EdgeAgentLoggerImpl(LogComponent.EDGE_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
         edgeAgentScope.launch {
