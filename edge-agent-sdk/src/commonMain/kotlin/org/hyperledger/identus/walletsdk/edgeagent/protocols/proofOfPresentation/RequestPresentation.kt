@@ -33,7 +33,7 @@ data class RequestPresentation(
     val attachments: Array<AttachmentDescriptor>,
     val thid: String? = null,
     val from: DID,
-    val to: DID,
+    val to: DID? = null,
     val direction: Message.Direction = Message.Direction.RECEIVED
 ) {
 
