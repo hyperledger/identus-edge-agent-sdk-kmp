@@ -49,7 +49,7 @@ interface Pollux {
      * @param offerJson The JSON object representing the credential offer.
      * @return The string representation of the processed result.
      */
-    fun processCredentialRequestJWT(
+    suspend fun processCredentialRequestJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
         offerJson: JsonObject
@@ -63,7 +63,7 @@ interface Pollux {
      * @param offerJson The JSON object representing the credential offer.
      * @return The string representation of the processed result.
      */
-    fun processCredentialRequestSDJWT(
+    suspend fun processCredentialRequestSDJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
         offerJson: JsonObject
