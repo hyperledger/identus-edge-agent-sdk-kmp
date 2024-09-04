@@ -21,6 +21,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.didcommx.didcomm.common.Typ
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
@@ -1175,13 +1176,13 @@ class PolluxImplTest {
             challenge = challenge,
             credential = credential
         )
-
         assertTrue(signedClaims.contains("."))
-
         val splits = signedClaims.split(".")
         val header = splits[0].base64UrlDecoded
         val json = Json.parseToJsonElement(header)
         assertTrue(json.jsonObject.containsKey("kid"))
+        val kid = json.jsonObject["kid"]!!.jsonPrimitive.content
+        assertEquals("did:prism:cd6cf9f94a43c53e286b0f2015c0083701350a694f52a22ee02e3bd29d93eba9:CrQBCrEBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xotCgojZGlkY29tbS0xEhBESURDb21tTWVzc2FnaW5nGg1kaWQ6cGVlcjp0ZXN0#authentication0", kid)
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {

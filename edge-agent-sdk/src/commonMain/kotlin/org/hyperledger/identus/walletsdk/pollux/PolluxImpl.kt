@@ -1312,7 +1312,7 @@ open class PolluxImpl(
         }
         val verificationMethod =
             (authentication as DIDDocument.Authentication).verificationMethods.find { verificationMethod ->
-                verificationMethod.id.did == did && verificationMethod.id.fragment == PrismDIDPublicKey.Usage.MASTER_KEY.defaultId()
+                verificationMethod.id.did == did && verificationMethod.id.fragment == PrismDIDPublicKey.Usage.AUTHENTICATION_KEY.defaultId()
             }
 
         return verificationMethod?.id?.string()
