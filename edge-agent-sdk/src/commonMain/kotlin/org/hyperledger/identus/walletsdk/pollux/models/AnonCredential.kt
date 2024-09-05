@@ -166,7 +166,7 @@ data class AnonCredential(
             throw UnknownError.SomethingWentWrongError()
         }
 
-        val presentationRequest = PresentationRequest(request.toString())
+        val presentationRequest = PresentationRequest(request.decodeToString())
         val cred = anoncreds_uniffi.Credential(this.id)
 
         val requestedAttributes = extractRequestedAttributes(request.toString())
