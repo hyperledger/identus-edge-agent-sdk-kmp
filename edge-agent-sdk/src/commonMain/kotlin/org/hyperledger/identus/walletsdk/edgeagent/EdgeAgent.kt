@@ -1233,12 +1233,10 @@ open class EdgeAgent {
                 val privateKey =
                     apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
 
-                val presentationSubmissionProof = credential.presentation(
-                    presentationDefinitionRequestString.encodeToByteArray(),
-                    listOf(
-                        CredentialOperationsOptions.SubjectDID(DID(didString)),
-                        CredentialOperationsOptions.ExportableKey(privateKey)
-                    )
+                val presentationSubmissionProof = pollux.createJWTPresentationSubmission(
+                    presentationDefinitionRequest = presentationDefinitionRequestString,
+                    credential = credential,
+                    privateKey = privateKey,
                 )
 
                 val attachmentDescriptor = AttachmentDescriptor(
@@ -1258,13 +1256,10 @@ open class EdgeAgent {
             } else {
                 val linkSecret = getLinkSecret()
 
-                val presentationSubmissionProof = credential.presentation(
-                    presentationDefinitionRequestString.encodeToByteArray(),
-                    listOf(
-                        CredentialOperationsOptions.LinkSecret("", linkSecret),
-                        CredentialOperationsOptions.SchemaDownloader(api),
-                        CredentialOperationsOptions.CredentialDefinitionDownloader(api)
-                    )
+                val presentationSubmissionProof = pollux.createAnoncredsPresentationSubmission(
+                    presentationDefinitionRequest = presentationDefinitionRequestString,
+                    credential = credential,
+                    linkSecret = linkSecret
                 )
 
                 val attachmentDescriptor = AttachmentDescriptor(
