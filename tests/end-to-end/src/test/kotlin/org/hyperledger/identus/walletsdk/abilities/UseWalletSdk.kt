@@ -31,8 +31,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.Didcom
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommRequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.PrismRevocation
-import org.hyperledger.identus.walletsdk.logger.LogComponent
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
 import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
 import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
 import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
@@ -42,7 +40,6 @@ import org.lighthousegames.logging.KmLogging
 import org.lighthousegames.logging.LogLevel
 import java.util.Base64
 import java.util.Collections
-import java.util.UUID
 
 
 class UseWalletSdk : Ability, HasTeardown {
