@@ -7,20 +7,20 @@ import io.iohk.atala.automation.serenity.ensure.Ensure
 import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.serenity.questions.HttpRequest
 import org.hyperledger.identus.walletsdk.configuration.Environment
-import io.iohk.atala.prism.models.AnoncredPresentationRequestV1
-import io.iohk.atala.prism.models.AnoncredRequestedAttributeV1
-import io.iohk.atala.prism.models.AnoncredRequestedPredicateV1
-import io.iohk.atala.prism.models.CreateConnectionRequest
-import io.iohk.atala.prism.models.CreateIssueCredentialRecordRequest
-import io.iohk.atala.prism.models.Options
-import io.iohk.atala.prism.models.ProofRequestAux
-import io.iohk.atala.prism.models.RequestPresentationInput
 import org.hyperledger.identus.walletsdk.utils.Utils
 import net.serenitybdd.rest.SerenityRest.lastResponse
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.rest.interactions.Patch
 import net.serenitybdd.screenplay.rest.interactions.Post
 import org.apache.http.HttpStatus
+import org.hyperledger.identus.client.models.AnoncredPresentationRequestV1
+import org.hyperledger.identus.client.models.AnoncredRequestedAttributeV1
+import org.hyperledger.identus.client.models.AnoncredRequestedPredicateV1
+import org.hyperledger.identus.client.models.CreateConnectionRequest
+import org.hyperledger.identus.client.models.CreateIssueCredentialRecordRequest
+import org.hyperledger.identus.client.models.Options
+import org.hyperledger.identus.client.models.ProofRequestAux
+import org.hyperledger.identus.client.models.RequestPresentationInput
 import java.util.UUID
 
 class CloudAgentWorkflow {

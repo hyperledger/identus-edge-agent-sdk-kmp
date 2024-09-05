@@ -1,5 +1,6 @@
 package org.hyperledger.identus.walletsdk.configuration
 
+import io.cucumber.java.After
 import io.cucumber.java.Before
 import io.cucumber.java.BeforeAll
 import io.cucumber.java.ParameterType
@@ -13,6 +14,11 @@ import net.serenitybdd.screenplay.rest.abilities.CallAnApi
 @BeforeAll
 fun setupEnvironment() {
     Environment.setup()
+}
+
+@After
+fun drawTheCurtain() {
+    OnStage.drawTheCurtain()
 }
 
 class HooksSetup {
@@ -31,8 +37,7 @@ class HooksSetup {
         )
 
         cast.actorNamed("Cloud Agent",
-            CallAnApi.at(Environment.agentUrl),
-            UseWalletSdk()
+            CallAnApi.at(Environment.agentUrl)
         )
 
         OnStage.setTheStage(cast)

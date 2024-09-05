@@ -5,11 +5,18 @@ import io.cucumber.java.en.Then
 import io.cucumber.java.en.When
 import kotlinx.coroutines.flow.first
 import net.serenitybdd.screenplay.Actor
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.hyperledger.identus.walletsdk.abilities.UseWalletSdk
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
+import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.NonRevoked
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
+import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
 import org.hyperledger.identus.walletsdk.workflow.CloudAgentWorkflow
 import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import javax.inject.Inject
@@ -130,7 +137,7 @@ class EdgeAgentSteps {
     fun `Verifier requests Holder to verify the JWT Credential`(verifierEdgeAgent: Actor, holderEdgeAgent: Actor) {
         edgeAgentWorkflow.createPeerDids(holderEdgeAgent, 1)
         val did = holderEdgeAgent.recall<DID>("did")
-        val claims = PresentationClaims(
+        val claims = JWTPresentationClaims(
             claims = mapOf(
                 "automation-required" to InputFieldFilter(type = "string", pattern = "required value")
             )
@@ -142,14 +149,18 @@ class EdgeAgentSteps {
     fun `Verifier requests Holder to verify the anoncred credential`(verifierEdgeAgent: Actor, holderEdgeAgent: Actor) {
         edgeAgentWorkflow.createPeerDids(holderEdgeAgent, 1)
         val did = holderEdgeAgent.recall<DID>("did")
-        // FIXME: change to anoncred attributes request
-        val claims = PresentationClaims(
-            claims = mapOf(
-                "name" to InputFieldFilter(type = "string", pattern = "automation")
-            )
+        val claims = AnoncredsPresentationClaims(
+            attributes = mapOf(
+                "name" to RequestedAttributes(
+                    name = "name",
+                    names = setOf("name"),
+                    restrictions = emptyMap(),
+                    null
+                )
+            ),
+            predicates = emptyMap()
         )
-        // FIXME: change to CredentialType.AnonCred
-        edgeAgentWorkflow.initiatePresentationRequest(CredentialType.JWT, verifierEdgeAgent, did, claims)
+        edgeAgentWorkflow.initiatePresentationRequest(CredentialType.ANONCREDS_PROOF_REQUEST, verifierEdgeAgent, did, claims)
     }
 
     @When("{actor} sends the verification proof")
@@ -179,15 +190,11 @@ class EdgeAgentSteps {
     }
 
     @Then("{actor} should have {} credentials")
-    fun `Edge Agent should have N credential`(actor: Actor, numberOfCredentials: Int) {
-        //edgeAgentWorkflow.creden
-    }
-
-    @Given("{actor} has 0 issued credentials")
-    fun `Edge agent test`(actor: Actor) {
+    fun `Edge Agent should have expected credentials`(actor: Actor, numberOfCredentials: Int) {
         actor.attemptsTo(
             UseWalletSdk.execute {
-                assert(it.sdk.getAllCredentials().first().isEmpty())
+                val credentials = it.sdk.getAllCredentials().first()
+                assertThat(credentials.size).isEqualTo(numberOfCredentials)
             }
         )
     }
