@@ -213,7 +213,7 @@ data class JWTCredential @JvmOverloads constructor(
                     verifiablePresentation = arrayOf(presentationJwt)
                 )
             )
-        } ?: throw PolluxError.NullField("CredentialSubject")
+        } ?: throw PolluxError.NonNullableError("CredentialSubject")
     }
 
     private fun vcPresentation(request: ByteArray, subjectDID: DID, exportableKey: PrivateKey): String {

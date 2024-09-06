@@ -643,7 +643,7 @@ open class EdgeAgent {
         }
 
         return when (val type = pollux.extractCredentialFormatFromMessage(offer.attachments)) {
-            CredentialType.JWT -> {
+            CredentialType.JWT, CredentialType.SDJWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
 
                 val keyPair = Secp256k1KeyPair.generateKeyPair(

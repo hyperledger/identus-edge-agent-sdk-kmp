@@ -325,7 +325,8 @@ open class PolluxImpl(
             CredentialType.ANONCREDS_OFFER.type,
             CredentialType.ANONCREDS_REQUEST.type,
             CredentialType.ANONCREDS_ISSUE.type,
-            CredentialType.ANONCREDS_PROOF_REQUEST.type
+            CredentialType.ANONCREDS_PROOF_REQUEST.type,
+            CredentialType.SDJWT.type
         )
         val foundFormat = formats.find { it.format in desiredFormats }
         return foundFormat?.format?.let { format ->
@@ -335,6 +336,7 @@ open class PolluxImpl(
                 CredentialType.ANONCREDS_REQUEST.type -> CredentialType.ANONCREDS_REQUEST
                 CredentialType.ANONCREDS_ISSUE.type -> CredentialType.ANONCREDS_ISSUE
                 CredentialType.ANONCREDS_PROOF_REQUEST.type -> CredentialType.ANONCREDS_PROOF_REQUEST
+                CredentialType.SDJWT.type -> CredentialType.SDJWT
                 else -> throw Error("$format is not a valid credential type")
             }
         } ?: throw Error("Unknown credential type")
