@@ -166,11 +166,12 @@ data class AnonCredential(
             throw UnknownError.SomethingWentWrongError()
         }
 
-        val presentationRequest = PresentationRequest(request.toString())
+        val decodedRequest = request.decodeToString()
+        val presentationRequest = PresentationRequest(decodedRequest)
         val cred = anoncreds_uniffi.Credential(this.id)
 
-        val requestedAttributes = extractRequestedAttributes(request.toString())
-        val requestedPredicates = extractRequestedPredicatesKeys(request.toString())
+        val requestedAttributes = extractRequestedAttributes(decodedRequest)
+        val requestedPredicates = extractRequestedPredicatesKeys(decodedRequest)
 
         val credentialRequests = anoncreds_uniffi.RequestedCredential(
             cred = cred,
