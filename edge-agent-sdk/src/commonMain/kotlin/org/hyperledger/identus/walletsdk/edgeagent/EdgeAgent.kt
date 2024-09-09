@@ -654,10 +654,7 @@ open class EdgeAgent {
                     KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                 )
                 val offerDataString = offer.attachments.firstNotNullOf {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
+                    it.data.getDataAsJsonString()
                 }
                 val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
                 val jwtString =
@@ -1057,12 +1054,9 @@ open class EdgeAgent {
                 if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
                     throw EdgeAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
                 }
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
-                }.first()
+                val requestData = request.attachments.firstNotNullOf {
+                    it.data.getDataAsJsonString()
+                }
                 val linkSecret = getLinkSecret()
                 try {
                     presentationString = credential.presentation(
@@ -1093,10 +1087,7 @@ open class EdgeAgent {
                         KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                     )
                 val requestData = request.attachments.firstNotNullOf {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
+                    it.data.getDataAsJsonString()
                 }
                 try {
                     presentationString = credential.presentation(
@@ -1113,15 +1104,12 @@ open class EdgeAgent {
             }
 
             CredentialType.SDJWT.type -> {
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
-                }.first().encodeToByteArray()
+                val requestData = request.attachments.firstNotNullOf {
+                    it.data.getDataAsJsonString()
+                }
                 try {
                     presentationString = credential.presentation(
-                        requestData,
+                        requestData.encodeToByteArray(),
                         listOf(CredentialOperationsOptions.DisclosingClaims(listOf(credential.claims.toString())))
                     )
                 } catch (e: Exception) {
@@ -1194,7 +1182,7 @@ open class EdgeAgent {
                     type = type,
                     presentationClaims = presentationClaims,
                     options = AnoncredsPresentationOptions(
-                        nonce = generateNonce()
+                        nonce = generateNumericNonce()
                     )
                 )
                 attachmentDescriptor = AttachmentDescriptor(
@@ -1244,6 +1232,7 @@ open class EdgeAgent {
                     ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
                 val privateKey =
                     apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
+
                 val presentationSubmissionProof = pollux.createJWTPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequestString,
                     credential = credential,
@@ -1266,6 +1255,7 @@ open class EdgeAgent {
                 )
             } else {
                 val linkSecret = getLinkSecret()
+
                 val presentationSubmissionProof = pollux.createAnoncredsPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequestString,
                     credential = credential,
@@ -1490,11 +1480,16 @@ open class EdgeAgent {
         }
     }
 
-    private fun generateNonce(size: Int = 16): String {
+    private fun generateNumericNonce(size: Int = 16): String {
         val random = SecureRandom()
-        val nonce = ByteArray(size)
-        random.nextBytes(nonce)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(nonce)
+        val nonce = StringBuilder(size)
+
+        repeat(size) {
+            val digit = random.nextInt(10) // Generates a number between 0 and 9
+            nonce.append(digit)
+        }
+
+        return nonce.toString()
     }
 
     /**
