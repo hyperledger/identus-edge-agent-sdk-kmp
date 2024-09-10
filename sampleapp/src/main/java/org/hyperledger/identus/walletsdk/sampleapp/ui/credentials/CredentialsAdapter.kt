@@ -16,6 +16,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 
 class CredentialsAdapter(
     private var data: MutableList<Credential> = mutableListOf(),
@@ -99,6 +100,11 @@ class CredentialsAdapter(
                     val anon = cred as AnonCredential
                     type.text = String.format(typeString, "Anoncred")
                     expiryDate.text = String.format("Issuer: ${anon.credentialDefinitionID}")
+                }
+
+                SDJWTCredential::class -> {
+                    val sdjwt = cred as SDJWTCredential
+                    type.text = String.format(typeString, "SD-JWT")
                 }
             }
         }

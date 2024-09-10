@@ -439,7 +439,7 @@ internal class CastorShared {
          * @return [OctetPublicKey].
          */
         @JvmStatic
-        private fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
+        internal fun octetPublicKey(keyPair: KeyPair): OctetPublicKey {
             val curve = when (keyPair::class) {
                 Secp256k1KeyPair::class -> {
                     Curve.SECP256K1

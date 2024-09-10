@@ -87,6 +87,10 @@ open class PlutoBackupTask(private val pluto: Pluto) {
                     PlutoRestoreTask.BackUpRestorationId.W3C
                 }
 
+                RestorationID.SDJWT.value -> {
+                    PlutoRestoreTask.BackUpRestorationId.SDJWT
+                }
+
                 else -> {
                     throw UnknownError.SomethingWentWrongError("Unknown restoration ID ${credentialRecovery.restorationId}")
                 }

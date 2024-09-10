@@ -18,6 +18,7 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonPrimitive
+import org.hyperledger.identus.walletsdk.domain.models.ApolloError
 import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
@@ -36,10 +37,10 @@ data class SDJWTCredential(
         get() = sdjwtString
 
     @Transient
-    override val issuer: String = sdjwt.jwt.second.get("iss").toString()
+    override val issuer: String = sdjwt.jwt.second["iss"]?.jsonPrimitive?.content ?: throw Exception("Most contain issuer") // TODO: Custom exception
 
     override val subject: String?
-        get() = sdjwt.jwt.second.get("sub").toString()
+        get() = sdjwt.jwt.second["sub"]?.jsonPrimitive?.content
 
     override val claims: Array<Claim>
         get() {
@@ -52,12 +53,12 @@ data class SDJWTCredential(
     override val properties: Map<String, Any?>
         get() {
             val properties = mutableMapOf<String, Any?>()
-            properties["nbf"] = sdjwt.jwt.second.get("nbf").toString()
-            properties["jti"] = sdjwt.jwt.second.get("sub").toString()
-            properties["aud"] = sdjwt.jwt.second.get("aud").toString()
+            properties["nbf"] = sdjwt.jwt.second["nbf"]?.jsonPrimitive?.content
+            properties["jti"] = sdjwt.jwt.second["sub"]?.jsonPrimitive?.content
+            properties["aud"] = sdjwt.jwt.second["aud"]?.jsonPrimitive?.content
             properties["id"] = id
 
-            sdjwt.jwt.second.get("exp").toString().let { properties["exp"] = it }
+            sdjwt.jwt.second["exp"]?.jsonPrimitive?.content.let { properties["exp"] = it }
             return properties.toMap()
         }
 
@@ -83,7 +84,7 @@ data class SDJWTCredential(
     }
 
     /**
-     * Converts the current instance of [JWTCredential] to a [StorableCredential].
+     * Converts the current instance of [SDJWTCredential] to a [StorableCredential].
      *
      * @return The converted [StorableCredential].
      */
@@ -93,7 +94,7 @@ data class SDJWTCredential(
             override val id: String
                 get() = c.id
             override val recoveryId: String
-                get() = "jwt+credential"
+                get() = "sd-jwt+credential"
             override val credentialData: ByteArray
                 get() = c.id.toByteArray()
 
@@ -109,7 +110,7 @@ data class SDJWTCredential(
             override val credentialSchema: String?
                 get() = null
             override val validUntil: String?
-                get() = c.sdjwt.jwt.second.get("exp").toString().toString()
+                get() = c.sdjwt.jwt.second["exp"]?.jsonPrimitive?.content
             override var revoked: Boolean? = c.revoked
             override val availableClaims: Array<String>
                 get() = c.claims.map { it.key }.toTypedArray()
@@ -122,12 +123,12 @@ data class SDJWTCredential(
             override val properties: Map<String, Any?>
                 get() {
                     val properties = mutableMapOf<String, Any?>()
-                    properties["nbf"] = sdjwt.jwt.second.get("nbf").toString()
-                    properties["jti"] = sdjwt.jwt.second.get("jti").toString()
-                    properties["aud"] = sdjwt.jwt.second.get("aud").toString()
+                    properties["nbf"] = sdjwt.jwt.second["nbf"]?.jsonPrimitive?.content
+                    properties["jti"] = sdjwt.jwt.second["jti"]?.jsonPrimitive?.content
+                    properties["aud"] = sdjwt.jwt.second["aud"]?.jsonPrimitive?.content
                     properties["id"] = id
 
-                    sdjwt.jwt.second.get("exp").toString().let { properties["exp"] = it }
+                    sdjwt.jwt.second["exp"]?.jsonPrimitive?.content.let { properties["exp"] = it }
                     return properties.toMap()
                 }
 

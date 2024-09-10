@@ -44,6 +44,7 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask.BackUpMessage.Js
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -94,6 +95,12 @@ open class PlutoRestoreTask(
                         .replace("\"null\"", "null")
                     Json.decodeFromString<AnonCredentialBackUp>(json)
                         .toAnonCredential().toStorableCredential()
+                }
+
+                BackUpRestorationId.SDJWT.value -> {
+                    val sdjwtString = it.data.base64UrlDecoded
+                        .replace("\"null\"", "null")
+                    SDJWTCredential.fromSDJwtString(sdjwtString).toStorableCredential()
                 }
 
                 else -> {
@@ -336,7 +343,8 @@ open class PlutoRestoreTask(
     enum class BackUpRestorationId(val value: String) {
         JWT("jwt"),
         ANONCRED("anoncred"),
-        W3C("w3c");
+        W3C("w3c"),
+        SDJWT("sd-jwt+credential");
 
         /**
          * Converts a BackUpRestorationId object to a RestorationID object from the RestorationID class.
@@ -348,6 +356,7 @@ open class PlutoRestoreTask(
                 JWT -> RestorationID.JWT
                 ANONCRED -> RestorationID.ANONCRED
                 W3C -> RestorationID.W3C
+                SDJWT -> RestorationID.SDJWT
             }
     }
 

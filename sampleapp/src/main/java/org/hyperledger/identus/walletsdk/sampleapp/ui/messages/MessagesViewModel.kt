@@ -98,14 +98,30 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         CoroutineScope(Dispatchers.Default).launch {
             val sdk = Sdk.getInstance()
             // JWT presentation request
+//            sdk.agent.initiatePresentationRequest(
+//                type = CredentialType.JWT,
+//                toDID = DID(toDID),
+//                presentationClaims = JWTPresentationClaims(
+//                    claims = mapOf(
+//                        "emailAddress" to InputFieldFilter(
+//                            type = "string",
+//                            pattern = "cristian.castro@iohk.io"
+//                        )
+//                    )
+//                ),
+//                domain = "domain",
+//                challenge = "challenge"
+//            )
+
+            // SD-JWT presentation request
             sdk.agent.initiatePresentationRequest(
-                type = CredentialType.JWT,
+                type = CredentialType.SDJWT,
                 toDID = DID(toDID),
                 presentationClaims = JWTPresentationClaims(
                     claims = mapOf(
                         "emailAddress" to InputFieldFilter(
                             type = "string",
-                            pattern = "cristian.castro@iohk.io"
+                            pattern = "test@iohk.io"
                         )
                     )
                 ),

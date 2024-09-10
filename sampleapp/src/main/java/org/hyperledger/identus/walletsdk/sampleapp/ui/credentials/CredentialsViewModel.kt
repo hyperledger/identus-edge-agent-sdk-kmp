@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.viewModelFactory
 import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
@@ -27,6 +28,12 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
     fun isCredentialRevoked(credential: Credential) {
         viewModelScope.launch {
             Sdk.getInstance().agent.isCredentialRevoked(credential)
+        }
+    }
+
+    fun createSdJwt() {
+        viewModelScope.launch {
+            Sdk.getInstance().agent.createSDJWTCredential()
         }
     }
 }

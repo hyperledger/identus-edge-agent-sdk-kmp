@@ -307,6 +307,10 @@ open class PolluxImpl(
                 (credential as AnonCredential).toStorableCredential()
             }
 
+            CredentialType.SDJWT -> {
+                (credential as SDJWTCredential).toStorableCredential()
+            }
+
             else -> {
                 throw PolluxError.InvalidCredentialError()
             }
@@ -739,7 +743,8 @@ open class PolluxImpl(
         val format: JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat
         val inputDescriptor: JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor
         when (type) {
-            CredentialType.JWT -> {
+            CredentialType.JWT,
+            CredentialType.SDJWT-> {
                 if (options !is JWTPresentationOptions) {
                     throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation options must be ${JWTPresentationOptions::class.simpleName}")
                 }

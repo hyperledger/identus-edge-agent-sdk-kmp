@@ -11,12 +11,25 @@ import com.nimbusds.jose.JWEDecrypter
 import com.nimbusds.jose.JWEEncrypter
 import com.nimbusds.jose.JWEHeader
 import com.nimbusds.jose.JWEObject
+import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.Payload
+import com.nimbusds.jose.crypto.Ed25519Signer
 import com.nimbusds.jose.crypto.X25519Decrypter
 import com.nimbusds.jose.crypto.X25519Encrypter
+import com.nimbusds.jose.jwk.KeyUse
 import com.nimbusds.jose.jwk.OctetKeyPair
 import com.nimbusds.jose.util.Base64URL
-import eu.europa.ec.eudi.sdjwt.SdJwt
+import eu.europa.ec.eudi.sdjwt.SdJwtIssuer
+import eu.europa.ec.eudi.sdjwt.exp
+import eu.europa.ec.eudi.sdjwt.iat
+import eu.europa.ec.eudi.sdjwt.iss
+import eu.europa.ec.eudi.sdjwt.nimbus
+import eu.europa.ec.eudi.sdjwt.plain
+import eu.europa.ec.eudi.sdjwt.sd
+import eu.europa.ec.eudi.sdjwt.sdJwt
+import eu.europa.ec.eudi.sdjwt.serialize
+import eu.europa.ec.eudi.sdjwt.structured
+import eu.europa.ec.eudi.sdjwt.sub
 import eu.europa.ec.eudi.sdjwt.vc.SD_JWT_VC_TYPE
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -41,6 +54,7 @@ import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.put
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -116,6 +130,7 @@ import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.kotlincrypto.hash.sha2.SHA256
 
 /**
@@ -1086,7 +1101,8 @@ open class EdgeAgent {
         val presentationDefinitionRequest: String
         val attachmentDescriptor: AttachmentDescriptor
         when (type) {
-            CredentialType.JWT -> {
+            CredentialType.JWT,
+            CredentialType.SDJWT -> {
                 if (domain == null) {
                     throw EdgeAgentError.MissingOrNullFieldError("Domain", "initiatePresentationRequest parameters")
                 }
@@ -1156,9 +1172,43 @@ open class EdgeAgent {
             val presentationDefinitionRequestString =
                 requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
 
-            if (presentationDefinitionRequestString.contains("jwt") ||
-                presentationDefinitionRequestString.contains("vc+sd-jwt")
-            ) {
+            if (presentationDefinitionRequestString.contains("vc+sd-jwt")) {
+                val didString =
+                    credential.subject ?: throw Exception("Credential must contain subject")
+
+                val storablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
+                    ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
+                val privateKey =
+                    apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
+
+                credential as SDJWTCredential
+                val disclosingClaims = listOf<String>()
+                credential.sdjwt.jwt.second[""]
+
+                val presentationString = credential.presentation(
+                    CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+                    presentationDefinitionRequestString.encodeToByteArray(),
+                    listOf(
+//                        CredentialOperationsOptions.DisclosingClaims(),
+                        CredentialOperationsOptions.SubjectDID(DID(didString)),
+                        CredentialOperationsOptions.ExportableKey(privateKey)
+                    )
+                )
+
+                val attachmentDescriptor = AttachmentDescriptor(
+                    mediaType = "application/json",
+                    format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
+                    data = AttachmentBase64(presentationString.base64UrlEncoded)
+                )
+
+                return Presentation(
+                    body = Presentation.Body(),
+                    attachments = arrayOf(attachmentDescriptor),
+                    thid = requestPresentation.thid ?: requestPresentation.id,
+                    from = requestPresentation.to,
+                    to = requestPresentation.from
+                )
+            } else if (presentationDefinitionRequestString.contains("jwt")) {
                 // If the json can be used to instantiate a JWTPresentationDefinitionRequest, process the request
                 // as JWT.
                 val didString =
@@ -1398,6 +1448,42 @@ open class EdgeAgent {
         } catch (ex: Exception) {
             throw UnknownError.SomethingWentWrongError(ex.localizedMessage, ex)
         }
+    }
+
+    suspend fun createSDJWTCredential(): SDJWTCredential {
+        val keyPair = Ed25519KeyPair.generateKeyPair()
+
+        val subject = createNewPrismDID()
+        println(subject.toString())
+
+        val octet = OctetKeyPair.Builder(com.nimbusds.jose.jwk.Curve.Ed25519, Base64URL.encode(keyPair.publicKey.raw))
+            .d(Base64URL.encode(keyPair.privateKey.raw))
+            .keyUse(KeyUse.SIGNATURE)
+            .build()
+
+        val issuer = SdJwtIssuer
+            .nimbus(
+                signer = Ed25519Signer(octet),
+                signAlgorithm = JWSAlgorithm.EdDSA
+            )
+        val sdjwt = issuer.issue(
+            sdJwt {
+                plain {
+                    sub(subject.toString())
+                    iss("did:prism:ce3403b5a733883035d6ec43ba075a41c9cc0a3257977d80c75d6319ade0ed70")
+                    iat(1516239022)
+                    exp(1735689661)
+                }
+                structured("emailAddress") {
+                    sd {
+                        put("emailAddress", "test@iohk.io")
+                    }
+                }
+            }
+        ).getOrThrow().serialize()
+        val cred = SDJWTCredential.fromSDJwtString(sdjwt)
+        pluto.storeCredential(cred.toStorableCredential())
+        return cred
     }
 
     /**
