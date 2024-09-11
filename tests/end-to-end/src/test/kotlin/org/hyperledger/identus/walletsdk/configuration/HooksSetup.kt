@@ -1,5 +1,6 @@
 package org.hyperledger.identus.walletsdk.configuration
 
+import io.cucumber.java.After
 import io.cucumber.java.Before
 import io.cucumber.java.BeforeAll
 import io.cucumber.java.ParameterType
@@ -15,12 +16,22 @@ fun setupEnvironment() {
     Environment.setup()
 }
 
+@After
+fun drawTheCurtain() {
+    OnStage.drawTheCurtain()
+}
+
 class HooksSetup {
     @Before
     fun setStage() {
         val cast = Cast()
 
         cast.actorNamed("Edge Agent",
+            CallAnApi.at(Environment.mediatorOobUrl),
+            UseWalletSdk()
+        )
+
+        cast.actorNamed("Verifier Edge Agent",
             CallAnApi.at(Environment.mediatorOobUrl),
             UseWalletSdk()
         )

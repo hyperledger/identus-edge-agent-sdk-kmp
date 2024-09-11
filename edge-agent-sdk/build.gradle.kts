@@ -80,9 +80,6 @@ kotlin {
                 jvmTarget = "17"
             }
         }
-        testRuns["test"].executionTask.configure {
-            useJUnitPlatform()
-        }
         publishing {
             publications {
                 withType<MavenPublication> {
@@ -145,10 +142,9 @@ kotlin {
         }
         val commonTest by getting {
             dependencies {
-                implementation(kotlin("test"))
+                implementation(kotlin("test-junit"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
                 implementation("io.ktor:ktor-client-mock:2.3.11")
-                implementation("junit:junit:4.13.2")
                 implementation("org.mockito:mockito-core:4.4.0")
                 implementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
             }
@@ -172,10 +168,8 @@ kotlin {
         val androidInstrumentedTest by getting {
             dependencies {
                 dependsOn(commonTest)
-                implementation(kotlin("test"))
                 implementation("androidx.test.espresso:espresso-core:3.5.1")
                 implementation("androidx.test.ext:junit:1.1.5")
-                implementation("junit:junit:4.13.2")
             }
         }
         /*

@@ -6,6 +6,7 @@ import org.hyperledger.identus.walletsdk.SdkPlutoDb
 
 actual class DbConnectionImpl actual constructor() : DbConnection {
     actual override var driver: SqlDriver? = null
+
     actual override suspend fun connectDb(context: Any?): SqlDriver {
         val driver = JdbcSqliteDriver("jdbc:sqlite:prism.db")
         SdkPlutoDb.Schema.create(driver)
