@@ -62,8 +62,14 @@ data class IssueCredential(
      * @return An array of credential strings.
      */
     fun getCredentialStrings(): Array<String> {
-        return attachments.map {
-            it.data.getDataAsJsonString()
+        return attachments.mapNotNull {
+            when (it.data) {
+                is AttachmentBase64 -> {
+                    it.data.base64.base64UrlEncoded
+                }
+
+                else -> null
+            }
         }.toTypedArray()
     }
 
