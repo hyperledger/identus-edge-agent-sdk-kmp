@@ -2,37 +2,55 @@ package org.hyperledger.identus.walletsdk.abilities
 
 import com.jayway.jsonpath.JsonPath
 import io.iohk.atala.automation.utils.Logger
-import org.hyperledger.identus.walletsdk.configuration.Environment
-import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
 import io.restassured.RestAssured
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.serenitybdd.screenplay.Ability
 import net.serenitybdd.screenplay.Actor
+import net.serenitybdd.screenplay.HasTeardown
 import net.serenitybdd.screenplay.Question
 import net.serenitybdd.screenplay.SilentInteraction
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
+import org.hyperledger.identus.walletsdk.configuration.DbConnectionInMemory
+import org.hyperledger.identus.walletsdk.configuration.Environment
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.Message
+import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
+import org.hyperledger.identus.walletsdk.edgeagent.helpers.Experiments
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
-import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommIssueCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommOfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.DidcommRequestPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType.PrismRevocation
 import org.hyperledger.identus.walletsdk.mercury.MercuryImpl
 import org.hyperledger.identus.walletsdk.mercury.resolvers.DIDCommWrapper
 import org.hyperledger.identus.walletsdk.pluto.PlutoImpl
-import org.hyperledger.identus.walletsdk.pluto.data.DbConnection
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
-import java.util.*
+import org.hyperledger.identus.walletsdk.workflow.EdgeAgentWorkflow
+import org.lighthousegames.logging.KmLogging
+import org.lighthousegames.logging.LogLevel
+import java.util.Base64
+import java.util.Collections
 
 
-class UseWalletSdk : Ability {
+class UseWalletSdk : Ability, HasTeardown {
     companion object {
         private fun `as`(actor: Actor): UseWalletSdk {
+            if (actor.abilityTo(UseWalletSdk::class.java) != null) {
+                val ability = actor.abilityTo(UseWalletSdk::class.java)
+                if (!ability.isInitialized) {
+                    ability.initialize()
+                }
+            }
             return actor.abilityTo(UseWalletSdk::class.java) ?: throw ActorCannotUseWalletSdk(actor)
         }
 
@@ -60,6 +78,12 @@ class UseWalletSdk : Ability {
             }
         }
 
+        fun presentationStackSize(): Question<Int> {
+            return Question.about("presentation messages stack").answeredBy {
+                `as`(it).context.presentationStack.size
+            }
+        }
+
         fun execute(callback: suspend (sdk: SdkContext) -> Unit): SilentInteraction {
             return object : SilentInteraction() {
                 override fun <T : Actor> performAs(actor: T) {
@@ -70,71 +94,103 @@ class UseWalletSdk : Ability {
                 }
             }
         }
-
-        fun stop(): SilentInteraction {
-            return object : SilentInteraction() {
-                override fun <T : Actor> performAs(actor: T) {
-                    val walletSdk = `as`(actor)
-                    runBlocking {
-                        walletSdk.context.sdk.stopFetchingMessages()
-                        walletSdk.context.sdk.stop()
-                    }
-                }
-
-            }
-        }
     }
 
     private val logger = Logger.get<EdgeAgentWorkflow>()
-    private val context: SdkContext
+    private lateinit var context: SdkContext
     private val receivedMessages = mutableListOf<String>()
+    private var isInitialized = false
+    private lateinit var fetchJob: Job
 
-    init {
+    fun initialize() {
+        createSdk()
+        startPluto()
+        startSdk()
+        listenToMessages()
+        isInitialized = true
+    }
+
+    override fun tearDown() {
+        if (isInitialized) {
+            context.sdk.stopFetchingMessages()
+            context.sdk.stop()
+            fetchJob.cancel()
+        }
+    }
+
+    fun recoverWallet(seed: Seed, jwe: String) {
+        createSdk(seed)
+        startPluto()
+        runBlocking {
+            context.sdk.recoverWallet(jwe)
+        }
+        startSdk()
+        listenToMessages()
+        isInitialized = true
+    }
+
+    private fun createSdk(initialSeed: Seed? = null) {
+        val api = ApiImpl(httpClient())
         val apollo = ApolloImpl()
         val castor = CastorImpl(apollo)
-        val pluto = PlutoImpl(DbConnection())
-        val pollux = PolluxImpl(castor)
+        val pluto = PlutoImpl(DbConnectionInMemory())
+        val pollux = PolluxImpl(apollo, castor, api)
         val didcommWrapper = DIDCommWrapper(castor, pluto, apollo)
-        val api = ApiImpl(httpClient())
         val mercury = MercuryImpl(castor, didcommWrapper, api)
 
         val mediatorDid = DID(getMediatorDidThroughOob())
 
         val store = BasicMediatorHandler.PlutoMediatorRepositoryImpl(pluto)
         val handler = BasicMediatorHandler(mediatorDid, mercury, store)
-        val seed = apollo.createRandomSeed().seed
+        val seed = initialSeed ?: apollo.createRandomSeed().seed
 
         val sdk = EdgeAgent(
-            apollo,
-            castor,
-            pluto,
-            mercury,
-            pollux,
-            seed,
-            api,
-            handler
+            apollo = apollo,
+            castor = castor,
+            pluto = pluto,
+            mercury = mercury,
+            pollux = pollux,
+            seed = seed,
+            api = api,
+            mediatorHandler = handler,
+            agentOptions = AgentOptions(
+                experiments = Experiments(
+                    liveMode = false
+                )
+            )
         )
+        KmLogging.setLogLevel(LogLevel.Warn)
 
         this.context = SdkContext(sdk)
+    }
 
+    private fun startPluto() {
         runBlocking {
-            pluto.start(this)
-            sdk.start()
-            sdk.startFetchingMessages(1)
+            context.sdk.pluto.start(this)
         }
+    }
 
-        CoroutineScope(Dispatchers.Default).launch {
-            sdk.handleReceivedMessagesEvents().collect { messageList: List<Message> ->
+    private fun startSdk() {
+        runBlocking {
+            context.sdk.start()
+        }
+        context.sdk.startFetchingMessages(1)
+    }
+
+    private fun listenToMessages() {
+        fetchJob = CoroutineScope(Dispatchers.Default).launch {
+            context.sdk.handleReceivedMessagesEvents().collect { messageList: List<Message> ->
                 messageList.forEach { message ->
                     if (receivedMessages.contains(message.id)) {
                         return@forEach
                     }
                     receivedMessages.add(message.id)
                     when (message.piuri) {
-                        ProtocolType.DidcommOfferCredential.value -> context.credentialOfferStack.add(message)
-                        ProtocolType.DidcommIssueCredential.value -> context.issuedCredentialStack.add(message)
-                        ProtocolType.DidcommRequestPresentation.value -> context.proofRequestStack.add(message)
-                        ProtocolType.PrismRevocation.value -> context.revocationNotificationStack.add(message)
+                        DidcommOfferCredential.value -> context.credentialOfferStack.add(message)
+                        DidcommIssueCredential.value -> context.issuedCredentialStack.add(message)
+                        DidcommRequestPresentation.value -> context.proofRequestStack.add(message)
+                        PrismRevocation.value -> context.revocationNotificationStack.add(message)
+                        DidcommPresentation.value -> context.presentationStack.add(message)
                         else -> logger.debug("other message: ${message.piuri}")
                     }
                 }
@@ -157,7 +213,8 @@ data class SdkContext(
     val credentialOfferStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val proofRequestStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
     val issuedCredentialStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
-    val revocationNotificationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
+    val revocationNotificationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf()),
+    val presentationStack: MutableList<Message> = Collections.synchronizedList(mutableListOf())
 )
 
 class ActorCannotUseWalletSdk(actor: Actor) :
