@@ -214,11 +214,17 @@ class BasicMediatorHandler(
                     send(Frame.Text(packedMessage))
                 }
                 while (isActive) {
-                    for (frame in incoming) {
-                        if (frame is Frame.Text) {
-                            val messages = handleReceivedMessagesFromSockets(frame.readText())
-                            onMessageCallback.onMessage(messages)
+                    try {
+                        for (frame in incoming) {
+                            if (frame is Frame.Text) {
+                                val messages =
+                                    handleReceivedMessagesFromSockets(frame.readText())
+                                onMessageCallback.onMessage(messages)
+                            }
                         }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        continue
                     }
                 }
             }
