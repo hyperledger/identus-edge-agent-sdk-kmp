@@ -1,5 +1,6 @@
 package org.hyperledger.identus.walletsdk.sampleapp.ui.main
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import org.hyperledger.identus.walletsdk.sampleapp.databinding.NewMainBinding
@@ -13,6 +14,12 @@ class NewMain: AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = NewMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val data: Uri? = intent.data
+        if (data != null) {
+            val path = data.path
+            val queryParameter = data.getQueryParameter("yourQueryParameter")
+        }
     }
 
 }

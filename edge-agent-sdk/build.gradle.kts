@@ -98,7 +98,6 @@ kotlin {
             kotlin.srcDir("${project(":protosLib").layout.buildDirectory.asFile.get()}/generated/source/proto/main/kotlin")
             resources.srcDir("${project(":protosLib").projectDir}/src/main")
             dependencies {
-                implementation("eu.europa.ec.eudi:eudi-lib-jvm-openid4vci-kt:0.4.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
@@ -117,9 +116,6 @@ kotlin {
 
                 implementation("pro.streem.pbandk:pbandk-runtime:0.14.2")
 
-                implementation("org.didcommx:didcomm:0.3.2") {
-                    exclude("com.google.protobuf")
-                }
 
                 implementation("com.google.protobuf:protoc:3.12.0") {
                     exclude("com.google.protobuf")
@@ -132,7 +128,23 @@ kotlin {
                 implementation("org.hyperledger:anoncreds_uniffi:0.2.0-wrapper.1")
                 implementation("com.ionspin.kotlin:bignum:0.3.9")
                 implementation("org.bouncycastle:bcprov-jdk15on:1.68")
-                implementation("eu.europa.ec.eudi:eudi-lib-jvm-sdjwt-kt:0.4.0")
+
+                implementation("eu.europa.ec.eudi:eudi-lib-jvm-sdjwt-kt:0.4.0"){
+                    exclude(group = "com.nimbusds", module= "nimbus-jose-jwt")
+                    exclude(group = "com.nimbusds", module= "oauth2-oidc-sdk")
+                }
+                implementation("eu.europa.ec.eudi:eudi-lib-jvm-openid4vci-kt:0.4.1") {
+                    exclude(group = "com.nimbusds", module= "nimbus-jose-jwt")
+                    exclude(group = "com.nimbusds", module= "oauth2-oidc-sdk")
+                }
+                implementation("org.didcommx:didcomm:0.3.2") {
+                    exclude("com.google.protobuf")
+                    exclude(group = "com.nimbusds", module= "nimbus-jose-jwt")
+                }
+                implementation("com.nimbusds:oauth2-oidc-sdk:11.9") {
+                    exclude(group = "com.nimbusds", module= "nimbus-jose-jwt")
+                }
+
                 implementation(kotlin("reflect"))
 
                 implementation("com.apicatalog:titanium-json-ld-jre8:1.4.0")
@@ -170,7 +182,6 @@ kotlin {
         }
         val androidInstrumentedTest by getting {
             dependencies {
-                dependsOn(commonTest)
                 implementation(kotlin("test"))
                 implementation("androidx.test.espresso:espresso-core:3.5.1")
                 implementation("androidx.test.ext:junit:1.1.5")

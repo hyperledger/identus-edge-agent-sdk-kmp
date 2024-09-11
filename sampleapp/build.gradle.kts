@@ -11,7 +11,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "org.hyperledger.identus.walletsdk"
+        applicationId = "org.hyperledger.identus.walletsdk.sampleapp"
         minSdk = 28
         targetSdk = 34
         versionCode = 1
@@ -80,11 +80,14 @@ dependencies {
     ksp("androidx.room:room-compiler:2.4.2")
 
     implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
-    implementation("eu.europa.ec.eudi:eudi-lib-jvm-sdjwt-kt:0.4.0") {
-        exclude(group = "com.nimbusds", module = "nimbus-jose-jwt")
+
+    implementation("eu.europa.ec.eudi:eudi-lib-jvm-sdjwt-kt:0.4.0"){
+        exclude(group = "com.nimbusds", module= "nimbus-jose-jwt")
+        exclude(group = "com.nimbusds", module= "oauth2-oidc-sdk")
     }
     implementation("eu.europa.ec.eudi:eudi-lib-jvm-openid4vci-kt:0.4.1") {
-        exclude(group = "com.nimbusds", module = "nimbus-jose-jwt")
+        exclude(group = "com.nimbusds", module= "nimbus-jose-jwt")
+        exclude(group = "com.nimbusds", module= "oauth2-oidc-sdk")
     }
 
     // Unit Tests
