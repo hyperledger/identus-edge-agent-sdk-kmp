@@ -7,6 +7,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
@@ -25,7 +26,6 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.revocation.RevocationNotification
 import java.time.Duration
-import kotlin.jvm.Throws
 
 interface ConnectionManager : ConnectionsManager, DIDCommConnection {
 
@@ -108,7 +108,7 @@ class ConnectionManagerImpl(
                 }
                 // Fallback mechanism if no WebSocket service endpoint is available
                 if (serviceEndpoint == null) {
-                    while (fetchingMessagesJob!!.isActive) {
+                    while (this.isActive) {
                         // Continuously await and process new messages
                         awaitMessages().collect { array ->
                             processMessages(array)
