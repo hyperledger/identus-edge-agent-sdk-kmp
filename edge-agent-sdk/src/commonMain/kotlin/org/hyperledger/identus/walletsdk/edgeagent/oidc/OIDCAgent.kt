@@ -83,7 +83,7 @@ open class OIDCAgent(
         }
         logger.info(message = "Starting agent")
         state = State.STARTING
-        pluto.start()
+//        pluto.start()
         state = State.RUNNING
         logger.info(message = "Agent running")
     }

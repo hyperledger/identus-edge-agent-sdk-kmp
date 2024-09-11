@@ -2,6 +2,7 @@
 
 package org.hyperledger.identus.walletsdk.sampleapp
 
+import OIDCAgent
 import android.app.Application
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -47,23 +48,26 @@ class Sdk {
 
     lateinit var handler: MediationHandler
     lateinit var agent: EdgeAgent
+    lateinit var oidcAgent: OIDCAgent
 
     @Throws(EdgeAgentError.MediationRequestFailedError::class, UnknownHostException::class)
     suspend fun startAgent(mediatorDID: String, context: Application) {
-        handler = createHandler(mediatorDID)
-        agent = createAgent(handler)
-
-        CoroutineScope(Dispatchers.Default).launch {
-            agent.flowState.collect {
-                agentStatusStream.postValue(it)
-            }
-        }
-
+//        handler = createHandler(mediatorDID)
         (pluto as PlutoImpl).start(context)
-        agent.start()
-        try {
-            agent.startFetchingMessages()
-        } catch (_: Exception) {}
+        oidcAgent = createOIDCAgent()
+
+//        CoroutineScope(Dispatchers.Default).launch {
+//            agent.flowState.collect {
+//                agentStatusStream.postValue(it)
+//            }
+//        }
+
+        oidcAgent.start()
+
+//        agent.start()
+//        try {
+//            agent.startFetchingMessages()
+//        } catch (_: Exception) {}
 
         agentStatusStream.postValue(EdgeAgent.State.RUNNING)
     }
@@ -179,6 +183,13 @@ class Sdk {
             pollux = pollux,
             seed = seed,
             mediatorHandler = handler
+        )
+    }
+
+    private fun createOIDCAgent(): OIDCAgent {
+        return OIDCAgent.initialize(
+            pluto = pluto,
+            api = ApiImpl(httpClient())
         )
     }
 

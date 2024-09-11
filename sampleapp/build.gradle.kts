@@ -80,6 +80,12 @@ dependencies {
     ksp("androidx.room:room-compiler:2.4.2")
 
     implementation("app.cash.sqldelight:sqlite-driver:2.0.1")
+    implementation("eu.europa.ec.eudi:eudi-lib-jvm-sdjwt-kt:0.4.0") {
+        exclude(group = "com.nimbusds", module = "nimbus-jose-jwt")
+    }
+    implementation("eu.europa.ec.eudi:eudi-lib-jvm-openid4vci-kt:0.4.1") {
+        exclude(group = "com.nimbusds", module = "nimbus-jose-jwt")
+    }
 
     // Unit Tests
     testImplementation("junit:junit:4.13.2")

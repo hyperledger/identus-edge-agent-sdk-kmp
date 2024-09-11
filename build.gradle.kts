@@ -59,16 +59,24 @@ allprojects {
 
     configurations.all {
         resolutionStrategy {
+            force("com.nimbusds:nimbus-jose-jwt:9.39")
+
             eachDependency {
                 if (requested.group == "org.bouncycastle") {
                     when (requested.name) {
-                        "bcprov-jdk15on", "bcprov-jdk15to18" -> {
-                            useTarget("org.bouncycastle:bcprov-jdk15on:1.68")
+                        "bcprov-jdk15on", "bcprov-jdk15to18", "bcprov-jdk18on" -> {
+                            useTarget("org.bouncycastle:bcprov-jdk15to18:1.77")
                         }
                     }
-                } else if (requested.group == "com.nimbusds") {
-                    // Making sure we are using the latest version of `nimbus-jose-jwt` instead if 9.25.6
-                    useTarget("com.nimbusds:nimbus-jose-jwt:9.39")
+                } else if (requested.group == "net.jcip") {
+                    when (requested.name) {
+                        "jcip-annotations-1.0", "jcip-annotations-1.0-1"-> {
+                            useTarget("net.jcip:jcip-annotations:1.0")
+                        }
+                    }
+//                } else if (requested.group == "com.nimbusds") {
+//                    // Making sure we are using the latest version of `nimbus-jose-jwt` instead if 9.25.6
+//                    useTarget("com.nimbusds:nimbus-jose-jwt:9.39")
                 } else if (requested.group == "com.google.protobuf") {
                     // Because of Duplicate Classes issue happening on the sampleapp module
                     if (requested.name == "protobuf-javalite" || requested.name == "protobuf-java") {
