@@ -193,14 +193,16 @@ subprojects {
                             url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
                         }
                     }
-                    signing {
-                        useInMemoryPgpKeys(
-                            project.findProperty("signing.signingSecretKey") as String?
-                                ?: System.getenv("OSSRH_GPG_SECRET_KEY"),
-                            project.findProperty("signing.signingSecretKeyPassword") as String?
-                                ?: System.getenv("OSSRH_GPG_SECRET_KEY_PASSWORD")
-                        )
-                        sign(this@withType)
+                    if (System.getenv().containsKey("OSSRH_GPG_SECRET_KEY")) {
+                        signing {
+                            useInMemoryPgpKeys(
+                                project.findProperty("signing.signingSecretKey") as String?
+                                    ?: System.getenv("OSSRH_GPG_SECRET_KEY"),
+                                project.findProperty("signing.signingSecretKeyPassword") as String?
+                                    ?: System.getenv("OSSRH_GPG_SECRET_KEY_PASSWORD")
+                            )
+                            sign(this@withType)
+                        }
                     }
                 }
             }
