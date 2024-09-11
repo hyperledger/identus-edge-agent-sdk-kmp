@@ -10,7 +10,6 @@ import kotlinx.serialization.json.Json
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
-import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.X25519PrivateKey
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
@@ -29,7 +28,6 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.DerivationP
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.edgeagent.MediationHandlerMock
