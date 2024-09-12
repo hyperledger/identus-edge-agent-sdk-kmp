@@ -188,8 +188,8 @@ subprojects {
                             }
                         }
                         scm {
-                            connection.set("scm:git:git://hyperledger/identus-edge-agent-sdk-kmp.git")
-                            developerConnection.set("scm:git:ssh://hyperledger/identus-edge-agent-sdk-kmp.git")
+                            connection.set("scm:git:git:/git@github.com/hyperledger/identus-edge-agent-sdk-kmp.git")
+                            developerConnection.set("scm:git:ssh:/git@github.com/hyperledger/identus-edge-agent-sdk-kmp.git")
                             url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
                         }
                     }
