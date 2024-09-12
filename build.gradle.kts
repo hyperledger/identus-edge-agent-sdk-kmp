@@ -188,8 +188,8 @@ subprojects {
                             }
                         }
                         scm {
-                            connection.set("scm:git:git:/git@github.com/hyperledger/identus-edge-agent-sdk-kmp.git")
-                            developerConnection.set("scm:git:ssh:/git@github.com/hyperledger/identus-edge-agent-sdk-kmp.git")
+                            connection.set("scm:git:git://git@github.com/hyperledger/identus-edge-agent-sdk-kmp.git")
+                            developerConnection.set("scm:git:ssh://git@github.com/hyperledger/identus-edge-agent-sdk-kmp.git")
                             url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
                         }
                     }
@@ -214,7 +214,7 @@ nexusPublishing {
     repositories {
         sonatype {
             nexusUrl.set(uri("https://oss.sonatype.org/service/local/"))
-            snapshotRepositoryUrl.set(uri("https://oss.sonatype.org/content/repositories/snapshots/"))
+            snapshotRepositoryUrl.set(uri("https://oss.sonatype.org/content/repositories/releases/"))
             username.set(System.getenv("OSSRH_USERNAME"))
             password.set(System.getenv("OSSRH_TOKEN"))
         }
