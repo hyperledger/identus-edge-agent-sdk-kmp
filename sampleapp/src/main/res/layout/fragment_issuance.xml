@@ -4,7 +4,8 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:padding="16dp">
 
         <Button
                 android:id="@+id/signIn"
@@ -16,15 +17,15 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"/>
 
-        <WebView
-                android:id="@+id/webview"
+        <TextView
+                android:id="@+id/url"
                 android:layout_width="0dp"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
+                android:text="URL"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/signIn"
-                app:layout_constraintBottom_toBottomOf="parent"
-                />
+        />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

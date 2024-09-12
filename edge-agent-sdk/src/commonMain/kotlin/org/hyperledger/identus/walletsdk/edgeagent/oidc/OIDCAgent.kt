@@ -223,15 +223,14 @@ open class OIDCAgent(
     suspend fun handleTokenRequest(
         authorizationRequest: AuthorizationRequestPrepared,
         issuer: Issuer,
-        callbackUrl: String?
+        callbackUrl: URI?
     ) {
         if (callbackUrl == null) {
             throw Exception("Callback URL must not be null")
         }
         return with(issuer) {
             runBlocking {
-                val url = URI(callbackUrl);
-                val paramsMap = url.query.split("&").associate {
+                val paramsMap = callbackUrl.query.split("&").associate {
                     val (key, value) = it.split("=")
                     key to value
                 }
