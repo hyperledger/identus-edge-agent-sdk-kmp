@@ -1,3 +1,88 @@
+# [4.0.0](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/compare/v3.0.1...v4.0.0) (2024-09-13)
+
+
+### Bug Fixes
+
+* anoncred verification and breaking changes missing ([#196](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/196)) ([6b0fb55](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/6b0fb55a0e7d2ac594679ad101c3868162df6d62))
+* backup recovery was linking incorrectly dids with private keys ([#178](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/178)) ([06e9a8f](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/06e9a8f7caa000510d9a994a2188d0c56e6cb763))
+* bitstring for revocation registry ([#188](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/188)) ([22a2da9](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/22a2da9e5444a4f19a47601779cdcc9efe3ea7a1))
+* DbConnection cannot be extended ([#169](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/169)) ([82b03cc](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/82b03cc0215cb79d0dd0b3142a457a1df754d192))
+* e2e test broken after pull credential changed based on validUntil ([#158](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/158)) ([f21df25](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/f21df258b9488631d699bfe38c4842176ebf688d))
+* gradle artifact signing ([#203](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/203)) ([c5903ff](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/c5903ff8908c0e2d102f5222cc6e7fbc53cacacd))
+* JWT proof ([#163](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/163)) ([4e52aed](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/4e52aed77aeddaeb1f15e345a1384374b9a2591e))
+* missed renaming ([c71741f](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/c71741f50ed0d2074cf24964f6c8a4db7f0793a3))
+* renaming ([9585d1a](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/9585d1abc731c0441fbb232d6f2d768c14c46bb2))
+* renaming reference issues ([3adb41f](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/3adb41f0acf45b396e8a9aee54408209b4e54a6a))
+* restore process duplicates did peers ([#173](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/173)) ([da747c5](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/da747c5991e75d27a7eccc0c0078631ed6da1696))
+* restore process from swift/ts jwe ([#175](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/175)) ([b9571b2](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/b9571b2ef532edb00d012c1ca6cf1fb3689cec69))
+* Upgrade gradle ([#140](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/140)) ([1e11da4](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/1e11da40c20480848a069c306f80839bf5659741))
+* wrong casting KeyPair instead of PublicKey ([#139](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/139)) ([7d0a5c9](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/7d0a5c96788a01c5acb59e441be5f0a8c5c0ab5e))
+* zkp presentation could not be verified on the agent ([#157](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/157)) ([3319dc4](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/3319dc455013080639a81b28993ce53333e3b91e))
+
+
+### Features
+
+* Anoncreds verification ([#186](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/186)) ([52c3895](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/52c3895cccbfb3a86477e040dd26515d7e2b430c))
+* back up and restore ([#159](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/159)) ([dcb10fd](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/dcb10fd48bcb9fd3d93f284736605e656538ab0d))
+* contactless presentation request ([#192](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/192)) ([e03ebbc](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/e03ebbc1380752a1030d6c00bbe984b5658fdd48))
+* experimental opt-in for mediator live mode ([#150](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/150)) ([0e30346](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/0e30346b7dd9516a5e5625dfec4a003ad8e408cb))
+* **pollux:** add sdjwt capability ([#174](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/174)) ([cd3baf8](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/cd3baf89325a90c6086f67aa97a2a54a64b6691c))
+* revocation notification event ([#148](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/148)) ([e1753ec](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/e1753ec597e0295c434303ed8898324d92744372))
+* support for mediator live mode (websocket) ([#147](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/147)) ([823b8b3](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/823b8b36177c9b2e939b245b0758f3c448884cf5))
+* verification from SDK ([#155](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/155)) ([61720b8](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/61720b87368afab0bca7a45adf9448e28b4dea15))
+* Verification JWT Revocation registry check ([#165](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/issues/165)) ([755a7ef](https://github.com/hyperledger/identus-edge-agent-sdk-kmp/commit/755a7efbd5cd982fd180cac70356a9a3ada4d5e4))
+
+
+### BREAKING CHANGES
+
+* Pollux Module
+- `restoreCredential` now requires a third parameter `revoked`.
+- Removed: `createVerifiablePresentationJWT`, `createVerifiablePresentationAnoncred`, `getCredentialDefinition`, and `getSchema`.
+- Added new method: `processCredentialRequestSDJWT`.
+- `PolluxImpl` now implements `processCredentialRequestSDJWT`.
+- Pollux methods `parseCredential` and `processCredentialRequestAnoncreds` now accept `linkSecret: String` instead of `linkSecret: LinkSecret`.
+
+ConnectionManager
+- `ConnectionManager` is now an interface, and `ConnectionManagerImpl` is the new implementation.
+- `ConnectionManager` construct now requires a Pollux instance.
+
+Edge Agent (formerly PrismAgent)
+- The constructor now requires a new parameter: `AgentOptions`.
+- `PrismAgent` renamed to `EdgeAgent`.
+- `preparePresentationForRequestProof` now expects a `Credential` of type T, where T can be `Credential` or `ProvableCredential`.
+
+JWT Verifiable Credential
+- The `JWTVerifiableCredential` constructor replaces the parameter `credentialStatus: VerifiableCredentialTypeContainer` with `credentialStatus: CredentialStatus`.
+
+Pluto Module
+- `getDIDPrivateKeysByDID` and `getDIDPrivateKeyByID` now return `Flow<List<StorablePrivateKey?>>`.
+- New method added: `getAllPrivateKeys`.
+- `PlutoImpl` deprecated `storeCredentialMetadata(name: String, metadata: CredentialRequestMeta)` and replaced it with `storeCredentialMetadata(name: String, linkSecretName: String, json: String)`.
+
+Apollo Module
+- `restorePrivateKey(storablePrivateKey: StorablePrivateKey): PrivateKey` changed to `restorePrivateKey(restorationIdentifier: String, privateKeyData: String): PrivateKey`.
+
+DbConnection
+- `DbConnection` is now an interface.
+- `DbConnectionImpl` is the new instance used for DB connections.
+
+Presentation Submissions
+- `createPresentationSubmission` parameter `presentationDefinitionRequest: PresentationDefinitionRequest` changed to `presentationDefinitionRequestString: String`, and the return type changed to `String`.
+- New methods added: `createJWTPresentationSubmission`, `createAnoncredsPresentationSubmission`, and `getSchema`.
+- `createPresentationDefinitionRequest` now returns a `String`.
+
+OutOfBandInvitation
+- New constructor parameters: `attachments`, `createdTime`, and `expiresTime`.
+
+Module Renaming
+- `AtalaPrismSDK` renamed to `EdgeAgentSDK`.
+- Package name changed from `io.iohk.atala.prism.walletsdk` to `org.hyperledger.identus.walletsdk`.
+- `publishedMavenId` changed from `io.iohk.atala.prism.walletsdk` to `org.hyperledger.identus`.
+- Namespace changed from `org.hyperledger.identus.walletsdk` to `org.hyperledger.identus`.
+
+Signed-off-by: Cristian G <cristian.castro@iohk.io>
+Signed-off-by: Allain Magyar <allain.magyar@iohk.io>
+
 # [3.0.0](https://github.com/input-output-hk/atala-prism-wallet-sdk-kmm/compare/v2.6.0...v3.0.0) (2024-03-05)
 
 
