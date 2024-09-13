@@ -17,6 +17,107 @@ plugins {
     id("com.android.library")
     id("org.jetbrains.dokka")
     id("org.jetbrains.kotlinx.kover") version "0.7.6"
+    id("org.gradle.maven-publish")
+    id("org.gradle.signing")
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            credentials {
+                username = System.getenv("OSSRH_USERNAME")
+                password = System.getenv("OSSRH_TOKEN")
+            }
+        }
+    }
+    publications {
+        withType<MavenPublication> {
+            artifactId = project.name
+            version = project.version.toString()
+            pom {
+                name.set("Edge Agent SDK")
+                description.set(" Edge Agent SDK - Kotlin Multiplatform (Android/JVM)")
+                url.set("https://docs.atalaprism.io/")
+                organization {
+                    name.set("Hyperledger")
+                    url.set("https://hyperledger.org/")
+                }
+                issueManagement {
+                    system.set("Github")
+                    url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
+                }
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("cristianIOHK")
+                        name.set("Cristian Gonzalez")
+                        email.set("cristian.castro@iohk.io")
+                        organization.set("IOG")
+                        roles.add("developer")
+                        url.set("https://github.com/cristianIOHK")
+                    }
+                    developer {
+                        id.set("hamada147")
+                        name.set("Ahmed Moussa")
+                        email.set("ahmed.moussa@iohk.io")
+                        organization.set("IOG")
+                        roles.add("developer")
+                        url.set("https://github.com/hamada147")
+                    }
+                    developer {
+                        id.set("elribonazo")
+                        name.set("Javier Ribó")
+                        email.set("javier.ribo@iohk.io")
+                        organization.set("IOG")
+                        roles.add("developer")
+                    }
+                    developer {
+                        id.set("amagyar-iohk")
+                        name.set("Allain Magyar")
+                        email.set("allain.magyar@iohk.io")
+                        organization.set("IOG")
+                        roles.add("qc")
+                    }
+                    developer {
+                        id.set("antonbaliasnikov")
+                        name.set("Anton Baliasnikov")
+                        email.set("anton.baliasnikov@iohk.io")
+                        organization.set("IOG")
+                        roles.add("qc")
+                    }
+                    developer {
+                        id.set("goncalo-frade-iohk")
+                        name.set("Gonçalo Frade")
+                        email.set("goncalo.frade@iohk.io")
+                        organization.set("IOG")
+                        roles.add("developer")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:git://hyperledger/identus-edge-agent-sdk-kmp.git")
+                    developerConnection.set("scm:git:ssh://hyperledger/identus-edge-agent-sdk-kmp.git")
+                    url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
+                }
+            }
+        }
+    }
+}
+
+if (System.getenv().containsKey("OSSRH_GPG_SECRET_KEY")) {
+    signing {
+        useInMemoryPgpKeys(
+            System.getenv("OSSRH_GPG_SECRET_KEY"),
+            System.getenv("OSSRH_GPG_SECRET_KEY_PASSWORD")
+        )
+        sign(publishing.publications)
+    }
 }
 
 kover {
@@ -279,6 +380,12 @@ val buildProtoLibsGen: Task by tasks.creating {
 }
 
 afterEvaluate {
+    tasks.withType<PublishToMavenRepository> {
+        dependsOn(tasks.withType<Sign>())
+    }
+    tasks.withType<PublishToMavenLocal> {
+        dependsOn(tasks.withType<Sign>())
+    }
     tasks.getByName("runKtlintCheckOverCommonMainSourceSet") {
         dependsOn(buildProtoLibsGen)
     }
