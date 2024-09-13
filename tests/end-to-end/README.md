@@ -21,11 +21,10 @@ Setup properties:
 
 In the command line navigate to the SDK directory 
 
-1. Set the `ATALA_GITHUB_ACTOR` environment variable with your GitHub email
-2. Set `ATALA_GITHUB_TOKEN` environment variable with your GitHub token 
-3. Comment out the `signing` part of the `build.gradle.kts`
-4. Change the version in `gradle.properties` to something else
-5. Run the following command
+1. Set the `GITHUB_ACTOR` environment variable with your GitHub email
+2. Set `GITHUB_TOKEN` environment variable with your GitHub token 
+3. Change the version in `gradle.properties` to something else
+4. Run the following command
 
 ```bash
 ./gradlew publishToMavenLocal
