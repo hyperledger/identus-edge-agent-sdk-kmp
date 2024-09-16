@@ -24,10 +24,10 @@ private const val METADATA_PRIVACY_STR = "------"
 private val hashingLog = UUID.randomUUID().toString()
 
 /**
- * PrismLogger is an interface that defines methods for logging messages
+ * Logger is an interface that defines methods for logging messages
  * with different log levels and metadata.
  */
-interface PrismLogger {
+interface Logger {
     /**
      * Logs a debug message with optional metadata.
      *
@@ -66,22 +66,24 @@ interface PrismLogger {
      * @param error The error to be logged.
      * @param metadata An array of metadata objects to be included in the log message. Defaults to an empty array if not provided.
      *
-     * @see PrismLogger.error
+     * @see Logger.error
      * @see Metadata
      */
     fun error(error: Error, metadata: Array<Metadata> = arrayOf())
 }
 
 /**
- * Implementation of the PrismLogger interface.
+ * Implementation of the Logger interface.
  *
  * @property category the LogComponent category for this logger
  */
-class PrismLoggerImpl(category: LogComponent) : PrismLogger {
+class LoggerImpl(private val category: LogComponent) :
+    Logger {
 
-    private val log = logging("[io.prism.kmm.sdk.$category]")
+    private val log = logging(
+        "[${category::class.qualifiedName}.$category]"
 
-    private var logLevel: LogLevel = LogLevel.INFO
+    )
 
     /**
      * Logs a debug message with optional metadata.
@@ -90,7 +92,7 @@ class PrismLoggerImpl(category: LogComponent) : PrismLogger {
      * @param metadata An array of metadata objects associated with the message (optional).
      */
     override fun debug(message: String, metadata: Array<Metadata>) {
-        if (logLevel != LogLevel.NONE) {
+        if (category.logLevel != LogLevel.NONE) {
             log.debug { message }
             if (metadata.isNotEmpty()) {
                 log.debug { "Metadata: ${arrayToString(metadata)}" }
@@ -105,7 +107,7 @@ class PrismLoggerImpl(category: LogComponent) : PrismLogger {
      * @param metadata An array of metadata objects to be associated with the information message.
      */
     override fun info(message: String, metadata: Array<Metadata>) {
-        if (logLevel != LogLevel.NONE) {
+        if (category.logLevel != LogLevel.NONE) {
             log.info { message }
             if (metadata.isNotEmpty()) {
                 log.info { "Metadata: ${arrayToString(metadata)}" }
@@ -120,7 +122,7 @@ class PrismLoggerImpl(category: LogComponent) : PrismLogger {
      * @param metadata An array of metadata objects associated with the warning message.
      */
     override fun warning(message: String, metadata: Array<Metadata>) {
-        if (logLevel != LogLevel.NONE) {
+        if (category.logLevel != LogLevel.NONE) {
             log.warn { message }
             if (metadata.isNotEmpty()) {
                 log.warn { "Metadata: ${arrayToString(metadata)}" }
@@ -135,7 +137,7 @@ class PrismLoggerImpl(category: LogComponent) : PrismLogger {
      * @param metadata An array of metadata objects to be associated with the error message (optional).
      */
     override fun error(message: String, metadata: Array<Metadata>) {
-        if (logLevel != LogLevel.NONE) {
+        if (category.logLevel != LogLevel.NONE) {
             log.error { message }
             if (metadata.isNotEmpty()) {
                 log.error { "Metadata: ${arrayToString(metadata)}" }
@@ -150,7 +152,7 @@ class PrismLoggerImpl(category: LogComponent) : PrismLogger {
      * @param metadata An array of metadata objects associated with the error (optional).
      */
     override fun error(error: Error, metadata: Array<Metadata>) {
-        if (logLevel != LogLevel.NONE) {
+        if (category.logLevel != LogLevel.NONE) {
             log.error { error.message }
             if (metadata.isNotEmpty()) {
                 log.error { "Metadata: ${arrayToString(metadata)}" }
@@ -165,7 +167,7 @@ class PrismLoggerImpl(category: LogComponent) : PrismLogger {
      * @return The converted String representation of the Metadata objects, with each object's value separated by a new line.
      */
     private fun arrayToString(array: Array<Metadata>): String {
-        return array.joinToString { "${it.getValue(logLevel)}\n" }
+        return array.joinToString { "${it.getValue(category.logLevel)}\n" }
     }
 }
 
@@ -333,13 +335,13 @@ enum class LogLevel(val value: Int) {
  * - MERCURY
  * - PLUTO
  * - POLLUX
- * - PRISM_AGENT
+ * - EDGE_AGENT
  */
-enum class LogComponent {
-    APOLLO,
-    CASTOR,
-    MERCURY,
-    PLUTO,
-    POLLUX,
-    PRISM_AGENT
+enum class LogComponent(var logLevel: LogLevel) {
+    APOLLO(LogLevel.DEBUG),
+    CASTOR(LogLevel.DEBUG),
+    MERCURY(LogLevel.DEBUG),
+    PLUTO(LogLevel.DEBUG),
+    POLLUX(LogLevel.DEBUG),
+    EDGE_AGENT(LogLevel.DEBUG)
 }

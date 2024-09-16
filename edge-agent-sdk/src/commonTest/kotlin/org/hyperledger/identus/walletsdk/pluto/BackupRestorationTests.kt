@@ -32,7 +32,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgent
 import org.hyperledger.identus.walletsdk.edgeagent.MediationHandlerMock
 import org.hyperledger.identus.walletsdk.edgeagent.MercuryMock
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
+import org.hyperledger.identus.walletsdk.logger.LoggerMock
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
@@ -578,7 +578,8 @@ class BackupRestorationTests {
     @Test
     fun restoreFromTS_Swift() = runTest {
         val realPluto = PlutoImpl(DbConnectionInMemory())
-        val logger = PrismLoggerMock()
+        val logger = LoggerMock()
+
         val realCastor = CastorImpl(apollo, logger)
 
         edgeAgent = EdgeAgent(

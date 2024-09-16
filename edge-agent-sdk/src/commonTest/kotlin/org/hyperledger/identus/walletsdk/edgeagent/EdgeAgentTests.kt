@@ -72,7 +72,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerMock
+import org.hyperledger.identus.walletsdk.logger.LoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
@@ -188,7 +188,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManager,
                 seed = null,
                 api = null,
-                logger = PrismLoggerMock(),
+                logger = LoggerMock(),
                 agentOptions = AgentOptions()
             )
         )
@@ -230,7 +230,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManager,
                 seed = null,
                 api = null,
-                logger = PrismLoggerMock(),
+                logger = LoggerMock(),
                 agentOptions = AgentOptions()
             )
         )
@@ -264,7 +264,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = null,
-                logger = PrismLoggerMock(),
+                logger = LoggerMock(),
                 agentOptions = AgentOptions()
             )
         )
@@ -284,7 +284,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = null,
                 api = null,
-                logger = PrismLoggerMock(),
+                logger = LoggerMock(),
                 agentOptions = AgentOptions()
             )
         )
@@ -306,7 +306,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = null,
                 api = null,
-                logger = PrismLoggerMock(),
+                logger = LoggerMock(),
                 agentOptions = AgentOptions()
             )
         )
@@ -329,7 +329,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = null,
                 api = null,
-                logger = PrismLoggerMock(),
+                logger = LoggerMock(),
                 agentOptions = AgentOptions()
             )
         )
@@ -354,7 +354,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = seed,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
         plutoMockOld.getPrismLastKeyPathIndexReturn = flow { emit(0) }
@@ -377,7 +377,7 @@ class EdgeAgentTests {
                 connectionManagerMock,
                 seed,
                 null,
-                logger = PrismLoggerMock(),
+                logger = LoggerMock(),
                 agentOptions = AgentOptions()
             )
         )
@@ -393,7 +393,7 @@ class EdgeAgentTests {
     @Test
     fun testCreateNewPeerDID_whenUpdateMediatorFalse_thenShouldUseProvidedServices() = runTest {
         val apollo = ApolloImpl()
-        val castor = CastorImpl(apollo = apollo, logger = PrismLoggerMock())
+        val castor = CastorImpl(apollo = apollo, logger = LoggerMock())
         val agent = EdgeAgent(
             apollo,
             castor,
@@ -403,7 +403,7 @@ class EdgeAgentTests {
             connectionManagerOld,
             null,
             null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -439,7 +439,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerOld,
                 seed = null,
                 api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
             val invitationString = """
             {
@@ -466,7 +466,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerOld,
                 seed = null,
                 api = api,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
             val invitationString = """
             {
@@ -493,7 +493,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerOld,
                 seed = null,
                 api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
             val invitationString = """
             {
@@ -519,7 +519,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerOld,
                 seed = null,
                 api = null,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
 
             plutoMockOld.getDIDPrivateKeysReturn = flow { emit(listOf(null)) }
@@ -545,7 +545,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -588,7 +588,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -630,7 +630,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -671,7 +671,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -718,7 +718,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerOld,
                 seed = null,
                 api = null,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
 
             val invitationString = """
@@ -748,7 +748,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
         assertEquals(EdgeAgent.State.STOPPED, agent.state)
@@ -767,7 +767,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
         agent.stop()
@@ -787,7 +787,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = null,
             api = null,
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
         val x = agent.parseInvitation(oob)
@@ -849,7 +849,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = seed,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -891,7 +891,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = seed,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -919,7 +919,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = seed,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -965,7 +965,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerOld,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = PrismLoggerMock(),
+            logger = LoggerMock(),
             agentOptions = AgentOptions()
         )
 
@@ -1039,7 +1039,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = apiMock,
-            logger = PrismLoggerMock()
+            logger = LoggerMock()
         )
 
         val vmAuthentication = DIDDocument.VerificationMethod(
@@ -1137,7 +1137,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = apiMock,
-            logger = PrismLoggerMock()
+            logger = LoggerMock()
         )
 
         val vmAuthentication = DIDDocument.VerificationMethod(
@@ -1255,7 +1255,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = apiMock,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
             val msg = Json.decodeFromString<Message>(
                 "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19\"},\"format\":\"dif/presentation-exchange/fail_test@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
@@ -1295,7 +1295,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = apiMock,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
             val msg = Json.decodeFromString<Message>(
                 "{\"id\":\"00000000-685c-4004-0000-000036ac64ee\",\"piuri\":\"https://didcomm.atalaprism.io/present-proof/3.0/presentation\",\"from\":{\"method\":\"peer\",\"methodId\":\"asdfasdf\"},\"to\":{\"method\":\"peer\",\"methodId\":\"fdsafdsa\"},\"fromPrior\":null,\"body\":\"{}\",\"createdTime\":\"2024-03-08T19:27:38.196506Z\",\"expiresTimePlus\":\"2024-03-09T19:27:38.196559Z\",\"attachments\":[{\"id\":\"00000000-9c2e-4249-0000-0000c1176949\",\"mediaType\":\"application/json\",\"data\":{\"type\":\"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64\",\"base64\":\"eyJ2ZXJpZmlhYmxlUHJlc2VudGF0aW9uIjpbImV5SmhiR2NpT2lKRlV6STFOa3NpZlEuZXlKcGMzTWlPaUprYVdRNmNISnBjMjA2TWpVM01UbGhPVFppTVRVeE1qQTNNVFk1T0RGaE9EUXpNR0ZrTUdOaU9UWTRaR1ExTXpRd056TTFPVE5qT0dOa00yWXhaREkzWVRZNE1EUmxZelV3WlRwRGNHOURRM0JqUTBWc2IwdENWM1JzWlZNd2VFVkJTa05VZDI5S1l6SldhbU5FU1RGT2JYTjRSV2xCUlc5VFEyNDFkSGxFWVRaWk5uSXRTVzFUY1hCS09Ga3hiV28zU2tNelgyOVZla1V3VG5sNVJXbERRbTluYzJkT1lXVlNaR05EVWtkUWJHVTRNbFoyT1hSS1prNTNiRFp5WnpaV1kyaFNNMDl4YUdsV1lsUmhPRk5YZDI5SFdWaFdNR0ZETUhoRlFWSkRWSGR2U21NeVZtcGpSRWt4VG0xemVFVnBSRTFyUW1RMlJuUnBiMHByTTFoUFJuVXRYMk41TlZodFVpMDBkRlZSTWs1TVIybFhPR0ZKVTI5dGExSnZaelpUWkdVNVVIZHVSekJSTUZOQ1ZHMUdVMVJFWWxOTFFuWkpWalpEVkV4WWNtcEpTblIwWlVkSmJVRlRXRUZ2U0dKWFJucGtSMVo1VFVKQlFsRnJPRXREV0U1c1dUTkJlVTVVV25KTlVrbG5UemN4TUcxME1WZGZhWGhFZVZGTk0zaEpjemRVY0dwTVEwNVBSRkY0WjFab2VEVnphR1pMVGxneGIyRkpTRmRRY25jM1NWVkxiR1pwWWxGMGVEWkthelJVVTJwblkxZE9UMlpqVDNSVk9VUTVVSFZhTjFRNWRDSXNJbk4xWWlJNkltUnBaRHB3Y21semJUcGlaV1ZoTlRJek5HRm1ORFk0TURRM01UUmtPR1ZoT0dWak56ZGlOalpqWXpkbU0yVTRNVFZqTmpoaFltSTBOelZtTWpVMFkyWTVZek13TmpJMk56WXpPa056WTBKRGMxRkNSVzFSUzBReVJqRmtSMmhzWW01U2NGa3lSakJoVnpsMVRVSkJSVkZyT0V0RFdFNXNXVE5CZVU1VVduSk5Va2xuWlZObkxUSlBUekZLWkc1d2VsVlBRbWwwZWtscFkxaGtabnBsUVdOVVpsZEJUaTFaUTJWMVEySjVTV0ZKU2xFMFIxUkpNekIwWVZacGQyTm9WRE5sTUc1TVdFSlRORE5DTkdvNWFteHpiRXR2TWxwc1pGaDZha1ZzZDB0Q01qRm9Zek5TYkdOcVFWRkJWVXBRUTJkc2VscFhUbmROYWxVeVlYcEZVMGxJYTI5UWRHcHFkRk5ZV2paak1VUm5XWEpqZVVsdVJqTllPRE5uU0VVek1XZEVabTFCYm5KbmJUaHBSMmxEVlU5Q2EzbE9PVXhYYkZselNFbFZPVE4wU25reGQxVjFUbmRsU1Y5Wk5XSktVM0ZPYlZwWVZqZzBkeUlzSW01aVppSTZNVFk0TlRZek1UazVOU3dpWlhod0lqb3hOamcxTmpNMU5UazFMQ0oyWXlJNmV5SmpjbVZrWlc1MGFXRnNVM1ZpYW1WamRDSTZleUpoWkdScGRHbHZibUZzVUhKdmNESWlPaUpVWlhOME15SXNJbWxrSWpvaVpHbGtPbkJ5YVhOdE9tSmxaV0UxTWpNMFlXWTBOamd3TkRjeE5HUTRaV0U0WldNM04ySTJObU5qTjJZelpUZ3hOV00yT0dGaVlqUTNOV1l5TlRSalpqbGpNekEyTWpZM05qTTZRM05qUWtOelVVSkZiVkZMUkRKR01XUkhhR3hpYmxKd1dUSkdNR0ZYT1hWTlFrRkZVV3M0UzBOWVRteFpNMEY1VGxSYWNrMVNTV2RsVTJjdE1rOVBNVXBrYm5CNlZVOUNhWFI2U1dsaldHUm1lbVZCWTFSbVYwRk9MVmxEWlhWRFlubEpZVWxLVVRSSFZFa3pNSFJoVm1sM1kyaFVNMlV3Ymt4WVFsTTBNMEkwYWpscWJITnNTMjh5V214a1dIcHFSV3gzUzBJeU1XaGpNMUpzWTJwQlVVRlZTbEJEWjJ4NldsZE9kMDFxVlRKaGVrVlRTVWhyYjFCMGFtcDBVMWhhTm1NeFJHZFpjbU41U1c1R00xZzRNMmRJUlRNeFowUm1iVUZ1Y21kdE9HbEhhVU5WVDBKcmVVNDVURmRzV1hOSVNWVTVNM1JLZVRGM1ZYVk9kMlZKWDFrMVlrcFRjVTV0V2xoV09EUjNJbjBzSW5SNWNHVWlPbHNpVm1WeWFXWnBZV0pzWlVOeVpXUmxiblJwWVd3aVhTd2lRR052Ym5SbGVIUWlPbHNpYUhSMGNITTZYQzljTDNkM2R5NTNNeTV2Y21kY0x6SXdNVGhjTDJOeVpXUmxiblJwWVd4elhDOTJNU0pkZlgwLngwU0YxN1kwVkNEbXQ3SGNlT2RUeGZIbG9mc1ptWTE4Um42VlFiMC1yLWtfQm0zaFRpMS1rMnZrZGpCMjVoZHh5VEN2eGFtLUFrQVAtQWczQWhuNU5nIl19\"},\"format\":\"dif/presentation-exchange/definitions@v1.0\"}],\"thid\":\"00000000-ef9d-4722-0000-00003b1bc908\",\"ack\":[]}"
@@ -1367,7 +1367,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = apiMock,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
             val msg = Json.decodeFromString<Message>(
                 """{"id":"00000000-685c-4004-0000-000036ac64ee","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"asdfasdf"},"to":{"method":"peer","methodId":"fdsafdsa"},"fromPrior":null,"body":"{}","createdTime":"2024-03-08T19:27:38.196506Z","expiresTimePlus":"2024-03-09T19:27:38.196559Z","attachments":[{"id":"00000000-9c2e-4249-0000-0000c1176949","mediaType":"application/json","data":{"type":"org.hyperledger.identus.walletsdk.domain.models.AttachmentBase64","base64":"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjMyZjU0MTYzLTcxNjYtNDhmMS05M2Q4LWZmMjE3YmRiMDY1MyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IndhX2RyaXZlcl9saWNlbnNlIiwibmFtZSI6Ildhc2hpbmd0b24gU3RhdGUgQnVzaW5lc3MgTGljZW5zZSIsInB1cnBvc2UiOiJXZSBjYW4gb25seSBhbGxvdyBsaWNlbnNlZCBXYXNoaW5ndG9uIFN0YXRlIGJ1c2luZXNzIHJlcHJlc2VudGF0aXZlcyBpbnRvIHRoZSBXQSBCdXNpbmVzcyBDb25mZXJlbmNlIiwiY29uc3RyYWludHMiOnsiZmllbGRzIjpbeyJwYXRoIjpbIiQuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiIsIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mQmlydGgiLCIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmRvYiJdfV19fV0sImZvcm1hdCI6eyJqd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19LCAib3B0aW9ucyI6IHsiZG9tYWluIjogImRvbWFpbiIsICJjaGFsbGVuZ2UiOiAiY2hhbGxlbmdlIn19"},"format":"dif/presentation-exchange/definitions@v1.0"}],"thid":"00000000-ef9d-4722-0000-00003b1bc908","ack":[]}"""
@@ -1421,7 +1421,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = apiMock,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
 
             val credential = JWTCredential.fromJwtString(
@@ -1530,7 +1530,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = apiMock,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
 
             val msgString =
@@ -1653,7 +1653,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = apiMock,
-            logger = PrismLoggerMock()
+            logger = LoggerMock()
         )
 
         val msgString =
@@ -1674,7 +1674,7 @@ class EdgeAgentTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = null,
-            logger = PrismLoggerMock()
+            logger = LoggerMock()
         )
         `when`(
             apolloMock.createPrivateKey(
@@ -1868,7 +1868,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = null,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
         )
 
@@ -1896,7 +1896,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = null,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
         )
 
