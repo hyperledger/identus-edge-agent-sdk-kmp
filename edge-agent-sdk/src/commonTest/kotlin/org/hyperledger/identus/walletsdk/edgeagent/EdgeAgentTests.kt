@@ -1868,7 +1868,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = null,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
         )
 
@@ -1896,7 +1896,7 @@ class EdgeAgentTests {
                 connectionManager = connectionManagerMock,
                 seed = seed,
                 api = null,
-                logger = PrismLoggerMock()
+                logger = LoggerMock()
             )
         )
 
