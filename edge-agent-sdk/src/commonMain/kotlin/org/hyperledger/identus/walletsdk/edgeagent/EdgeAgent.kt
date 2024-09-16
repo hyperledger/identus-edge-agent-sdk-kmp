@@ -22,6 +22,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpMethod
 import io.ktor.http.Url
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.util.date.getTimeMillis
 import java.net.UnknownHostException
 import java.security.SecureRandom
 import java.util.*
@@ -34,12 +35,15 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -650,10 +654,7 @@ open class EdgeAgent {
                     KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                 )
                 val offerDataString = offer.attachments.firstNotNullOf {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
+                    it.data.getDataAsJsonString()
                 }
                 val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
                 val jwtString =
@@ -902,14 +903,91 @@ open class EdgeAgent {
     }
 
     /**
-     * Accepts an Out-of-Band (DIDComm) invitation and establishes a new connection
+     * Accepts an Out-of-Band (DIDComm), verifies if it contains attachments or not. If it does contain attachments
+     * means is a contactless request presentation. If it does not, it just creates a pair and establishes a connection.
      * @param invitation The Out-of-Band invitation to accept
      * @throws [EdgeAgentError.NoMediatorAvailableError] if there is no mediator available or other errors occur during the acceptance process
      */
     suspend fun acceptOutOfBandInvitation(invitation: OutOfBandInvitation) {
         val ownDID = createNewPeerDID(updateMediator = true)
-        val pair = DIDCommConnectionRunner(invitation, pluto, ownDID, connectionManager).run()
-        connectionManager.addConnection(pair)
+        if (invitation.attachments.isNotEmpty()) {
+            // If attachments not empty, means connectionless presentation
+            val now = Instant.fromEpochMilliseconds(getTimeMillis())
+            val expiryDate = Instant.fromEpochSeconds(invitation.expiresTime)
+            if (now > expiryDate) {
+                throw EdgeAgentError.ExpiredInvitation()
+            }
+
+            val jsonString = invitation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
+            val requestPresentationJson = Json.parseToJsonElement(jsonString).jsonObject
+            if (!requestPresentationJson.containsKey("id")) {
+                throw EdgeAgentError.MissingOrNullFieldError("id", "Request")
+            }
+            if (!requestPresentationJson.containsKey("body")) {
+                throw EdgeAgentError.MissingOrNullFieldError("body", "Request")
+            }
+            if (!requestPresentationJson.containsKey("attachments")) {
+                throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
+            }
+            if (!requestPresentationJson.containsKey("thid")) {
+                throw EdgeAgentError.MissingOrNullFieldError("thid", "Request")
+            }
+            if (!requestPresentationJson.containsKey("from")) {
+                throw EdgeAgentError.MissingOrNullFieldError("from", "Request")
+            }
+
+            val requestId = requestPresentationJson["id"]!!
+            val requestBody = requestPresentationJson["body"]!!
+            val requestAttachments = requestPresentationJson["attachments"]!!
+            val requestThid = requestPresentationJson["thid"]!!
+            val requestFrom = requestPresentationJson["from"]!!
+
+            if (requestAttachments.jsonArray.size == 0) {
+                throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
+            }
+            val attachmentJsonObject = requestAttachments.jsonArray[0]
+            if (!attachmentJsonObject.jsonObject.containsKey("id")) {
+                throw EdgeAgentError.MissingOrNullFieldError("id", "Request attachments")
+            }
+            if (!attachmentJsonObject.jsonObject.containsKey("media_type")) {
+                throw EdgeAgentError.MissingOrNullFieldError("media_type", "Request attachments")
+            }
+            if (!attachmentJsonObject.jsonObject.containsKey("data")) {
+                if (!attachmentJsonObject.jsonObject["data"]!!.jsonObject.containsKey("json")) {
+                    throw EdgeAgentError.MissingOrNullFieldError("json", "Request attachments data")
+                }
+                throw EdgeAgentError.MissingOrNullFieldError("data", "Request attachments")
+            }
+            if (!attachmentJsonObject.jsonObject.containsKey("format")) {
+                throw EdgeAgentError.MissingOrNullFieldError("format", "Request attachments")
+            }
+            val attachmentId = attachmentJsonObject.jsonObject["id"]!!
+            val attachmentMediaType = attachmentJsonObject.jsonObject["media_type"]!!
+            val attachmentData = attachmentJsonObject.jsonObject["data"]!!.jsonObject["json"]!!
+            val attachmentFormat = attachmentJsonObject.jsonObject["format"]!!
+
+            val attachmentDescriptor = AttachmentDescriptor(
+                id = attachmentId.jsonPrimitive.content,
+                mediaType = attachmentMediaType.jsonPrimitive.content,
+                data = AttachmentJsonData(attachmentData.toString()),
+                format = attachmentFormat.jsonPrimitive.content
+            )
+
+            val requestPresentation = RequestPresentation(
+                id = requestId.jsonPrimitive.content,
+                body = Json.decodeFromString(requestBody.jsonObject.toString()),
+                attachments = arrayOf(attachmentDescriptor),
+                thid = requestThid.jsonPrimitive.content,
+                from = DID(requestFrom.jsonPrimitive.content),
+                to = ownDID
+            )
+
+            pluto.storeMessage(requestPresentation.makeMessage())
+        } else {
+            // Regular OOB invitation
+            val pair = DIDCommConnectionRunner(invitation, pluto, ownDID, connectionManager).run()
+            connectionManager.addConnection(pair)
+        }
     }
 
     /**
@@ -976,12 +1054,9 @@ open class EdgeAgent {
                 if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
                     throw EdgeAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
                 }
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
-                }.first()
+                val requestData = request.attachments.firstNotNullOf {
+                    it.data.getDataAsJsonString()
+                }
                 val linkSecret = getLinkSecret()
                 try {
                     presentationString = credential.presentation(
@@ -1012,10 +1087,7 @@ open class EdgeAgent {
                         KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                     )
                 val requestData = request.attachments.firstNotNullOf {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
+                    it.data.getDataAsJsonString()
                 }
                 try {
                     presentationString = credential.presentation(
@@ -1032,15 +1104,12 @@ open class EdgeAgent {
             }
 
             CredentialType.SDJWT.type -> {
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
-                }.first().encodeToByteArray()
+                val requestData = request.attachments.firstNotNullOf {
+                    it.data.getDataAsJsonString()
+                }
                 try {
                     presentationString = credential.presentation(
-                        requestData,
+                        requestData.encodeToByteArray(),
                         listOf(CredentialOperationsOptions.DisclosingClaims(listOf(credential.claims.toString())))
                     )
                 } catch (e: Exception) {
@@ -1060,8 +1129,10 @@ open class EdgeAgent {
                 data = AttachmentBase64(presentationString.base64UrlEncoded)
             )
 
+        val fromDID = request.to ?: createNewPeerDID(updateMediator = true)
+
         return Presentation(
-            from = request.to,
+            from = fromDID,
             to = request.from,
             thid = request.thid,
             body = Presentation.Body(request.body.goalCode, request.body.comment),
@@ -1111,7 +1182,7 @@ open class EdgeAgent {
                     type = type,
                     presentationClaims = presentationClaims,
                     options = AnoncredsPresentationOptions(
-                        nonce = generateNonce()
+                        nonce = generateNumericNonce()
                     )
                 )
                 attachmentDescriptor = AttachmentDescriptor(
@@ -1161,6 +1232,7 @@ open class EdgeAgent {
                     ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
                 val privateKey =
                     apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
+
                 val presentationSubmissionProof = pollux.createJWTPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequestString,
                     credential = credential,
@@ -1172,15 +1244,18 @@ open class EdgeAgent {
                     format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
                     data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
                 )
+
+                val fromDID = requestPresentation.to ?: createNewPeerDID(updateMediator = true)
                 return Presentation(
                     body = Presentation.Body(),
                     attachments = arrayOf(attachmentDescriptor),
                     thid = requestPresentation.thid ?: requestPresentation.id,
-                    from = requestPresentation.to,
+                    from = fromDID,
                     to = requestPresentation.from
                 )
             } else {
                 val linkSecret = getLinkSecret()
+
                 val presentationSubmissionProof = pollux.createAnoncredsPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequestString,
                     credential = credential,
@@ -1192,11 +1267,12 @@ open class EdgeAgent {
                     format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
                     data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
                 )
+                val fromDID = requestPresentation.to ?: createNewPeerDID(updateMediator = true)
                 return Presentation(
                     body = Presentation.Body(),
                     attachments = arrayOf(attachmentDescriptor),
                     thid = requestPresentation.thid ?: requestPresentation.id,
-                    from = requestPresentation.to,
+                    from = fromDID,
                     to = requestPresentation.from
                 )
             }
@@ -1404,11 +1480,16 @@ open class EdgeAgent {
         }
     }
 
-    private fun generateNonce(size: Int = 16): String {
+    private fun generateNumericNonce(size: Int = 16): String {
         val random = SecureRandom()
-        val nonce = ByteArray(size)
-        random.nextBytes(nonce)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(nonce)
+        val nonce = StringBuilder(size)
+
+        repeat(size) {
+            val digit = random.nextInt(10) // Generates a number between 0 and 9
+            nonce.append(digit)
+        }
+
+        return nonce.toString()
     }
 
     /**

@@ -63,6 +63,11 @@ class CloudAgentSteps {
         cloudAgentWorkflow.askForPresentProofForAnoncred(cloudAgent)
     }
 
+    @When("{actor} asks for present-proof for anoncred with unexpected attributes")
+    fun `Cloud Agent asks for present-proof for anoncred with unexpected attributes`(cloudAgent: Actor) {
+        cloudAgentWorkflow.askForPresentProofForAnoncredWithUnexpectedAttributes(cloudAgent)
+    }
+
     @When("{actor} revokes '{int}' credentials")
     fun `Cloud Agent revokes {} credentials`(cloudAgent: Actor, numberOfRevokedCredentials: Int) {
         cloudAgentWorkflow.revokeCredential(cloudAgent, numberOfRevokedCredentials)
@@ -76,6 +81,11 @@ class CloudAgentSteps {
     @Then("{actor} should see the present-proof is verified")
     fun `Cloud Agent should see the present-proof is verified`(cloudAgent: Actor) {
         cloudAgentWorkflow.verifyPresentProof(cloudAgent, "PresentationVerified")
+    }
+
+    @Then("{actor} should see the present-proof is not verified")
+    fun `Cloud Agent should see the present-proof is not verified`(cloudAgent: Actor) {
+        cloudAgentWorkflow.verifyPresentProof(cloudAgent, "PresentationFailed")
     }
 
     @Then("{actor} should see all credentials were accepted")
