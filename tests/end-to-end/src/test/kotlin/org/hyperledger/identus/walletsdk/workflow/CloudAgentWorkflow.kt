@@ -7,20 +7,20 @@ import io.iohk.atala.automation.serenity.ensure.Ensure
 import io.iohk.atala.automation.serenity.interactions.PollingWait
 import io.iohk.atala.automation.serenity.questions.HttpRequest
 import org.hyperledger.identus.walletsdk.configuration.Environment
-import io.iohk.atala.prism.models.AnoncredPresentationRequestV1
-import io.iohk.atala.prism.models.AnoncredRequestedAttributeV1
-import io.iohk.atala.prism.models.AnoncredRequestedPredicateV1
-import io.iohk.atala.prism.models.CreateConnectionRequest
-import io.iohk.atala.prism.models.CreateIssueCredentialRecordRequest
-import io.iohk.atala.prism.models.Options
-import io.iohk.atala.prism.models.ProofRequestAux
-import io.iohk.atala.prism.models.RequestPresentationInput
 import org.hyperledger.identus.walletsdk.utils.Utils
 import net.serenitybdd.rest.SerenityRest.lastResponse
 import net.serenitybdd.screenplay.Actor
 import net.serenitybdd.screenplay.rest.interactions.Patch
 import net.serenitybdd.screenplay.rest.interactions.Post
 import org.apache.http.HttpStatus
+import org.hyperledger.identus.client.models.AnoncredPresentationRequestV1
+import org.hyperledger.identus.client.models.AnoncredRequestedAttributeV1
+import org.hyperledger.identus.client.models.AnoncredRequestedPredicateV1
+import org.hyperledger.identus.client.models.CreateConnectionRequest
+import org.hyperledger.identus.client.models.CreateIssueCredentialRecordRequest
+import org.hyperledger.identus.client.models.Options
+import org.hyperledger.identus.client.models.ProofRequestAux
+import org.hyperledger.identus.client.models.RequestPresentationInput
 import java.util.UUID
 
 class CloudAgentWorkflow {
@@ -58,7 +58,7 @@ class CloudAgentWorkflow {
     fun offerJwtCredential(cloudAgent: Actor) {
         val connectionId = cloudAgent.recall<String>("connectionId")
         val credential = CreateIssueCredentialRecordRequest(
-            claims = mapOf(Pair("automation-required", UUID.randomUUID())),
+            claims = mapOf(Pair("automation-required", "required value")),
             issuingDID = Environment.publishedDid,
             connectionId = UUID.fromString(connectionId),
             schemaId = "${Environment.agentUrl}/schema-registry/schemas/${Environment.jwtSchemaGuid}"
@@ -143,6 +143,43 @@ class CloudAgentWorkflow {
                     restrictions = emptyList()
                 )
             ),
+            name = "proof_req_1",
+            nonce = Utils.generateNonce(25),
+            version = "0.1"
+        )
+
+        val presentProofRequest = RequestPresentationInput(
+            connectionId = UUID.fromString(cloudAgent.recall("connectionId")),
+            credentialFormat = "AnonCreds",
+            anoncredPresentationRequest = anoncredsPresentationRequestV1,
+            proofs = emptyList()
+        )
+
+        cloudAgent.attemptsTo(
+            Post.to("/present-proof/presentations").body(presentProofRequest),
+            Ensure.thatTheLastResponse().statusCode().isEqualTo(HttpStatus.SC_CREATED)
+        )
+        cloudAgent.remember("presentationId", lastResponse().get<String>("presentationId"))
+    }
+
+    fun askForPresentProofForAnoncredWithUnexpectedAttributes(cloudAgent: Actor) {
+        val credentialDefinitionId = Environment.agentUrl +
+                "/credential-definition-registry/definitions/" +
+                Environment.anoncredDefinitionId +
+                "/definition"
+        val anoncredsPresentationRequestV1 = AnoncredPresentationRequestV1(
+            requestedAttributes = mapOf(
+                "name" to AnoncredRequestedAttributeV1(
+                    name = "name",
+                    restrictions = listOf(
+                        mapOf(
+                            "attr::name::value" to "Automation",
+                            "cred_def_id" to credentialDefinitionId
+                        )
+                    )
+                )
+            ),
+            requestedPredicates = mapOf(),
             name = "proof_req_1",
             nonce = Utils.generateNonce(25),
             version = "0.1"

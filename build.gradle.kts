@@ -1,6 +1,6 @@
 import org.gradle.internal.os.OperatingSystem
 
-val publishedMavenId = "org.hyperledger.identus"
+val groupId = "org.hyperledger.identus"
 val os: OperatingSystem = OperatingSystem.current()
 
 plugins {
@@ -10,8 +10,6 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
     id("org.jetbrains.dokka") version "1.9.20"
     id("org.jetbrains.kotlin.kapt") version "1.9.10"
-    id("maven-publish")
-    id("signing")
     id("io.github.gradle-nexus.publish-plugin") version "2.0.0"
 }
 
@@ -37,7 +35,7 @@ java {
 }
 
 allprojects {
-    this.group = publishedMavenId
+    this.group = groupId
 
     repositories {
         mavenLocal()
@@ -98,111 +96,6 @@ subprojects {
                 it.file.path.contains("generated-src") ||
                     it.file.toString().contains("generated") ||
                     it.file.path.contains("generated")
-            }
-        }
-    }
-
-    if (this.name == "edge-agent-sdk") {
-        apply(plugin = "org.gradle.maven-publish")
-        apply(plugin = "org.gradle.signing")
-
-        publishing {
-            repositories {
-                maven {
-                    name = "OSSRH"
-                    url = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-                    credentials {
-                        username =
-                            project.findProperty("sonatypeUsername") as String? ?: System.getenv("OSSRH_USERNAME")
-                        password = project.findProperty("sonatypePassword") as String? ?: System.getenv("OSSRH_TOKEN")
-                    }
-                }
-            }
-            publications {
-                withType<MavenPublication> {
-                    groupId = publishedMavenId
-                    artifactId = project.name
-                    version = project.version.toString()
-                    pom {
-                        name.set("Edge Agent SDK")
-                        description.set(" Edge Agent SDK - Kotlin Multiplatform (Android/JVM)")
-                        url.set("https://docs.atalaprism.io/")
-                        organization {
-                            name.set("Hyperledger")
-                            url.set("https://hyperledger.org/")
-                        }
-                        issueManagement {
-                            system.set("Github")
-                            url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
-                        }
-                        licenses {
-                            license {
-                                name.set("The Apache License, Version 2.0")
-                                url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
-                            }
-                        }
-                        developers {
-                            developer {
-                                id.set("cristianIOHK")
-                                name.set("Cristian Gonzalez")
-                                email.set("cristian.castro@iohk.io")
-                                organization.set("IOG")
-                                roles.add("developer")
-                                url.set("https://github.com/cristianIOHK")
-                            }
-                            developer {
-                                id.set("hamada147")
-                                name.set("Ahmed Moussa")
-                                email.set("ahmed.moussa@iohk.io")
-                                organization.set("IOG")
-                                roles.add("developer")
-                                url.set("https://github.com/hamada147")
-                            }
-                            developer {
-                                id.set("elribonazo")
-                                name.set("Javier Ribó")
-                                email.set("javier.ribo@iohk.io")
-                                organization.set("IOG")
-                                roles.add("developer")
-                            }
-                            developer {
-                                id.set("amagyar-iohk")
-                                name.set("Allain Magyar")
-                                email.set("allain.magyar@iohk.io")
-                                organization.set("IOG")
-                                roles.add("qc")
-                            }
-                            developer {
-                                id.set("antonbaliasnikov")
-                                name.set("Anton Baliasnikov")
-                                email.set("anton.baliasnikov@iohk.io")
-                                organization.set("IOG")
-                                roles.add("qc")
-                            }
-                            developer {
-                                id.set("goncalo-frade-iohk")
-                                name.set("Gonçalo Frade")
-                                email.set("goncalo.frade@iohk.io")
-                                organization.set("IOG")
-                                roles.add("developer")
-                            }
-                        }
-                        scm {
-                            connection.set("scm:git:git://hyperledger/identus-edge-agent-sdk-kmp.git")
-                            developerConnection.set("scm:git:ssh://hyperledger/identus-edge-agent-sdk-kmp.git")
-                            url.set("https://github.com/hyperledger/identus-edge-agent-sdk-kmp")
-                        }
-                    }
-                    signing {
-                        useInMemoryPgpKeys(
-                            project.findProperty("signing.signingSecretKey") as String?
-                                ?: System.getenv("OSSRH_GPG_SECRET_KEY"),
-                            project.findProperty("signing.signingSecretKeyPassword") as String?
-                                ?: System.getenv("OSSRH_GPG_SECRET_KEY_PASSWORD")
-                        )
-                        sign(this@withType)
-                    }
-                }
             }
         }
     }

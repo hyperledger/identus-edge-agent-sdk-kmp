@@ -1,7 +1,6 @@
 package org.hyperledger.identus.walletsdk.configuration
 
 import io.iohk.atala.automation.utils.Wait
-import io.iohk.atala.prism.models.*
 import org.hyperledger.identus.walletsdk.utils.Notes
 import io.restassured.RestAssured
 import io.restassured.builder.RequestSpecBuilder
@@ -9,6 +8,13 @@ import io.restassured.response.Response
 import net.serenitybdd.rest.SerenityRest
 import org.apache.http.HttpStatus
 import org.assertj.core.api.Assertions.assertThat
+import org.hyperledger.identus.client.models.CreateManagedDidRequest
+import org.hyperledger.identus.client.models.CreateManagedDidRequestDocumentTemplate
+import org.hyperledger.identus.client.models.CredentialDefinitionInput
+import org.hyperledger.identus.client.models.CredentialDefinitionResponse
+import org.hyperledger.identus.client.models.CredentialSchemaInput
+import org.hyperledger.identus.client.models.ManagedDIDKeyTemplate
+import org.hyperledger.identus.client.models.Purpose
 import org.hyperledger.identus.walletsdk.models.AnoncredSchema
 import org.hyperledger.identus.walletsdk.models.JwtSchema
 import org.hyperledger.identus.walletsdk.models.JwtSchemaProperty

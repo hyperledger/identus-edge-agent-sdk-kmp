@@ -155,12 +155,7 @@ class BasicMediatorHandler(
         return flow {
             val message = mercury.sendMessageParseResponse(requestMessage)
             message?.let {
-                try {
-                    emit(PickupRunner(message, mercury).run())
-                } catch (e: Exception) {
-                    println("Message of type ${message.piuri} cannot be sent to PickupRunner")
-                    e.printStackTrace()
-                }
+                emit(PickupRunner(message, mercury).run())
             }
         }
     }

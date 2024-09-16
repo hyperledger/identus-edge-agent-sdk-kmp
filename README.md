@@ -20,7 +20,7 @@ The complete platform is separated into multiple repositories:
 * [edge-agent-sdk-swift](https://github.com/hyperledger/identus-edge-agent-sdk-swift/) - Repo that implements Edge Agent for Apple platforms in Swift.
 * [edge-agent-sdk-ts](https://github.com/hyperledger/identus-edge-agent-sdk-ts/) - Repo that implements Edge Agent for Browser and Node.js platforms in Typescript.
 * [identus-cloud-agent](https://github.com/hyperledger/identus-cloud-agent/) - Repo that contains the platform Building Blocks.
-* [mediator](https://github.com/hyperledger/identus-mediator/) - Repo for DIDComm V2 Mediator
+* [mediator](https://github.com/hyperledger/identus-mediator/) - Repo for DIDComm V2 Mediator.
 
 ### Modules / APIs
 
