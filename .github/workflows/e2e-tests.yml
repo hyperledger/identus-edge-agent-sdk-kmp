@@ -12,11 +12,11 @@ on:
       mediatorOobUrl:
         required: true
         description: Mediator out-of-band url
-        default: https://beta-mediator.atalaprism.io/invitationOOB
+        default: https://stable-mediator.atalaprism.io/invitationOOB
       agentUrl:
         required: true
         description: Prism-agent server url
-        default: https://sit-prism-agent-issuer.atalaprism.io/prism-agent/
+        default: https://dev-agent-a.atalaprism.io/cloud-agent
       apiKey:
         required: false
         description: Authorization key
