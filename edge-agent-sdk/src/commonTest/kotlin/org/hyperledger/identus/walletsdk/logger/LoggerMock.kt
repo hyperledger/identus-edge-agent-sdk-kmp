@@ -1,6 +1,6 @@
 package org.hyperledger.identus.walletsdk.logger
 
-class EdgeAgentLoggerMock : EdgeAgentLogger {
+class LoggerMock : Logger {
 
     private var logLevel: LogLevel = LogLevel.NONE
 

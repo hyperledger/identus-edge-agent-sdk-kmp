@@ -92,8 +92,8 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsAnoncreds
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
-import org.hyperledger.identus.walletsdk.logger.EdgeAgentLogger
-import org.hyperledger.identus.walletsdk.logger.EdgeAgentLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.Logger
+import org.hyperledger.identus.walletsdk.logger.LoggerImpl
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.pluto.RestorationID
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
@@ -118,7 +118,7 @@ open class PolluxImpl(
     val apollo: Apollo,
     val castor: Castor,
     private val api: Api = ApiImpl(httpClient()),
-    private val logger: EdgeAgentLogger = EdgeAgentLoggerImpl(LogComponent.POLLUX)
+    private val logger: Logger = LoggerImpl(LogComponent.POLLUX)
 ) : Pollux {
 
     /**

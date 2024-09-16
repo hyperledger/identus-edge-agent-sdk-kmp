@@ -24,8 +24,8 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.EdgeAgentLogger
-import org.hyperledger.identus.walletsdk.logger.EdgeAgentLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.Logger
+import org.hyperledger.identus.walletsdk.logger.LoggerImpl
 
 /**
  * Castor is a powerful and flexible library for working with DIDs. Whether you are building a decentralised application
@@ -36,7 +36,7 @@ class CastorImpl
 @JvmOverloads
 constructor(
     val apollo: Apollo,
-    private val logger: EdgeAgentLogger = EdgeAgentLoggerImpl(LogComponent.CASTOR)
+    private val logger: Logger = LoggerImpl(LogComponent.CASTOR)
 ) : Castor {
     var resolvers: Array<DIDResolver> = arrayOf(
         LongFormPrismDIDResolver(this.apollo),

@@ -40,15 +40,17 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
-import org.hyperledger.identus.walletsdk.logger.EdgeAgentLogger
-import org.hyperledger.identus.walletsdk.logger.EdgeAgentLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.Logger
+import org.hyperledger.identus.walletsdk.logger.LoggerImpl
 import org.hyperledger.identus.walletsdk.logger.LogComponent
+import org.hyperledger.identus.walletsdk.logger.LogLevel
+import kotlin.math.log
 
 /**
  * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
  */
 class ApolloImpl(
-    private val logger: EdgeAgentLogger = EdgeAgentLoggerImpl(LogComponent.APOLLO)
+    val logger: Logger = LoggerImpl(LogComponent.APOLLO)
 ) : Apollo {
 
     /**
@@ -57,6 +59,7 @@ class ApolloImpl(
      * @return An array of mnemonic phrases.
      */
     override fun createRandomMnemonics(): Array<String> {
+        LogComponent.APOLLO.logLevel = LogLevel.INFO
         return MnemonicHelper.createRandomMnemonics().toTypedArray()
     }
 

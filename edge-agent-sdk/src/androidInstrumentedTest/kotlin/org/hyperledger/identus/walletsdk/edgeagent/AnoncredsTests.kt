@@ -40,7 +40,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmission
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.domain.models.KeyValue
-import org.hyperledger.identus.walletsdk.logger.EdgeAgentLoggerMock
+import org.hyperledger.identus.walletsdk.logger.LoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
@@ -114,7 +114,7 @@ class AnoncredsTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(statusCode = HttpStatusCode.OK, response = "{\"success\":\"true\"}"),
-            logger = EdgeAgentLoggerMock()
+            logger = LoggerMock()
         )
 
         val attachmentDescriptor =
@@ -192,7 +192,7 @@ class AnoncredsTests {
             connectionManager = connectionManager,
             seed = null,
             api = ApiMock(HttpStatusCode.OK, "{\"success\":\"true\"}"),
-            logger = EdgeAgentLoggerMock()
+            logger = LoggerMock()
         )
 
         val attachmentDescriptor =
@@ -263,7 +263,7 @@ class AnoncredsTests {
             connectionManager = connectionManagerMock,
             seed = seed,
             api = apiMock,
-            logger = EdgeAgentLoggerMock()
+            logger = LoggerMock()
         )
 
         val credential = AnonCredential.fromStorableData(
@@ -355,7 +355,7 @@ class AnoncredsTests {
                     connectionManager = connectionManagerMock,
                     seed = seed,
                     api = apiMock,
-                    logger = EdgeAgentLoggerMock()
+                    logger = LoggerMock()
                 )
             )
 
