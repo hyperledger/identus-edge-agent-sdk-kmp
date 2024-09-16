@@ -5,7 +5,7 @@ plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"
   - [ '@semantic-release/exec', {
-    prepareCmd: 'sed -i.bak "s/atala-prism-sdk:${lastRelease.version}/atala-prism-sdk:${nextRelease.version}/g" ./tests/end-to-end/build.gradle.kts && rm -f ./tests/end-to-end/build.gradle.kts.bak' } ]
+    prepareCmd: 'sed -i.bak "s/edge-agent-sdk:${lastRelease.version}/edge-agent-sdk:${nextRelease.version}/g" ./tests/end-to-end/build.gradle.kts && rm -f ./tests/end-to-end/build.gradle.kts.bak' } ]
   - ["@semantic-release/changelog", {changelogFile: "CHANGELOG.md"}]
   - "gradle-semantic-release-plugin"
   - [
