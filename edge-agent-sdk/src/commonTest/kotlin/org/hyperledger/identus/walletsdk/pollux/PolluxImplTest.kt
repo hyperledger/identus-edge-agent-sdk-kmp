@@ -20,7 +20,10 @@ import junit.framework.TestCase.assertTrue
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.didcommx.didcomm.common.Typ
+import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
@@ -1152,6 +1155,34 @@ class PolluxImplTest {
         assertTrue(pollux.verifyStatusListIndexForEncodedList(encodedList, 1))
         assertTrue(pollux.verifyStatusListIndexForEncodedList(encodedList, 2))
         assertFalse(pollux.verifyStatusListIndexForEncodedList(encodedList, 3))
+    }
+
+    @Test
+    fun `Test signClaims for JWT including kid`() = runTest {
+        pollux = PolluxImpl(apollo, castor, api)
+        val keyPair = Secp256k1KeyPair.generateKeyPair()
+
+        val did =
+            DID("did:prism:cd6cf9f94a43c53e286b0f2015c0083701350a694f52a22ee02e3bd29d93eba9:CrQBCrEBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xotCgojZGlkY29tbS0xEhBESURDb21tTWVzc2FnaW5nGg1kaWQ6cGVlcjp0ZXN0")
+        val domain = "domain"
+        val challenge = "challenge"
+        val credential = JWTCredential.fromJwtString(
+            "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206ZTAyZTgwOTlkNTAzNTEzNDVjNWRkODMxYTllOTExMmIzOTRhODVkMDA2NGEyZWI1OTQyOTA4MDczNGExNTliNjpDcmtCQ3JZQkVqb0tCbUYxZEdndE1SQUVTaTRLQ1hObFkzQXlOVFpyTVJJaEF1Vlljb3JmV25MMGZZdEE1dmdKSzRfLW9iM2JVRGMtdzJVT0hkTzNRRXZxRWpzS0IybHpjM1ZsTFRFUUFrb3VDZ2x6WldOd01qVTJhekVTSVFMQ3U5Tm50cXVwQmotME5DZE1BNzV6UmVCZXlhQ0pPMWFHWWVQNEJNUUhWQkk3Q2dkdFlYTjBaWEl3RUFGS0xnb0pjMlZqY0RJMU5tc3hFaUVET1dndlF4NnZSdTZ3VWI0RlljSnVhRUNqOUJqUE1KdlJwOEx3TTYxaEVUNCIsInN1YiI6ImRpZDpwcmlzbTpiZDgxZmY1NDQzNDJjMTAwNDZkZmE0YmEyOTVkNWIzNmU0Y2ZlNWE3ZWIxMjBlMTBlZTVjMjQ4NzAwNjUxMDA5OkNvVUJDb0lCRWpzS0IyMWhjM1JsY2pBUUFVb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQkpEQ2c5aGRYUm9aVzUwYVdOaGRHbHZiakFRQkVvdUNnbHpaV053TWpVMmF6RVNJUVB2NVA1eXlnclp3YUpsWXpsNTltMkhBREtUWFVMUHNSZTBrZ2VFSHZ0TGdBIiwibmJmIjoxNzE1MDAwNjc0LCJleHAiOjE3MTg2MDA2NzQsInZjIjp7ImNyZWRlbnRpYWxTdWJqZWN0Ijp7ImVtYWlsQWRkcmVzcyI6ImNyaXN0aWFuLmNhc3Ryb0Bpb2hrLmlvIiwiaWQiOiJkaWQ6cHJpc206YmQ4MWZmNTQ0MzQyYzEwMDQ2ZGZhNGJhMjk1ZDViMzZlNGNmZTVhN2ViMTIwZTEwZWU1YzI0ODcwMDY1MTAwOTpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRUHY1UDV5eWdyWndhSmxZemw1OW0ySEFES1RYVUxQc1JlMGtnZUVIdnRMZ0JKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFQdjVQNXl5Z3Jad2FKbFl6bDU5bTJIQURLVFhVTFBzUmUwa2dlRUh2dExnQSJ9LCJ0eXBlIjpbIlZlcmlmaWFibGVDcmVkZW50aWFsIl0sIkBjb250ZXh0IjpbImh0dHBzOlwvXC93d3cudzMub3JnXC8yMDE4XC9jcmVkZW50aWFsc1wvdjEiXSwiY3JlZGVudGlhbFN0YXR1cyI6eyJzdGF0dXNQdXJwb3NlIjoiUmV2b2NhdGlvbiIsInN0YXR1c0xpc3RJbmRleCI6MjUsImlkIjoiaHR0cDpcL1wvMTAuOTEuMTAwLjEyNjo4MDAwXC9wcmlzbS1hZ2VudFwvY3JlZGVudGlhbC1zdGF0dXNcLzUxNGU4NTI4LTRiMzgtNDc3YS1iMGU0LTMyNGJiZTIyMDQ2NCMyNSIsInR5cGUiOiJTdGF0dXNMaXN0MjAyMUVudHJ5Iiwic3RhdHVzTGlzdENyZWRlbnRpYWwiOiJodHRwOlwvXC8xMC45MS4xMDAuMTI2OjgwMDBcL3ByaXNtLWFnZW50XC9jcmVkZW50aWFsLXN0YXR1c1wvNTE0ZTg1MjgtNGIzOC00NzdhLWIwZTQtMzI0YmJlMjIwNDY0In19fQ.5OmmL5tdcRKugiHVt01PJUhp9r22zgMPPALUOB41g_1_BPHE3ezqJ2QhSmScU_EOGYcKksHftdrvfoND65nSjw"
+        )
+        val signedClaims = pollux.signClaims(
+            subjectDID = did,
+            privateKey = keyPair.privateKey,
+            domain = domain,
+            challenge = challenge,
+            credential = credential
+        )
+        assertTrue(signedClaims.contains("."))
+        val splits = signedClaims.split(".")
+        val header = splits[0].base64UrlDecoded
+        val json = Json.parseToJsonElement(header)
+        assertTrue(json.jsonObject.containsKey("kid"))
+        val kid = json.jsonObject["kid"]!!.jsonPrimitive.content
+        assertEquals("did:prism:cd6cf9f94a43c53e286b0f2015c0083701350a694f52a22ee02e3bd29d93eba9:CrQBCrEBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xotCgojZGlkY29tbS0xEhBESURDb21tTWVzc2FnaW5nGg1kaWQ6cGVlcjp0ZXN0#authentication0", kid)
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {

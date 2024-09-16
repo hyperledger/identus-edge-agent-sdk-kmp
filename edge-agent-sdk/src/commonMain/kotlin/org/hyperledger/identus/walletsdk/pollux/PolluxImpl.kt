@@ -53,6 +53,8 @@ import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
+import org.hyperledger.identus.walletsdk.castor.did.prismdid.PrismDIDPublicKey
+import org.hyperledger.identus.walletsdk.castor.did.prismdid.defaultId
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Castor
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
@@ -80,6 +82,7 @@ import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.ExportableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
@@ -255,15 +258,14 @@ open class PolluxImpl(
      * @return The created verifiable presentation JWT.
      */
     @Throws(PolluxError.NoDomainOrChallengeFound::class)
-    override fun processCredentialRequestJWT(
+    override suspend fun processCredentialRequestJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
         offerJson: JsonObject
     ): String {
-        val parsedPrivateKey = parsePrivateKey(privateKey)
         val domain = getDomain(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         val challenge = getChallenge(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
-        return signClaimsRequestCredentialJWT(subjectDID, parsedPrivateKey, domain, challenge)
+        return signClaimsRequestCredentialJWT(subjectDID, privateKey, domain, challenge)
     }
 
     /**
@@ -276,15 +278,14 @@ open class PolluxImpl(
      * @return The created verifiable presentation JWT.
      */
     @Throws(PolluxError.NoDomainOrChallengeFound::class)
-    override fun processCredentialRequestSDJWT(
+    override suspend fun processCredentialRequestSDJWT(
         subjectDID: DID,
         privateKey: PrivateKey,
         offerJson: JsonObject
     ): String {
-        val parsedPrivateKey = parsePrivateKey(privateKey)
         val domain = getDomain(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         val challenge = getChallenge(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
-        return signClaimsRequestCredentialJWT(subjectDID, parsedPrivateKey, domain, challenge)
+        return signClaimsRequestCredentialJWT(subjectDID, privateKey, domain, challenge)
     }
 
     /**
@@ -634,9 +635,9 @@ open class PolluxImpl(
      * @param challenge The challenge value for the JWT.
      * @return The signed JWT as a string.
      */
-    private fun signClaimsRequestCredentialJWT(
+    private suspend fun signClaimsRequestCredentialJWT(
         subjectDID: DID,
-        privateKey: ECPrivateKey,
+        privateKey: PrivateKey,
         domain: String,
         challenge: String
     ): String {
@@ -653,9 +654,9 @@ open class PolluxImpl(
      * @param challenge The challenge value for the JWT.
      * @return The signed JWT as a string.
      */
-    internal fun signClaimsProofPresentationJWT(
+    private suspend fun signClaimsProofPresentationJWT(
         subjectDID: DID,
-        privateKey: ECPrivateKey,
+        privateKey: PrivateKey,
         credential: Credential,
         domain: String,
         challenge: String
@@ -673,9 +674,9 @@ open class PolluxImpl(
      * @param challenge The challenge value for the JWT.
      * @return The signed JWT as a string.
      */
-    internal fun signClaimsProofPresentationSDJWT(
+    internal suspend fun signClaimsProofPresentationSDJWT(
         subjectDID: DID,
-        privateKey: ECPrivateKey,
+        privateKey: PrivateKey,
         credential: Credential,
         domain: String,
         challenge: String
@@ -693,13 +694,18 @@ open class PolluxImpl(
      * @param credential The optional credential to be included in the JWT.
      * @return The signed JWT as a string.
      */
-    private fun signClaims(
+    internal suspend fun signClaims(
         subjectDID: DID,
-        privateKey: ECPrivateKey,
+        privateKey: PrivateKey,
         domain: String,
         challenge: String,
         credential: Credential? = null
     ): String {
+        if (privateKey !is ExportableKey) {
+            throw PolluxError.PrivateKeyTypeNotSupportedError("The private key should be ${ExportableKey::class.simpleName}")
+        }
+        val ecPrivateKey = parsePrivateKey(privateKey)
+
         val presentation: MutableMap<String, Collection<String>> = mutableMapOf(
             CONTEXT to setOf(CONTEXT_URL),
             TYPE to setOf(VERIFIABLE_PRESENTATION)
@@ -715,14 +721,17 @@ open class PolluxImpl(
             .claim(VP, presentation)
             .build()
 
+        val kid = getSigningKid(subjectDID)
+
         // Generate a JWS header with the ES256K algorithm
         val header = JWSHeader.Builder(JWSAlgorithm.ES256K)
+            .keyID(kid)
             .build()
 
         // Sign the JWT with the private key
         val jwsObject = SignedJWT(header, claims)
         val signer = ECDSASigner(
-            privateKey as java.security.PrivateKey,
+            ecPrivateKey as java.security.PrivateKey,
             com.nimbusds.jose.jwk.Curve.SECP256K1
         )
         val provider = BouncyCastleProviderSingleton.getInstance()
@@ -919,10 +928,9 @@ open class PolluxImpl(
             val signedChallenge =
                 privateKey.sign(jwtPresentationDefinitionRequest.options.challenge.encodeToByteArray())
 
-            val ecPrivateKey = parsePrivateKey(privateKey)
             val presentationJwt = signClaimsProofPresentationJWT(
                 subjectDID = DID(subject),
-                privateKey = ecPrivateKey,
+                privateKey = privateKey,
                 credential = credential,
                 domain = jwtPresentationDefinitionRequest.options.domain,
                 challenge = jwtPresentationDefinitionRequest.options.challenge
@@ -1293,5 +1301,24 @@ open class PolluxImpl(
             }
         }
         return ecPublicKeys.toTypedArray()
+    }
+
+    /**
+     * Method to get the kId from the DID authentication property, Master key.
+     *
+     * @param did the DID to resolve
+     * @return The verification method id as a string or null.
+     */
+    private suspend fun getSigningKid(did: DID): String? {
+        val didDocHolder = castor.resolveDID(did.toString())
+        val authentication = didDocHolder.coreProperties.find { property ->
+            property::class == DIDDocument.Authentication::class
+        }
+        val verificationMethod =
+            (authentication as DIDDocument.Authentication).verificationMethods.find { verificationMethod ->
+                verificationMethod.id.did == did && verificationMethod.id.fragment == PrismDIDPublicKey.Usage.AUTHENTICATION_KEY.defaultId()
+            }
+
+        return verificationMethod?.id?.string()
     }
 }
