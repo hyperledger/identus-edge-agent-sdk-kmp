@@ -60,8 +60,8 @@ import org.hyperledger.identus.walletsdk.domain.buildingblocks.Pollux
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
 import org.hyperledger.identus.walletsdk.domain.models.ApolloError
+import org.hyperledger.identus.walletsdk.domain.models.AttachmentData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
@@ -93,6 +93,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.edgeagent.helpers.AgentOptions
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.BasicMediatorHandler
 import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
+import org.hyperledger.identus.walletsdk.edgeagent.models.ConnectionlessMessageData
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.connection.DIDCommConnectionRunner
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.findProtocolTypeByValue
@@ -111,8 +112,8 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLogger
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
+import org.hyperledger.identus.walletsdk.logger.Logger
+import org.hyperledger.identus.walletsdk.logger.LoggerImpl
 import org.hyperledger.identus.walletsdk.pluto.PlutoBackupTask
 import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
@@ -157,7 +158,7 @@ open class EdgeAgent {
     private val edgeAgentScope: CoroutineScope = CoroutineScope(Dispatchers.Default)
     private val api: Api
     internal var connectionManager: ConnectionManager
-    private var logger: PrismLogger
+    private var logger: Logger
     private val agentOptions: AgentOptions
 
     /**
@@ -185,7 +186,7 @@ open class EdgeAgent {
         connectionManager: ConnectionManager,
         seed: Seed?,
         api: Api?,
-        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
+        logger: Logger = LoggerImpl(LogComponent.EDGE_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
         edgeAgentScope.launch {
@@ -239,7 +240,7 @@ open class EdgeAgent {
         seed: Seed? = null,
         api: Api? = null,
         mediatorHandler: MediationHandler,
-        logger: PrismLogger = PrismLoggerImpl(LogComponent.PRISM_AGENT),
+        logger: Logger = LoggerImpl(LogComponent.EDGE_AGENT),
         agentOptions: AgentOptions = AgentOptions()
     ) {
         edgeAgentScope.launch {
@@ -654,10 +655,7 @@ open class EdgeAgent {
                     KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                 )
                 val offerDataString = offer.attachments.firstNotNullOf {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
+                    it.data.getDataAsJsonString()
                 }
                 val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
                 val jwtString =
@@ -922,70 +920,7 @@ open class EdgeAgent {
             }
 
             val jsonString = invitation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
-            val requestPresentationJson = Json.parseToJsonElement(jsonString).jsonObject
-            if (!requestPresentationJson.containsKey("id")) {
-                throw EdgeAgentError.MissingOrNullFieldError("id", "Request")
-            }
-            if (!requestPresentationJson.containsKey("body")) {
-                throw EdgeAgentError.MissingOrNullFieldError("body", "Request")
-            }
-            if (!requestPresentationJson.containsKey("attachments")) {
-                throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
-            }
-            if (!requestPresentationJson.containsKey("thid")) {
-                throw EdgeAgentError.MissingOrNullFieldError("thid", "Request")
-            }
-            if (!requestPresentationJson.containsKey("from")) {
-                throw EdgeAgentError.MissingOrNullFieldError("from", "Request")
-            }
-
-            val requestId = requestPresentationJson["id"]!!
-            val requestBody = requestPresentationJson["body"]!!
-            val requestAttachments = requestPresentationJson["attachments"]!!
-            val requestThid = requestPresentationJson["thid"]!!
-            val requestFrom = requestPresentationJson["from"]!!
-
-            if (requestAttachments.jsonArray.size == 0) {
-                throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
-            }
-            val attachmentJsonObject = requestAttachments.jsonArray[0]
-            if (!attachmentJsonObject.jsonObject.containsKey("id")) {
-                throw EdgeAgentError.MissingOrNullFieldError("id", "Request attachments")
-            }
-            if (!attachmentJsonObject.jsonObject.containsKey("media_type")) {
-                throw EdgeAgentError.MissingOrNullFieldError("media_type", "Request attachments")
-            }
-            if (!attachmentJsonObject.jsonObject.containsKey("data")) {
-                if (!attachmentJsonObject.jsonObject["data"]!!.jsonObject.containsKey("json")) {
-                    throw EdgeAgentError.MissingOrNullFieldError("json", "Request attachments data")
-                }
-                throw EdgeAgentError.MissingOrNullFieldError("data", "Request attachments")
-            }
-            if (!attachmentJsonObject.jsonObject.containsKey("format")) {
-                throw EdgeAgentError.MissingOrNullFieldError("format", "Request attachments")
-            }
-            val attachmentId = attachmentJsonObject.jsonObject["id"]!!
-            val attachmentMediaType = attachmentJsonObject.jsonObject["media_type"]!!
-            val attachmentData = attachmentJsonObject.jsonObject["data"]!!.jsonObject["json"]!!
-            val attachmentFormat = attachmentJsonObject.jsonObject["format"]!!
-
-            val attachmentDescriptor = AttachmentDescriptor(
-                id = attachmentId.jsonPrimitive.content,
-                mediaType = attachmentMediaType.jsonPrimitive.content,
-                data = AttachmentJsonData(attachmentData.toString()),
-                format = attachmentFormat.jsonPrimitive.content
-            )
-
-            val requestPresentation = RequestPresentation(
-                id = requestId.jsonPrimitive.content,
-                body = Json.decodeFromString(requestBody.jsonObject.toString()),
-                attachments = arrayOf(attachmentDescriptor),
-                thid = requestThid.jsonPrimitive.content,
-                from = DID(requestFrom.jsonPrimitive.content),
-                to = ownDID
-            )
-
-            pluto.storeMessage(requestPresentation.makeMessage())
+            connectionlessInvitation(ownDID, jsonString)
         } else {
             // Regular OOB invitation
             val pair = DIDCommConnectionRunner(invitation, pluto, ownDID, connectionManager).run()
@@ -993,6 +928,140 @@ open class EdgeAgent {
         }
     }
 
+<<<<<<< HEAD
+    private fun handleConnectionlessCredentialOffer(did: DID, credentialOfferJson: JsonObject) {
+        if (!credentialOfferJson.containsKey("id")) {
+            throw EdgeAgentError.MissingOrNullFieldError("id", "Request")
+        }
+        if (!credentialOfferJson.containsKey("body")) {
+            throw EdgeAgentError.MissingOrNullFieldError("body", "Request")
+        }
+        if (!credentialOfferJson.containsKey("attachments")) {
+            throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
+        }
+        if (!credentialOfferJson.containsKey("thid")) {
+            throw EdgeAgentError.MissingOrNullFieldError("thid", "Request")
+        }
+        if (!credentialOfferJson.containsKey("from")) {
+            throw EdgeAgentError.MissingOrNullFieldError("from", "Request")
+        }
+
+        val offerId = credentialOfferJson["id"]!!
+        val offerBody = credentialOfferJson["body"]!!
+        val offerAttachment = credentialOfferJson["attachments"]!!
+        val offerThid = credentialOfferJson["thid"]!!
+        val offerFrom = credentialOfferJson["from"]!!
+
+        if (offerAttachment.jsonArray.size == 0) {
+            throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
+        }
+        val attachmentJsonObject = offerAttachment.jsonArray[0]
+        if (!attachmentJsonObject.jsonObject.containsKey("id")) {
+            throw EdgeAgentError.MissingOrNullFieldError("id", "Request attachments")
+        }
+        if (!attachmentJsonObject.jsonObject.containsKey("media_type")) {
+            throw EdgeAgentError.MissingOrNullFieldError("media_type", "Request attachments")
+        }
+        if (!attachmentJsonObject.jsonObject.containsKey("data")) {
+            if (!attachmentJsonObject.jsonObject["data"]!!.jsonObject.containsKey("json")) {
+                throw EdgeAgentError.MissingOrNullFieldError("json", "Request attachments data")
+            }
+            throw EdgeAgentError.MissingOrNullFieldError("data", "Request attachments")
+        }
+        if (!attachmentJsonObject.jsonObject.containsKey("format")) {
+            throw EdgeAgentError.MissingOrNullFieldError("format", "Request attachments")
+        }
+        val attachmentId = attachmentJsonObject.jsonObject["id"]!!
+        val attachmentMediaType = attachmentJsonObject.jsonObject["media_type"]!!
+        val attachmentData = attachmentJsonObject.jsonObject["data"]!!.jsonObject["json"]!!
+        val attachmentFormat = attachmentJsonObject.jsonObject["format"]!!
+
+        val attachmentDescriptor = AttachmentDescriptor(
+            id = attachmentId.jsonPrimitive.content,
+            mediaType = attachmentMediaType.jsonPrimitive.content,
+            data = AttachmentData.AttachmentJsonData(attachmentData.toString()),
+            format = attachmentFormat.jsonPrimitive.content
+        )
+
+        val offerCredential = OfferCredential(
+            id = offerId.jsonPrimitive.content,
+            body = Json.decodeFromString(offerBody.jsonObject.toString()),
+            attachments = arrayOf(attachmentDescriptor),
+            thid = offerThid.jsonPrimitive.content,
+            from = DID(offerFrom.jsonPrimitive.content),
+            to = did
+        )
+        pluto.storeMessage(offerCredential.makeMessage())
+    }
+
+    private fun handleConnectionlessRequestPresentation(did: DID, requestPresentationJson: JsonObject) {
+        if (!requestPresentationJson.containsKey("id")) {
+            throw EdgeAgentError.MissingOrNullFieldError("id", "Request")
+        }
+        if (!requestPresentationJson.containsKey("body")) {
+            throw EdgeAgentError.MissingOrNullFieldError("body", "Request")
+        }
+        if (!requestPresentationJson.containsKey("attachments")) {
+            throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
+        }
+        if (!requestPresentationJson.containsKey("thid")) {
+            throw EdgeAgentError.MissingOrNullFieldError("thid", "Request")
+        }
+        if (!requestPresentationJson.containsKey("from")) {
+            throw EdgeAgentError.MissingOrNullFieldError("from", "Request")
+        }
+
+        val requestId = requestPresentationJson["id"]!!
+        val requestBody = requestPresentationJson["body"]!!
+        val requestAttachments = requestPresentationJson["attachments"]!!
+        val requestThid = requestPresentationJson["thid"]!!
+        val requestFrom = requestPresentationJson["from"]!!
+
+        if (requestAttachments.jsonArray.size == 0) {
+            throw EdgeAgentError.MissingOrNullFieldError("attachments", "Request")
+        }
+        val attachmentJsonObject = requestAttachments.jsonArray[0]
+        if (!attachmentJsonObject.jsonObject.containsKey("id")) {
+            throw EdgeAgentError.MissingOrNullFieldError("id", "Request attachments")
+        }
+        if (!attachmentJsonObject.jsonObject.containsKey("media_type")) {
+            throw EdgeAgentError.MissingOrNullFieldError("media_type", "Request attachments")
+        }
+        if (!attachmentJsonObject.jsonObject.containsKey("data")) {
+            if (!attachmentJsonObject.jsonObject["data"]!!.jsonObject.containsKey("json")) {
+                throw EdgeAgentError.MissingOrNullFieldError("json", "Request attachments data")
+            }
+            throw EdgeAgentError.MissingOrNullFieldError("data", "Request attachments")
+        }
+        if (!attachmentJsonObject.jsonObject.containsKey("format")) {
+            throw EdgeAgentError.MissingOrNullFieldError("format", "Request attachments")
+        }
+        val attachmentId = attachmentJsonObject.jsonObject["id"]!!
+        val attachmentMediaType = attachmentJsonObject.jsonObject["media_type"]!!
+        val attachmentData = attachmentJsonObject.jsonObject["data"]!!.jsonObject["json"]!!
+        val attachmentFormat = attachmentJsonObject.jsonObject["format"]!!
+
+        val attachmentDescriptor = AttachmentDescriptor(
+            id = attachmentId.jsonPrimitive.content,
+            mediaType = attachmentMediaType.jsonPrimitive.content,
+            data = AttachmentData.AttachmentJsonData(attachmentData.toString()),
+            format = attachmentFormat.jsonPrimitive.content
+        )
+
+        val requestPresentation = RequestPresentation(
+            id = requestId.jsonPrimitive.content,
+            body = Json.decodeFromString(requestBody.jsonObject.toString()),
+            attachments = arrayOf(attachmentDescriptor),
+            thid = requestThid.jsonPrimitive.content,
+            from = DID(requestFrom.jsonPrimitive.content),
+            to = did
+        )
+
+        pluto.storeMessage(requestPresentation.makeMessage())
+    }
+
+=======
+>>>>>>> cb3760275 (feat: connectionless credential offer)
     /**
      * Accepts a Prism Onboarding invitation and performs the onboarding process
      * @param invitation The Prism Onboarding invitation to accept
@@ -1057,12 +1126,9 @@ open class EdgeAgent {
                 if (format != CredentialType.ANONCREDS_PROOF_REQUEST) {
                     throw EdgeAgentError.InvalidCredentialFormatError(CredentialType.ANONCREDS_PROOF_REQUEST)
                 }
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
-                }.first()
+                val requestData = request.attachments.firstNotNullOf {
+                    it.data.getDataAsJsonString()
+                }
                 val linkSecret = getLinkSecret()
                 try {
                     presentationString = credential.presentation(
@@ -1093,10 +1159,7 @@ open class EdgeAgent {
                         KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
                     )
                 val requestData = request.attachments.firstNotNullOf {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
+                    it.data.getDataAsJsonString()
                 }
                 try {
                     presentationString = credential.presentation(
@@ -1113,15 +1176,12 @@ open class EdgeAgent {
             }
 
             CredentialType.SDJWT.type -> {
-                val requestData = request.attachments.mapNotNull {
-                    when (it.data) {
-                        is AttachmentJsonData -> it.data.data
-                        else -> null
-                    }
-                }.first().encodeToByteArray()
+                val requestData = request.attachments.firstNotNullOf {
+                    it.data.getDataAsJsonString()
+                }
                 try {
                     presentationString = credential.presentation(
-                        requestData,
+                        requestData.encodeToByteArray(),
                         listOf(CredentialOperationsOptions.DisclosingClaims(listOf(credential.claims.toString())))
                     )
                 } catch (e: Exception) {
@@ -1194,7 +1254,7 @@ open class EdgeAgent {
                     type = type,
                     presentationClaims = presentationClaims,
                     options = AnoncredsPresentationOptions(
-                        nonce = generateNonce()
+                        nonce = generateNumericNonce()
                     )
                 )
                 attachmentDescriptor = AttachmentDescriptor(
@@ -1244,6 +1304,7 @@ open class EdgeAgent {
                     ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
                 val privateKey =
                     apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
+
                 val presentationSubmissionProof = pollux.createJWTPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequestString,
                     credential = credential,
@@ -1266,6 +1327,7 @@ open class EdgeAgent {
                 )
             } else {
                 val linkSecret = getLinkSecret()
+
                 val presentationSubmissionProof = pollux.createAnoncredsPresentationSubmission(
                     presentationDefinitionRequest = presentationDefinitionRequestString,
                     credential = credential,
@@ -1490,11 +1552,168 @@ open class EdgeAgent {
         }
     }
 
-    private fun generateNonce(size: Int = 16): String {
+    private fun generateNumericNonce(size: Int = 16): String {
         val random = SecureRandom()
-        val nonce = ByteArray(size)
-        random.nextBytes(nonce)
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(nonce)
+        val nonce = StringBuilder(size)
+
+        repeat(size) {
+            val digit = random.nextInt(10) // Generates a number between 0 and 9
+            nonce.append(digit)
+        }
+
+        return nonce.toString()
+    }
+
+    /**
+     * Parses and validates a connectionless message from a JSON object. The method checks for the existence
+     * of required fields (e.g., id, body, attachments, thid, from) and throws errors if any are missing.
+     * It extracts necessary information from the message, including the attachment details, and returns
+     * a ConnectionlessMessageData object containing the parsed information.
+     *
+     * @param messageJson The JsonObject representing the connectionless message.
+     * @return A ConnectionlessMessageData object containing the parsed message data.
+     * @throws EdgeAgentError.MissingOrNullFieldError if any required field is missing or null.
+     */
+    private fun parseAndValidateMessage(messageJson: JsonObject): ConnectionlessMessageData {
+        // Perform validation
+        if (!messageJson.containsKey("id")) throw EdgeAgentError.MissingOrNullFieldError("id", "Request")
+        if (!messageJson.containsKey("body")) throw EdgeAgentError.MissingOrNullFieldError("body", "Request")
+        if (!messageJson.containsKey("attachments")) {
+            throw EdgeAgentError.MissingOrNullFieldError(
+                "attachments",
+                "Request"
+            )
+        }
+        if (!messageJson.containsKey("thid")) throw EdgeAgentError.MissingOrNullFieldError("thid", "Request")
+        if (!messageJson.containsKey("from")) throw EdgeAgentError.MissingOrNullFieldError("from", "Request")
+
+        val messageId = messageJson["id"]!!.jsonPrimitive.content
+        val messageBody = messageJson["body"]!!.toString()
+        val messageThid = messageJson["thid"]!!.jsonPrimitive.content
+        val messageFrom = messageJson["from"]!!.jsonPrimitive.content
+
+        // Validate and parse the first attachment
+        val attachmentJsonObject = messageJson["attachments"]!!.jsonArray.first().jsonObject
+        if (!attachmentJsonObject.containsKey("id")) {
+            throw EdgeAgentError.MissingOrNullFieldError(
+                "id",
+                "Request attachments"
+            )
+        }
+        if (!attachmentJsonObject.containsKey("media_type")) {
+            throw EdgeAgentError.MissingOrNullFieldError(
+                "media_type",
+                "Request attachments"
+            )
+        }
+        if (!attachmentJsonObject.containsKey("data")) {
+            throw EdgeAgentError.MissingOrNullFieldError(
+                "data",
+                "Request attachments"
+            )
+        }
+        if (!attachmentJsonObject.containsKey("format")) {
+            throw EdgeAgentError.MissingOrNullFieldError(
+                "format",
+                "Request attachments"
+            )
+        }
+
+        val attachmentId = attachmentJsonObject["id"]!!.jsonPrimitive.content
+        val attachmentMediaType = attachmentJsonObject["media_type"]!!.jsonPrimitive.content
+        val attachmentData = attachmentJsonObject["data"]!!.jsonObject["json"]!!.toString()
+        val attachmentFormat = attachmentJsonObject["format"]!!.jsonPrimitive.content
+
+        val attachmentDescriptor = AttachmentDescriptor(
+            id = attachmentId,
+            mediaType = attachmentMediaType,
+            data = AttachmentData.AttachmentJsonData(attachmentData),
+            format = attachmentFormat
+        )
+
+        // Return the extracted data
+        return ConnectionlessMessageData(
+            messageId = messageId,
+            messageBody = messageBody,
+            attachmentDescriptor = attachmentDescriptor,
+            messageThid = messageThid,
+            messageFrom = messageFrom
+        )
+    }
+
+    /**
+     * Handles a connectionless invitation by parsing the invitation string, extracting the necessary
+     * message data, and invoking the appropriate handler based on the type of the message.
+     *
+     * @param did The DID (Decentralized Identifier) associated with the invitation.
+     * @param invitationString The JSON string representing the invitation.
+     * @throws EdgeAgentError.MissingOrNullFieldError if any required field is missing or null.
+     * @throws EdgeAgentError.UnknownInvitationTypeError if the invitation type is unknown.
+     */
+    private fun connectionlessInvitation(did: DID, invitationString: String) {
+        val invitationJson = Json.parseToJsonElement(invitationString).jsonObject
+        if (!invitationJson.containsKey("type")) {
+            throw EdgeAgentError.MissingOrNullFieldError("type", "Request")
+        }
+        val connectionLessMessageData = parseAndValidateMessage(invitationJson)
+        when (val type: String? = invitationJson["type"]?.jsonPrimitive?.content) {
+            ProtocolType.DidcommOfferCredential.value -> {
+                handleConnectionlessOfferCredential(connectionLessMessageData, did)
+            }
+
+            ProtocolType.DidcommRequestPresentation.value -> {
+                handleConnectionlessRequestPresentation(connectionLessMessageData, did)
+            }
+
+            else -> {
+                throw EdgeAgentError.UnknownInvitationTypeError(type ?: "Empty")
+            }
+        }
+    }
+
+    /**
+     * Handles a connectionless Offer Credential message by extracting the necessary data
+     * from the ConnectionlessMessageData and storing the message using the Pluto service.
+     *
+     * @param connectionlessMessageData The parsed data from the connectionless message.
+     * @param did The DID (Decentralized Identifier) associated with the message.
+     */
+    private fun handleConnectionlessOfferCredential(
+        connectionlessMessageData: ConnectionlessMessageData,
+        did: DID
+    ) {
+        val offerCredential = OfferCredential(
+            id = connectionlessMessageData.messageId,
+            body = Json.decodeFromString(connectionlessMessageData.messageBody),
+            attachments = arrayOf(connectionlessMessageData.attachmentDescriptor),
+            thid = connectionlessMessageData.messageThid,
+            from = DID(connectionlessMessageData.messageFrom),
+            to = did
+        )
+        pluto.storeMessage(offerCredential.makeMessage())
+    }
+
+    /**
+     * Handles a connectionless Request Presentation message by extracting the necessary data
+     * from the ConnectionlessMessageData and storing the message using the Pluto service.
+     *
+     * @param connectionlessMessageData The parsed data from the connectionless message.
+     * @param did The DID (Decentralized Identifier) associated with the message.
+     */
+    private fun handleConnectionlessRequestPresentation(
+        connectionlessMessageData: ConnectionlessMessageData,
+        did: DID
+    ) {
+        val requestPresentation = RequestPresentation(
+            id = connectionlessMessageData.messageId,
+            body = Json.decodeFromString(connectionlessMessageData.messageBody),
+            attachments = arrayOf(connectionlessMessageData.attachmentDescriptor),
+            thid = connectionlessMessageData.messageThid,
+            from = DID(connectionlessMessageData.messageFrom),
+            to = did
+        )
+
+        pluto.storeMessage(requestPresentation.makeMessage())
     }
 
     /**

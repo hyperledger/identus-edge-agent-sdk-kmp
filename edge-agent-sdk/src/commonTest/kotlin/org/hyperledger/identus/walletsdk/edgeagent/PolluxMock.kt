@@ -35,11 +35,11 @@ class PolluxMock : Pollux {
         TODO("Not yet implemented")
     }
 
-    override fun processCredentialRequestJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
+    override suspend fun processCredentialRequestJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
         TODO("Not yet implemented")
     }
 
-    override fun processCredentialRequestSDJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
+    override suspend fun processCredentialRequestSDJWT(subjectDID: DID, privateKey: PrivateKey, offerJson: JsonObject): String {
         TODO("Not yet implemented")
     }
 

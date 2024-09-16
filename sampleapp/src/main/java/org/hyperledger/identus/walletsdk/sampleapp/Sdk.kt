@@ -178,7 +178,7 @@ class Sdk {
             mercury = mercury,
             pollux = pollux,
             seed = seed,
-            mediatorHandler = handler
+            mediatorHandler = handler,
         )
     }
 

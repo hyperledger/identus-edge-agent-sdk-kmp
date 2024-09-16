@@ -15,9 +15,9 @@ import org.hyperledger.identus.walletsdk.domain.models.MercuryError
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
+import org.hyperledger.identus.walletsdk.logger.Logger
+import org.hyperledger.identus.walletsdk.logger.LoggerImpl
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLogger
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
 import org.hyperledger.identus.walletsdk.mercury.forward.ForwardMessage
 
 /**
@@ -55,7 +55,7 @@ constructor(
     private val castor: Castor,
     private val protocol: DIDCommProtocol,
     private val api: Api,
-    private val logger: PrismLogger = PrismLoggerImpl(LogComponent.MERCURY)
+    private val logger: Logger = LoggerImpl(LogComponent.MERCURY)
 ) : Mercury {
 
     /**

@@ -1,9 +1,6 @@
 package org.hyperledger.identus.walletsdk.edgeagent.protocols.pickup
 
-import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Mercury
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentBase64
-import org.hyperledger.identus.walletsdk.domain.models.AttachmentData.AttachmentJsonData
 import org.hyperledger.identus.walletsdk.domain.models.AttachmentDescriptor
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
@@ -27,7 +24,8 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
      */
     enum class PickupResponseType(val type: String) {
         STATUS("status"),
-        DELIVERY("delivery")
+        DELIVERY("delivery"),
+        PROBLEM_REPORT("problem_report")
     }
 
     /**
@@ -61,6 +59,10 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
 
             ProtocolType.PickupDelivery.value -> {
                 this.message = PickupResponse(PickupResponseType.DELIVERY, message)
+            }
+
+            ProtocolType.ProblemReport.value -> {
+                this.message = PickupResponse(PickupResponseType.PROBLEM_REPORT, message)
             }
 
             else -> {
@@ -97,22 +99,12 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
      * @return The PickupAttachment object if the attachment data is of type AttachmentBase64 or AttachmentJsonData, otherwise null.
      */
     private fun processAttachment(attachment: AttachmentDescriptor): PickupAttachment? {
-        return when (attachment.data) {
-            is AttachmentBase64 -> {
-                PickupAttachment(
-                    attachmentId = attachment.id,
-                    data = attachment.data.base64.base64UrlDecoded
-                )
-            }
+        val data = attachment.data.getDataAsJsonString()
+        val id = attachment.id
 
-            is AttachmentJsonData -> {
-                PickupAttachment(
-                    attachmentId = attachment.id,
-                    data = attachment.data.data
-                )
-            }
-
-            else -> null
-        }
+        return PickupAttachment(
+            attachmentId = id,
+            data = data
+        )
     }
 }
