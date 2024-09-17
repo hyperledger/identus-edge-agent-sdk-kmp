@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    testImplementation("org.hyperledger.identus:edge-agent-sdk:3.0.0")
+    testImplementation("org.hyperledger.identus:edge-agent-sdk:4.0.0")
     testImplementation("org.hyperledger.identus:cloud-agent-client-kotlin:1.38.0")
     testImplementation("io.iohk.atala:atala-automation:0.3.2")
     testImplementation("app.cash.sqldelight:sqlite-driver:2.0.2")
