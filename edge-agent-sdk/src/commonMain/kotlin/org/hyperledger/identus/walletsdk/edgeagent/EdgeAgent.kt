@@ -101,6 +101,8 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.findProtocolTypeByV
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.RequestCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.ConnectionlessCredentialOffer
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.ConnectionlessRequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.DIDCommInvitationRunner
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.InvitationType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
@@ -820,7 +822,12 @@ open class EdgeAgent {
     @Throws(EdgeAgentError.UnknownInvitationTypeError::class, SerializationException::class)
     suspend fun parseInvitation(str: String): InvitationType {
         Url.parse(str)?.let {
-            return parseOOBInvitation(it)
+            val outOfBandInvitation = parseOOBInvitation(it)
+            if (outOfBandInvitation.attachments.isNotEmpty()) {
+                return connectionlessInvitation(outOfBandInvitation)
+            } else {
+                return outOfBandInvitation
+            }
         } ?: run {
             try {
                 val json = Json.decodeFromString<JsonObject>(str)
@@ -900,7 +907,7 @@ open class EdgeAgent {
      * @return The parsed Out-of-Band invitation
      * @throws [EdgeAgentError.UnknownInvitationTypeError] if the URL is not a valid Out-of-Band invitation
      */
-    private suspend fun parseOOBInvitation(url: Url): OutOfBandInvitation {
+    private fun parseOOBInvitation(url: Url): OutOfBandInvitation {
         return DIDCommInvitationRunner(url).run()
     }
 
@@ -912,21 +919,9 @@ open class EdgeAgent {
      */
     suspend fun acceptOutOfBandInvitation(invitation: OutOfBandInvitation) {
         val ownDID = createNewPeerDID(updateMediator = true)
-        if (invitation.attachments.isNotEmpty()) {
-            // If attachments not empty, means connectionless presentation
-            val now = Instant.fromEpochMilliseconds(getTimeMillis())
-            val expiryDate = Instant.fromEpochSeconds(invitation.expiresTime)
-            if (now > expiryDate) {
-                throw EdgeAgentError.ExpiredInvitation()
-            }
-
-            val jsonString = invitation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
-            connectionlessInvitation(ownDID, jsonString)
-        } else {
-            // Regular OOB invitation
-            val pair = DIDCommConnectionRunner(invitation, pluto, ownDID, connectionManager).run()
-            connectionManager.addConnection(pair)
-        }
+        // Regular OOB invitation
+        val pair = DIDCommConnectionRunner(invitation, pluto, ownDID, connectionManager).run()
+        connectionManager.addConnection(pair)
     }
 
     /**
@@ -1517,24 +1512,37 @@ open class EdgeAgent {
      * @throws EdgeAgentError.MissingOrNullFieldError if any required field is missing or null.
      * @throws EdgeAgentError.UnknownInvitationTypeError if the invitation type is unknown.
      */
-    private fun connectionlessInvitation(did: DID, invitationString: String) {
-        val invitationJson = Json.parseToJsonElement(invitationString).jsonObject
-        if (!invitationJson.containsKey("type")) {
-            throw EdgeAgentError.MissingOrNullFieldError("type", "Request")
+    private suspend fun connectionlessInvitation(outOfBandInvitation: OutOfBandInvitation): InvitationType {
+        val now = Instant.fromEpochMilliseconds(getTimeMillis())
+        val expiryDate = Instant.fromEpochSeconds(outOfBandInvitation.expiresTime)
+        if (now > expiryDate) {
+            throw EdgeAgentError.ExpiredInvitation()
         }
-        val connectionLessMessageData = parseAndValidateMessage(invitationJson)
-        when (val type: String? = invitationJson["type"]?.jsonPrimitive?.content) {
-            ProtocolType.DidcommOfferCredential.value -> {
-                handleConnectionlessOfferCredential(connectionLessMessageData, did)
-            }
 
-            ProtocolType.DidcommRequestPresentation.value -> {
-                handleConnectionlessRequestPresentation(connectionLessMessageData, did)
+        val jsonString = outOfBandInvitation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
+        val invitation = Json.parseToJsonElement(jsonString)
+        if (invitation.jsonObject.containsKey("type")) {
+            val type = invitation.jsonObject["type"]?.jsonPrimitive?.content
+            val attachments = invitation.jsonObject["attachments"]!!.jsonArray
+            if (attachments.isEmpty()) {
+                throw Exception()
             }
+            val connectionLessMessageData = parseAndValidateMessage(invitation.jsonObject)
+            return when (type) {
+                ProtocolType.DidcommOfferCredential.value -> {
+                    handleConnectionlessOfferCredential(connectionLessMessageData)
+                }
 
-            else -> {
-                throw EdgeAgentError.UnknownInvitationTypeError(type ?: "Empty")
+                ProtocolType.DidcommRequestPresentation.value -> {
+                    handleConnectionlessRequestPresentation(connectionLessMessageData)
+                }
+
+                else -> {
+                    throw EdgeAgentError.UnknownInvitationTypeError(type ?: "null")
+                }
             }
+        } else {
+            throw EdgeAgentError.MissingOrNullFieldError("type", "connectionless invitation")
         }
     }
 
@@ -1543,12 +1551,11 @@ open class EdgeAgent {
      * from the ConnectionlessMessageData and storing the message using the Pluto service.
      *
      * @param connectionlessMessageData The parsed data from the connectionless message.
-     * @param did The DID (Decentralized Identifier) associated with the message.
      */
-    private fun handleConnectionlessOfferCredential(
-        connectionlessMessageData: ConnectionlessMessageData,
-        did: DID
-    ) {
+    private suspend fun handleConnectionlessOfferCredential(
+        connectionlessMessageData: ConnectionlessMessageData
+    ): InvitationType {
+        val did = createNewPeerDID(updateMediator = true)
         val offerCredential = OfferCredential(
             id = connectionlessMessageData.messageId,
             body = Json.decodeFromString(connectionlessMessageData.messageBody),
@@ -1558,6 +1565,9 @@ open class EdgeAgent {
             to = did
         )
         pluto.storeMessage(offerCredential.makeMessage())
+        return ConnectionlessCredentialOffer(
+            offerCredential = offerCredential
+        )
     }
 
     /**
@@ -1565,12 +1575,11 @@ open class EdgeAgent {
      * from the ConnectionlessMessageData and storing the message using the Pluto service.
      *
      * @param connectionlessMessageData The parsed data from the connectionless message.
-     * @param did The DID (Decentralized Identifier) associated with the message.
      */
-    private fun handleConnectionlessRequestPresentation(
-        connectionlessMessageData: ConnectionlessMessageData,
-        did: DID
-    ) {
+    private suspend fun handleConnectionlessRequestPresentation(
+        connectionlessMessageData: ConnectionlessMessageData
+    ): InvitationType {
+        val did = createNewPeerDID(updateMediator = true)
         val requestPresentation = RequestPresentation(
             id = connectionlessMessageData.messageId,
             body = Json.decodeFromString(connectionlessMessageData.messageBody),
@@ -1580,7 +1589,10 @@ open class EdgeAgent {
             to = did
         )
 
-        pluto.storeMessage(requestPresentation.makeMessage())
+//        pluto.storeMessage(requestPresentation.makeMessage())
+        return ConnectionlessRequestPresentation(
+            requestPresentation = requestPresentation
+        )
     }
 
     /**
