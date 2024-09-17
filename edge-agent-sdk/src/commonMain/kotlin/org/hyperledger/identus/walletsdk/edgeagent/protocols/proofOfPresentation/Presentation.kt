@@ -183,28 +183,6 @@ class Presentation {
     }
 
     /**
-     * Converts a message into a Presentation object.
-     *
-     * @param msg The input message to convert.
-     * @return The converted Presentation object.
-     * @throws EdgeAgentError.InvalidMessageType If the message type is invalid.
-     */
-    @Throws(EdgeAgentError.InvalidMessageType::class)
-    fun makePresentationFromRequest(msg: Message): Presentation {
-        val requestPresentation = RequestPresentation.fromMessage(msg)
-        return Presentation(
-            body = Body(
-                goalCode = requestPresentation.body.goalCode,
-                comment = requestPresentation.body.comment
-            ),
-            attachments = requestPresentation.attachments,
-            thid = requestPresentation.id,
-            from = requestPresentation.to,
-            to = requestPresentation.from
-        )
-    }
-
-    /**
      * Compares this Presentation object with the specified object for equality.
      *
      * @param other The object to compare with this Presentation object.

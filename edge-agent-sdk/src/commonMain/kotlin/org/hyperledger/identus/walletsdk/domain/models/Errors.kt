@@ -691,7 +691,7 @@ constructor(
     /**
      * Represents an error that occurs when a field is null but should not be.
      */
-    class NonNullableError(val field: String) : PolluxError("Field $field are non nullable.") {
+    class NonNullableError(val field: String) : PolluxError("Field $field is non nullable.") {
         override val code: Int
             get() = 516
     }

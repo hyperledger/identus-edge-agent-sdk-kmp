@@ -76,10 +76,10 @@ data class SDJWTCredential(
             }
         }
 
-        val inluded = disclosingClaims
+        val included = disclosingClaims
             ?.mapNotNull { JsonPointer.parse(it) }
             ?.toSet()
-        val presentation = sdjwt.present(inluded!!)
+        val presentation = sdjwt.present(included!!)
         return presentation!!.serialize { (jwt, _) -> jwt }
     }
 

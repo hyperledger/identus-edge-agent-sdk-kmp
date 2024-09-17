@@ -24,10 +24,10 @@ actual class DbConnectionImpl actual constructor() : DbConnection {
  */
 actual val SqlDriver.isConnected: Boolean
     get() {
-        try {
-            return this.execute(null, "SELECT 1", 0).value == 1L
+        return try {
+            this.execute(null, "SELECT 1", 0).value == 0L
             // return this.executeQuery(null, "SELECT 1", 0).next()
         } catch (ex: Exception) {
-            return false
+            false
         }
     }

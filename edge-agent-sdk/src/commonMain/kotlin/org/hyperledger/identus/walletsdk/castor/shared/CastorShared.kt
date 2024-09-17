@@ -44,8 +44,8 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyPair
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
+import org.hyperledger.identus.walletsdk.logger.LoggerImpl
 import org.hyperledger.identus.walletsdk.logger.Metadata
-import org.hyperledger.identus.walletsdk.logger.PrismLoggerImpl
 import org.kotlincrypto.hash.sha2.SHA256
 import pbandk.decodeFromByteArray
 import pbandk.encodeToByteArray
@@ -64,7 +64,7 @@ internal class CastorShared {
          *
          * @property logger The logger instance.
          */
-        private val logger = PrismLoggerImpl(LogComponent.CASTOR)
+        private val logger = LoggerImpl(LogComponent.CASTOR)
 
         /**
          * parseDID parses a string representation of a Decentralized Identifier (DID) into a DID object.

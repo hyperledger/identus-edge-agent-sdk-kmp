@@ -36,18 +36,22 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
     fun parseAndAcceptOOB(oobUrl: String) {
         Sdk.getInstance().agent.let { agent ->
             viewModelScope.launch {
-                when (val invitation = agent.parseInvitation(oobUrl)) {
-                    is OutOfBandInvitation -> {
-                        agent.acceptOutOfBandInvitation(invitation)
-                    }
+                try {
+                    when (val invitation = agent.parseInvitation(oobUrl)) {
+                        is OutOfBandInvitation -> {
+                            agent.acceptOutOfBandInvitation(invitation)
+                        }
 
-                    is PrismOnboardingInvitation -> {
-                        agent.acceptInvitation(invitation)
-                    }
+                        is PrismOnboardingInvitation -> {
+                            agent.acceptInvitation(invitation)
+                        }
 
-                    else -> {
-                        throw EdgeAgentError.UnknownInvitationTypeError(invitation.toString())
+                        else -> {
+                            throw EdgeAgentError.UnknownInvitationTypeError(invitation.toString())
+                        }
                     }
+                } catch (e: Exception) {
+                    println("Exception: ${e.message}")
                 }
             }
         }

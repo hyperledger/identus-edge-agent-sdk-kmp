@@ -7,6 +7,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.descriptors.buildClassSerialDescriptor
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
@@ -319,6 +320,10 @@ object AttachmentDataSerializer : KSerializer<AttachmentData> {
 
             json.containsKey("data") -> {
                 jsonSerializable.decodeFromJsonElement(AttachmentData.AttachmentJsonData.serializer(), json)
+            }
+
+            json.containsKey("json") -> {
+                AttachmentData.AttachmentJsonData(data = Json.encodeToString(json["json"]!!.jsonObject))
             }
 
             else -> throw SerializationException("Unknown AttachmentData type")
