@@ -124,6 +124,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsAnoncreds
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.SDJWTPresentationOptions
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.Metadata
 import org.hyperledger.identus.walletsdk.logger.Logger
@@ -133,8 +134,10 @@ import org.hyperledger.identus.walletsdk.pluto.PlutoRestoreTask
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
+import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTPresentationDefinitionRequest
 import org.kotlincrypto.hash.sha2.SHA256
 
 /**
@@ -1174,21 +1177,32 @@ open class EdgeAgent {
         when (type) {
             CredentialType.JWT,
             CredentialType.SDJWT -> {
-                if (domain == null) {
-                    throw EdgeAgentError.MissingOrNullFieldError("Domain", "initiatePresentationRequest parameters")
-                }
-                if (challenge == null) {
-                    throw EdgeAgentError.MissingOrNullFieldError("Challenge", "initiatePresentationRequest parameters")
+                val options = if (type == CredentialType.JWT) {
+                    if (domain == null) {
+                        throw EdgeAgentError.MissingOrNullFieldError("Domain", "initiatePresentationRequest parameters")
+                    }
+                    if (challenge == null) {
+                        throw EdgeAgentError.MissingOrNullFieldError(
+                            "Challenge",
+                            "initiatePresentationRequest parameters"
+                        )
+                    }
+                    JWTPresentationOptions(
+                        jwt = arrayOf("ES256K"),
+                        domain = domain,
+                        challenge = challenge
+                    )
+                } else {
+                    SDJWTPresentationOptions(
+                        sdjwt = arrayOf("ES256k"),
+                        presentationFrame = emptyMap()
+                    )
                 }
 
                 presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
                     type = type,
                     presentationClaims = presentationClaims,
-                    options = JWTPresentationOptions(
-                        jwt = arrayOf("ES256K"),
-                        domain = domain,
-                        challenge = challenge
-                    )
+                    options = options
                 )
                 attachmentDescriptor = AttachmentDescriptor(
                     mediaType = "application/json",
@@ -1243,106 +1257,129 @@ open class EdgeAgent {
             val presentationDefinitionRequestString =
                 requestPresentation.attachments.firstNotNullOf { it.data.getDataAsJsonString() }
 
-            if (presentationDefinitionRequestString.contains("vc+sd-jwt")) {
-                val didString =
-                    credential.subject ?: throw Exception("Credential must contain subject")
-
-                val storablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
-                    ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
-                val privateKey =
-                    apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
-
-                credential as SDJWTCredential
-                val disclosingClaims = listOf<String>()
-                credential.sdjwt.jwt.second[""]
-
-                val presentationString = credential.presentation(
-                    CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
-                    presentationDefinitionRequestString.encodeToByteArray(),
-                    listOf(
-//                        CredentialOperationsOptions.DisclosingClaims(),
-                        CredentialOperationsOptions.SubjectDID(DID(didString)),
-                        CredentialOperationsOptions.ExportableKey(privateKey)
-                    )
-                )
-
-                val attachmentDescriptor = AttachmentDescriptor(
-                    mediaType = "application/json",
-                    format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
-                    data = AttachmentBase64(presentationString.base64UrlEncoded)
-                )
-
-                return Presentation(
-                    body = Presentation.Body(),
-                    attachments = arrayOf(attachmentDescriptor),
-                    thid = requestPresentation.thid ?: requestPresentation.id,
-                    from = requestPresentation.to,
-                    to = requestPresentation.from
-                )
-            } else if (presentationDefinitionRequestString.contains("jwt")) {
-                // If the json can be used to instantiate a JWTPresentationDefinitionRequest, process the request
-                // as JWT.
-                val didString =
-                    credential.subject ?: throw Exception("Credential must contain subject")
-
-                val storablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
-                    ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
-                val privateKey =
-                    apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
-
-                val presentationString = credential.presentation(
-                    CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
-                    presentationDefinitionRequestString.encodeToByteArray(),
-                    listOf(
-                        CredentialOperationsOptions.SubjectDID(DID(didString)),
-                        CredentialOperationsOptions.ExportableKey(privateKey)
-                    )
-                )
-
-                val attachmentDescriptor = AttachmentDescriptor(
-                    mediaType = "application/json",
-                    format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
-                    data = AttachmentBase64(presentationString.base64UrlEncoded)
-                )
-
+            val json = Json.parseToJsonElement(presentationDefinitionRequestString).jsonObject
+            if (json.containsKey("presentation_definition")) {
+                val presentationDefinition = json["presentation_definition"]!!.jsonObject
                 val fromDID = requestPresentation.to ?: createNewPeerDID(updateMediator = true)
-                return Presentation(
-                    body = Presentation.Body(),
-                    attachments = arrayOf(attachmentDescriptor),
-                    thid = requestPresentation.thid ?: requestPresentation.id,
-                    from = fromDID,
-                    to = requestPresentation.from
-                )
-            } else {
-                val linkSecret = getLinkSecret()
+                if (presentationDefinition.containsKey("format")) {
+                    val format = presentationDefinition["format"]!!.jsonObject
+                    if (format["jwt"] != null) {
+                        if (credential !is JWTCredential) {
+                            throw EdgeAgentError.CredentialNotValidForPresentationRequest()
+                        }
+                        // If the json can be used to instantiate a JWTPresentationDefinitionRequest, process the request
+                        // as JWT.
+                        val didString =
+                            credential.subject ?: throw Exception("Credential must contain subject")
 
-                val presentationSubmissionProof = credential.presentation(
-                    CredentialType.ANONCREDS_PROOF_REQUEST.type,
-                    presentationDefinitionRequestString.toByteArray(),
-                    listOf(
-                        CredentialOperationsOptions.LinkSecret("", linkSecret),
-                        CredentialOperationsOptions.SchemaDownloader(api),
-                        CredentialOperationsOptions.CredentialDefinitionDownloader(api)
-                    )
-                )
+                        val storablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
+                            ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
+                        val privateKey =
+                            apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
 
-                val attachmentDescriptor = AttachmentDescriptor(
-                    mediaType = "application/json",
-                    format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
-                    data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
-                )
-                val fromDID = requestPresentation.to ?: createNewPeerDID(updateMediator = true)
-                return Presentation(
-                    body = Presentation.Body(),
-                    attachments = arrayOf(attachmentDescriptor),
-                    thid = requestPresentation.thid ?: requestPresentation.id,
-                    from = fromDID,
-                    to = requestPresentation.from
-                )
+                        val presentationString = credential.presentation(
+                            CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+                            presentationDefinitionRequestString.encodeToByteArray(),
+                            listOf(
+                                CredentialOperationsOptions.SubjectDID(DID(didString)),
+                                CredentialOperationsOptions.ExportableKey(privateKey)
+                            )
+                        )
+
+                        val attachmentDescriptor = AttachmentDescriptor(
+                            mediaType = "application/json",
+                            format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
+                            data = AttachmentBase64(presentationString.base64UrlEncoded)
+                        )
+
+                        val fromDID = requestPresentation.to ?: createNewPeerDID(updateMediator = true)
+                        return Presentation(
+                            body = Presentation.Body(),
+                            attachments = arrayOf(attachmentDescriptor),
+                            thid = requestPresentation.thid ?: requestPresentation.id,
+                            from = fromDID,
+                            to = requestPresentation.from
+                        )
+                    } else if (format["sdJwt"] != null) {
+                        if (credential !is SDJWTCredential) {
+                            throw EdgeAgentError.CredentialNotValidForPresentationRequest()
+                        }
+
+                        val didString =
+                            credential.subject ?: throw Exception("Credential must contain subject")
+
+                        val storablePrivateKey = pluto.getDIDPrivateKeysByDID(DID(didString)).first().first()
+                            ?: throw EdgeAgentError.CannotFindDIDPrivateKey(didString)
+                        val privateKey =
+                            apollo.restorePrivateKey(storablePrivateKey.restorationIdentifier, storablePrivateKey.data)
+
+                        val presentationDefinitionRequest = Json.decodeFromString<SDJWTPresentationDefinitionRequest>(
+                            presentationDefinitionRequestString
+                        )
+
+                        val disclosingClaims = presentationDefinitionRequest.options?.let { options ->
+                            options.presentationFrame.map { presentationFrame ->
+                                presentationFrame.key
+                            }
+                        } ?: emptyList()
+
+                        val presentationString = credential.presentation(
+                            CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+                            presentationDefinitionRequestString.encodeToByteArray(),
+                            listOf(
+                                CredentialOperationsOptions.DisclosingClaims(disclosingClaims),
+                                CredentialOperationsOptions.SubjectDID(DID(didString)),
+                                CredentialOperationsOptions.ExportableKey(privateKey)
+                            )
+                        )
+
+                        val attachmentDescriptor = AttachmentDescriptor(
+                            mediaType = "application/json",
+                            format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
+                            data = AttachmentBase64(presentationString.base64UrlEncoded)
+                        )
+
+                        return Presentation(
+                            body = Presentation.Body(),
+                            attachments = arrayOf(attachmentDescriptor),
+                            thid = requestPresentation.thid ?: requestPresentation.id,
+                            from = fromDID,
+                            to = requestPresentation.from
+                        )
+                    } else {
+                        val linkSecret = getLinkSecret()
+
+                        val presentationSubmissionProof = credential.presentation(
+                            CredentialType.ANONCREDS_PROOF_REQUEST.type,
+                            presentationDefinitionRequestString.toByteArray(),
+                            listOf(
+                                CredentialOperationsOptions.LinkSecret("", linkSecret),
+                                CredentialOperationsOptions.SchemaDownloader(api),
+                                CredentialOperationsOptions.CredentialDefinitionDownloader(api)
+                            )
+                        )
+
+                        val attachmentDescriptor = AttachmentDescriptor(
+                            mediaType = "application/json",
+                            format = CredentialType.PRESENTATION_EXCHANGE_SUBMISSION.type,
+                            data = AttachmentBase64(presentationSubmissionProof.base64UrlEncoded)
+                        )
+
+                        return Presentation(
+                            body = Presentation.Body(),
+                            attachments = arrayOf(attachmentDescriptor),
+                            thid = requestPresentation.thid ?: requestPresentation.id,
+                            from = fromDID,
+                            to = requestPresentation.from
+                        )
+                    }
+                }
             }
         } catch (e: Exception) {
             throw EdgeAgentError.CredentialNotValidForPresentationRequest()
         }
+        // TODO: handle this point
+        throw EdgeAgentError.CredentialNotValidForPresentationRequest()
     }
 
     suspend fun handlePresentation(msg: Message): Boolean {

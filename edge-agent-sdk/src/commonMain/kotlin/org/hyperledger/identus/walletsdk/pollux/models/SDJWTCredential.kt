@@ -65,12 +65,10 @@ data class SDJWTCredential(
     override var revoked: Boolean? = null
 
     override suspend fun presentation(attachmentFormat: String, request: ByteArray, options: List<CredentialOperationsOptions>): String {
-        var exportableKeyOption: PrivateKey? = null
         var disclosingClaims: List<String>? = null
 
         for (option in options) {
             when (option) {
-                is CredentialOperationsOptions.ExportableKey -> exportableKeyOption = option.key
                 is CredentialOperationsOptions.DisclosingClaims -> disclosingClaims = option.claims
                 else -> {}
             }

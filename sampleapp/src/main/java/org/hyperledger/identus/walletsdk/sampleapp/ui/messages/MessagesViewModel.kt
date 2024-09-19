@@ -119,9 +119,29 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 toDID = DID(toDID),
                 presentationClaims = JWTPresentationClaims(
                     claims = mapOf(
+                        "familyName" to InputFieldFilter(
+                            type = "string",
+                            pattern = "Wonderland"
+                        ),
+                        "givenName" to InputFieldFilter(
+                            type = "string",
+                            pattern = "Alice"
+                        ),
+                        "drivingClass" to InputFieldFilter(
+                            type = "integer",
+                            pattern = "3"
+                        ),
+                        "dateOfIssuance" to InputFieldFilter(
+                            type = "string",
+                            pattern = "2020-11-13T20:20:39+00:00"
+                        ),
                         "emailAddress" to InputFieldFilter(
                             type = "string",
-                            pattern = "test@iohk.io"
+                            pattern = "alice@wonderland.com"
+                        ),
+                        "drivingLicenseID" to InputFieldFilter(
+                            type = "string",
+                            pattern = "12345"
                         )
                     )
                 ),

@@ -95,6 +95,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsAnoncreds
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.SDJWTPresentationOptions
 import org.hyperledger.identus.walletsdk.logger.Logger
 import org.hyperledger.identus.walletsdk.logger.LoggerImpl
 import org.hyperledger.identus.walletsdk.logger.LogComponent
@@ -105,8 +106,10 @@ import org.hyperledger.identus.walletsdk.pollux.models.DescriptorItemFormat
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.JWTProofType
+import org.hyperledger.identus.walletsdk.pollux.models.PresentationDefinition
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.VerificationKeyType
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
 import org.hyperledger.identus.walletsdk.pollux.utils.BitString
@@ -753,82 +756,114 @@ open class PolluxImpl(
         presentationClaims: PresentationClaims,
         options: PresentationOptions
     ): String {
-        val format: JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat
-        val inputDescriptor: JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor
+        val format: PresentationDefinition.InputDescriptor.PresentationFormat
+        val inputDescriptor: PresentationDefinition.InputDescriptor
         when (type) {
             CredentialType.JWT,
-            CredentialType.SDJWT-> {
-                if (options !is JWTPresentationOptions) {
-                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation options must be ${JWTPresentationOptions::class.simpleName}")
+            CredentialType.SDJWT -> {
+                if (options.name == null || options.purpose == null) {
+                    throw Exception("")
                 }
-                if (presentationClaims !is JWTPresentationClaims) {
-                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation claims must be ${JWTPresentationClaims::class.simpleName}")
-                }
-                val jwt = options.jwt
-                if (jwt.isEmpty()) {
-                    throw PolluxError.InvalidJWTPresentationDefinitionError("Presentation option must contain at least one valid JWT alg that is not empty.")
-                }
-                val paths = presentationClaims.claims.keys
-                val mutableListFields: MutableList<JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field> =
-                    paths.map { path ->
-                        JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
-                            path = arrayOf("$.vc.credentialSubject.$path", "$.credentialSubject.$path"),
-                            id = UUID.randomUUID().toString(),
-                            optional = false,
-                            filter = presentationClaims.claims[path],
-                            name = path,
-                        )
-                    } as MutableList
+                if (options is JWTPresentationOptions || options is SDJWTPresentationOptions) {
+                    if (presentationClaims !is JWTPresentationClaims) {
+                        throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation claims must be ${JWTPresentationClaims::class.simpleName}")
+                    }
 
-                presentationClaims.issuer?.let { issuer ->
-                    mutableListFields.add(
-                        JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.Field(
-                            path = arrayOf("$.issuer", "$.iss", "$.vc.iss", "$.vc.issuer"),
-                            optional = false,
-                            id = UUID.randomUUID().toString(),
-                            filter = InputFieldFilter(
-                                type = "String",
-                                pattern = issuer
-                            ),
-                            name = "issuer"
-                        )
-                    )
-                }
-
-                val constraints = JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints(
-                    fields = mutableListFields.toTypedArray(),
-                    limitDisclosure =
-                    JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
-                )
-
-                format =
-                    JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.PresentationFormat(
-                        jwt = jwt.let {
-                            JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.JwtFormat(
-                                jwt.toList()
+                    val paths = presentationClaims.claims.keys
+                    val mutableListFields: MutableList<PresentationDefinition.InputDescriptor.Constraints.Field> =
+                        paths.map { path ->
+                            PresentationDefinition.InputDescriptor.Constraints.Field(
+                                path = arrayOf("$.vc.credentialSubject.$path", "$.credentialSubject.$path"),
+                                id = UUID.randomUUID().toString(),
+                                optional = false,
+                                filter = presentationClaims.claims[path],
+                                name = path,
                             )
-                        }
-                    )
+                        } as MutableList
 
-                inputDescriptor = JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor(
-                    name = options.name,
-                    purpose = options.purpose,
-                    constraints = constraints,
-                    format = format
-                )
-
-                return Json.encodeToString(
-                    JWTPresentationDefinitionRequest(
-                        presentationDefinition = JWTPresentationDefinitionRequest.PresentationDefinition(
-                            inputDescriptors = arrayOf(inputDescriptor),
-                            format = format
-                        ),
-                        options = JWTPresentationDefinitionRequest.PresentationDefinitionOptions(
-                            domain = options.domain,
-                            challenge = options.challenge
+                    presentationClaims.issuer?.let { issuer ->
+                        mutableListFields.add(
+                            PresentationDefinition.InputDescriptor.Constraints.Field(
+                                path = arrayOf("$.issuer", "$.iss", "$.vc.iss", "$.vc.issuer"),
+                                optional = false,
+                                id = UUID.randomUUID().toString(),
+                                filter = InputFieldFilter(
+                                    type = "String",
+                                    pattern = issuer
+                                ),
+                                name = "issuer"
+                            )
                         )
-                    )
-                )
+                    }
+
+                    val constraints =
+                        PresentationDefinition.InputDescriptor.Constraints(
+                            fields = mutableListFields.toTypedArray(),
+                            limitDisclosure =
+                            PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED
+                        )
+
+                    if (type == CredentialType.JWT) {
+                        options as JWTPresentationOptions
+                        val jwt = options.jwt
+                        if (jwt.isEmpty()) {
+                            throw PolluxError.InvalidJWTPresentationDefinitionError("Presentation option must contain at least one valid JWT alg that is not empty.")
+                        }
+                        val format = PresentationDefinition.InputDescriptor.PresentationFormat(
+                            jwt = jwt.let {
+                                PresentationDefinition.InputDescriptor.JwtFormat(
+                                    jwt.toList()
+                                )
+                            }
+                        )
+                        inputDescriptor = PresentationDefinition.InputDescriptor(
+                            name = options.name,
+                            purpose = options.purpose,
+                            constraints = constraints,
+                            format = format
+                        )
+                        return Json.encodeToString(
+                            JWTPresentationDefinitionRequest(
+                                presentationDefinition = PresentationDefinition(
+                                    inputDescriptors = arrayOf(inputDescriptor),
+                                    format = format
+                                ),
+                                options = JWTPresentationDefinitionRequest.PresentationDefinitionOptions(
+                                    domain = options.domain,
+                                    challenge = options.challenge
+                                )
+                            )
+                        )
+                    } else {
+                        options as SDJWTPresentationOptions
+                        val sdjwt = options.sdjwt
+                        val format = PresentationDefinition.InputDescriptor.PresentationFormat(
+                            sdjwt = sdjwt.let {
+                                PresentationDefinition.InputDescriptor.JwtFormat(
+                                    sdjwt.toList()
+                                )
+                            }
+                        )
+                        inputDescriptor = PresentationDefinition.InputDescriptor(
+                            name = options.name,
+                            purpose = options.purpose,
+                            constraints = constraints,
+                            format = format
+
+                        )
+                        return Json.encodeToString(
+                            SDJWTPresentationDefinitionRequest(
+                                presentationDefinition = PresentationDefinition(
+                                    inputDescriptors = arrayOf(inputDescriptor),
+                                    format = format
+                                ),
+                                options = SDJWTPresentationDefinitionRequest.PresentationDefinitionOptions(
+                                    presentationFrame = options.presentationFrame
+                                )
+                            )
+                        )
+                    }
+                }
             }
 
             CredentialType.ANONCREDS_PROOF_REQUEST -> {
@@ -886,10 +921,14 @@ open class PolluxImpl(
             else -> {
                 throw PolluxError.CredentialTypeNotSupportedError(
                     "Credential type ${type.type} not supported. " +
-                        "Must be ${CredentialType.JWT.type} or ${CredentialType.ANONCREDS_PROOF_REQUEST.type}"
+                        "Must be ${CredentialType.JWT.type}, ${CredentialType.SDJWT.type}  or ${CredentialType.ANONCREDS_PROOF_REQUEST.type}"
                 )
             }
         }
+        throw PolluxError.CredentialTypeNotSupportedError(
+            "Credential type ${type.type} not supported. " +
+                    "Must be ${CredentialType.JWT.type}, ${CredentialType.SDJWT.type}  or ${CredentialType.ANONCREDS_PROOF_REQUEST.type}"
+        )
     }
 
     // TODO: Deprecate, the new way to create JWT presentation submission is using the credential. ProvableCredential.presentation()
@@ -1136,7 +1175,7 @@ open class PolluxImpl(
                         if (inputDescriptor != null) {
                             val constraints = inputDescriptor.constraints
                             val fields = constraints.fields
-                            if (constraints.limitDisclosure == JWTPresentationDefinitionRequest.PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
+                            if (constraints.limitDisclosure == PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
                                 fields?.forEach { field ->
                                     val optional = field.optional
                                     if (!optional) {

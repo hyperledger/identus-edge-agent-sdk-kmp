@@ -53,6 +53,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.SDJWTPresentationOptions
 import org.hyperledger.identus.walletsdk.logger.Logger
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
@@ -1182,7 +1183,52 @@ class PolluxImplTest {
         val json = Json.parseToJsonElement(header)
         assertTrue(json.jsonObject.containsKey("kid"))
         val kid = json.jsonObject["kid"]!!.jsonPrimitive.content
-        assertEquals("did:prism:cd6cf9f94a43c53e286b0f2015c0083701350a694f52a22ee02e3bd29d93eba9:CrQBCrEBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xotCgojZGlkY29tbS0xEhBESURDb21tTWVzc2FnaW5nGg1kaWQ6cGVlcjp0ZXN0#authentication0", kid)
+        assertEquals(
+            "did:prism:cd6cf9f94a43c53e286b0f2015c0083701350a694f52a22ee02e3bd29d93eba9:CrQBCrEBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xotCgojZGlkY29tbS0xEhBESURDb21tTWVzc2FnaW5nGg1kaWQ6cGVlcjp0ZXN0#authentication0",
+            kid
+        )
+    }
+
+    @Test
+    fun `Test createPresentationDefinitionRequest`() = runTest {
+        pollux = PolluxImpl(apollo, castor, api)
+
+        val sdJwtPresentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
+            type = CredentialType.SDJWT,
+            presentationClaims = JWTPresentationClaims(
+                claims = mapOf(
+                    "familyName" to InputFieldFilter(
+                        type = "string",
+                        pattern = "Wonderland"
+                    ),
+                    "givenName" to InputFieldFilter(
+                        type = "string",
+                        pattern = "Alice"
+                    ),
+                    "drivingClass" to InputFieldFilter(
+                        type = "integer",
+                        pattern = "3"
+                    ),
+                    "dateOfIssuance" to InputFieldFilter(
+                        type = "string",
+                        pattern = "2020-11-13T20:20:39+00:00"
+                    ),
+                    "emailAddress" to InputFieldFilter(
+                        type = "string",
+                        pattern = "alice@wonderland.com"
+                    ),
+                    "drivingLicenseID" to InputFieldFilter(
+                        type = "string",
+                        pattern = "12345"
+                    )
+                )
+            ),
+            options = SDJWTPresentationOptions(
+                presentationFrame = emptyMap()
+            )
+        )
+
+        // TODO: Validate SD-JWT specific fields
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {

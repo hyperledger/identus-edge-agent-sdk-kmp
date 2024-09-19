@@ -49,6 +49,7 @@ import org.hyperledger.identus.walletsdk.domain.models.DIDPair
 import org.hyperledger.identus.walletsdk.domain.models.DIDResolver
 import org.hyperledger.identus.walletsdk.domain.models.DIDUrl
 import org.hyperledger.identus.walletsdk.domain.models.HttpResponse
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.Mediator
@@ -83,7 +84,9 @@ import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.CredentialRequestMeta
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -1747,6 +1750,11 @@ class EdgeAgentTests {
                             JWTCredential.fromJwtString(jwtString).toStorableCredential()
                         }
 
+                        RestorationID.SDJWT -> {
+                            val jwtString = it.credentialData.base64UrlDecoded
+                            SDJWTCredential.fromSDJwtString(jwtString).toStorableCredential()
+                        }
+
                         RestorationID.ANONCRED -> {
                             val data = it.credentialData.base64UrlDecodedBytes
                             PlutoRestoreTask.AnonCredentialBackUp.fromStorableData(data)
@@ -1925,6 +1933,141 @@ class EdgeAgentTests {
         val json = Json.parseToJsonElement(attachmentJsonData.getDataAsJsonString())
         assertTrue(json.jsonObject.containsKey("options"))
         assertTrue(json.jsonObject.containsKey("presentation_definition"))
+    }
+
+    @Test
+    fun `test initiatePresentationRequest SD-JWT`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMock,
+                pluto = plutoMock,
+                mercury = mercuryMock,
+                pollux = PolluxImpl(apolloMock, castorMock),
+                connectionManager = connectionManagerMock,
+                seed = seed,
+                api = null,
+                logger = LoggerMock()
+            )
+        )
+
+        val mediatorHandlerMock = mock<MediationHandler>()
+        `when`(connectionManagerMock.mediationHandler).thenReturn(mediatorHandlerMock)
+        val mediator = Mediator(
+            id = UUID.randomUUID().toString(),
+            mediatorDID = DID("did:peer:mediatordid"),
+            hostDID = DID("did:peer:hostdid"),
+            routingDID = DID("did:peer:routingdid")
+        )
+        `when`(mediatorHandlerMock.mediator).thenReturn(mediator)
+
+        val toDid = DID("did:peer:fdsafdsa")
+        val fromDid = DID("did:peer:asdf")
+        doReturn(fromDid).`when`(agent).createNewPeerDID(updateMediator = true)
+
+        val vmAuthentication = DIDDocument.VerificationMethod(
+            id = DIDUrl(DID("2", "1", "0")),
+            controller = DID("2", "2", "0"),
+            type = Curve.ED25519.value,
+            publicKeyJwk = mapOf("crv" to Curve.ED25519.value, "x" to "")
+        )
+
+        val vmKeyAgreement = DIDDocument.VerificationMethod(
+            id = DIDUrl(DID("3", "1", "0")),
+            controller = DID("3", "2", "0"),
+            type = Curve.X25519.value,
+            publicKeyJwk = mapOf("crv" to Curve.X25519.value, "x" to "")
+        )
+
+        val resolverMock = mock<DIDResolver>()
+        val didDoc = DIDDocument(
+            id = DID("did:prism:asdfasdf"),
+            coreProperties = arrayOf(
+                DIDDocument.Authentication(
+                    urls = emptyArray(),
+                    verificationMethods = arrayOf(vmAuthentication, vmKeyAgreement)
+                )
+            )
+        )
+        // Mock resolve did response
+        `when`(castorMock.resolveDID(any())).thenReturn(didDoc)
+        `when`(resolverMock.resolve(any())).thenReturn(didDoc)
+
+        agent.initiatePresentationRequest(
+            type = CredentialType.SDJWT,
+            toDID = toDid,
+            presentationClaims = JWTPresentationClaims(
+                claims = mapOf(
+                    "familyName" to InputFieldFilter(
+                        type = "string",
+                        pattern = "Wonderland"
+                    ),
+                    "givenName" to InputFieldFilter(
+                        type = "string",
+                        pattern = "Alice"
+                    ),
+                    "drivingClass" to InputFieldFilter(
+                        type = "integer",
+                        pattern = "3"
+                    ),
+                    "dateOfIssuance" to InputFieldFilter(
+                        type = "string",
+                        pattern = "2020-11-13T20:20:39+00:00"
+                    ),
+                    "emailAddress" to InputFieldFilter(
+                        type = "string",
+                        pattern = "alice@wonderland.com"
+                    ),
+                    "drivingLicenseID" to InputFieldFilter(
+                        type = "string",
+                        pattern = "12345"
+                    )
+                )
+            ),
+            domain = "domain",
+            challenge = "challenge"
+        )
+
+        val captor = argumentCaptor<Message>()
+        verify(connectionManagerMock).sendMessage(captor.capture())
+        val sentMessage = captor.firstValue
+        assertEquals(fromDid.toString(), sentMessage.from.toString())
+        assertEquals(toDid.toString(), sentMessage.to.toString())
+        assertEquals(1, sentMessage.attachments.size)
+        assertTrue(sentMessage.attachments.first().data::class == AttachmentBase64::class)
+        val json = sentMessage.attachments.first().data.getDataAsJsonString()
+        val presentationDefinition = Json.decodeFromString<JWTPresentationDefinitionRequest>(json)
+        assertNotNull(presentationDefinition.presentationDefinition.format.sdjwt)
+    }
+
+    @Test
+    fun `test handlePresentationDefinitionRequest`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMock,
+                pluto = plutoMock,
+                mercury = mercuryMock,
+                pollux = PolluxImpl(apolloMock, castorMock),
+                connectionManager = connectionManagerMock,
+                seed = seed,
+                api = null,
+                logger = LoggerMock()
+            )
+        )
+
+        val credential = JWTCredential.fromJwtString(
+            "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
+        )
+
+        val msg = Json.decodeFromString<Message>(
+            """{"id":"56992a63-9871-490a-b9f8-4b1238c23c5e","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"asdf"},"to":{"method":"peer","methodId":"fdsafdsa"},"fromPrior":null,"body":"{\"proof_types\":[]}","created_time":"1726767099","expires_time_plus":"1726853499","attachments":[{"id":"f135525e-26c7-44f5-8f23-b8fbc928bfb2","media_type":"application/json","data":{"base64":"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjI0YTdlNWU4LWQ3YjQtNDUxYy1hOThkLTA3ZDY4NjVhMzQwYSIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IjNmMWYzYTliLThjZDUtNDZkMS04Y2E0LTBlYzYyN2YxZTdmMiIsIm5hbWUiOiJQcmVzZW50YXRpb24iLCJwdXJwb3NlIjoiUHJlc2VudGF0aW9uIGRlZmluaXRpb24iLCJmb3JtYXQiOnsic2RKd3QiOnsiYWxnIjpbIkVTMjU2ayJdfX0sImNvbnN0cmFpbnRzIjp7ImZpZWxkcyI6W3sicGF0aCI6WyIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmZhbWlseU5hbWUiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmZhbWlseU5hbWUiXSwiaWQiOiI5MjM3ZmNhMy1lZjcyLTQyOGEtYjIyYy02YzVmZTZmZTU0NWIiLCJuYW1lIjoiZmFtaWx5TmFtZSIsImZpbHRlciI6eyJ0eXBlIjoic3RyaW5nIiwicGF0dGVybiI6IldvbmRlcmxhbmQifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZ2l2ZW5OYW1lIiwiJC5jcmVkZW50aWFsU3ViamVjdC5naXZlbk5hbWUiXSwiaWQiOiI3MmQ4NmYwMS04NGYzLTRhNDYtOGFiOC1hN2I0OGE5YjU2MTAiLCJuYW1lIjoiZ2l2ZW5OYW1lIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiQWxpY2UifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZHJpdmluZ0NsYXNzIiwiJC5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nQ2xhc3MiXSwiaWQiOiIyNmI3ZmY3Zi1kOTcyLTQxZGYtYTNkZC0zYmE3YzhiNDAwOWEiLCJuYW1lIjoiZHJpdmluZ0NsYXNzIiwiZmlsdGVyIjp7InR5cGUiOiJpbnRlZ2VyIiwicGF0dGVybiI6IjMifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mSXNzdWFuY2UiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRhdGVPZklzc3VhbmNlIl0sImlkIjoiYWZiZmI1NWMtMWY5Ni00ODlkLWJmOGUtYzZhNTUxYjg3ODFjIiwibmFtZSI6ImRhdGVPZklzc3VhbmNlIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiMjAyMC0xMS0xM1QyMDoyMDozOSswMDowMCJ9fSx7InBhdGgiOlsiJC52Yy5jcmVkZW50aWFsU3ViamVjdC5lbWFpbEFkZHJlc3MiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmVtYWlsQWRkcmVzcyJdLCJpZCI6IjAyZGIxOTA0LWY3NTMtNDI2NC04ZTA0LWI5NGMxNWFkYzA3MyIsIm5hbWUiOiJlbWFpbEFkZHJlc3MiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiJhbGljZUB3b25kZXJsYW5kLmNvbSJ9fSx7InBhdGgiOlsiJC52Yy5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nTGljZW5zZUlEIiwiJC5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nTGljZW5zZUlEIl0sImlkIjoiODgzYThkMzYtNWYzMy00OGVjLWJhYjktNzE0MGRiYWMyYTVmIiwibmFtZSI6ImRyaXZpbmdMaWNlbnNlSUQiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiIxMjM0NSJ9fV0sImxpbWl0X2Rpc2Nsb3N1cmUiOiJyZXF1aXJlZCJ9fV0sImZvcm1hdCI6eyJzZEp3dCI6eyJhbGciOlsiRVMyNTZrIl19fX0sIm9wdGlvbnMiOnsicHJlc2VudGF0aW9uRnJhbWUiOnt9fX0"},"format":"dif/presentation-exchange/definitions@v1.0"}],"thid":"11001ef6-f4c9-430c-84d7-ef74f0689e9f","ack":[],"direction":"SENT"}"""
+        )
+
+        agent.preparePresentationForRequestProof(
+            request = RequestPresentation.fromMessage(msg),
+            credential = credential
+        )
     }
 
     val getCredentialDefinitionResponse =
