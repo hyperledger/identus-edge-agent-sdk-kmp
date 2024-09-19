@@ -24,7 +24,8 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
      */
     enum class PickupResponseType(val type: String) {
         STATUS("status"),
-        DELIVERY("delivery")
+        DELIVERY("delivery"),
+        PROBLEM_REPORT("problem_report")
     }
 
     /**
@@ -58,6 +59,10 @@ class PickupRunner(message: Message, private val mercury: Mercury) {
 
             ProtocolType.PickupDelivery.value -> {
                 this.message = PickupResponse(PickupResponseType.DELIVERY, message)
+            }
+
+            ProtocolType.ProblemReport.value -> {
+                this.message = PickupResponse(PickupResponseType.PROBLEM_REPORT, message)
             }
 
             else -> {

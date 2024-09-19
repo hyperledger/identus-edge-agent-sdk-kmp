@@ -15,7 +15,9 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
@@ -69,6 +71,8 @@ import org.hyperledger.identus.walletsdk.edgeagent.mediation.MediationHandler
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.IssueCredential
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.ConnectionlessCredentialOffer
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.ConnectionlessRequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
@@ -1874,13 +1878,8 @@ class EdgeAgentTests {
 
         val outOfBandUrl =
             "https://my.domain.com/path?_oob=eyJpZCI6IjViMjUwMjIzLWExNDItNDRmYi1hOWJkLWU1MjBlNGI0ZjQzMiIsInR5cGUiOiJodHRwczovL2RpZGNvbW0ub3JnL291dC1vZi1iYW5kLzIuMC9pbnZpdGF0aW9uIiwiZnJvbSI6ImRpZDpwZWVyOjIuRXo2TFNkV0hWQ1BFOHc0NWZETjM4aUh0ZFJ6WGkyTFNqQmRSUjRGTmNOUm12VkNKcy5WejZNa2Z2aUI5S1F1OGlnNVZpeG1HZHM3dmdMNmoyUXNOUGFybkZaanBNQ0E5aHpQLlNleUowSWpvaVpHMGlMQ0p6SWpwN0luVnlhU0k2SW1oMGRIQTZMeTh4T1RJdU1UWTRMakV1TXpjNk9EQTNNQzlrYVdSamIyMXRJaXdpY2lJNlcxMHNJbUVpT2xzaVpHbGtZMjl0YlM5Mk1pSmRmWDAiLCJib2R5Ijp7ImdvYWxfY29kZSI6InByZXNlbnQtdnAiLCJnb2FsIjoiUmVxdWVzdCBwcm9vZiBvZiB2YWNjaW5hdGlvbiBpbmZvcm1hdGlvbiIsImFjY2VwdCI6W119LCJhdHRhY2htZW50cyI6W3siaWQiOiIyYTZmOGM4NS05ZGE3LTRkMjQtOGRhNS0wYzliZDY5ZTBiMDEiLCJtZWRpYV90eXBlIjoiYXBwbGljYXRpb24vanNvbiIsImRhdGEiOnsianNvbiI6eyJpZCI6IjI1NTI5MTBiLWI0NmMtNDM3Yy1hNDdhLTlmODQ5OWI5ZTg0ZiIsInR5cGUiOiJodHRwczovL2RpZGNvbW0uYXRhbGFwcmlzbS5pby9wcmVzZW50LXByb29mLzMuMC9yZXF1ZXN0LXByZXNlbnRhdGlvbiIsImJvZHkiOnsiZ29hbF9jb2RlIjoiUmVxdWVzdCBQcm9vZiBQcmVzZW50YXRpb24iLCJ3aWxsX2NvbmZpcm0iOmZhbHNlLCJwcm9vZl90eXBlcyI6W119LCJhdHRhY2htZW50cyI6W3siaWQiOiJiYWJiNTJmMS05NDUyLTQzOGYtYjk3MC0yZDJjOTFmZTAyNGYiLCJtZWRpYV90eXBlIjoiYXBwbGljYXRpb24vanNvbiIsImRhdGEiOnsianNvbiI6eyJvcHRpb25zIjp7ImNoYWxsZW5nZSI6IjExYzkxNDkzLTAxYjMtNGM0ZC1hYzM2LWIzMzZiYWI1YmRkZiIsImRvbWFpbiI6Imh0dHBzOi8vcHJpc20tdmVyaWZpZXIuY29tIn0sInByZXNlbnRhdGlvbl9kZWZpbml0aW9uIjp7ImlkIjoiMGNmMzQ2ZDItYWY1Ny00Y2E1LTg2Y2EtYTA1NTE1NjZlYzZmIiwiaW5wdXRfZGVzY3JpcHRvcnMiOltdfX19LCJmb3JtYXQiOiJwcmlzbS9qd3QifV0sInRoaWQiOiI1YjI1MDIyMy1hMTQyLTQ0ZmItYTliZC1lNTIwZTRiNGY0MzIiLCJmcm9tIjoiZGlkOnBlZXI6Mi5FejZMU2RXSFZDUEU4dzQ1ZkROMzhpSHRkUnpYaTJMU2pCZFJSNEZOY05SbXZWQ0pzLlZ6Nk1rZnZpQjlLUXU4aWc1Vml4bUdkczd2Z0w2ajJRc05QYXJuRlpqcE1DQTloelAuU2V5SjBJam9pWkcwaUxDSnpJanA3SW5WeWFTSTZJbWgwZEhBNkx5OHhPVEl1TVRZNExqRXVNemM2T0RBM01DOWthV1JqYjIxdElpd2ljaUk2VzEwc0ltRWlPbHNpWkdsa1kyOXRiUzkyTWlKZGZYMCJ9fX1dLCJjcmVhdGVkX3RpbWUiOjE3MjQzMzkxNDQsImV4cGlyZXNfdGltZSI6MTcyNDMzOTQ0NH0"
-        val oob = agent.parseInvitation(outOfBandUrl)
-        assertTrue(oob is OutOfBandInvitation)
-        oob as OutOfBandInvitation
-
-        doReturn(DID("did:peer:asdf")).`when`(agent).createNewPeerDID(updateMediator = true)
         assertFailsWith(EdgeAgentError.ExpiredInvitation::class) {
-            agent.acceptOutOfBandInvitation(oob)
+            agent.parseInvitation(outOfBandUrl)
         }
     }
 
@@ -1904,18 +1903,13 @@ class EdgeAgentTests {
         val notExpiredInvitation =
             """{"id":"5b250223-a142-44fb-a9bd-e520e4b4f432","type":"https://didcomm.org/out-of-band/2.0/invitation","from":"did:peer:2.Ez6LSdWHVCPE8w45fDN38iHtdRzXi2LSjBdRR4FNcNRmvVCJs.Vz6MkfviB9KQu8ig5VixmGds7vgL6j2QsNParnFZjpMCA9hzP.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjEuMzc6ODA3MC9kaWRjb21tIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfX0","body":{"goal_code":"present-vp","goal":"Request proof of vaccination information","accept":[]},"attachments":[{"id":"2a6f8c85-9da7-4d24-8da5-0c9bd69e0b01","media_type":"application/json","data":{"json":{"id":"2552910b-b46c-437c-a47a-9f8499b9e84f","type":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","body":{"goal_code":"Request Proof Presentation","will_confirm":false,"proof_types":[]},"attachments":[{"id":"babb52f1-9452-438f-b970-2d2c91fe024f","media_type":"application/json","data":{"json":{"options":{"challenge":"11c91493-01b3-4c4d-ac36-b336bab5bddf","domain":"https://prism-verifier.com"},"presentation_definition":{"id":"0cf346d2-af57-4ca5-86ca-a0551566ec6f","input_descriptors":[]}}},"format":"prism/jwt"}],"thid":"5b250223-a142-44fb-a9bd-e520e4b4f432","from":"did:peer:2.Ez6LSdWHVCPE8w45fDN38iHtdRzXi2LSjBdRR4FNcNRmvVCJs.Vz6MkfviB9KQu8ig5VixmGds7vgL6j2QsNParnFZjpMCA9hzP.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjEuMzc6ODA3MC9kaWRjb21tIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfX0"}}}],"created_time":1724339144,"expires_time":$notExpiredTime}"""
         val base64Invitation = notExpiredInvitation.base64UrlEncoded
+        doReturn(DID("did:peer:asdf")).`when`(agent).createNewPeerDID(updateMediator = true)
 
         val outOfBandUrl = "https://my.domain.com/path?_oob=$base64Invitation"
-        val oob = agent.parseInvitation(outOfBandUrl)
-        assertTrue(oob is OutOfBandInvitation)
-        oob as OutOfBandInvitation
+        val connectionlessRequestPresentation = agent.parseInvitation(outOfBandUrl)
+        assertTrue(connectionlessRequestPresentation is ConnectionlessRequestPresentation)
+        val msg = (connectionlessRequestPresentation as ConnectionlessRequestPresentation).requestPresentation
 
-        doReturn(DID("did:peer:asdf")).`when`(agent).createNewPeerDID(updateMediator = true)
-        agent.acceptOutOfBandInvitation(oob)
-        val captor = argumentCaptor<Message>()
-        verify(plutoMock).storeMessage(captor.capture())
-        val msg = captor.lastValue
-        assertEquals(ProtocolType.DidcommRequestPresentation.value, msg.piuri)
         assertEquals("5b250223-a142-44fb-a9bd-e520e4b4f432", msg.thid)
         val attachments = msg.attachments
         assertEquals(1, attachments.size)
@@ -1924,6 +1918,64 @@ class EdgeAgentTests {
         val json = Json.parseToJsonElement(attachmentJsonData.getDataAsJsonString())
         assertTrue(json.jsonObject.containsKey("options"))
         assertTrue(json.jsonObject.containsKey("presentation_definition"))
+    }
+
+    @Test
+    fun `test connectionless credential offer correctly`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMock,
+                pluto = plutoMock,
+                mercury = mercuryMock,
+                pollux = polluxMock,
+                connectionManager = connectionManagerMock,
+                seed = seed,
+                api = null,
+                logger = LoggerMock()
+            )
+        )
+
+        val notExpiredTime = System.currentTimeMillis() + TimeUnit.MINUTES.toMillis(30)
+        val notExpiredInvitation =
+            """{"id":"f96e3699-591c-4ae7-b5e6-6efe6d26255b","type":"https://didcomm.org/out-of-band/2.0/invitation","from":"did:peer:2.Ez6LSfsKMe8vSSWkYdZCpn4YViPERfdGAhdLAGHgx2LGJwfmA.Vz6Mkpw1kSabBMzkA3v59tQFnh3FtkKy6xLhLxd9S6BAoaBg2.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjEuMzc6ODA4MC9kaWRjb21tIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfX0","body":{"goal_code":"issue-vc","goal":"To issue a Faber College Graduate credential","accept":["didcomm/v2"]},"attachments":[{"id":"70cdc90c-9a99-4cda-87fe-4f4b2595112a","media_type":"application/json","data":{"json":{"id":"655e9a2c-48ed-459b-b3da-6b3686655564","type":"https://didcomm.org/issue-credential/3.0/offer-credential","body":{"goal_code":"Offer Credential","credential_preview":{"type":"https://didcomm.org/issue-credential/3.0/credential-credential","body":{"attributes":[{"name":"familyName","value":"Wonderland"},{"name":"givenName","value":"Alice"},{"name":"drivingClass","value":"Mw==","media_type":"application/json"},{"name":"dateOfIssuance","value":"2020-11-13T20:20:39+00:00"},{"name":"emailAddress","value":"alice@wonderland.com"},{"name":"drivingLicenseID","value":"12345"}]}}},"attachments":[{"id":"8404678b-9a36-4989-af1d-0f445347e0e3","media_type":"application/json","data":{"json":{"options":{"challenge":"ad0f43ad-8538-41d4-9cb8-20967bc685bc","domain":"domain"},"presentation_definition":{"id":"748efa58-2bce-440d-921f-2520a8446663","input_descriptors":[],"format":{"jwt":{"alg":["ES256K"],"proof_type":[]}}}}},"format":"prism/jwt"}],"thid":"f96e3699-591c-4ae7-b5e6-6efe6d26255b","from":"did:peer:2.Ez6LSfsKMe8vSSWkYdZCpn4YViPERfdGAhdLAGHgx2LGJwfmA.Vz6Mkpw1kSabBMzkA3v59tQFnh3FtkKy6xLhLxd9S6BAoaBg2.SeyJ0IjoiZG0iLCJzIjp7InVyaSI6Imh0dHA6Ly8xOTIuMTY4LjEuMzc6ODA4MC9kaWRjb21tIiwiciI6W10sImEiOlsiZGlkY29tbS92MiJdfX0"}}}],"created_time":1724851139,"expires_time":$notExpiredTime}"""
+        val base64Invitation = notExpiredInvitation.base64UrlEncoded
+        doReturn(DID("did:peer:asdf")).`when`(agent).createNewPeerDID(updateMediator = true)
+
+        val outOfBandUrl = "https://my.domain.com/path?_oob=$base64Invitation"
+        val connectionlessCredentialOffer = agent.parseInvitation(outOfBandUrl)
+        assertTrue(connectionlessCredentialOffer is ConnectionlessCredentialOffer)
+        connectionlessCredentialOffer as ConnectionlessCredentialOffer
+        val msg = connectionlessCredentialOffer.offerCredential.makeMessage()
+
+        assertEquals(ProtocolType.DidcommOfferCredential.value, msg.piuri)
+        assertEquals("f96e3699-591c-4ae7-b5e6-6efe6d26255b", msg.thid)
+        val attachments = msg.attachments
+        assertEquals(1, attachments.size)
+        val attachmentJsonData = attachments.first().data
+        assertTrue(attachmentJsonData is AttachmentData.AttachmentJsonData)
+        val json = Json.parseToJsonElement(attachmentJsonData.getDataAsJsonString())
+        assertTrue(json.jsonObject.containsKey("options"))
+        assertTrue(json.jsonObject["options"]!!.jsonObject.containsKey("challenge"))
+        assertTrue(json.jsonObject["options"]!!.jsonObject.containsKey("domain"))
+        assertTrue(json.jsonObject.containsKey("presentation_definition"))
+        assertTrue(json.jsonObject["presentation_definition"]!!.jsonObject.containsKey("id"))
+        assertTrue(json.jsonObject["presentation_definition"]!!.jsonObject.containsKey("input_descriptors"))
+        assertTrue(json.jsonObject["presentation_definition"]!!.jsonObject.containsKey("format"))
+        assertTrue(json.jsonObject["presentation_definition"]!!.jsonObject["format"]!!.jsonObject.contains("jwt"))
+        assertTrue(
+            json.jsonObject["presentation_definition"]!!.jsonObject["format"]!!.jsonObject["jwt"]!!.jsonObject.contains(
+                "alg"
+            )
+        )
+        val algs =
+            json.jsonObject["presentation_definition"]!!.jsonObject["format"]!!.jsonObject["jwt"]!!.jsonObject["alg"]!!.jsonArray
+        assertEquals("ES256K", algs.first().jsonPrimitive.content)
+        assertTrue(
+            json.jsonObject["presentation_definition"]!!.jsonObject["format"]!!.jsonObject["jwt"]!!.jsonObject.contains(
+                "proof_type"
+            )
+        )
     }
 
     val getCredentialDefinitionResponse =
