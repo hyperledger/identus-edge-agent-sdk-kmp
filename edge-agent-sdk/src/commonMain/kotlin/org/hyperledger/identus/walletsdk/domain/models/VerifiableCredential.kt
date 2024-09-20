@@ -112,6 +112,11 @@ data class JWTPresentationClaims(
     val claims: Map<String, InputFieldFilter>
 ) : PresentationClaims
 
+data class SDJWTPresentationClaims(
+    val claims: Map<String, InputFieldFilter>,
+    val presentationFrame: Map<String, Boolean>
+) : PresentationClaims
+
 data class AnoncredsPresentationClaims(
     val predicates: Map<String, AnoncredsInputFieldFilter>,
     val attributes: Map<String, RequestedAttributes>

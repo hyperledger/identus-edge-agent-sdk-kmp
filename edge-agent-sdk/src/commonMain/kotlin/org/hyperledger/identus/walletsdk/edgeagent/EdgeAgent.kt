@@ -92,6 +92,7 @@ import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
+import org.hyperledger.identus.walletsdk.domain.models.SDJWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
@@ -1195,7 +1196,7 @@ open class EdgeAgent {
                 } else {
                     SDJWTPresentationOptions(
                         sdjwt = arrayOf("ES256k"),
-                        presentationFrame = emptyMap()
+                        presentationFrame = (presentationClaims as SDJWTPresentationClaims).presentationFrame
                     )
                 }
 

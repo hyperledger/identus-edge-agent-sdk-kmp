@@ -57,6 +57,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
+import org.hyperledger.identus.walletsdk.domain.models.SDJWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
@@ -1996,7 +1997,7 @@ class EdgeAgentTests {
         agent.initiatePresentationRequest(
             type = CredentialType.SDJWT,
             toDID = toDid,
-            presentationClaims = JWTPresentationClaims(
+            presentationClaims = SDJWTPresentationClaims(
                 claims = mapOf(
                     "familyName" to InputFieldFilter(
                         type = "string",
@@ -2022,7 +2023,8 @@ class EdgeAgentTests {
                         type = "string",
                         pattern = "12345"
                     )
-                )
+                ),
+                presentationFrame = mapOf("email" to true)
             ),
             domain = "domain",
             challenge = "challenge"
@@ -2056,8 +2058,29 @@ class EdgeAgentTests {
             )
         )
 
-        val credential = JWTCredential.fromJwtString(
-            "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
+        val privateKey = Secp256k1KeyPair.generateKeyPair(
+            seed = seed,
+            curve = KeyCurve(Curve.SECP256K1)
+        ).privateKey
+        val storablePrivateKeys = listOf(
+            StorablePrivateKey(
+                id = UUID.randomUUID().toString(),
+                restorationIdentifier = "secp256k1+priv",
+                data = privateKey.raw.base64UrlEncoded,
+                keyPathIndex = 0
+            )
+        )
+        // Mock getDIDPrivateKeysByDID response
+        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+        `when`(
+            apolloMock.restorePrivateKey(
+                storablePrivateKeys.first().restorationIdentifier,
+                storablePrivateKeys.first().data
+            )
+        ).thenReturn(privateKey)
+
+        val credential = SDJWTCredential.fromSDJwtString(
+            "eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJkaWQ6cHJpc206NmYyM2RkYWNlNTE5YjY4ZGZjMGZhMDZlOTkyZGI0MGYyZjNjNTg0YWYzODJjZTQ0NmZhMmZkMGUwNDJlNWRlYTpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRTWNLd0VpdEdiUUt0R2EtakZYaTNtMXU3T1AySk11a1lYUW5aazNmUUlYdnhKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFNY0t3RWl0R2JRS3RHYS1qRlhpM20xdTdPUDJKTXVrWVhRblprM2ZRSVh2dyIsImVtYWlsQWRkcmVzcyI6eyJfc2QiOlsiVDFQbWo5XzVvSzl0UGQyX1h1MUI2bkpmMTR6UlpXWGdySmhnVkktbHV1OCJdfSwiX3NkX2FsZyI6InNoYS0yNTYiLCJpc3MiOiJkaWQ6cHJpc206Y2UzNDAzYjVhNzMzODgzMDM1ZDZlYzQzYmEwNzVhNDFjOWNjMGEzMjU3OTc3ZDgwYzc1ZDYzMTlhZGUwZWQ3MCIsImV4cCI6MTczNTY4OTY2MSwiaWF0IjoxNTE2MjM5MDIyfQ._sPrEKiMwJg5e6c24dgCXBH2FZ3tzZL-6llwGj9Rt_XQo1ABwJWB6Rdr_UO3ow3ooAdsIedy6Gau9NYbWv0fDw~WyJZMGlWS3BYYnBWdnpiang4Z2J4cUhnIiwiZW1haWxBZGRyZXNzIiwidGVzdEBpb2hrLmlvIl0~"
         )
 
         val msg = Json.decodeFromString<Message>(
