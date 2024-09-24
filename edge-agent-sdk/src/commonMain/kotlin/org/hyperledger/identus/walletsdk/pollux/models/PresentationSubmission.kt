@@ -6,7 +6,8 @@ import java.util.UUID
 
 enum class DescriptorItemFormat(val value: String) {
     JWT_VC("jwt_vc"),
-    JWT_VP("jwt_vp")
+    JWT_VP("jwt_vp"),
+    SD_JWT_VP("sdjwt")
 }
 
 @Serializable

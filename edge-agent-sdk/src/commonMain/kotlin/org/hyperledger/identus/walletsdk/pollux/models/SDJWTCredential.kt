@@ -1,32 +1,54 @@
 package org.hyperledger.identus.walletsdk.pollux.models
+
+import com.nimbusds.jose.JOSEObjectType
+import com.nimbusds.jose.JWSAlgorithm
+import com.nimbusds.jose.crypto.ECDSASigner
+import com.nimbusds.jwt.SignedJWT
+import eu.europa.ec.eudi.sdjwt.ClaimValidations.primitiveClaim
 import eu.europa.ec.eudi.sdjwt.JsonPointer
 import eu.europa.ec.eudi.sdjwt.JwtAndClaims
 import eu.europa.ec.eudi.sdjwt.JwtSignatureVerifier
 import eu.europa.ec.eudi.sdjwt.NoSignatureValidation
 import eu.europa.ec.eudi.sdjwt.SdJwt
+import eu.europa.ec.eudi.sdjwt.SdJwtFactory
+import eu.europa.ec.eudi.sdjwt.SdJwtIssuer
 import eu.europa.ec.eudi.sdjwt.SdJwtVerifier
+import eu.europa.ec.eudi.sdjwt.exp
+import eu.europa.ec.eudi.sdjwt.iat
+import eu.europa.ec.eudi.sdjwt.iss
+import eu.europa.ec.eudi.sdjwt.name
+import eu.europa.ec.eudi.sdjwt.nimbus
+import eu.europa.ec.eudi.sdjwt.plain
 import eu.europa.ec.eudi.sdjwt.present
+import eu.europa.ec.eudi.sdjwt.recreateClaims
+import eu.europa.ec.eudi.sdjwt.sd
+import eu.europa.ec.eudi.sdjwt.sdJwt
 import eu.europa.ec.eudi.sdjwt.serialize
+import eu.europa.ec.eudi.sdjwt.sub
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.ArraySerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonTransformingSerializer
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonPrimitive
-import org.hyperledger.identus.walletsdk.domain.models.ApolloError
 import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.ExportableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
+import java.security.interfaces.ECPrivateKey
+import java.util.*
+import kotlinx.serialization.json.put
 
 @OptIn(ExperimentalSerializationApi::class)
 data class SDJWTCredential(
@@ -37,7 +59,8 @@ data class SDJWTCredential(
         get() = sdjwtString
 
     @Transient
-    override val issuer: String = sdjwt.jwt.second["iss"]?.jsonPrimitive?.content ?: throw Exception("Most contain issuer") // TODO: Custom exception
+    override val issuer: String = sdjwt.jwt.second["iss"]?.jsonPrimitive?.content
+        ?: throw Exception("Most contain issuer") // TODO: Custom exception
 
     override val subject: String?
         get() = sdjwt.jwt.second["sub"]?.jsonPrimitive?.content
@@ -64,7 +87,25 @@ data class SDJWTCredential(
 
     override var revoked: Boolean? = null
 
-    override suspend fun presentation(attachmentFormat: String, request: ByteArray, options: List<CredentialOperationsOptions>): String {
+    override suspend fun presentation(
+        attachmentFormat: String,
+        request: ByteArray,
+        options: List<CredentialOperationsOptions>
+    ): String {
+        val jwtPresentationDefinitionRequest =
+            Json.decodeFromString<SDJWTPresentationDefinitionRequest>(String(request, Charsets.UTF_8))
+        val descriptorItems =
+            jwtPresentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
+                if (inputDescriptor.format != null && (inputDescriptor.format.sdjwt == null || inputDescriptor.format.sdjwt.alg.isEmpty())) {
+                    throw PolluxError.InvalidCredentialDefinitionError()
+                }
+                PresentationSubmission.Submission.DescriptorItem(
+                    id = inputDescriptor.id,
+                    format = DescriptorItemFormat.SD_JWT_VP.value,
+                    path = "$.verifiablePresentation[0]"
+                )
+            }.toTypedArray()
+
         var disclosingClaims: List<String>? = null
 
         for (option in options) {
@@ -77,8 +118,20 @@ data class SDJWTCredential(
         val included = disclosingClaims
             ?.mapNotNull { JsonPointer.parse(it) }
             ?.toSet()
+
         val presentation = sdjwt.present(included!!)
-        return presentation!!.serialize { (jwt, _) -> jwt }
+        val sdjwtString = presentation!!.serialize { (jwt, _) -> jwt }
+
+        return Json.encodeToString(
+            PresentationSubmission(
+                presentationSubmission = PresentationSubmission.Submission(
+                    definitionId = jwtPresentationDefinitionRequest.presentationDefinition.id
+                        ?: UUID.randomUUID().toString(),
+                    descriptorMap = descriptorItems
+                ),
+                verifiablePresentation = arrayOf(sdjwtString)
+            )
+        )
     }
 
     /**
@@ -158,7 +211,8 @@ data class SDJWTCredential(
         fun fromSDJwtString(sdjwtString: String): SDJWTCredential {
             var credential: SDJWTCredential
             runBlocking {
-                val sdjwt = SdJwtVerifier.verifyIssuance(JwtSignatureVerifier.NoSignatureValidation, sdjwtString).getOrThrow()
+                val sdjwt =
+                    SdJwtVerifier.verifyIssuance(JwtSignatureVerifier.NoSignatureValidation, sdjwtString).getOrThrow()
                 credential = SDJWTCredential(sdjwtString, sdjwt)
             }
             return credential

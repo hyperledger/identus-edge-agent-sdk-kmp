@@ -23,6 +23,7 @@ import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
+import org.hyperledger.identus.walletsdk.domain.models.SDJWTPresentationClaims
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -117,7 +118,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             sdk.agent.initiatePresentationRequest(
                 type = CredentialType.SDJWT,
                 toDID = DID(toDID),
-                presentationClaims = JWTPresentationClaims(
+                presentationClaims = SDJWTPresentationClaims(
                     claims = mapOf(
                         "familyName" to InputFieldFilter(
                             type = "string",
@@ -144,9 +145,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                             pattern = "12345"
                         )
                     )
-                ),
-                domain = "domain",
-                challenge = "challenge"
+                )
             )
 
             // Anoncreds presentation request

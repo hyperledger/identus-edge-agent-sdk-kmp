@@ -33,7 +33,7 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
 
     fun createSdJwt() {
         viewModelScope.launch {
-            Sdk.getInstance().agent.createSDJWTCredential()
+//            Sdk.getInstance().agent.createSDJWTCredential()
         }
     }
 }

@@ -74,6 +74,7 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.Off
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.RequestPresentation
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.SDJWTPreparePresentationOptions
 import org.hyperledger.identus.walletsdk.logger.LoggerMock
 import org.hyperledger.identus.walletsdk.mercury.ApiMock
 import org.hyperledger.identus.walletsdk.pluto.CredentialRecovery
@@ -88,6 +89,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
 import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTPresentationDefinitionRequest
 import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -1999,32 +2001,19 @@ class EdgeAgentTests {
             toDID = toDid,
             presentationClaims = SDJWTPresentationClaims(
                 claims = mapOf(
-                    "familyName" to InputFieldFilter(
+                    "first_name" to InputFieldFilter(
                         type = "string",
                         pattern = "Wonderland"
                     ),
-                    "givenName" to InputFieldFilter(
+                    "last_name" to InputFieldFilter(
                         type = "string",
                         pattern = "Alice"
-                    ),
-                    "drivingClass" to InputFieldFilter(
-                        type = "integer",
-                        pattern = "3"
-                    ),
-                    "dateOfIssuance" to InputFieldFilter(
-                        type = "string",
-                        pattern = "2020-11-13T20:20:39+00:00"
                     ),
                     "emailAddress" to InputFieldFilter(
                         type = "string",
                         pattern = "alice@wonderland.com"
-                    ),
-                    "drivingLicenseID" to InputFieldFilter(
-                        type = "string",
-                        pattern = "12345"
                     )
-                ),
-                presentationFrame = mapOf("email" to true)
+                )
             ),
             domain = "domain",
             challenge = "challenge"
@@ -2038,12 +2027,12 @@ class EdgeAgentTests {
         assertEquals(1, sentMessage.attachments.size)
         assertTrue(sentMessage.attachments.first().data::class == AttachmentBase64::class)
         val json = sentMessage.attachments.first().data.getDataAsJsonString()
-        val presentationDefinition = Json.decodeFromString<JWTPresentationDefinitionRequest>(json)
+        val presentationDefinition = Json.decodeFromString<SDJWTPresentationDefinitionRequest>(json)
         assertNotNull(presentationDefinition.presentationDefinition.format.sdjwt)
     }
 
     @Test
-    fun `test handlePresentationDefinitionRequest`() = runTest {
+    fun `test handlePresentationDefinitionRequest for SD-JWT with no options, fails`() = runTest {
         val agent = spy(
             EdgeAgent(
                 apollo = apolloMock,
@@ -2087,10 +2076,75 @@ class EdgeAgentTests {
             """{"id":"56992a63-9871-490a-b9f8-4b1238c23c5e","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"asdf"},"to":{"method":"peer","methodId":"fdsafdsa"},"fromPrior":null,"body":"{\"proof_types\":[]}","created_time":"1726767099","expires_time_plus":"1726853499","attachments":[{"id":"f135525e-26c7-44f5-8f23-b8fbc928bfb2","media_type":"application/json","data":{"base64":"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjI0YTdlNWU4LWQ3YjQtNDUxYy1hOThkLTA3ZDY4NjVhMzQwYSIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IjNmMWYzYTliLThjZDUtNDZkMS04Y2E0LTBlYzYyN2YxZTdmMiIsIm5hbWUiOiJQcmVzZW50YXRpb24iLCJwdXJwb3NlIjoiUHJlc2VudGF0aW9uIGRlZmluaXRpb24iLCJmb3JtYXQiOnsic2RKd3QiOnsiYWxnIjpbIkVTMjU2ayJdfX0sImNvbnN0cmFpbnRzIjp7ImZpZWxkcyI6W3sicGF0aCI6WyIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmZhbWlseU5hbWUiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmZhbWlseU5hbWUiXSwiaWQiOiI5MjM3ZmNhMy1lZjcyLTQyOGEtYjIyYy02YzVmZTZmZTU0NWIiLCJuYW1lIjoiZmFtaWx5TmFtZSIsImZpbHRlciI6eyJ0eXBlIjoic3RyaW5nIiwicGF0dGVybiI6IldvbmRlcmxhbmQifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZ2l2ZW5OYW1lIiwiJC5jcmVkZW50aWFsU3ViamVjdC5naXZlbk5hbWUiXSwiaWQiOiI3MmQ4NmYwMS04NGYzLTRhNDYtOGFiOC1hN2I0OGE5YjU2MTAiLCJuYW1lIjoiZ2l2ZW5OYW1lIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiQWxpY2UifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZHJpdmluZ0NsYXNzIiwiJC5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nQ2xhc3MiXSwiaWQiOiIyNmI3ZmY3Zi1kOTcyLTQxZGYtYTNkZC0zYmE3YzhiNDAwOWEiLCJuYW1lIjoiZHJpdmluZ0NsYXNzIiwiZmlsdGVyIjp7InR5cGUiOiJpbnRlZ2VyIiwicGF0dGVybiI6IjMifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mSXNzdWFuY2UiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRhdGVPZklzc3VhbmNlIl0sImlkIjoiYWZiZmI1NWMtMWY5Ni00ODlkLWJmOGUtYzZhNTUxYjg3ODFjIiwibmFtZSI6ImRhdGVPZklzc3VhbmNlIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiMjAyMC0xMS0xM1QyMDoyMDozOSswMDowMCJ9fSx7InBhdGgiOlsiJC52Yy5jcmVkZW50aWFsU3ViamVjdC5lbWFpbEFkZHJlc3MiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmVtYWlsQWRkcmVzcyJdLCJpZCI6IjAyZGIxOTA0LWY3NTMtNDI2NC04ZTA0LWI5NGMxNWFkYzA3MyIsIm5hbWUiOiJlbWFpbEFkZHJlc3MiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiJhbGljZUB3b25kZXJsYW5kLmNvbSJ9fSx7InBhdGgiOlsiJC52Yy5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nTGljZW5zZUlEIiwiJC5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nTGljZW5zZUlEIl0sImlkIjoiODgzYThkMzYtNWYzMy00OGVjLWJhYjktNzE0MGRiYWMyYTVmIiwibmFtZSI6ImRyaXZpbmdMaWNlbnNlSUQiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiIxMjM0NSJ9fV0sImxpbWl0X2Rpc2Nsb3N1cmUiOiJyZXF1aXJlZCJ9fV0sImZvcm1hdCI6eyJzZEp3dCI6eyJhbGciOlsiRVMyNTZrIl19fX0sIm9wdGlvbnMiOnsicHJlc2VudGF0aW9uRnJhbWUiOnt9fX0"},"format":"dif/presentation-exchange/definitions@v1.0"}],"thid":"11001ef6-f4c9-430c-84d7-ef74f0689e9f","ack":[],"direction":"SENT"}"""
         )
 
-        agent.preparePresentationForRequestProof(
-            request = RequestPresentation.fromMessage(msg),
-            credential = credential
+        assertFailsWith(EdgeAgentError.MissingOrNullFieldError::class) {
+            agent.preparePresentationForRequestProof(
+                request = RequestPresentation.fromMessage(msg),
+                credential = credential
+            )
+        }
+    }
+
+    @Test
+    fun `test handlePresentationDefinitionRequest for SD-JWT`() = runTest {
+        val agent = spy(
+            EdgeAgent(
+                apollo = apolloMock,
+                castor = castorMock,
+                pluto = plutoMock,
+                mercury = mercuryMock,
+                pollux = PolluxImpl(apolloMock, castorMock),
+                connectionManager = connectionManagerMock,
+                seed = seed,
+                api = null,
+                logger = LoggerMock()
+            )
         )
+
+        val privateKey = Secp256k1KeyPair.generateKeyPair(
+            seed = seed,
+            curve = KeyCurve(Curve.SECP256K1)
+        ).privateKey
+        val storablePrivateKeys = listOf(
+            StorablePrivateKey(
+                id = UUID.randomUUID().toString(),
+                restorationIdentifier = "secp256k1+priv",
+                data = privateKey.raw.base64UrlEncoded,
+                keyPathIndex = 0
+            )
+        )
+        // Mock getDIDPrivateKeysByDID response
+        `when`(plutoMock.getDIDPrivateKeysByDID(any())).thenReturn(flow { emit(storablePrivateKeys) })
+        `when`(
+            apolloMock.restorePrivateKey(
+                storablePrivateKeys.first().restorationIdentifier,
+                storablePrivateKeys.first().data
+            )
+        ).thenReturn(privateKey)
+
+        `when`(plutoMock.getPrismLastKeyPathIndex()).thenReturn(flow { emit(0) })
+
+        val credential = SDJWTCredential.fromSDJwtString(
+            "eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJkaWQ6cHJpc206MGE0YjU1MjE2OWUzMTU4NzgxNzQxZmJiZWZmZTgxMjEyNzg0ZDMyZDkwY2Y4ZjI2MjI5MjNmMTFmNmVjZDk2NjpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRTGd6aHN1T3FoQXlJbXktYzhvOVptSUo0aVlfR2M4dHZOSVQzbDF3NThmMkJKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFMZ3poc3VPcWhBeUlteS1jOG85Wm1JSjRpWV9HYzh0dk5JVDNsMXc1OGYyQSIsIl9zZCI6WyJXVTFWMTZWbTdnd3R3SHRrRGVsdGF1VjlUNTl2SW4yZW9UQVdnU3dtdnQ0Il0sIl9zZF9hbGciOiJzaGEtMjU2IiwiaXNzIjoiZGlkOnByaXNtOmNlMzQwM2I1YTczMzg4MzAzNWQ2ZWM0M2JhMDc1YTQxYzljYzBhMzI1Nzk3N2Q4MGM3NWQ2MzE5YWRlMGVkNzAiLCJleHAiOjE3MzU2ODk2NjEsImlhdCI6MTUxNjIzOTAyMn0.ITRzKaRaY5GB5zIlgP1KdLYtthnededjXZFc9MJTjKCIcSgdyEBNJxPXHftAoC9I9db3GZ6r_Psmq7S_0f9NAA~WyI1M1R1MlN2bmM3OThaUnhHaEE2b0VRIiwiZW1haWxBZGRyZXNzIiwidGVzdEBpb2hrLmlvIl0~"
+        )
+
+        val msg = Json.decodeFromString<Message>(
+            """{"id":"56992a63-9871-490a-b9f8-4b1238c23c5e","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"asdf"},"to":{"method":"peer","methodId":"fdsafdsa"},"fromPrior":null,"body":"{\"proof_types\":[]}","created_time":"1726767099","expires_time_plus":"1726853499","attachments":[{"id":"f135525e-26c7-44f5-8f23-b8fbc928bfb2","media_type":"application/json","data":{"base64":"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjI0YTdlNWU4LWQ3YjQtNDUxYy1hOThkLTA3ZDY4NjVhMzQwYSIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IjNmMWYzYTliLThjZDUtNDZkMS04Y2E0LTBlYzYyN2YxZTdmMiIsIm5hbWUiOiJQcmVzZW50YXRpb24iLCJwdXJwb3NlIjoiUHJlc2VudGF0aW9uIGRlZmluaXRpb24iLCJmb3JtYXQiOnsic2RKd3QiOnsiYWxnIjpbIkVTMjU2ayJdfX0sImNvbnN0cmFpbnRzIjp7ImZpZWxkcyI6W3sicGF0aCI6WyIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmZhbWlseU5hbWUiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmZhbWlseU5hbWUiXSwiaWQiOiI5MjM3ZmNhMy1lZjcyLTQyOGEtYjIyYy02YzVmZTZmZTU0NWIiLCJuYW1lIjoiZmFtaWx5TmFtZSIsImZpbHRlciI6eyJ0eXBlIjoic3RyaW5nIiwicGF0dGVybiI6IldvbmRlcmxhbmQifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZ2l2ZW5OYW1lIiwiJC5jcmVkZW50aWFsU3ViamVjdC5naXZlbk5hbWUiXSwiaWQiOiI3MmQ4NmYwMS04NGYzLTRhNDYtOGFiOC1hN2I0OGE5YjU2MTAiLCJuYW1lIjoiZ2l2ZW5OYW1lIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiQWxpY2UifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZHJpdmluZ0NsYXNzIiwiJC5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nQ2xhc3MiXSwiaWQiOiIyNmI3ZmY3Zi1kOTcyLTQxZGYtYTNkZC0zYmE3YzhiNDAwOWEiLCJuYW1lIjoiZHJpdmluZ0NsYXNzIiwiZmlsdGVyIjp7InR5cGUiOiJpbnRlZ2VyIiwicGF0dGVybiI6IjMifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZGF0ZU9mSXNzdWFuY2UiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmRhdGVPZklzc3VhbmNlIl0sImlkIjoiYWZiZmI1NWMtMWY5Ni00ODlkLWJmOGUtYzZhNTUxYjg3ODFjIiwibmFtZSI6ImRhdGVPZklzc3VhbmNlIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiMjAyMC0xMS0xM1QyMDoyMDozOSswMDowMCJ9fSx7InBhdGgiOlsiJC52Yy5jcmVkZW50aWFsU3ViamVjdC5lbWFpbEFkZHJlc3MiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmVtYWlsQWRkcmVzcyJdLCJpZCI6IjAyZGIxOTA0LWY3NTMtNDI2NC04ZTA0LWI5NGMxNWFkYzA3MyIsIm5hbWUiOiJlbWFpbEFkZHJlc3MiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiJhbGljZUB3b25kZXJsYW5kLmNvbSJ9fSx7InBhdGgiOlsiJC52Yy5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nTGljZW5zZUlEIiwiJC5jcmVkZW50aWFsU3ViamVjdC5kcml2aW5nTGljZW5zZUlEIl0sImlkIjoiODgzYThkMzYtNWYzMy00OGVjLWJhYjktNzE0MGRiYWMyYTVmIiwibmFtZSI6ImRyaXZpbmdMaWNlbnNlSUQiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiIxMjM0NSJ9fV0sImxpbWl0X2Rpc2Nsb3N1cmUiOiJyZXF1aXJlZCJ9fV0sImZvcm1hdCI6eyJzZEp3dCI6eyJhbGciOlsiRVMyNTZrIl19fX0sIm9wdGlvbnMiOnsicHJlc2VudGF0aW9uRnJhbWUiOnt9fX0"},"format":"dif/presentation-exchange/definitions@v1.0"}],"thid":"11001ef6-f4c9-430c-84d7-ef74f0689e9f","ack":[],"direction":"SENT"}"""
+        )
+
+        val presentation = agent.preparePresentationForRequestProof(
+            request = RequestPresentation.fromMessage(msg),
+            credential = credential,
+            preparePresentationOptions = SDJWTPreparePresentationOptions(
+                presentationFrame = mapOf("/emailAddress" to true)
+            )
+        )
+
+        assertEquals(1, presentation.attachments.size)
+        val attachmentDescriptor = presentation.attachments.first()
+        val attachmentData = attachmentDescriptor.data
+        assertTrue(attachmentData is AttachmentBase64)
+        val jwt = attachmentData.getDataAsJsonString()
+        assertTrue(jwt.contains("."))
     }
 
     val getCredentialDefinitionResponse =

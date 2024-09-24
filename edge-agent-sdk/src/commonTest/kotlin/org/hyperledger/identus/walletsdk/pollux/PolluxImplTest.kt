@@ -44,6 +44,7 @@ import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.KeyValue
+import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
@@ -53,6 +54,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsSDJWT
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.SDJWTPresentationOptions
 import org.hyperledger.identus.walletsdk.logger.Logger
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
@@ -1197,38 +1199,43 @@ class PolluxImplTest {
             type = CredentialType.SDJWT,
             presentationClaims = JWTPresentationClaims(
                 claims = mapOf(
-                    "familyName" to InputFieldFilter(
+                    "first_name" to InputFieldFilter(
                         type = "string",
                         pattern = "Wonderland"
                     ),
-                    "givenName" to InputFieldFilter(
+                    "last_name" to InputFieldFilter(
                         type = "string",
                         pattern = "Alice"
-                    ),
-                    "drivingClass" to InputFieldFilter(
-                        type = "integer",
-                        pattern = "3"
-                    ),
-                    "dateOfIssuance" to InputFieldFilter(
-                        type = "string",
-                        pattern = "2020-11-13T20:20:39+00:00"
                     ),
                     "emailAddress" to InputFieldFilter(
                         type = "string",
                         pattern = "alice@wonderland.com"
                     ),
-                    "drivingLicenseID" to InputFieldFilter(
-                        type = "string",
-                        pattern = "12345"
-                    )
                 )
             ),
-            options = SDJWTPresentationOptions(
-                presentationFrame = emptyMap()
-            )
+            options = SDJWTPresentationOptions()
         )
 
         // TODO: Validate SD-JWT specific fields
+    }
+
+    @Test
+    fun `test verifyPresentationSubmission SD-JWT`() = runTest {
+        pollux = PolluxImpl(apollo, castor, api)
+        val msg = Json.decodeFromString<Message>(
+            """{"id":"56992a63-9871-490a-b9f8-4b1238c23c5e","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"asdf"},"to":{"method":"peer","methodId":"fdsafdsa"},"fromPrior":null,"body":"{\"proof_types\":[]}","created_time":"1726767099","expires_time_plus":"1726853499","attachments":[{"id":"f135525e-26c7-44f5-8f23-b8fbc928bfb2","media_type":"application/json","data":{"base64":"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjVhMTljNjZmLWEwZTUtNGFhOC1iNmE5LTdjZGIzYzk0ZGI0NyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IjBjNGY1ZDg0LTBmYjItNGU0Yy1iMDViLTZjZTBmMGFmYzU4NiIsIm5hbWUiOiJQcmVzZW50YXRpb24iLCJwdXJwb3NlIjoiUHJlc2VudGF0aW9uIGRlZmluaXRpb24iLCJmb3JtYXQiOnsic2RKd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX0sImNvbnN0cmFpbnRzIjp7ImZpZWxkcyI6W3sicGF0aCI6WyIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmZpcnN0X25hbWUiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmZpcnN0X25hbWUiLCIkLmZpcnN0X25hbWUiXSwiaWQiOiI2YWFmYmI3NC01ZjE4LTQ4YTMtOGJlNC00MmI3NWIzZmNlZDgiLCJuYW1lIjoiZmlyc3RfbmFtZSIsImZpbHRlciI6eyJ0eXBlIjoic3RyaW5nIiwicGF0dGVybiI6IkNyaXN0aWFuIn19LHsicGF0aCI6WyIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0Lmxhc3RfbmFtZSIsIiQuY3JlZGVudGlhbFN1YmplY3QubGFzdF9uYW1lIiwiJC5sYXN0X25hbWUiXSwiaWQiOiJiMmU1NTkxNi0yYjU1LTQ0MTEtYTQzMS0wOTlkOWMyMDQ0ZjAiLCJuYW1lIjoibGFzdF9uYW1lIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiR29uemFsZXoifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZW1haWxBZGRyZXNzIiwiJC5jcmVkZW50aWFsU3ViamVjdC5lbWFpbEFkZHJlc3MiLCIkLmVtYWlsQWRkcmVzcyJdLCJpZCI6IjU2ODRlMTY0LTA0MzAtNGYyYS1iMDI2LWRmNjcwYWZjNGVkNSIsIm5hbWUiOiJlbWFpbEFkZHJlc3MiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiJ0ZXN0QGlvaGsuaW8ifX1dLCJsaW1pdF9kaXNjbG9zdXJlIjoicmVxdWlyZWQifX1dLCJmb3JtYXQiOnsic2RKd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19fQ=="},"format":"dif/presentation-exchange/definitions@v1.0"}],"thid":"11001ef6-f4c9-430c-84d7-ef74f0689e9f","ack":[],"direction":"SENT"}"""
+        )
+        val requestData = msg.attachments.first().data.getDataAsJsonString()
+
+        val presentationSubmission =
+            """{"presentation_submission":{"id":"780d0597-b2fd-4f22-a7dc-b29b4fa08cc1","definition_id":"5569abd7-2994-4068-be36-4025ebcaf20b","descriptor_map":[{"id":"0c4f5d84-0fb2-4e4c-b05b-6ce0f0afc586","format":"sdjwt","path":"${'$'}.verifiablePresentation[0]"}]},"verifiablePresentation":["eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJkaWQ6cHJpc206YXNkZmFzZGYiLCJfc2QiOlsiWWdQSV9kREQySVE4Z3d0MF9CbUs4Rk55MEpVVXoxbmJoTzQ2b0tuNUFsRSIsIi1nZ2wxR3g1akQzY2VoNHUxTHRXc0xQM3Z5MWtGNktlN2lCWXV5Ynd2eUUiLCJEQnM2Z0hhQTZZUldDSGVXZjlnRHA2eXVnaTVtX3dudkdPSno0aFdmdXlNIl0sIl9zZF9hbGciOiJzaGEtMjU2IiwiaXNzIjoiZGlkOnByaXNtOmNlMzQwM2I1YTczMzg4MzAzNWQ2ZWM0M2JhMDc1YTQxYzljYzBhMzI1Nzk3N2Q4MGM3NWQ2MzE5YWRlMGVkNzAiLCJleHAiOjE3MzU2ODk2NjEsImlhdCI6MTUxNjIzOTAyMn0.hVy9qpC9bVFpoGQ0G2s1GOkDgZxNGdhHIoVOaF8IMQU5pIvxZH1UQ1GzDpnhU0m_ZM8r1QpCeSVPuQKvMluDBQ~WyJtRzVscURxRFg2YWdraHpjX0NBR19RIiwiZmlyc3RfbmFtZSIsIkNyaXN0aWFuIl0~WyJSY2Z5X3ZCQm9wUjhLZFZqejRxbGJRIiwibGFzdF9uYW1lIiwiR29uemFsZXoiXQ~WyJpM0kzQWZJTERuSnVqRXkxS2ZNbFp3IiwiZW1haWxBZGRyZXNzIiwidGVzdEBpb2hrLmlvIl0~"]}"""
+
+        assertTrue(
+            pollux.verifyPresentationSubmission(
+                presentationSubmission,
+                PresentationSubmissionOptionsSDJWT(presentationDefinitionRequest = requestData)
+            )
+        )
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {

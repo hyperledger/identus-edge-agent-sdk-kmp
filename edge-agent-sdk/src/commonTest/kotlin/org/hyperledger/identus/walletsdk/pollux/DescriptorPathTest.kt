@@ -1,0 +1,37 @@
+package org.hyperledger.identus.walletsdk.pollux
+
+import junit.framework.TestCase.assertTrue
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
+import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.junit.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+
+class DescriptorPathTest {
+
+    @Test
+    fun testGetValue_whenDollarSign_thenValueFound() {
+        val submission = """{"presentation_submission":{"id":"3afa67f4-5181-4cec-a296-0f52705126a9","definition_id":"6ceedd50-187d-4731-b779-c7e1bf771191","descriptor_map":[{"id":"a319a6b7-b8b0-441f-a1ca-ed454d151ee5","format":"jwt_vp","path":"${'$'}.verifiablePresentation[0]","path_nested":{"id":"a319a6b7-b8b0-441f-a1ca-ed454d151ee5","format":"jwt_vc","path":"${'$'}.vp.verifiableCredential[0]"}}]},"verifiablePresentation":["eyJraWQiOiJkaWQ6cHJpc206Y2JjNmQyOGE1NTI0NWZhZGYwYmU4ZmU5NDZhY2Q2ZjRiZjJkN2E4MWVlMTYzZjVlM2U0M2YwOTM2NWM2NWIwZjpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRUHVRTG4zaC1IMDlMN0lQYkhZSy0xNTZKdC1ScWlydUdWdlgwTzJ0VVRvNEJKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFQdVFMbjNoLUgwOUw3SVBiSFlLLTE1Nkp0LVJxaXJ1R1Z2WDBPMnRVVG80QSNhdXRoZW50aWNhdGlvbjAiLCJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206Y2JjNmQyOGE1NTI0NWZhZGYwYmU4ZmU5NDZhY2Q2ZjRiZjJkN2E4MWVlMTYzZjVlM2U0M2YwOTM2NWM2NWIwZjpDb1VCQ29JQkVqc0tCMjFoYzNSbGNqQVFBVW91Q2dselpXTndNalUyYXpFU0lRUHVRTG4zaC1IMDlMN0lQYkhZSy0xNTZKdC1ScWlydUdWdlgwTzJ0VVRvNEJKRENnOWhkWFJvWlc1MGFXTmhkR2x2YmpBUUJFb3VDZ2x6WldOd01qVTJhekVTSVFQdVFMbjNoLUgwOUw3SVBiSFlLLTE1Nkp0LVJxaXJ1R1Z2WDBPMnRVVG80QSIsImF1ZCI6ImRvbWFpbiIsInZwIjp7IkBjb250ZXh0IjpbImh0dHBzOlwvXC93d3cudzMub3JnXC8yMDE4XC9jcmVkZW50aWFsc1wvdjEiXSwidHlwZSI6WyJWZXJpZmlhYmxlUHJlc2VudGF0aW9uIl0sInZlcmlmaWFibGVDcmVkZW50aWFsIjpbImV5SmhiR2NpT2lKRlV6STFOa3NpZlEuZXlKaGRXUWlPaUpoTVdVME1UVTFNQzAxWkRVMExUUmhOelF0T1RBeVppMWtOV1psTWpZeVpHRXhPVEFpTENKemRXSWlPaUprYVdRNmNISnBjMjA2WTJKak5tUXlPR0UxTlRJME5XWmhaR1l3WW1VNFptVTVORFpoWTJRMlpqUmlaakprTjJFNE1XVmxNVFl6WmpWbE0yVTBNMll3T1RNMk5XTTJOV0l3WmpwRGIxVkNRMjlKUWtWcWMwdENNakZvWXpOU2JHTnFRVkZCVlc5MVEyZHNlbHBYVG5kTmFsVXlZWHBGVTBsUlVIVlJURzR6YUMxSU1EbE1OMGxRWWtoWlN5MHhOVFpLZEMxU2NXbHlkVWRXZGxnd1R6SjBWVlJ2TkVKS1JFTm5PV2hrV0ZKdldsYzFNR0ZYVG1oa1IyeDJZbXBCVVVKRmIzVkRaMng2V2xkT2QwMXFWVEpoZWtWVFNWRlFkVkZNYmpOb0xVZ3dPVXczU1ZCaVNGbExMVEUxTmtwMExWSnhhWEoxUjFaMldEQlBNblJWVkc4MFFTSXNJbTVpWmlJNk1UY3lOekl3TXpVNE15d2lhWE56SWpvaVpHbGtPbkJ5YVhOdE9tTXdNamMwWkdObFltSTFNR0l5TlRFM05XTmxPVFEzTldNM05EZGhaamxpWW1WaVlUZGhabUptTWpFMU9UUTJNRFkzTVRjd1lXVTFaamxpWWpoaU1EazZRMjlWUWtOdlNVSkZhbk5MUWpJeGFHTXpVbXhqYWtGUlFWVnZkVU5uYkhwYVYwNTNUV3BWTW1GNlJWTkpVVXR5WjA1eVdXTTNWVmt5TVRFeGJsbHRObnBEV201bGRqZDVhRFZPY0ZFd09YQnpVM2c0ZEVjMGRYbFNTa1JEWnpsb1pGaFNiMXBYTlRCaFYwNW9aRWRzZG1KcVFWRkNSVzkxUTJkc2VscFhUbmROYWxVeVlYcEZVMGxSUzNKblRuSlpZemRWV1RJeE1URnVXVzAyZWtOYWJtVjJOM2xvTlU1d1VUQTVjSE5UZURoMFJ6UjFlVkVpTENKbGVIQWlPakUzTWprM09UVTFPRE1zSW5aaklqcDdJbU55WldSbGJuUnBZV3hUWTJobGJXRWlPbTUxYkd3c0luUmxjbTF6VDJaVmMyVWlPbTUxYkd3c0ltVjJhV1JsYm1ObElqcHVkV3hzTENKamNtVmtaVzUwYVdGc1UzVmlhbVZqZENJNmV5SmpiM1Z5YzJVaU9pSkpaR1Z1ZEhWeklGUnlZV2x1YVc1bklHTnZkWEp6WlNCRFpYSjBhV1pwWTJGMGFXOXVJREl3TWpRaWZTd2lZMjl1ZEdWNGRDSTZXeUpvZEhSd2N6cGNMMXd2ZDNkM0xuY3pMbTl5WjF3dk1qQXhPRnd2WTNKbFpHVnVkR2xoYkhOY0wzWXhJbDBzSW5KbFpuSmxjMmhUWlhKMmFXTmxJanB1ZFd4c0xDSjBlWEJsSWpwYklsWmxjbWxtYVdGaWJHVkRjbVZrWlc1MGFXRnNJbDBzSW1OeVpXUmxiblJwWVd4VGRHRjBkWE1pT25zaWMzUmhkSFZ6VUhWeWNHOXpaU0k2SWxKRlZrOURRVlJKVDA0aUxDSnpkR0YwZFhOTWFYTjBTVzVrWlhnaU9qSTFMQ0pwWkNJNkltaDBkSEE2WEM5Y0x6RXdMamt4TGpFd01DNHhNalk2T0RBd01Gd3ZjSEpwYzIwdFlXZGxiblJjTDJOeVpXUmxiblJwWVd3dGMzUmhkSFZ6WEM4MU1UUmxPRFV5T0MwMFlqTTRMVFEzTjJFdFlqQmxOQzB6TWpSaVltVXlNakEwTmpRak1qVWlMQ0owZVhCbElqb2lVM1JoZEhWelRHbHpkREl3TWpGRmJuUnllU0lzSW5OMFlYUjFjMHhwYzNSRGNtVmtaVzUwYVdGc0lqb2lhSFIwY0RwY0wxd3ZNVEF1T1RFdU1UQXdMakV5TmpvNE1EQXdYQzl3Y21semJTMWhaMlZ1ZEZ3dlkzSmxaR1Z1ZEdsaGJDMXpkR0YwZFhOY0x6VXhOR1U0TlRJNExUUmlNemd0TkRjM1lTMWlNR1UwTFRNeU5HSmlaVEl5TURRMk5DSjlmWDAuUFJnNkx0ZFV5TGNsQzlYbUVJLUxJWDQ4UWlzdVNfMDRCbDF3dHVXejNTamFHdXlSd0dRQ1ZxTldQUWFaZktNa2R2VUZ3bWtyMjZ4bE9fNDRlT2ZPeEEiXX0sIm5vbmNlIjoiMmYxODdjY2UtZDY1ZC00MGYzLTg2YzktYTk5ZTg3NzQ0ZGE3In0._UbbNfI9CUuUNgrLbECTw_20V-BSN-A4WmSuvj2lRbDiIkwCm5MJbbQrj8OiD85cJUEamW4QtQUr9-ckpE1aYg"]}"""
+        val descriptorPath =
+            DescriptorPath(Json.encodeToJsonElement(Json.decodeFromString<PresentationSubmission>(submission)))
+        val path = "\$.verifiablePresentation[0]"
+        val holderJws = descriptorPath.getValue(path)
+        assertNotNull(holderJws)
+        assertTrue(holderJws is String)
+        val path1 = "\$.verifiablePresentation"
+        val holderJws1 = descriptorPath.getValue(path1)
+        assertNotNull(holderJws1)
+    }
+
+    @Test
+    fun testGetValue_whenNotDollarSign_thenValueFound() {
+        val claims = """{"sub":"did:prism:0a4b552169e3158781741fbbeffe81212784d32d90cf8f2622923f11f6ecd966:CoUBCoIBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2BJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQLgzhsuOqhAyImy-c8o9ZmIJ4iY_Gc8tvNIT3l1w58f2A","iss":"did:prism:ce3403b5a733883035d6ec43ba075a41c9cc0a3257977d80c75d6319ade0ed70","exp":1735689661,"iat":1516239022,"emailAddress":"test@iohk.io"}"""
+        val descriptorPath =
+            DescriptorPath(Json.encodeToJsonElement(Json.parseToJsonElement(claims)))
+        val path = "/emailAddress"
+        val value = descriptorPath.getValue(path)
+        assertNotNull(value)
+        assertEquals("test@iohk.io", value)
+    }
+}

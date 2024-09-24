@@ -45,8 +45,7 @@ data class JWTPresentationOptions(
 data class SDJWTPresentationOptions(
     override val name: String? = "Presentation",
     override val purpose: String = "Presentation definition",
-    val sdjwt: Array<String> = arrayOf("ES256K"),
-    val presentationFrame: Map<String, Boolean>
+    val sdjwt: Array<String> = arrayOf("ES256K")
 ) : PresentationOptions {
     override val type: CredentialType = CredentialType.SDJWT
 
@@ -58,7 +57,6 @@ data class SDJWTPresentationOptions(
 
         if (name != other.name) return false
         if (purpose != other.purpose) return false
-        if (presentationFrame != other.presentationFrame) return false
         return sdjwt.contentEquals(other.sdjwt)
     }
 
@@ -66,7 +64,6 @@ data class SDJWTPresentationOptions(
         var result = name?.hashCode() ?: 0
         result = 31 * result + purpose.hashCode()
         result = 31 * result + (sdjwt.contentHashCode())
-        result = 31 * result + presentationFrame.hashCode()
         return result
     }
 }

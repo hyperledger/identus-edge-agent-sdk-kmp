@@ -45,15 +45,8 @@ data class JWTPresentationDefinitionRequest(
 @Serializable
 data class SDJWTPresentationDefinitionRequest(
     @SerialName("presentation_definition")
-    val presentationDefinition: PresentationDefinition,
-    val options: PresentationDefinitionOptions? = null
-) : PresentationDefinitionRequest {
-
-    @Serializable
-    data class PresentationDefinitionOptions(
-        val presentationFrame: Map<String, Boolean>
-    )
-}
+    val presentationDefinition: PresentationDefinition
+) : PresentationDefinitionRequest
 
 @Serializable
 data class PresentationDefinition(
