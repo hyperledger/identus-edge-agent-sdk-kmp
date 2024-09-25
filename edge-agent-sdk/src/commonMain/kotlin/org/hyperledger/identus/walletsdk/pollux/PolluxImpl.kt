@@ -104,9 +104,9 @@ import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsSDJWT
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.SDJWTPresentationOptions
+import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.Logger
 import org.hyperledger.identus.walletsdk.logger.LoggerImpl
-import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.pluto.RestorationID
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
@@ -1247,7 +1247,6 @@ open class PolluxImpl(
                     val inputDescriptor =
                         inputDescriptors.find { it.id == descriptorItem.id }
                     verifyInputDescriptors(inputDescriptor, Json.encodeToJsonElement(verifiableCredential))
-
                 } ?: throw PolluxError.VerificationUnsuccessful("Invalid submission, no value found for $pathNested")
                 return true
             }

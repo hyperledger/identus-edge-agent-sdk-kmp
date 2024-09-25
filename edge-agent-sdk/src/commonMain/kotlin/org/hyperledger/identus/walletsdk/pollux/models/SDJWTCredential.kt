@@ -1,30 +1,13 @@
 package org.hyperledger.identus.walletsdk.pollux.models
 
-import com.nimbusds.jose.JOSEObjectType
-import com.nimbusds.jose.JWSAlgorithm
-import com.nimbusds.jose.crypto.ECDSASigner
-import com.nimbusds.jwt.SignedJWT
-import eu.europa.ec.eudi.sdjwt.ClaimValidations.primitiveClaim
 import eu.europa.ec.eudi.sdjwt.JsonPointer
 import eu.europa.ec.eudi.sdjwt.JwtAndClaims
 import eu.europa.ec.eudi.sdjwt.JwtSignatureVerifier
 import eu.europa.ec.eudi.sdjwt.NoSignatureValidation
 import eu.europa.ec.eudi.sdjwt.SdJwt
-import eu.europa.ec.eudi.sdjwt.SdJwtFactory
-import eu.europa.ec.eudi.sdjwt.SdJwtIssuer
 import eu.europa.ec.eudi.sdjwt.SdJwtVerifier
-import eu.europa.ec.eudi.sdjwt.exp
-import eu.europa.ec.eudi.sdjwt.iat
-import eu.europa.ec.eudi.sdjwt.iss
-import eu.europa.ec.eudi.sdjwt.name
-import eu.europa.ec.eudi.sdjwt.nimbus
-import eu.europa.ec.eudi.sdjwt.plain
 import eu.europa.ec.eudi.sdjwt.present
-import eu.europa.ec.eudi.sdjwt.recreateClaims
-import eu.europa.ec.eudi.sdjwt.sd
-import eu.europa.ec.eudi.sdjwt.sdJwt
 import eu.europa.ec.eudi.sdjwt.serialize
-import eu.europa.ec.eudi.sdjwt.sub
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Transient
@@ -44,11 +27,7 @@ import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptio
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
-import java.security.interfaces.ECPrivateKey
 import java.util.*
-import kotlinx.serialization.json.put
 
 @OptIn(ExperimentalSerializationApi::class)
 data class SDJWTCredential(

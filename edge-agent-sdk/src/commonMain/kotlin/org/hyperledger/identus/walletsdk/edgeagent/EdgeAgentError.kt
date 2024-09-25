@@ -4,8 +4,6 @@ import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Error
 import org.hyperledger.identus.walletsdk.domain.models.KnownPrismError
-import kotlin.reflect.KClass
-import kotlin.reflect.jvm.internal.impl.load.java.structure.JavaClass
 
 sealed class EdgeAgentError : KnownPrismError() {
 

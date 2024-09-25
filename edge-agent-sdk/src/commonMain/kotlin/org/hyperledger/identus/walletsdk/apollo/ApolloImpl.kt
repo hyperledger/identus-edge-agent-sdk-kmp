@@ -38,7 +38,6 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.RawKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SeedKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorablePrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel

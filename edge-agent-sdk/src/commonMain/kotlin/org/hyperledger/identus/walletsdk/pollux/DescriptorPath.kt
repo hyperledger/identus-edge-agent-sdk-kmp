@@ -17,7 +17,7 @@ import kotlinx.serialization.json.longOrNull
 
 class DescriptorPath(private val jsonElement: JsonElement) {
 
-    fun getValue (path: String): Any? {
+    fun getValue(path: String): Any? {
         val regex = Regex("[/\\[\\]`.]+")
         val segments = path.split(regex).filter { it.isNotEmpty() }
 
