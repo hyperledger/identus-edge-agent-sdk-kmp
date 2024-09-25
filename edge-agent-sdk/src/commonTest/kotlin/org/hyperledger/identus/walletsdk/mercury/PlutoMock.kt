@@ -195,10 +195,6 @@ class PlutoMock : Pluto {
         TODO("Not yet implemented")
     }
 
-    override fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta) {
-        TODO("Not yet implemented")
-    }
-
     override fun storeCredentialMetadata(name: String, linkSecretName: String, json: String) {
         TODO("Not yet implemented")
     }
