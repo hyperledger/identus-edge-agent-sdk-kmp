@@ -110,19 +110,6 @@ interface Pluto {
      * Stores the metadata associated with a credential request.
      *
      * @param name the unique name used to retrieve the stored metadata.
-     * @param metadata The metadata to store. It must be an instance of [CredentialRequestMeta].
-     */
-    @Deprecated(
-        "This method has been deprecated and should no longer be used.",
-        ReplaceWith("storeCredentialMetadata(name, linkSecretName, json)"),
-        DeprecationLevel.ERROR
-    )
-    fun storeCredentialMetadata(name: String, metadata: CredentialRequestMeta)
-
-    /**
-     * Stores the metadata associated with a credential request.
-     *
-     * @param name the unique name used to retrieve the stored metadata.
      * @param linkSecretName The link secret name as String.
      * @param json The json string.
      */
