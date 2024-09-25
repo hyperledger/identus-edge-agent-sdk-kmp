@@ -201,7 +201,7 @@ class PolluxImplTest {
                 definitionRequest.presentationDefinition.inputDescriptors.first().constraints.fields?.size
             )
             assertEquals(
-                2,
+                3,
                 definitionRequest.presentationDefinition.inputDescriptors.first().constraints.fields?.first()?.path?.size
             )
             assertEquals(
