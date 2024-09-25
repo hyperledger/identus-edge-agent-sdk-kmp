@@ -23,9 +23,6 @@ class DescriptorPath(private val jsonElement: JsonElement) {
 
         // Drop the first segment if it starts with "$"
         val filteredSegments = if (path.startsWith("$")) segments.drop(1) else segments
-
-
-//        val segments = path.split(regex).filter { it.isNotEmpty() }.drop(1)
         val jsonObject = jsonElement.jsonObject
 
         var current: Any? = jsonObject

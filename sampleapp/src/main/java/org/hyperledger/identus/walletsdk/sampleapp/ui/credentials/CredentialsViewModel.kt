@@ -30,10 +30,4 @@ class CredentialsViewModel(application: Application) : AndroidViewModel(applicat
             Sdk.getInstance().agent.isCredentialRevoked(credential)
         }
     }
-
-    fun createSdJwt() {
-        viewModelScope.launch {
-//            Sdk.getInstance().agent.createSDJWTCredential()
-        }
-    }
 }

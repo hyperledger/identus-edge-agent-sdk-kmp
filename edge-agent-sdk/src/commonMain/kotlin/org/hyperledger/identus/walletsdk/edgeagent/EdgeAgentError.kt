@@ -4,6 +4,8 @@ import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Error
 import org.hyperledger.identus.walletsdk.domain.models.KnownPrismError
+import kotlin.reflect.KClass
+import kotlin.reflect.jvm.internal.impl.load.java.structure.JavaClass
 
 sealed class EdgeAgentError : KnownPrismError() {
 
@@ -151,5 +153,14 @@ sealed class EdgeAgentError : KnownPrismError() {
 
         override val message: String
             get() = "This invitation has expired."
+    }
+
+    class InvalidPresentationOptions(private val type: String, private val expectedType: String) :
+        EdgeAgentError() {
+        override val code: Int
+            get() = 616
+
+        override val message: String
+            get() = "Invalid presentation, got $type but expected $expectedType"
     }
 }

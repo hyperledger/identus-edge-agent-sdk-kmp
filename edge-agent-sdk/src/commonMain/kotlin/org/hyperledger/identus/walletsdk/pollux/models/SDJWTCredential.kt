@@ -60,7 +60,7 @@ data class SDJWTCredential(
 
     @Transient
     override val issuer: String = sdjwt.jwt.second["iss"]?.jsonPrimitive?.content
-        ?: throw Exception("Most contain issuer") // TODO: Custom exception
+        ?: throw PolluxError.InvalidJWTCredential("SD-JWT must contain issuer")
 
     override val subject: String?
         get() = sdjwt.jwt.second["sub"]?.jsonPrimitive?.content

@@ -35,6 +35,7 @@ import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
+import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
@@ -48,6 +49,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
+import org.hyperledger.identus.walletsdk.domain.models.SDJWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
@@ -62,6 +64,7 @@ import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefi
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTPresentationDefinitionRequest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -211,126 +214,6 @@ class PolluxImplTest {
                 "Test presentation definition",
                 definitionRequest.presentationDefinition.inputDescriptors.first().purpose
             )
-        }
-
-    @Test
-    fun testCreatePresentationSubmission_whenCredentialNotJWT_thenExceptionThrown() = runTest {
-        val definitionJson = """
-            {
-                "presentation_definition": {
-                    "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                    "input_descriptors": [
-                        {
-                            "id": "wa_driver_license",
-                            "name": "Washington State Business License",
-                            "purpose": "We can only allow licensed Washington State business representatives into the WA Business Conference",
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "path": [
-                                            "$.credentialSubject.dateOfBirth",
-                                            "$.credentialSubject.dob",
-                                            "$.vc.credentialSubject.dateOfBirth",
-                                            "$.vc.credentialSubject.dob"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "format": {
-                        "jwt": {
-                            "alg": ["ES256K"]
-                        }
-                    }
-                },
-                "options": {
-                    "domain": "domain",
-                    "challenge": "challenge"
-                }
-            }
-        """
-
-        val presentationDefinitionRequest = definitionJson
-
-        val credential = AnonCredential(
-            schemaID = "",
-            credentialDefinitionID = "",
-            values = mapOf(),
-            signatureJson = "",
-            signatureCorrectnessProofJson = "",
-            revocationRegistryId = null,
-            revocationRegistryJson = null,
-            witnessJson = "",
-            json = ""
-        )
-        val secpKeyPair = generateSecp256k1KeyPair()
-
-        pollux = PolluxImpl(apollo, castor, api)
-
-        assertFailsWith(PolluxError.CredentialTypeNotSupportedError::class) {
-            pollux.createJWTPresentationSubmission(
-                presentationDefinitionRequest = presentationDefinitionRequest,
-                credential = credential,
-                privateKey = secpKeyPair.privateKey
-            )
-        }
-    }
-
-    @Test
-    fun testCreatePresentationSubmission_whenPrivateKeyNotSecp256k1_thenExceptionThrown() =
-        runTest {
-            val definitionJson = """
-                {
-                    "presentation_definition": {
-                        "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                        "input_descriptors": [
-                            {
-                                "id": "wa_driver_license",
-                                "name": "Washington State Business License",
-                                "purpose": "We can only allow licensed Washington State business representatives into the WA Business Conference",
-                                "constraints": {
-                                    "fields": [
-                                        {
-                                            "path": [
-                                                "$.credentialSubject.dateOfBirth",
-                                                "$.credentialSubject.dob",
-                                                "$.vc.credentialSubject.dateOfBirth",
-                                                "$.vc.credentialSubject.dob"
-                                            ]
-                                        }
-                                    ]
-                                }
-                            }
-                        ],
-                        "format": {
-                            "jwt": {
-                                "alg": ["ES256K"]
-                            }
-                        }
-                    },
-                    "options": {
-                        "domain": "domain",
-                        "challenge": "challenge"
-                    }
-                }
-            """
-
-            val presentationDefinitionRequest = definitionJson
-            val credential = JWTCredential.fromJwtString(
-                "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
-            )
-            val nonSecpKeyPair = Ed25519KeyPair.generateKeyPair()
-
-            pollux = PolluxImpl(apollo, castor, api)
-
-            assertFailsWith(PolluxError.PrivateKeyTypeNotSupportedError::class) {
-                pollux.createJWTPresentationSubmission(
-                    presentationDefinitionRequest = presentationDefinitionRequest,
-                    credential = credential,
-                    privateKey = nonSecpKeyPair.privateKey
-                )
-            }
         }
 
     @Test
@@ -1192,12 +1075,12 @@ class PolluxImplTest {
     }
 
     @Test
-    fun `Test createPresentationDefinitionRequest`() = runTest {
+    fun `Test SD-JWT createPresentationDefinitionRequest`() = runTest {
         pollux = PolluxImpl(apollo, castor, api)
 
         val sdJwtPresentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
             type = CredentialType.SDJWT,
-            presentationClaims = JWTPresentationClaims(
+            presentationClaims = SDJWTPresentationClaims(
                 claims = mapOf(
                     "first_name" to InputFieldFilter(
                         type = "string",
@@ -1215,8 +1098,25 @@ class PolluxImplTest {
             ),
             options = SDJWTPresentationOptions()
         )
-
-        // TODO: Validate SD-JWT specific fields
+        val presentationDefinition =
+            Json.decodeFromString<SDJWTPresentationDefinitionRequest>(sdJwtPresentationDefinitionRequest)
+        val inputDescriptor = presentationDefinition.presentationDefinition.inputDescriptors.first()
+        assertNotNull(inputDescriptor.constraints.fields)
+        var firstNameAvailable = false
+        var lastNameAvailable = false
+        var emailAvailable = false
+        inputDescriptor.constraints.fields!!.forEach {
+            if (it.name == "first_name") {
+                firstNameAvailable = true
+            }
+            if (it.name == "last_name") {
+                lastNameAvailable = true
+            }
+            if (it.name == "emailAddress") {
+                emailAvailable = true
+            }
+        }
+        assertTrue(firstNameAvailable && lastNameAvailable && emailAvailable)
     }
 
     @Test
@@ -1303,12 +1203,15 @@ class PolluxImplTest {
         doReturn(false)
             .`when`(pollux).isCredentialRevoked(any())
 
-        val presentationSubmission = pollux.createJWTPresentationSubmission(
-            presentationDefinitionRequest = presentationDefinition,
-            credential = jwtCredential,
-            privateKey = testCaseOptions.holderPrv
-        )
+        val presentationSubmission = jwtCredential.presentation(
+            attachmentFormat = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+            request = presentationDefinition.encodeToByteArray(),
+            options = listOf(
+                CredentialOperationsOptions.SubjectDID(testCaseOptions.holder),
+                CredentialOperationsOptions.ExportableKey(testCaseOptions.holderPrv)
+            )
 
+        )
         return Triple(presentationDefinition, presentationSubmission, jwtString)
     }
 

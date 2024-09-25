@@ -1,7 +1,7 @@
 package org.hyperledger.identus.walletsdk.domain.models
 
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey as SignableKeyModel
 
 sealed class CredentialOperationsOptions {
     data class Schema(val id: String, val json: String) : CredentialOperationsOptions()
@@ -11,7 +11,7 @@ sealed class CredentialOperationsOptions {
     data class LinkSecret(val id: String, val secret: String) : CredentialOperationsOptions()
     data class SubjectDID(val did: DID) : CredentialOperationsOptions()
     data class Entropy(val entropy: String) : CredentialOperationsOptions()
-    data class SignableKey(val key: org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey?) : CredentialOperationsOptions()
+    data class SignableKey(val key: SignableKeyModel?) : CredentialOperationsOptions()
     data class ExportableKey(val key: PrivateKey?) : CredentialOperationsOptions()
     data class ZkpPresentationParams(val attributes: Map<String, Boolean>, val predicates: List<String>) :
         CredentialOperationsOptions()

@@ -11,30 +11,12 @@ import com.nimbusds.jose.JWEDecrypter
 import com.nimbusds.jose.JWEEncrypter
 import com.nimbusds.jose.JWEHeader
 import com.nimbusds.jose.JWEObject
-import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.Payload
-import com.nimbusds.jose.crypto.ECDSAVerifier
-import com.nimbusds.jose.crypto.Ed25519Signer
 import com.nimbusds.jose.crypto.X25519Decrypter
 import com.nimbusds.jose.crypto.X25519Encrypter
-import com.nimbusds.jose.jwk.KeyUse
 import com.nimbusds.jose.jwk.OctetKeyPair
-import com.nimbusds.jose.jwk.gen.ECKeyGenerator
 import com.nimbusds.jose.util.Base64URL
-import eu.europa.ec.eudi.sdjwt.JwtAndClaims
-import eu.europa.ec.eudi.sdjwt.SdJwt
-import eu.europa.ec.eudi.sdjwt.SdJwtIssuer
-import eu.europa.ec.eudi.sdjwt.SdJwtVerifier
-import eu.europa.ec.eudi.sdjwt.asJwtVerifier
-import eu.europa.ec.eudi.sdjwt.exp
-import eu.europa.ec.eudi.sdjwt.iat
-import eu.europa.ec.eudi.sdjwt.iss
-import eu.europa.ec.eudi.sdjwt.nimbus
-import eu.europa.ec.eudi.sdjwt.plain
-import eu.europa.ec.eudi.sdjwt.sd
-import eu.europa.ec.eudi.sdjwt.sdJwt
 import eu.europa.ec.eudi.sdjwt.serialize
-import eu.europa.ec.eudi.sdjwt.sub
 import eu.europa.ec.eudi.sdjwt.vc.SD_JWT_VC_TYPE
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -44,8 +26,6 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.util.date.getTimeMillis
 import java.net.UnknownHostException
 import java.security.SecureRandom
-import java.security.interfaces.ECPrivateKey
-import java.security.interfaces.ECPublicKey
 import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -56,7 +36,6 @@ import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onSubscription
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
@@ -66,7 +45,6 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
@@ -100,7 +78,6 @@ import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.PrismDIDInfo
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
-import org.hyperledger.identus.walletsdk.domain.models.SDJWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.Signature
 import org.hyperledger.identus.walletsdk.domain.models.UnknownError
@@ -1144,7 +1121,10 @@ open class EdgeAgent {
                 }
 
                 if (preparePresentationOptions !is SDJWTPreparePresentationOptions) {
-                    throw Exception() // TODO: Custom exception
+                    throw EdgeAgentError.InvalidPresentationOptions(
+                        preparePresentationOptions::class.java.name,
+                        SDJWTPreparePresentationOptions::class.java.name
+                    )
                 }
 
                 val requestData = request.attachments.firstNotNullOf {
@@ -1204,33 +1184,39 @@ open class EdgeAgent {
         val presentationDefinitionRequest: String
         val attachmentDescriptor: AttachmentDescriptor
         when (type) {
-            CredentialType.JWT,
-            CredentialType.SDJWT -> {
-                val options = if (type == CredentialType.JWT) {
-                    if (domain == null) {
-                        throw EdgeAgentError.MissingOrNullFieldError("Domain", "initiatePresentationRequest parameters")
-                    }
-                    if (challenge == null) {
-                        throw EdgeAgentError.MissingOrNullFieldError(
-                            "Challenge",
-                            "initiatePresentationRequest parameters"
-                        )
-                    }
-                    JWTPresentationOptions(
+            CredentialType.JWT -> {
+                if (domain == null) {
+                    throw EdgeAgentError.MissingOrNullFieldError("Domain", "initiatePresentationRequest parameters")
+                }
+                if (challenge == null) {
+                    throw EdgeAgentError.MissingOrNullFieldError(
+                        "Challenge",
+                        "initiatePresentationRequest parameters"
+                    )
+                }
+                presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
+                    type = type,
+                    presentationClaims = presentationClaims,
+                    options = JWTPresentationOptions(
                         jwt = arrayOf("ES256K"),
                         domain = domain,
                         challenge = challenge
                     )
-                } else {
-                    SDJWTPresentationOptions(
-                        sdjwt = arrayOf("ES256k")
-                    )
-                }
+                )
+                attachmentDescriptor = AttachmentDescriptor(
+                    mediaType = "application/json",
+                    format = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+                    data = AttachmentBase64(presentationDefinitionRequest.base64UrlEncoded)
+                )
+            }
 
+            CredentialType.SDJWT -> {
                 presentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
                     type = type,
                     presentationClaims = presentationClaims,
-                    options = options
+                    options = SDJWTPresentationOptions(
+                        sdjwt = arrayOf("ES256k")
+                    )
                 )
                 attachmentDescriptor = AttachmentDescriptor(
                     mediaType = "application/json",
@@ -1321,7 +1307,6 @@ open class EdgeAgent {
                             data = AttachmentBase64(presentationString.base64UrlEncoded)
                         )
 
-                        val fromDID = requestPresentation.to ?: createNewPeerDID(updateMediator = true)
                         return Presentation(
                             body = Presentation.Body(),
                             attachments = arrayOf(attachmentDescriptor),
@@ -1342,7 +1327,10 @@ open class EdgeAgent {
                         }
 
                         if (preparePresentationOptions !is SDJWTPreparePresentationOptions) {
-                            throw Exception() // TODO: Custom exception
+                            throw EdgeAgentError.InvalidPresentationOptions(
+                                preparePresentationOptions::class.java.name,
+                                SDJWTPreparePresentationOptions::class.java.name
+                            )
                         }
 
                         val didString =
@@ -1411,11 +1399,10 @@ open class EdgeAgent {
                     }
                 }
             }
+            throw EdgeAgentError.CredentialNotValidForPresentationRequest()
         } catch (e: Exception) {
             throw EdgeAgentError.CredentialNotValidForPresentationRequest()
         }
-        // TODO: handle this point
-        throw EdgeAgentError.CredentialNotValidForPresentationRequest()
     }
 
     suspend fun handlePresentation(msg: Message): Boolean {
@@ -1594,48 +1581,6 @@ open class EdgeAgent {
         } catch (ex: Exception) {
             throw UnknownError.SomethingWentWrongError(ex.localizedMessage, ex)
         }
-    }
-
-    // TODO: Remove before merging
-    suspend fun createSDJWTCredential(keyPair: Ed25519KeyPair): SDJWTCredential {
-        val subject = createNewPrismDID()
-
-        val octet = OctetKeyPair.Builder(com.nimbusds.jose.jwk.Curve.Ed25519, Base64URL.encode(keyPair.publicKey.raw))
-            .d(Base64URL.encode(keyPair.privateKey.raw))
-            .keyUse(KeyUse.SIGNATURE)
-            .build()
-
-        val issuer = SdJwtIssuer
-            .nimbus(
-                signer = Ed25519Signer(octet),
-                signAlgorithm = JWSAlgorithm.EdDSA
-            )
-        val sdjwt = issuer.issue(
-            sdJwt {
-                plain {
-                    sub(subject.toString())
-                    iss("did:prism:ce3403b5a733883035d6ec43ba075a41c9cc0a3257977d80c75d6319ade0ed70")
-                    iat(1516239022)
-                    exp(1735689661)
-                }
-                sd {
-                    put("first_name", "Cristian")
-                    put("last_name", "Gonzalez")
-                    put("emailAddress", "test@iohk.io")
-                }
-            }
-        ).getOrThrow().serialize()
-
-        val verified: SdJwt.Issuance<JwtAndClaims> = runBlocking {
-            SdJwtVerifier.verifyIssuance(
-                jwtSignatureVerifier = ECDSAVerifier(keyPair.publicKey.jca() as ECPublicKey).asJwtVerifier(),
-                unverifiedSdJwt = sdjwt
-            ).getOrThrow()
-        }
-
-        val cred = SDJWTCredential.fromSDJwtString(sdjwt)
-        pluto.storeCredential(cred.toStorableCredential())
-        return cred
     }
 
     /**

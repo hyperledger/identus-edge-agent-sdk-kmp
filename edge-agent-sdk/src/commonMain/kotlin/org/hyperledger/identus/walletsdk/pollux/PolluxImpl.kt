@@ -764,12 +764,11 @@ open class PolluxImpl(
         presentationClaims: PresentationClaims,
         options: PresentationOptions
     ): String {
-        val format: PresentationDefinition.InputDescriptor.PresentationFormat
         val inputDescriptor: PresentationDefinition.InputDescriptor
         when (type) {
             CredentialType.JWT -> {
                 if (options.name == null || options.purpose == null) {
-                    throw Exception("")
+                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation options must contain name and purpose")
                 }
                 if (options is JWTPresentationOptions) {
                     if (presentationClaims !is JWTPresentationClaims) {
@@ -845,7 +844,7 @@ open class PolluxImpl(
 
             CredentialType.SDJWT -> {
                 if (options.name == null || options.purpose == null) {
-                    throw Exception("")
+                    throw PolluxError.PresentationDefinitionRequestError("When type is ${type.type}, presentation options must contain name and purpose")
                 }
                 if (options is SDJWTPresentationOptions) {
                     if (presentationClaims !is SDJWTPresentationClaims) {
@@ -935,13 +934,15 @@ open class PolluxImpl(
                         } else if (inputFilter.lte != null) {
                             "<="
                         } else {
-                            throw Exception() // TODO: Custom exception
+                            throw PolluxError.PresentationDefinitionRequestError("Input filter must contain at one of the following gt, gte, lt, lte as not null")
                         }
 
-                    val pValue = (inputFilter.gt
-                        ?: (inputFilter.gte
-                            ?: (inputFilter.lt
-                                ?: (inputFilter.lte ?: throw Exception())))) as Int // TODO: Custom excetion
+                    val pValue =
+                        (inputFilter.gt
+                            ?: (inputFilter.gte
+                                ?: (inputFilter.lt
+                                    ?: (inputFilter.lte
+                                        ?: throw PolluxError.PresentationDefinitionRequestError("Input filter must contain at one of the following gt, gte, lt, lte as not null"))))) as Int
 
                     // Based on the definition of AnoncredsPresentationClaims we do not need to verify if key is duplicated.
                     mapPredicate[key] = RequestedPredicates(
@@ -977,7 +978,11 @@ open class PolluxImpl(
         )
     }
 
-    // TODO: Deprecate, the new way to create JWT presentation submission is using the credential. ProvableCredential.presentation()
+    @Deprecated(
+        "This method is deprecated, this functionality was moved to each credential",
+        ReplaceWith("ProvableCredential.presentation(attachmentFormat, request, options)"),
+        DeprecationLevel.ERROR
+    )
     override suspend fun createJWTPresentationSubmission(
         presentationDefinitionRequest: String,
         credential: Credential,
@@ -1042,6 +1047,11 @@ open class PolluxImpl(
         } ?: throw PolluxError.NonNullableError("CredentialSubject")
     }
 
+    @Deprecated(
+        "This method is deprecated, this functionality was moved to each credential",
+        ReplaceWith("ProvableCredential.presentation(attachmentFormat, request, options)"),
+        DeprecationLevel.ERROR
+    )
     override suspend fun createAnoncredsPresentationSubmission(
         presentationDefinitionRequest: String,
         credential: Credential,
@@ -1164,8 +1174,7 @@ open class PolluxImpl(
                 PresentationSubmission(submission, arrayStrings)
             } ?: throw PolluxError.VerificationUnsuccessful("Presentation is missing presentation_submission")
 
-        val presentationDefinitionRequestString =
-            (options as PresentationSubmissionOptionsJWT).presentationDefinitionRequest
+        val presentationDefinitionRequestString = options.presentationDefinitionRequest
         val presentationDefinitionRequest =
             Json.decodeFromString<JWTPresentationDefinitionRequest>(presentationDefinitionRequestString)
 
@@ -1235,84 +1244,10 @@ open class PolluxImpl(
                     }
 
                     // Now we are going to validate the requested fields with the provided credentials
-                    val verifiableCredentialDescriptorPath =
-                        DescriptorPath(Json.encodeToJsonElement(verifiableCredential))
                     val inputDescriptor =
                         inputDescriptors.find { it.id == descriptorItem.id }
-                    if (inputDescriptor != null) {
-                        val constraints = inputDescriptor.constraints
-                        val fields = constraints.fields
-                        if (constraints.limitDisclosure == PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
-                            fields?.forEach { field ->
-                                val optional = field.optional
-                                if (!optional) {
-                                    var validClaim = false
-                                    var reason = ""
-                                    val paths = field.path
-                                    paths.forEach { path ->
-                                        val fieldValue =
-                                            verifiableCredentialDescriptorPath.getValue(path)
-                                        if (fieldValue != null) {
-                                            if (field.filter != null) {
-                                                val filter: InputFieldFilter = field.filter
-                                                filter.pattern?.let { pattern ->
-                                                    val regexPattern = Regex(pattern)
-                                                    if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
-                                                        validClaim = true
-                                                        return@forEach
-                                                    } else {
-                                                        reason =
-                                                            "Expected the $path field to be $pattern but got $fieldValue"
-                                                    }
-                                                }
-                                                filter.enum?.let { enum ->
-                                                    enum.forEach { predicate ->
-                                                        if (fieldValue == predicate) {
-                                                            validClaim = true
-                                                            return@forEach
-                                                        }
-                                                    }
-                                                    if (!validClaim) {
-                                                        reason =
-                                                            "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
-                                                    }
-                                                }
-                                                filter.const?.let { const ->
-                                                    const.forEach { constValue ->
-                                                        if (fieldValue == constValue) {
-                                                            validClaim = true
-                                                            return@forEach
-                                                        }
-                                                    }
-                                                    if (!validClaim) {
-                                                        reason =
-                                                            "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
-                                                    }
-                                                }
-                                                filter.value?.let { value ->
-                                                    if (value == fieldValue) {
-                                                        validClaim = true
-                                                        return@forEach
-                                                    } else {
-                                                        reason =
-                                                            "Expected the $path field to be $value but got $fieldValue"
-                                                    }
-                                                }
-                                            } else {
-                                                reason =
-                                                    "Input field filter for ${field.name} is null"
-                                            }
-                                        } else {
-                                            reason = "Field value for path $path is null"
-                                        }
-                                    }
-                                    if (!validClaim) {
-                                        throw PolluxError.VerificationUnsuccessful(reason)
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    verifyInputDescriptors(inputDescriptor, Json.encodeToJsonElement(verifiableCredential))
+
                 } ?: throw PolluxError.VerificationUnsuccessful("Invalid submission, no value found for $pathNested")
                 return true
             }
@@ -1382,90 +1317,96 @@ open class PolluxImpl(
 
             val presentation = SDJWTCredential.fromSDJwtString(jws)
 
-            val all = presentation.sdjwt.recreateClaimsAndDisclosuresPerClaim { it.second }
-            val claimsAndDisclosures = DescriptorPath(all.first.toJsonElement())
-
+            val claimsAndDisclosures = presentation.sdjwt.recreateClaimsAndDisclosuresPerClaim { it.second }
             val inputDescriptors = presentationDefinitionRequest.presentationDefinition.inputDescriptors
 
             val inputDescriptor =
                 inputDescriptors.find { it.id == descriptorItem.id }
-            if (inputDescriptor != null) {
-                val constraints = inputDescriptor.constraints
-                val fields = constraints.fields
-                if (constraints.limitDisclosure == PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
-                    fields?.forEach { field ->
-                        val optional = field.optional
-                        if (!optional) {
-                            var validClaim = false
-                            var reason = ""
-                            val paths = field.path
-                            paths.forEach { path ->
-                                val fieldValue =
-                                    claimsAndDisclosures.getValue(path)
-                                if (fieldValue != null) {
-                                    if (field.filter != null) {
-                                        val filter: InputFieldFilter = field.filter
-                                        filter.pattern?.let { pattern ->
-                                            val regexPattern = Regex(pattern)
-                                            if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
+            verifyInputDescriptors(inputDescriptor, claimsAndDisclosures.first.toJsonElement())
+            return true
+        }
+        return false
+    }
+
+    private fun verifyInputDescriptors(
+        inputDescriptor: PresentationDefinition.InputDescriptor?,
+        descriptorPath: JsonElement
+    ) {
+        val claimsAndDisclosures = DescriptorPath(descriptorPath)
+        if (inputDescriptor != null) {
+            val constraints = inputDescriptor.constraints
+            val fields = constraints.fields
+            if (constraints.limitDisclosure == PresentationDefinition.InputDescriptor.Constraints.LimitDisclosure.REQUIRED) {
+                fields?.forEach { field ->
+                    val optional = field.optional
+                    if (!optional) {
+                        var validClaim = false
+                        var reason = ""
+                        val paths = field.path
+                        paths.forEach { path ->
+                            val fieldValue =
+                                claimsAndDisclosures.getValue(path)
+                            if (fieldValue != null) {
+                                if (field.filter != null) {
+                                    val filter: InputFieldFilter = field.filter
+                                    filter.pattern?.let { pattern ->
+                                        val regexPattern = Regex(pattern)
+                                        if (regexPattern.matches(fieldValue.toString()) || fieldValue == pattern) {
+                                            validClaim = true
+                                            return@forEach
+                                        } else {
+                                            reason =
+                                                "Expected the $path field to be $pattern but got $fieldValue"
+                                        }
+                                    }
+                                    filter.enum?.let { enum ->
+                                        enum.forEach { predicate ->
+                                            if (fieldValue == predicate) {
                                                 validClaim = true
                                                 return@forEach
-                                            } else {
-                                                reason =
-                                                    "Expected the $path field to be $pattern but got $fieldValue"
                                             }
                                         }
-                                        filter.enum?.let { enum ->
-                                            enum.forEach { predicate ->
-                                                if (fieldValue == predicate) {
-                                                    validClaim = true
-                                                    return@forEach
-                                                }
-                                            }
-                                            if (!validClaim) {
-                                                reason =
-                                                    "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
-                                            }
+                                        if (!validClaim) {
+                                            reason =
+                                                "Expected the $path field to be one of ${filter.enum.joinToString { ", " }} but got $fieldValue"
                                         }
-                                        filter.const?.let { const ->
-                                            const.forEach { constValue ->
-                                                if (fieldValue == constValue) {
-                                                    validClaim = true
-                                                    return@forEach
-                                                }
-                                            }
-                                            if (!validClaim) {
-                                                reason =
-                                                    "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
-                                            }
-                                        }
-                                        filter.value?.let { value ->
-                                            if (value == fieldValue) {
+                                    }
+                                    filter.const?.let { const ->
+                                        const.forEach { constValue ->
+                                            if (fieldValue == constValue) {
                                                 validClaim = true
                                                 return@forEach
-                                            } else {
-                                                reason =
-                                                    "Expected the $path field to be $value but got $fieldValue"
                                             }
                                         }
-                                    } else {
-                                        reason =
-                                            "Input field filter for ${field.name} is null"
+                                        if (!validClaim) {
+                                            reason =
+                                                "Expected the $path field to be one of ${filter.const.joinToString { ", " }} but got $fieldValue"
+                                        }
+                                    }
+                                    filter.value?.let { value ->
+                                        if (value == fieldValue) {
+                                            validClaim = true
+                                            return@forEach
+                                        } else {
+                                            reason =
+                                                "Expected the $path field to be $value but got $fieldValue"
+                                        }
                                     }
                                 } else {
-                                    reason = "Field value for path $path is null"
+                                    reason =
+                                        "Input field filter for ${field.name} is null"
                                 }
+                            } else {
+                                reason = "Field value for path $path is null"
                             }
-                            if (!validClaim) {
-                                throw PolluxError.VerificationUnsuccessful(reason)
-                            }
+                        }
+                        if (!validClaim) {
+                            throw PolluxError.VerificationUnsuccessful(reason)
                         }
                     }
                 }
             }
-            return true
         }
-        return false
     }
 
     private suspend fun verifyAnoncredsPresentation(

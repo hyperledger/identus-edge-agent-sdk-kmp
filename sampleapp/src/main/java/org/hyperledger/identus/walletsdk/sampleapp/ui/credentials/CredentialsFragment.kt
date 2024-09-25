@@ -29,7 +29,6 @@ class CredentialsFragment : Fragment() {
             }
         }
         adapter = CredentialsAdapter(itemClickListener = isRevoked)
-        binding.createSdjwt.setOnClickListener { viewModel.createSdJwt() }
         binding.credentials.adapter = adapter
         return binding.root
     }
