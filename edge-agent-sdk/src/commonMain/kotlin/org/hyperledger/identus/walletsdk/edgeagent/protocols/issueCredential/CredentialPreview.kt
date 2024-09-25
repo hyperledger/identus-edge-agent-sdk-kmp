@@ -106,6 +106,6 @@ constructor(
         val name: String,
         val value: String,
         @SerialName("media_type")
-        val mediaType: String?
+        val mediaType: String? = null
     )
 }

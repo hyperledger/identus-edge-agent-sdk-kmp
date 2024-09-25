@@ -8,6 +8,9 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import org.hyperledger.identus.walletsdk.domain.models.DIDPair
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.issueCredential.OfferCredential
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.ConnectionlessCredentialOffer
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.ConnectionlessRequestPresentation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.OutOfBandInvitation
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.outOfBand.PrismOnboardingInvitation
 import org.hyperledger.identus.walletsdk.sampleapp.Sdk
@@ -44,6 +47,21 @@ class ContactsViewModel(application: Application) : AndroidViewModel(application
 
                         is PrismOnboardingInvitation -> {
                             agent.acceptInvitation(invitation)
+                        }
+
+                        is ConnectionlessCredentialOffer -> {
+                            val offer = OfferCredential.fromMessage(invitation.offerCredential.makeMessage())
+                            val subjectDID = agent.createNewPrismDID()
+                            val request =
+                                agent.prepareRequestCredentialWithIssuer(
+                                    subjectDID,
+                                    offer
+                                )
+                            agent.sendMessage(request.makeMessage())
+                        }
+
+                        is ConnectionlessRequestPresentation -> {
+                            agent.pluto.storeMessage(invitation.requestPresentation.makeMessage())
                         }
 
                         else -> {
