@@ -374,10 +374,15 @@ open class EdgeAgent {
     suspend fun createNewPrismDID(
         keyPathIndex: Int? = null,
         alias: String? = null,
-        services: Array<DIDDocument.Service> = emptyArray()
+        services: Array<DIDDocument.Service> = emptyArray(),
+        format: String? = null
     ): DID {
         val index = keyPathIndex ?: (pluto.getPrismLastKeyPathIndex().first() + 1)
-        val keyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, index))
+        val keyPair = if (format == "vc+sd-jwt") {
+            Ed25519KeyPair.generateKeyPair()
+        } else {
+            Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, index))
+        }
         val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
         registerPrismDID(did, index, alias, keyPair.privateKey)
         return did
@@ -659,16 +664,21 @@ open class EdgeAgent {
             CredentialType.JWT, CredentialType.SDJWT -> {
                 val privateKeyKeyPath = pluto.getPrismDIDKeyPathIndex(did).first()
 
-                val keyPair = Secp256k1KeyPair.generateKeyPair(
-                    seed,
-                    KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
-                )
                 val offerDataString = offer.attachments.firstNotNullOf {
                     it.data.getDataAsJsonString()
                 }
                 val offerJsonObject = Json.parseToJsonElement(offerDataString).jsonObject
-                val jwtString =
+
+                val jwtString = if (type == CredentialType.JWT) {
+                    val keyPair = Secp256k1KeyPair.generateKeyPair(
+                        seed,
+                        KeyCurve(Curve.SECP256K1, privateKeyKeyPath)
+                    )
                     pollux.processCredentialRequestJWT(did, keyPair.privateKey, offerJsonObject)
+                } else {
+                    val keyPair = Ed25519KeyPair.generateKeyPair()
+                    pollux.processCredentialRequestSDJWT(did, keyPair.privateKey, offerJsonObject)
+                }
                 val attachmentDescriptor =
                     AttachmentDescriptor(
                         mediaType = ContentType.Application.Json.toString(),

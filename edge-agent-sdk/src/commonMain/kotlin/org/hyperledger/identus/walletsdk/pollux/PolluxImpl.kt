@@ -296,7 +296,7 @@ open class PolluxImpl(
     ): String {
         val domain = getDomain(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         val challenge = getChallenge(offerJson) ?: throw PolluxError.NoDomainOrChallengeFound()
-        return signClaimsRequestCredentialJWT(subjectDID, privateKey, domain, challenge)
+        return signClaims(subjectDID, privateKey, domain, challenge)
     }
 
     /**

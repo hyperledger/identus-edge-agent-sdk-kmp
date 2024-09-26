@@ -119,29 +119,13 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 toDID = DID(toDID),
                 presentationClaims = SDJWTPresentationClaims(
                     claims = mapOf(
-                        "familyName" to InputFieldFilter(
+                        "firstName" to InputFieldFilter(
                             type = "string",
                             pattern = "Wonderland"
-                        ),
-                        "givenName" to InputFieldFilter(
-                            type = "string",
-                            pattern = "Alice"
-                        ),
-                        "drivingClass" to InputFieldFilter(
-                            type = "integer",
-                            pattern = "3"
-                        ),
-                        "dateOfIssuance" to InputFieldFilter(
-                            type = "string",
-                            pattern = "2020-11-13T20:20:39+00:00"
                         ),
                         "emailAddress" to InputFieldFilter(
                             type = "string",
                             pattern = "alice@wonderland.com"
-                        ),
-                        "drivingLicenseID" to InputFieldFilter(
-                            type = "string",
-                            pattern = "12345"
                         )
                     )
                 )
@@ -261,7 +245,8 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                         processedOffers.add(it)
                                         viewModelScope.launch {
                                             val offer = OfferCredential.fromMessage(message)
-                                            val subjectDID = agent.createNewPrismDID()
+                                            val format = message.attachments.first().format
+                                            val subjectDID = agent.createNewPrismDID(format = format)
                                             val request =
                                                 agent.prepareRequestCredentialWithIssuer(
                                                     subjectDID,

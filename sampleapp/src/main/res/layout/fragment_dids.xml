@@ -25,4 +25,15 @@
             app:tint="@color/white"
             android:contentDescription="@string/todo"/>
 
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/create_prism_did"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:src="@android:drawable/ic_media_next"
+            app:layout_constraintBottom_toTopOf="@id/create_did"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:tint="@color/white"
+            android:contentDescription="@string/todo"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

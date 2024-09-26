@@ -376,6 +376,26 @@ class EdgeAgentTests {
     }
 
     @Test
+    fun testCreateNewPrismDID_whenVcSdJwt_then() = runTest {
+        val apollo = ApolloImpl()
+        val castor = CastorImpl(apollo)
+        val agent = EdgeAgent(
+            apollo = apollo,
+            castor = castor,
+            pluto = plutoMockOld,
+            mercury = mercuryMockOld,
+            pollux = polluxMockOld,
+            connectionManager = connectionManagerOld,
+            seed = seed,
+            api = null,
+            logger = LoggerMock(),
+            agentOptions = AgentOptions()
+        )
+        plutoMockOld.getPrismLastKeyPathIndexReturn = flow { emit(0) }
+        val newDID = agent.createNewPrismDID(format = "vc+sd-jwt")
+    }
+
+    @Test
     fun testCreateNewPeerDID_shouldCreateNewDID_whenCalled() = runTest {
         val agent = spy(
             EdgeAgent(

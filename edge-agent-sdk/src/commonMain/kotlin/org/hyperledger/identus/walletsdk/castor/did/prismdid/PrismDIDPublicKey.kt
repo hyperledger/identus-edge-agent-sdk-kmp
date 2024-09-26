@@ -1,13 +1,20 @@
 package org.hyperledger.identus.walletsdk.castor.did.prismdid
 
-import org.hyperledger.identus.apollo.secp256k1.Secp256k1Lib
 import org.hyperledger.identus.protos.CompressedECKeyData
+import org.hyperledger.identus.protos.ECKeyData
 import org.hyperledger.identus.protos.KeyUsage
+import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PublicKey
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.hyperledger.identus.walletsdk.domain.models.CastorError
 import org.hyperledger.identus.walletsdk.domain.models.Curve
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurveKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointXKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.CurvePointYKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.KeyTypes
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.RawKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.TypeKey
 import pbandk.ByteArr
 import kotlin.jvm.Throws
 
@@ -54,7 +61,26 @@ class PrismDIDPublicKey {
         this.usage = proto.usage.fromProto()
         this.keyData = when (proto.keyData) {
             is org.hyperledger.identus.protos.PublicKey.KeyData.CompressedEcKeyData -> {
-                Secp256k1PublicKey(proto.keyData.value.data.array)
+                val compressedEcKeyData = proto.compressedEcKeyData!!
+                apollo.createPublicKey(
+                    properties = mapOf(
+                        TypeKey().property to KeyTypes.EC,
+                        CurveKey().property to compressedEcKeyData.curve,
+                        RawKey().property to compressedEcKeyData.data.array
+                    )
+                )
+            }
+
+            is org.hyperledger.identus.protos.PublicKey.KeyData.EcKeyData -> {
+                val ecKeyData = proto.ecKeyData!!
+                apollo.createPublicKey(
+                    properties = mapOf(
+                        TypeKey().property to KeyTypes.EC,
+                        CurveKey().property to ecKeyData.curve,
+                        CurvePointXKey().property to ecKeyData.x,
+                        CurvePointYKey().property to ecKeyData.y
+                    )
+                )
             }
 
             else -> {
@@ -69,14 +95,33 @@ class PrismDIDPublicKey {
      * @return the converted Protobuf PublicKey object
      */
     fun toProto(): org.hyperledger.identus.protos.PublicKey {
-        val compressedPublicKey = Secp256k1PublicKey(Secp256k1Lib().compressPublicKey(keyData.getValue()))
-        return org.hyperledger.identus.protos.PublicKey(
-            id = id,
-            usage = usage.toProto(),
-            keyData = org.hyperledger.identus.protos.PublicKey.KeyData.CompressedEcKeyData(
-                compressedPublicKey.toProto()
+        if (keyData.getCurve() == Curve.SECP256K1.value) {
+            val x = keyData.getProperty(CurvePointXKey().property)
+            val y = keyData.getProperty(CurvePointYKey().property)
+
+            return org.hyperledger.identus.protos.PublicKey(
+                id = id,
+                usage = usage.toProto(),
+                keyData = org.hyperledger.identus.protos.PublicKey.KeyData.EcKeyData(
+                    ecKeyData = ECKeyData(
+                        curve = keyData.getCurve(),
+                        x = ByteArr(x.encodeToByteArray()),
+                        y = ByteArr(y.encodeToByteArray())
+                    )
+                )
             )
-        )
+        } else {
+            return org.hyperledger.identus.protos.PublicKey(
+                id = id,
+                usage = usage.toProto(),
+                keyData = org.hyperledger.identus.protos.PublicKey.KeyData.CompressedEcKeyData(
+                    compressedEcKeyData = CompressedECKeyData(
+                        curve = Curve.ED25519.value,
+                        data = ByteArr(keyData.getEncoded())
+                    )
+                )
+            )
+        }
     }
 
     /**
@@ -124,6 +169,18 @@ fun KeyUsage.fromProto(): PrismDIDPublicKey.Usage {
 fun Secp256k1PublicKey.toProto(): CompressedECKeyData {
     return CompressedECKeyData(
         curve = Curve.SECP256K1.value,
+        data = ByteArr(raw)
+    )
+}
+
+/**
+ * Converts a Ed25519PublicKey object to a CompressedECKeyData object.
+ *
+ * @return the converted CompressedECKeyData object.
+ */
+fun Ed25519PublicKey.toProto(): CompressedECKeyData {
+    return CompressedECKeyData(
+        curve = Curve.ED25519.value,
         data = ByteArr(raw)
     )
 }

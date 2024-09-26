@@ -3,31 +3,34 @@ package org.hyperledger.identus.walletsdk.castor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.hyperledger.identus.protos.PublicKey
+import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PrivateKey
 import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519PublicKey
 import org.hyperledger.identus.walletsdk.castor.did.prismdid.PrismDIDPublicKey
 import org.hyperledger.identus.walletsdk.castor.did.prismdid.id
+import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
 import org.junit.Ignore
 import org.junit.Test
+import org.mockito.kotlin.mock
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class PrismDIDPublicKeyTests {
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    @Ignore("PrismDIDPublicKey requires Secp256k1Lib to be an interface in order to mock its result. Once that is done this test can be added back.")
+//    @Ignore("PrismDIDPublicKey requires Secp256k1Lib to be an interface in order to mock its result. Once that is done this test can be added back.")
     @Test
     fun it_should_parse_proto_toPrismDIDPublicKey() = runTest {
-        val apollo = ApolloMock()
-        val seed = apollo.createRandomSeed(passphrase = "mnemonics").seed
+        val apollo = ApolloImpl()
+//        val seed = apollo.createRandomSeed(passphrase = "mnemonics").seed
         val keyPair = Ed25519KeyPair(
             privateKey = Ed25519PrivateKey(ByteArray(0)),
             publicKey = Ed25519PublicKey(ByteArray(0))
         )
 
         val publicKey = PrismDIDPublicKey(
-            apollo = ApolloMock(),
+            apollo = apollo,
             id = PrismDIDPublicKey.Usage.MASTER_KEY.id(0),
             usage = PrismDIDPublicKey.Usage.MASTER_KEY,
             keyData = keyPair.publicKey
