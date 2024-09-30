@@ -49,5 +49,4 @@ class BitString(byteArray: ByteArray) {
         }
         return result
     }
-//    }
 }

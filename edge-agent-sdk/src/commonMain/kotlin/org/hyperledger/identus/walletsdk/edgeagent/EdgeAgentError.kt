@@ -152,4 +152,13 @@ sealed class EdgeAgentError : KnownPrismError() {
         override val message: String
             get() = "This invitation has expired."
     }
+
+    class InvalidPresentationOptions(private val type: String, private val expectedType: String) :
+        EdgeAgentError() {
+        override val code: Int
+            get() = 616
+
+        override val message: String
+            get() = "Invalid presentation, got $type but expected $expectedType"
+    }
 }

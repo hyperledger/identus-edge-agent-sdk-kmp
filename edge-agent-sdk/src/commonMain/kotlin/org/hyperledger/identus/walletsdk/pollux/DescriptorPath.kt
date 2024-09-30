@@ -18,12 +18,15 @@ import kotlinx.serialization.json.longOrNull
 class DescriptorPath(private val jsonElement: JsonElement) {
 
     fun getValue(path: String): Any? {
-        val regex = Regex("[\\[\\]`.]+")
-        val segments = path.split(regex).filter { it.isNotEmpty() }.drop(1)
+        val regex = Regex("[/\\[\\]`.]+")
+        val segments = path.split(regex).filter { it.isNotEmpty() }
+
+        // Drop the first segment if it starts with "$"
+        val filteredSegments = if (path.startsWith("$")) segments.drop(1) else segments
         val jsonObject = jsonElement.jsonObject
 
         var current: Any? = jsonObject
-        segments.forEach { segment ->
+        filteredSegments.forEach { segment ->
             when (current) {
                 is JsonObject -> {
                     if ((current as JsonObject).contains(segment)) {

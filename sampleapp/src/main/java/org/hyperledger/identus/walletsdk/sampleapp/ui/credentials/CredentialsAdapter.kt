@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.W3CCredential
 import org.hyperledger.identus.walletsdk.sampleapp.R
 import java.time.Instant
@@ -99,6 +100,11 @@ class CredentialsAdapter(
                     val anon = cred as AnonCredential
                     type.text = String.format(typeString, "Anoncred")
                     expiryDate.text = String.format("Issuer: ${anon.credentialDefinitionID}")
+                }
+
+                SDJWTCredential::class -> {
+                    val sdjwt = cred as SDJWTCredential
+                    type.text = String.format(typeString, "SD-JWT")
                 }
             }
         }

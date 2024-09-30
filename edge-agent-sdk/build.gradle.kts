@@ -233,6 +233,7 @@ kotlin {
                     exclude(group = "com.nimbusds", module = "nimbus-jose-jwt")
                 }
                 implementation(kotlin("reflect"))
+                implementation("org.bouncycastle:bcprov-jdk15on:1.68")
 
                 implementation("com.apicatalog:titanium-json-ld-jre8:1.4.0")
                 implementation("org.glassfish:jakarta.json:2.0.1")

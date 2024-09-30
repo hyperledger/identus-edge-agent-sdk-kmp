@@ -104,17 +104,25 @@ sealed interface VerifiableCredential {
     }
 }
 
-sealed interface PresentationClaims
+sealed interface PresentationClaims {
+    val claims: Map<String, InputFieldFilter>
+}
 
 data class JWTPresentationClaims(
     val schema: String? = null,
     val issuer: String? = null,
-    val claims: Map<String, InputFieldFilter>
+    override val claims: Map<String, InputFieldFilter>
+) : PresentationClaims
+
+data class SDJWTPresentationClaims(
+    val issuer: String? = null,
+    override val claims: Map<String, InputFieldFilter>
 ) : PresentationClaims
 
 data class AnoncredsPresentationClaims(
     val predicates: Map<String, AnoncredsInputFieldFilter>,
-    val attributes: Map<String, RequestedAttributes>
+    val attributes: Map<String, RequestedAttributes>,
+    override val claims: Map<String, InputFieldFilter> = emptyMap()
 ) : PresentationClaims
 
 @OptIn(ExperimentalSerializationApi::class)

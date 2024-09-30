@@ -36,6 +36,7 @@ import org.hyperledger.identus.walletsdk.logger.LoggerMock
 import org.hyperledger.identus.walletsdk.pluto.models.backup.BackupV0_0_1
 import org.hyperledger.identus.walletsdk.pollux.PolluxImpl
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTCredential
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
@@ -217,6 +218,11 @@ class BackupRestorationTests {
                         RestorationID.JWT -> {
                             val jwtString = it.credentialData.base64UrlDecoded
                             JWTCredential.fromJwtString(jwtString).toStorableCredential()
+                        }
+
+                        RestorationID.SDJWT -> {
+                            val jwtString = it.credentialData.base64UrlDecoded
+                            SDJWTCredential.fromSDJwtString(jwtString).toStorableCredential()
                         }
 
                         RestorationID.ANONCRED -> {

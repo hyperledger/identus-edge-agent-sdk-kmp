@@ -40,108 +40,50 @@ data class JWTPresentationDefinitionRequest(
         val domain: String,
         val challenge: String
     )
+}
 
+@Serializable
+data class SDJWTPresentationDefinitionRequest(
+    @SerialName("presentation_definition")
+    val presentationDefinition: PresentationDefinition
+) : PresentationDefinitionRequest
+
+@Serializable
+data class PresentationDefinition(
+    val id: String? = UUID.randomUUID().toString(),
+    @SerialName("input_descriptors")
+    val inputDescriptors: Array<InputDescriptor>,
+    val format: InputDescriptor.PresentationFormat
+) {
     @Serializable
-    data class PresentationDefinition(
-        val id: String? = UUID.randomUUID().toString(),
-        @SerialName("input_descriptors")
-        val inputDescriptors: Array<InputDescriptor>,
-        val format: InputDescriptor.PresentationFormat
+    data class InputDescriptor(
+        val id: String = UUID.randomUUID().toString(),
+        val name: String? = null,
+        val purpose: String? = null,
+        val format: PresentationFormat? = null,
+        val constraints: Constraints
     ) {
-        @Serializable
-        data class InputDescriptor(
-            val id: String = UUID.randomUUID().toString(),
-            val name: String? = null,
-            val purpose: String? = null,
-            val format: PresentationFormat? = null,
-            val constraints: Constraints
-        ) {
 
+        @Serializable
+        data class Constraints @JvmOverloads constructor(
+            val fields: Array<Field>? = null,
+            @SerialName("limit_disclosure")
+            val limitDisclosure: LimitDisclosure? = null
+        ) {
             @Serializable
-            data class Constraints @JvmOverloads constructor(
-                val fields: Array<Field>? = null,
-                @SerialName("limit_disclosure")
-                val limitDisclosure: LimitDisclosure? = null
+            data class Field @JvmOverloads constructor(
+                val path: Array<String>,
+                val id: String? = null,
+                val purpose: String? = null,
+                val name: String? = null,
+                val filter: InputFieldFilter? = null,
+                val optional: Boolean = false
             ) {
                 @Serializable
-                data class Field @JvmOverloads constructor(
-                    val path: Array<String>,
-                    val id: String? = null,
-                    val purpose: String? = null,
-                    val name: String? = null,
-                    val filter: InputFieldFilter? = null,
-                    val optional: Boolean = false
-                ) {
-                    @Serializable
-                    data class Filter(
-                        val type: String,
-                        val pattern: String
-                    )
-
-                    override fun equals(other: Any?): Boolean {
-                        if (this === other) {
-                            return true
-                        }
-                        if (javaClass != other?.javaClass) {
-                            return false
-                        }
-
-                        other as Field
-
-                        if (!path.contentEquals(other.path)) {
-                            return false
-                        }
-                        if (id != other.id) {
-                            return false
-                        }
-                        if (purpose != other.purpose) {
-                            return false
-                        }
-                        if (name != other.name) {
-                            return false
-                        }
-                        if (filter != other.filter) {
-                            return false
-                        }
-                        if (optional != other.optional) {
-                            return false
-                        }
-
-                        return true
-                    }
-
-                    override fun hashCode(): Int {
-                        var result = path.contentHashCode()
-                        result = 31 * result + (id?.hashCode() ?: 0)
-                        result = 31 * result + (purpose?.hashCode() ?: 0)
-                        result = 31 * result + (name?.hashCode() ?: 0)
-                        result = 31 * result + (filter?.hashCode() ?: 0)
-                        result = 31 * result + optional.hashCode()
-                        return result
-                    }
-                }
-
-                @Serializable(with = LimitDisclosure.LimitDisclosureSerializer::class)
-                enum class LimitDisclosure(val value: String) {
-                    REQUIRED("required"),
-                    PREFERRED("preferred");
-
-                    // Custom serializer for the enum
-                    object LimitDisclosureSerializer : KSerializer<LimitDisclosure> {
-                        override val descriptor: SerialDescriptor =
-                            PrimitiveSerialDescriptor("LimitDisclosure", PrimitiveKind.STRING)
-
-                        override fun serialize(encoder: Encoder, value: LimitDisclosure) {
-                            encoder.encodeString(value.value)
-                        }
-
-                        override fun deserialize(decoder: Decoder): LimitDisclosure {
-                            val stringValue = decoder.decodeString()
-                            return entries.firstOrNull { it.value == stringValue }
-                                ?: throw SerializationException("Unknown value: $stringValue")
-                        }
-                    }
-                }
+                data class Filter(
+                    val type: String,
+                    val pattern: String
+                )
 
                 override fun equals(other: Any?): Boolean {
                     if (this === other) {
@@ -151,19 +93,24 @@ data class JWTPresentationDefinitionRequest(
                         return false
                     }
 
-                    other as Constraints
+                    other as Field
 
-                    if (fields != null) {
-                        if (other.fields == null) {
-                            return false
-                        }
-                        if (!fields.contentEquals(other.fields)) {
-                            return false
-                        }
-                    } else if (other.fields != null) {
+                    if (!path.contentEquals(other.path)) {
                         return false
                     }
-                    if (limitDisclosure != other.limitDisclosure) {
+                    if (id != other.id) {
+                        return false
+                    }
+                    if (purpose != other.purpose) {
+                        return false
+                    }
+                    if (name != other.name) {
+                        return false
+                    }
+                    if (filter != other.filter) {
+                        return false
+                    }
+                    if (optional != other.optional) {
                         return false
                     }
 
@@ -171,48 +118,109 @@ data class JWTPresentationDefinitionRequest(
                 }
 
                 override fun hashCode(): Int {
-                    var result = fields?.contentHashCode() ?: 0
-                    result = 31 * result + (limitDisclosure?.hashCode() ?: 0)
+                    var result = path.contentHashCode()
+                    result = 31 * result + (id?.hashCode() ?: 0)
+                    result = 31 * result + (purpose?.hashCode() ?: 0)
+                    result = 31 * result + (name?.hashCode() ?: 0)
+                    result = 31 * result + (filter?.hashCode() ?: 0)
+                    result = 31 * result + optional.hashCode()
                     return result
                 }
             }
 
-            @Serializable
-            data class PresentationFormat(
-                @SerialName("jwt")
-                val jwt: JwtFormat? = null,
-            )
+            @Serializable(with = LimitDisclosure.LimitDisclosureSerializer::class)
+            enum class LimitDisclosure(val value: String) {
+                REQUIRED("required"),
+                PREFERRED("preferred");
 
-            @Serializable
-            data class JwtFormat(
-                val alg: List<String>
-            )
-        }
+                // Custom serializer for the enum
+                object LimitDisclosureSerializer : KSerializer<LimitDisclosure> {
+                    override val descriptor: SerialDescriptor =
+                        PrimitiveSerialDescriptor("LimitDisclosure", PrimitiveKind.STRING)
 
-        override fun equals(other: Any?): Boolean {
-            if (this === other) {
+                    override fun serialize(encoder: Encoder, value: LimitDisclosure) {
+                        encoder.encodeString(value.value)
+                    }
+
+                    override fun deserialize(decoder: Decoder): LimitDisclosure {
+                        val stringValue = decoder.decodeString()
+                        return entries.firstOrNull { it.value == stringValue }
+                            ?: throw SerializationException("Unknown value: $stringValue")
+                    }
+                }
+            }
+
+            override fun equals(other: Any?): Boolean {
+                if (this === other) {
+                    return true
+                }
+                if (javaClass != other?.javaClass) {
+                    return false
+                }
+
+                other as Constraints
+
+                if (fields != null) {
+                    if (other.fields == null) {
+                        return false
+                    }
+                    if (!fields.contentEquals(other.fields)) {
+                        return false
+                    }
+                } else if (other.fields != null) {
+                    return false
+                }
+                if (limitDisclosure != other.limitDisclosure) {
+                    return false
+                }
+
                 return true
             }
-            if (other == null || this::class != other::class) {
-                return false
-            }
 
-            other as PresentationDefinition
-
-            if (id != other.id) {
-                return false
+            override fun hashCode(): Int {
+                var result = fields?.contentHashCode() ?: 0
+                result = 31 * result + (limitDisclosure?.hashCode() ?: 0)
+                return result
             }
-            if (!inputDescriptors.contentEquals(other.inputDescriptors)) {
-                return false
-            }
-            return format == other.format
         }
 
-        override fun hashCode(): Int {
-            var result = id?.hashCode() ?: 0
-            result = 31 * result + inputDescriptors.contentHashCode()
-            result = 31 * result + format.hashCode()
-            return result
+        @Serializable
+        data class PresentationFormat(
+            @SerialName("jwt")
+            val jwt: JwtFormat? = null,
+            @SerialName("sdJwt")
+            val sdjwt: JwtFormat? = null,
+        )
+
+        @Serializable
+        data class JwtFormat(
+            val alg: List<String>
+        )
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) {
+            return true
         }
+        if (other == null || this::class != other::class) {
+            return false
+        }
+
+        other as PresentationDefinition
+
+        if (id != other.id) {
+            return false
+        }
+        if (!inputDescriptors.contentEquals(other.inputDescriptors)) {
+            return false
+        }
+        return format == other.format
+    }
+
+    override fun hashCode(): Int {
+        var result = id?.hashCode() ?: 0
+        result = 31 * result + inputDescriptors.contentHashCode()
+        result = 31 * result + format.hashCode()
+        return result
     }
 }

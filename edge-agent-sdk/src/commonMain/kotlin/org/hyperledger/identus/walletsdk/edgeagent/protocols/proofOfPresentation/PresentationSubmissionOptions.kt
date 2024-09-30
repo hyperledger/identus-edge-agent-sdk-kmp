@@ -6,6 +6,10 @@ data class PresentationSubmissionOptionsJWT(
     val presentationDefinitionRequest: String
 ) : PresentationSubmissionOptions
 
+data class PresentationSubmissionOptionsSDJWT(
+    val presentationDefinitionRequest: String
+) : PresentationSubmissionOptions
+
 data class PresentationSubmissionOptionsAnoncreds(
     val presentationDefinitionRequest: String
 ) : PresentationSubmissionOptions

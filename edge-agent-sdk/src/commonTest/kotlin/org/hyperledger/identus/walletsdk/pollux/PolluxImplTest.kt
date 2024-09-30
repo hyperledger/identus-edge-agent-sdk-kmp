@@ -13,6 +13,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import java.security.interfaces.ECPrivateKey
 import java.text.SimpleDateFormat
 import java.util.*
 import junit.framework.TestCase.assertFalse
@@ -26,7 +27,6 @@ import org.didcommx.didcomm.common.Typ
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.derivation.MnemonicHelper
 import org.hyperledger.identus.walletsdk.apollo.ApolloImpl
-import org.hyperledger.identus.walletsdk.apollo.utils.Ed25519KeyPair
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1KeyPair
 import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.domain.buildingblocks.Apollo
@@ -35,6 +35,7 @@ import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Api
 import org.hyperledger.identus.walletsdk.domain.models.ApiImpl
+import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.Curve
 import org.hyperledger.identus.walletsdk.domain.models.DID
@@ -44,21 +45,25 @@ import org.hyperledger.identus.walletsdk.domain.models.JWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
 import org.hyperledger.identus.walletsdk.domain.models.KeyCurve
 import org.hyperledger.identus.walletsdk.domain.models.KeyValue
+import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.PresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
+import org.hyperledger.identus.walletsdk.domain.models.SDJWTPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Seed
 import org.hyperledger.identus.walletsdk.domain.models.httpClient
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.AnoncredsPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.JWTPresentationOptions
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsJWT
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.PresentationSubmissionOptionsSDJWT
+import org.hyperledger.identus.walletsdk.edgeagent.protocols.proofOfPresentation.SDJWTPresentationOptions
 import org.hyperledger.identus.walletsdk.logger.Logger
-import org.hyperledger.identus.walletsdk.pollux.models.AnonCredential
 import org.hyperledger.identus.walletsdk.pollux.models.AnoncredsPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.JWTCredential
 import org.hyperledger.identus.walletsdk.pollux.models.JWTPresentationDefinitionRequest
 import org.hyperledger.identus.walletsdk.pollux.models.PresentationSubmission
+import org.hyperledger.identus.walletsdk.pollux.models.SDJWTPresentationDefinitionRequest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.ArgumentMatchers.anyString
@@ -197,7 +202,7 @@ class PolluxImplTest {
                 definitionRequest.presentationDefinition.inputDescriptors.first().constraints.fields?.size
             )
             assertEquals(
-                2,
+                3,
                 definitionRequest.presentationDefinition.inputDescriptors.first().constraints.fields?.first()?.path?.size
             )
             assertEquals(
@@ -208,126 +213,6 @@ class PolluxImplTest {
                 "Test presentation definition",
                 definitionRequest.presentationDefinition.inputDescriptors.first().purpose
             )
-        }
-
-    @Test
-    fun testCreatePresentationSubmission_whenCredentialNotJWT_thenExceptionThrown() = runTest {
-        val definitionJson = """
-            {
-                "presentation_definition": {
-                    "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                    "input_descriptors": [
-                        {
-                            "id": "wa_driver_license",
-                            "name": "Washington State Business License",
-                            "purpose": "We can only allow licensed Washington State business representatives into the WA Business Conference",
-                            "constraints": {
-                                "fields": [
-                                    {
-                                        "path": [
-                                            "$.credentialSubject.dateOfBirth",
-                                            "$.credentialSubject.dob",
-                                            "$.vc.credentialSubject.dateOfBirth",
-                                            "$.vc.credentialSubject.dob"
-                                        ]
-                                    }
-                                ]
-                            }
-                        }
-                    ],
-                    "format": {
-                        "jwt": {
-                            "alg": ["ES256K"]
-                        }
-                    }
-                },
-                "options": {
-                    "domain": "domain",
-                    "challenge": "challenge"
-                }
-            }
-        """
-
-        val presentationDefinitionRequest = definitionJson
-
-        val credential = AnonCredential(
-            schemaID = "",
-            credentialDefinitionID = "",
-            values = mapOf(),
-            signatureJson = "",
-            signatureCorrectnessProofJson = "",
-            revocationRegistryId = null,
-            revocationRegistryJson = null,
-            witnessJson = "",
-            json = ""
-        )
-        val secpKeyPair = generateSecp256k1KeyPair()
-
-        pollux = PolluxImpl(apollo, castor, api)
-
-        assertFailsWith(PolluxError.CredentialTypeNotSupportedError::class) {
-            pollux.createJWTPresentationSubmission(
-                presentationDefinitionRequest = presentationDefinitionRequest,
-                credential = credential,
-                privateKey = secpKeyPair.privateKey
-            )
-        }
-    }
-
-    @Test
-    fun testCreatePresentationSubmission_whenPrivateKeyNotSecp256k1_thenExceptionThrown() =
-        runTest {
-            val definitionJson = """
-                {
-                    "presentation_definition": {
-                        "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
-                        "input_descriptors": [
-                            {
-                                "id": "wa_driver_license",
-                                "name": "Washington State Business License",
-                                "purpose": "We can only allow licensed Washington State business representatives into the WA Business Conference",
-                                "constraints": {
-                                    "fields": [
-                                        {
-                                            "path": [
-                                                "$.credentialSubject.dateOfBirth",
-                                                "$.credentialSubject.dob",
-                                                "$.vc.credentialSubject.dateOfBirth",
-                                                "$.vc.credentialSubject.dob"
-                                            ]
-                                        }
-                                    ]
-                                }
-                            }
-                        ],
-                        "format": {
-                            "jwt": {
-                                "alg": ["ES256K"]
-                            }
-                        }
-                    },
-                    "options": {
-                        "domain": "domain",
-                        "challenge": "challenge"
-                    }
-                }
-            """
-
-            val presentationDefinitionRequest = definitionJson
-            val credential = JWTCredential.fromJwtString(
-                "eyJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6cHJpc206MjU3MTlhOTZiMTUxMjA3MTY5ODFhODQzMGFkMGNiOTY4ZGQ1MzQwNzM1OTNjOGNkM2YxZDI3YTY4MDRlYzUwZTpDcG9DQ3BjQ0Vsb0tCV3RsZVMweEVBSkNUd29KYzJWamNESTFObXN4RWlBRW9TQ241dHlEYTZZNnItSW1TcXBKOFkxbWo3SkMzX29VekUwTnl5RWlDQm9nc2dOYWVSZGNDUkdQbGU4MlZ2OXRKZk53bDZyZzZWY2hSM09xaGlWYlRhOFNXd29HWVhWMGFDMHhFQVJDVHdvSmMyVmpjREkxTm1zeEVpRE1rQmQ2RnRpb0prM1hPRnUtX2N5NVhtUi00dFVRMk5MR2lXOGFJU29ta1JvZzZTZGU5UHduRzBRMFNCVG1GU1REYlNLQnZJVjZDVExYcmpJSnR0ZUdJbUFTWEFvSGJXRnpkR1Z5TUJBQlFrOEtDWE5sWTNBeU5UWnJNUklnTzcxMG10MVdfaXhEeVFNM3hJczdUcGpMQ05PRFF4Z1ZoeDVzaGZLTlgxb2FJSFdQcnc3SVVLbGZpYlF0eDZKazRUU2pnY1dOT2ZjT3RVOUQ5UHVaN1Q5dCIsInN1YiI6ImRpZDpwcmlzbTpiZWVhNTIzNGFmNDY4MDQ3MTRkOGVhOGVjNzdiNjZjYzdmM2U4MTVjNjhhYmI0NzVmMjU0Y2Y5YzMwNjI2NzYzOkNzY0JDc1FCRW1RS0QyRjFkR2hsYm5ScFkyRjBhVzl1TUJBRVFrOEtDWE5sWTNBeU5UWnJNUklnZVNnLTJPTzFKZG5welVPQml0eklpY1hkZnplQWNUZldBTi1ZQ2V1Q2J5SWFJSlE0R1RJMzB0YVZpd2NoVDNlMG5MWEJTNDNCNGo5amxzbEtvMlpsZFh6akVsd0tCMjFoYzNSbGNqQVFBVUpQQ2dselpXTndNalUyYXpFU0lIa29QdGpqdFNYWjZjMURnWXJjeUluRjNYODNnSEUzMWdEZm1BbnJnbThpR2lDVU9Ca3lOOUxXbFlzSElVOTN0Snkxd1V1TndlSV9ZNWJKU3FObVpYVjg0dyIsIm5iZiI6MTY4NTYzMTk5NSwiZXhwIjoxNjg1NjM1NTk1LCJ2YyI6eyJjcmVkZW50aWFsU3ViamVjdCI6eyJhZGRpdGlvbmFsUHJvcDIiOiJUZXN0MyIsImlkIjoiZGlkOnByaXNtOmJlZWE1MjM0YWY0NjgwNDcxNGQ4ZWE4ZWM3N2I2NmNjN2YzZTgxNWM2OGFiYjQ3NWYyNTRjZjljMzA2MjY3NjM6Q3NjQkNzUUJFbVFLRDJGMWRHaGxiblJwWTJGMGFXOXVNQkFFUWs4S0NYTmxZM0F5TlRack1SSWdlU2ctMk9PMUpkbnB6VU9CaXR6SWljWGRmemVBY1RmV0FOLVlDZXVDYnlJYUlKUTRHVEkzMHRhVml3Y2hUM2UwbkxYQlM0M0I0ajlqbHNsS28yWmxkWHpqRWx3S0IyMWhjM1JsY2pBUUFVSlBDZ2x6WldOd01qVTJhekVTSUhrb1B0amp0U1haNmMxRGdZcmN5SW5GM1g4M2dIRTMxZ0RmbUFucmdtOGlHaUNVT0JreU45TFdsWXNISVU5M3RKeTF3VXVOd2VJX1k1YkpTcU5tWlhWODR3In0sInR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiXSwiQGNvbnRleHQiOlsiaHR0cHM6XC9cL3d3dy53My5vcmdcLzIwMThcL2NyZWRlbnRpYWxzXC92MSJdfX0.x0SF17Y0VCDmt7HceOdTxfHlofsZmY18Rn6VQb0-r-k_Bm3hTi1-k2vkdjB25hdxyTCvxam-AkAP-Ag3Ahn5Ng"
-            )
-            val nonSecpKeyPair = Ed25519KeyPair.generateKeyPair()
-
-            pollux = PolluxImpl(apollo, castor, api)
-
-            assertFailsWith(PolluxError.PrivateKeyTypeNotSupportedError::class) {
-                pollux.createJWTPresentationSubmission(
-                    presentationDefinitionRequest = presentationDefinitionRequest,
-                    credential = credential,
-                    privateKey = nonSecpKeyPair.privateKey
-                )
-            }
         }
 
     @Test
@@ -1182,7 +1067,74 @@ class PolluxImplTest {
         val json = Json.parseToJsonElement(header)
         assertTrue(json.jsonObject.containsKey("kid"))
         val kid = json.jsonObject["kid"]!!.jsonPrimitive.content
-        assertEquals("did:prism:cd6cf9f94a43c53e286b0f2015c0083701350a694f52a22ee02e3bd29d93eba9:CrQBCrEBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xotCgojZGlkY29tbS0xEhBESURDb21tTWVzc2FnaW5nGg1kaWQ6cGVlcjp0ZXN0#authentication0", kid)
+        assertEquals(
+            "did:prism:cd6cf9f94a43c53e286b0f2015c0083701350a694f52a22ee02e3bd29d93eba9:CrQBCrEBEjsKB21hc3RlcjAQAUouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xJDCg9hdXRoZW50aWNhdGlvbjAQBEouCglzZWNwMjU2azESIQKJIokEe_iKRGsr0f2EEa1JHGm59g0qP7QMtw6FcVxW9xotCgojZGlkY29tbS0xEhBESURDb21tTWVzc2FnaW5nGg1kaWQ6cGVlcjp0ZXN0#authentication0",
+            kid
+        )
+    }
+
+    @Test
+    fun `Test SD-JWT createPresentationDefinitionRequest`() = runTest {
+        pollux = PolluxImpl(apollo, castor, api)
+
+        val sdJwtPresentationDefinitionRequest = pollux.createPresentationDefinitionRequest(
+            type = CredentialType.SDJWT,
+            presentationClaims = SDJWTPresentationClaims(
+                claims = mapOf(
+                    "first_name" to InputFieldFilter(
+                        type = "string",
+                        pattern = "Wonderland"
+                    ),
+                    "last_name" to InputFieldFilter(
+                        type = "string",
+                        pattern = "Alice"
+                    ),
+                    "emailAddress" to InputFieldFilter(
+                        type = "string",
+                        pattern = "alice@wonderland.com"
+                    ),
+                )
+            ),
+            options = SDJWTPresentationOptions()
+        )
+        val presentationDefinition =
+            Json.decodeFromString<SDJWTPresentationDefinitionRequest>(sdJwtPresentationDefinitionRequest)
+        val inputDescriptor = presentationDefinition.presentationDefinition.inputDescriptors.first()
+        assertNotNull(inputDescriptor.constraints.fields)
+        var firstNameAvailable = false
+        var lastNameAvailable = false
+        var emailAvailable = false
+        inputDescriptor.constraints.fields!!.forEach {
+            if (it.name == "first_name") {
+                firstNameAvailable = true
+            }
+            if (it.name == "last_name") {
+                lastNameAvailable = true
+            }
+            if (it.name == "emailAddress") {
+                emailAvailable = true
+            }
+        }
+        assertTrue(firstNameAvailable && lastNameAvailable && emailAvailable)
+    }
+
+    @Test
+    fun `test verifyPresentationSubmission SD-JWT`() = runTest {
+        pollux = PolluxImpl(apollo, castor, api)
+        val msg = Json.decodeFromString<Message>(
+            """{"id":"56992a63-9871-490a-b9f8-4b1238c23c5e","piuri":"https://didcomm.atalaprism.io/present-proof/3.0/request-presentation","from":{"method":"peer","methodId":"asdf"},"to":{"method":"peer","methodId":"fdsafdsa"},"fromPrior":null,"body":"{\"proof_types\":[]}","created_time":"1726767099","expires_time_plus":"1726853499","attachments":[{"id":"f135525e-26c7-44f5-8f23-b8fbc928bfb2","media_type":"application/json","data":{"base64":"eyJwcmVzZW50YXRpb25fZGVmaW5pdGlvbiI6eyJpZCI6IjVhMTljNjZmLWEwZTUtNGFhOC1iNmE5LTdjZGIzYzk0ZGI0NyIsImlucHV0X2Rlc2NyaXB0b3JzIjpbeyJpZCI6IjBjNGY1ZDg0LTBmYjItNGU0Yy1iMDViLTZjZTBmMGFmYzU4NiIsIm5hbWUiOiJQcmVzZW50YXRpb24iLCJwdXJwb3NlIjoiUHJlc2VudGF0aW9uIGRlZmluaXRpb24iLCJmb3JtYXQiOnsic2RKd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX0sImNvbnN0cmFpbnRzIjp7ImZpZWxkcyI6W3sicGF0aCI6WyIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0LmZpcnN0X25hbWUiLCIkLmNyZWRlbnRpYWxTdWJqZWN0LmZpcnN0X25hbWUiLCIkLmZpcnN0X25hbWUiXSwiaWQiOiI2YWFmYmI3NC01ZjE4LTQ4YTMtOGJlNC00MmI3NWIzZmNlZDgiLCJuYW1lIjoiZmlyc3RfbmFtZSIsImZpbHRlciI6eyJ0eXBlIjoic3RyaW5nIiwicGF0dGVybiI6IkNyaXN0aWFuIn19LHsicGF0aCI6WyIkLnZjLmNyZWRlbnRpYWxTdWJqZWN0Lmxhc3RfbmFtZSIsIiQuY3JlZGVudGlhbFN1YmplY3QubGFzdF9uYW1lIiwiJC5sYXN0X25hbWUiXSwiaWQiOiJiMmU1NTkxNi0yYjU1LTQ0MTEtYTQzMS0wOTlkOWMyMDQ0ZjAiLCJuYW1lIjoibGFzdF9uYW1lIiwiZmlsdGVyIjp7InR5cGUiOiJzdHJpbmciLCJwYXR0ZXJuIjoiR29uemFsZXoifX0seyJwYXRoIjpbIiQudmMuY3JlZGVudGlhbFN1YmplY3QuZW1haWxBZGRyZXNzIiwiJC5jcmVkZW50aWFsU3ViamVjdC5lbWFpbEFkZHJlc3MiLCIkLmVtYWlsQWRkcmVzcyJdLCJpZCI6IjU2ODRlMTY0LTA0MzAtNGYyYS1iMDI2LWRmNjcwYWZjNGVkNSIsIm5hbWUiOiJlbWFpbEFkZHJlc3MiLCJmaWx0ZXIiOnsidHlwZSI6InN0cmluZyIsInBhdHRlcm4iOiJ0ZXN0QGlvaGsuaW8ifX1dLCJsaW1pdF9kaXNjbG9zdXJlIjoicmVxdWlyZWQifX1dLCJmb3JtYXQiOnsic2RKd3QiOnsiYWxnIjpbIkVTMjU2SyJdfX19fQ=="},"format":"dif/presentation-exchange/definitions@v1.0"}],"thid":"11001ef6-f4c9-430c-84d7-ef74f0689e9f","ack":[],"direction":"SENT"}"""
+        )
+        val requestData = msg.attachments.first().data.getDataAsJsonString()
+
+        val presentationSubmission =
+            """{"presentation_submission":{"id":"780d0597-b2fd-4f22-a7dc-b29b4fa08cc1","definition_id":"5569abd7-2994-4068-be36-4025ebcaf20b","descriptor_map":[{"id":"0c4f5d84-0fb2-4e4c-b05b-6ce0f0afc586","format":"sdjwt","path":"${'$'}.verifiablePresentation[0]"}]},"verifiablePresentation":["eyJhbGciOiJFZERTQSJ9.eyJzdWIiOiJkaWQ6cHJpc206YXNkZmFzZGYiLCJfc2QiOlsiWWdQSV9kREQySVE4Z3d0MF9CbUs4Rk55MEpVVXoxbmJoTzQ2b0tuNUFsRSIsIi1nZ2wxR3g1akQzY2VoNHUxTHRXc0xQM3Z5MWtGNktlN2lCWXV5Ynd2eUUiLCJEQnM2Z0hhQTZZUldDSGVXZjlnRHA2eXVnaTVtX3dudkdPSno0aFdmdXlNIl0sIl9zZF9hbGciOiJzaGEtMjU2IiwiaXNzIjoiZGlkOnByaXNtOmNlMzQwM2I1YTczMzg4MzAzNWQ2ZWM0M2JhMDc1YTQxYzljYzBhMzI1Nzk3N2Q4MGM3NWQ2MzE5YWRlMGVkNzAiLCJleHAiOjE3MzU2ODk2NjEsImlhdCI6MTUxNjIzOTAyMn0.hVy9qpC9bVFpoGQ0G2s1GOkDgZxNGdhHIoVOaF8IMQU5pIvxZH1UQ1GzDpnhU0m_ZM8r1QpCeSVPuQKvMluDBQ~WyJtRzVscURxRFg2YWdraHpjX0NBR19RIiwiZmlyc3RfbmFtZSIsIkNyaXN0aWFuIl0~WyJSY2Z5X3ZCQm9wUjhLZFZqejRxbGJRIiwibGFzdF9uYW1lIiwiR29uemFsZXoiXQ~WyJpM0kzQWZJTERuSnVqRXkxS2ZNbFp3IiwiZW1haWxBZGRyZXNzIiwidGVzdEBpb2hrLmlvIl0~"]}"""
+
+        assertTrue(
+            pollux.verifyPresentationSubmission(
+                presentationSubmission,
+                PresentationSubmissionOptionsSDJWT(presentationDefinitionRequest = requestData)
+            )
+        )
     }
 
     private suspend fun createVerificationTestCase(testCaseOptions: VerificationTestCase): Triple<String, String, String> {
@@ -1219,7 +1171,8 @@ class PolluxImplTest {
                   }"""
         )
 
-        val ecPrivateKey = pollux.parsePrivateKey(testCaseOptions.issuerPrv)
+        val ecPrivateKey = testCaseOptions.issuerPrv.jca() as ECPrivateKey
+//            pollux.parsePrivateKey(testCaseOptions.issuerPrv)
         val claims = JWTClaimsSet.Builder()
             .issuer(testCaseOptions.issuer.toString())
             .audience(testCaseOptions.domain)
@@ -1250,12 +1203,15 @@ class PolluxImplTest {
         doReturn(false)
             .`when`(pollux).isCredentialRevoked(any())
 
-        val presentationSubmission = pollux.createJWTPresentationSubmission(
-            presentationDefinitionRequest = presentationDefinition,
-            credential = jwtCredential,
-            privateKey = testCaseOptions.holderPrv
-        )
+        val presentationSubmission = jwtCredential.presentation(
+            attachmentFormat = CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type,
+            request = presentationDefinition.encodeToByteArray(),
+            options = listOf(
+                CredentialOperationsOptions.SubjectDID(testCaseOptions.holder),
+                CredentialOperationsOptions.ExportableKey(testCaseOptions.holderPrv)
+            )
 
+        )
         return Triple(presentationDefinition, presentationSubmission, jwtString)
     }
 

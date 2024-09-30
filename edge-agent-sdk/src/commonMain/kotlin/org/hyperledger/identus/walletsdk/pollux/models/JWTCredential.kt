@@ -14,6 +14,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.ArraySerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -29,6 +30,7 @@ import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
+import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.JWTPayload
 import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiableCredential
@@ -36,6 +38,8 @@ import org.hyperledger.identus.walletsdk.domain.models.JWTVerifiablePresentation
 import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
 import org.hyperledger.identus.walletsdk.pollux.CHALLENGE
 import org.hyperledger.identus.walletsdk.pollux.CONTEXT
 import org.hyperledger.identus.walletsdk.pollux.CONTEXT_URL
@@ -46,8 +50,9 @@ import org.hyperledger.identus.walletsdk.pollux.TYPE
 import org.hyperledger.identus.walletsdk.pollux.VERIFIABLE_CREDENTIAL
 import org.hyperledger.identus.walletsdk.pollux.VERIFIABLE_PRESENTATION
 import org.hyperledger.identus.walletsdk.pollux.VP
-import java.security.PrivateKey
 import java.security.interfaces.ECPrivateKey
+import java.util.*
+import java.security.PrivateKey as JavaPrivateKey
 
 @Serializable
 /**
@@ -126,23 +131,92 @@ data class JWTCredential @JvmOverloads constructor(
         }
 
     override var revoked: Boolean? = false
-    override suspend fun presentation(request: ByteArray, options: List<CredentialOperationsOptions>): String {
-        var exportableKeyOption: org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey? = null
+
+    override suspend fun presentation(
+        attachmentFormat: String,
+        request: ByteArray,
+        options: List<CredentialOperationsOptions>
+    ): String {
+        var exportableKey: PrivateKey? = null
         var subjectDID: DID? = null
 
         for (option in options) {
             when (option) {
                 is CredentialOperationsOptions.SubjectDID -> subjectDID = option.did
-                is CredentialOperationsOptions.ExportableKey -> exportableKeyOption = option.key
+                is CredentialOperationsOptions.ExportableKey -> exportableKey = option.key
                 else -> {}
             }
         }
         if (subjectDID == null) {
             throw PolluxError.InvalidPrismDID()
         }
-        if (exportableKeyOption == null) {
+        if (exportableKey == null) {
             throw PolluxError.WrongKeyProvided("Secp256k1", actual = "null")
         }
+
+        return when (attachmentFormat) {
+            CredentialType.PRESENTATION_EXCHANGE_DEFINITIONS.type -> {
+                presentationSubmission(request, exportableKey)
+            }
+
+            else -> {
+                vcPresentation(request, subjectDID, exportableKey)
+            }
+        }
+    }
+
+    private fun presentationSubmission(request: ByteArray, privateKey: PrivateKey): String {
+        val jwtPresentationDefinitionRequest =
+            Json.decodeFromString<JWTPresentationDefinitionRequest>(String(request, Charsets.UTF_8))
+        val descriptorItems =
+            jwtPresentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
+                if (inputDescriptor.format != null && (inputDescriptor.format.jwt == null || inputDescriptor.format.jwt.alg.isEmpty())) {
+                    throw PolluxError.InvalidCredentialDefinitionError()
+                }
+                PresentationSubmission.Submission.DescriptorItem(
+                    id = inputDescriptor.id,
+                    format = DescriptorItemFormat.JWT_VP.value,
+                    path = "$.verifiablePresentation[0]",
+                    pathNested = PresentationSubmission.Submission.DescriptorItem(
+                        id = inputDescriptor.id,
+                        format = DescriptorItemFormat.JWT_VC.value,
+                        path = "$.vp.verifiableCredential[0]"
+                    )
+                )
+            }.toTypedArray()
+
+        val credentialSubject = this.subject
+        credentialSubject?.let { subject ->
+            if (!privateKey.isSignable()) {
+                throw PolluxError.WrongKeyProvided(
+                    expected = SignableKey::class.simpleName,
+                    actual = privateKey::class.simpleName
+                )
+            }
+
+            val ecPrivateKey = privateKey.jca() as ECPrivateKey
+            val presentationJwt = signClaimsProofPresentationJWT(
+                subjectDID = DID(subject),
+                privateKey = ecPrivateKey,
+                credential = this,
+                domain = jwtPresentationDefinitionRequest.options.domain,
+                challenge = jwtPresentationDefinitionRequest.options.challenge
+            )
+
+            return Json.encodeToString(
+                PresentationSubmission(
+                    presentationSubmission = PresentationSubmission.Submission(
+                        definitionId = jwtPresentationDefinitionRequest.presentationDefinition.id
+                            ?: UUID.randomUUID().toString(),
+                        descriptorMap = descriptorItems
+                    ),
+                    verifiablePresentation = arrayOf(presentationJwt)
+                )
+            )
+        } ?: throw PolluxError.NonNullableError("CredentialSubject")
+    }
+
+    private fun vcPresentation(request: ByteArray, subjectDID: DID, exportableKey: PrivateKey): String {
         val jsonString = String(request, Charsets.UTF_8)
         val requestJson = Json.parseToJsonElement(jsonString).jsonObject
         val domain =
@@ -151,7 +225,7 @@ data class JWTCredential @JvmOverloads constructor(
             getChallenge(requestJson) ?: throw PolluxError.NoDomainOrChallengeFound()
         return signClaimsProofPresentationJWT(
             subjectDID,
-            exportableKeyOption.jca() as ECPrivateKey,
+            exportableKey.jca() as ECPrivateKey,
             this,
             domain,
             challenge
@@ -319,7 +393,7 @@ data class JWTCredential @JvmOverloads constructor(
         // Sign the JWT with the private key
         val jwsObject = SignedJWT(header, claims)
         val signer = ECDSASigner(
-            privateKey as PrivateKey,
+            privateKey as JavaPrivateKey,
             Curve.SECP256K1
         )
         val provider = BouncyCastleProviderSingleton.getInstance()

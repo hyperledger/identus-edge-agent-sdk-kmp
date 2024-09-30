@@ -1,4 +1,5 @@
 package org.hyperledger.identus.walletsdk.pollux.models
+
 import eu.europa.ec.eudi.sdjwt.JsonPointer
 import eu.europa.ec.eudi.sdjwt.JwtAndClaims
 import eu.europa.ec.eudi.sdjwt.JwtSignatureVerifier
@@ -12,6 +13,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Transient
 import kotlinx.serialization.builtins.ArraySerializer
 import kotlinx.serialization.builtins.serializer
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -22,10 +24,10 @@ import org.hyperledger.identus.walletsdk.domain.models.Claim
 import org.hyperledger.identus.walletsdk.domain.models.ClaimType
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialOperationsOptions
+import org.hyperledger.identus.walletsdk.domain.models.PolluxError
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
 import org.hyperledger.identus.walletsdk.domain.models.StorableCredential
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.ExportableKey
-import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
+import java.util.*
 
 @OptIn(ExperimentalSerializationApi::class)
 data class SDJWTCredential(
@@ -36,10 +38,11 @@ data class SDJWTCredential(
         get() = sdjwtString
 
     @Transient
-    override val issuer: String = sdjwt.jwt.second.get("iss").toString()
+    override val issuer: String = sdjwt.jwt.second["iss"]?.jsonPrimitive?.content
+        ?: throw PolluxError.InvalidJWTCredential("SD-JWT must contain issuer")
 
     override val subject: String?
-        get() = sdjwt.jwt.second.get("sub").toString()
+        get() = sdjwt.jwt.second["sub"]?.jsonPrimitive?.content
 
     override val claims: Array<Claim>
         get() {
@@ -52,38 +55,66 @@ data class SDJWTCredential(
     override val properties: Map<String, Any?>
         get() {
             val properties = mutableMapOf<String, Any?>()
-            properties["nbf"] = sdjwt.jwt.second.get("nbf").toString()
-            properties["jti"] = sdjwt.jwt.second.get("sub").toString()
-            properties["aud"] = sdjwt.jwt.second.get("aud").toString()
+            properties["nbf"] = sdjwt.jwt.second["nbf"]?.jsonPrimitive?.content
+            properties["jti"] = sdjwt.jwt.second["sub"]?.jsonPrimitive?.content
+            properties["aud"] = sdjwt.jwt.second["aud"]?.jsonPrimitive?.content
             properties["id"] = id
 
-            sdjwt.jwt.second.get("exp").toString().let { properties["exp"] = it }
+            sdjwt.jwt.second["exp"]?.jsonPrimitive?.content.let { properties["exp"] = it }
             return properties.toMap()
         }
 
     override var revoked: Boolean? = null
 
-    override suspend fun presentation(request: ByteArray, options: List<CredentialOperationsOptions>): String {
-        var exportableKeyOption: PrivateKey? = null
+    override suspend fun presentation(
+        attachmentFormat: String,
+        request: ByteArray,
+        options: List<CredentialOperationsOptions>
+    ): String {
+        val jwtPresentationDefinitionRequest =
+            Json.decodeFromString<SDJWTPresentationDefinitionRequest>(String(request, Charsets.UTF_8))
+        val descriptorItems =
+            jwtPresentationDefinitionRequest.presentationDefinition.inputDescriptors.map { inputDescriptor ->
+                if (inputDescriptor.format != null && (inputDescriptor.format.sdjwt == null || inputDescriptor.format.sdjwt.alg.isEmpty())) {
+                    throw PolluxError.InvalidCredentialDefinitionError()
+                }
+                PresentationSubmission.Submission.DescriptorItem(
+                    id = inputDescriptor.id,
+                    format = DescriptorItemFormat.SD_JWT_VP.value,
+                    path = "$.verifiablePresentation[0]"
+                )
+            }.toTypedArray()
+
         var disclosingClaims: List<String>? = null
 
         for (option in options) {
             when (option) {
-                is CredentialOperationsOptions.ExportableKey -> exportableKeyOption = option.key
                 is CredentialOperationsOptions.DisclosingClaims -> disclosingClaims = option.claims
                 else -> {}
             }
         }
 
-        val inluded = disclosingClaims
+        val included = disclosingClaims
             ?.mapNotNull { JsonPointer.parse(it) }
             ?.toSet()
-        val presentation = sdjwt.present(inluded!!)
-        return presentation!!.serialize { (jwt, _) -> jwt }
+
+        val presentation = sdjwt.present(included!!)
+        val sdjwtString = presentation!!.serialize { (jwt, _) -> jwt }
+
+        return Json.encodeToString(
+            PresentationSubmission(
+                presentationSubmission = PresentationSubmission.Submission(
+                    definitionId = jwtPresentationDefinitionRequest.presentationDefinition.id
+                        ?: UUID.randomUUID().toString(),
+                    descriptorMap = descriptorItems
+                ),
+                verifiablePresentation = arrayOf(sdjwtString)
+            )
+        )
     }
 
     /**
-     * Converts the current instance of [JWTCredential] to a [StorableCredential].
+     * Converts the current instance of [SDJWTCredential] to a [StorableCredential].
      *
      * @return The converted [StorableCredential].
      */
@@ -93,7 +124,7 @@ data class SDJWTCredential(
             override val id: String
                 get() = c.id
             override val recoveryId: String
-                get() = "jwt+credential"
+                get() = "sd-jwt+credential"
             override val credentialData: ByteArray
                 get() = c.id.toByteArray()
 
@@ -109,7 +140,7 @@ data class SDJWTCredential(
             override val credentialSchema: String?
                 get() = null
             override val validUntil: String?
-                get() = c.sdjwt.jwt.second.get("exp").toString().toString()
+                get() = c.sdjwt.jwt.second["exp"]?.jsonPrimitive?.content
             override var revoked: Boolean? = c.revoked
             override val availableClaims: Array<String>
                 get() = c.claims.map { it.key }.toTypedArray()
@@ -122,12 +153,12 @@ data class SDJWTCredential(
             override val properties: Map<String, Any?>
                 get() {
                     val properties = mutableMapOf<String, Any?>()
-                    properties["nbf"] = sdjwt.jwt.second.get("nbf").toString()
-                    properties["jti"] = sdjwt.jwt.second.get("jti").toString()
-                    properties["aud"] = sdjwt.jwt.second.get("aud").toString()
+                    properties["nbf"] = sdjwt.jwt.second["nbf"]?.jsonPrimitive?.content
+                    properties["jti"] = sdjwt.jwt.second["jti"]?.jsonPrimitive?.content
+                    properties["aud"] = sdjwt.jwt.second["aud"]?.jsonPrimitive?.content
                     properties["id"] = id
 
-                    sdjwt.jwt.second.get("exp").toString().let { properties["exp"] = it }
+                    sdjwt.jwt.second["exp"]?.jsonPrimitive?.content.let { properties["exp"] = it }
                     return properties.toMap()
                 }
 
@@ -159,7 +190,8 @@ data class SDJWTCredential(
         fun fromSDJwtString(sdjwtString: String): SDJWTCredential {
             var credential: SDJWTCredential
             runBlocking {
-                val sdjwt = SdJwtVerifier.verifyIssuance(JwtSignatureVerifier.NoSignatureValidation, sdjwtString).getOrThrow()
+                val sdjwt =
+                    SdJwtVerifier.verifyIssuance(JwtSignatureVerifier.NoSignatureValidation, sdjwtString).getOrThrow()
                 credential = SDJWTCredential(sdjwtString, sdjwt)
             }
             return credential

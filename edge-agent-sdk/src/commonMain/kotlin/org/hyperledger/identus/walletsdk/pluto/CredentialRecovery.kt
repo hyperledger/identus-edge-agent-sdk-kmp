@@ -20,7 +20,8 @@ class CredentialRecovery(val restorationId: String, val credentialData: ByteArra
 enum class RestorationID(val value: String) {
     JWT("jwt+credential"),
     ANONCRED("anon+credential"),
-    W3C("w3c+credential");
+    W3C("w3c+credential"),
+    SDJWT("sd-jwt+credential");
 
     /**
      * Converts a RestorationID object to a BackUpRestorationId object from the PlutoRestoreTask class.
@@ -32,6 +33,7 @@ enum class RestorationID(val value: String) {
             JWT -> PlutoRestoreTask.BackUpRestorationId.JWT
             ANONCRED -> PlutoRestoreTask.BackUpRestorationId.ANONCRED
             W3C -> PlutoRestoreTask.BackUpRestorationId.W3C
+            SDJWT -> PlutoRestoreTask.BackUpRestorationId.SDJWT
         }
     }
 }

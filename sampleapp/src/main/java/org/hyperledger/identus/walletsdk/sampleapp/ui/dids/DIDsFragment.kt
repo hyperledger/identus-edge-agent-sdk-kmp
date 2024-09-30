@@ -32,6 +32,9 @@ class DIDsFragment : Fragment() {
         binding.createDid.setOnClickListener {
             viewModel.createPeerDID()
         }
+        binding.createPrismDid.setOnClickListener {
+            viewModel.createPrismDID()
+        }
     }
 
     override fun onDestroyView() {

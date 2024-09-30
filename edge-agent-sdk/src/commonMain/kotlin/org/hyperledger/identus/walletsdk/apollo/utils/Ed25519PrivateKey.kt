@@ -1,6 +1,12 @@
 package org.hyperledger.identus.walletsdk.apollo.utils
 
-import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
+import java.security.KeyFactory
+import java.security.spec.PKCS8EncodedKeySpec
+import org.bouncycastle.asn1.ASN1Encodable
+import org.bouncycastle.asn1.DEROctetString
+import org.bouncycastle.asn1.edec.EdECObjectIdentifiers
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.utils.KMMEdPrivateKey
@@ -15,8 +21,7 @@ import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PrivateKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.PublicKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.SignableKey
 import org.hyperledger.identus.walletsdk.domain.models.keyManagement.StorableKey
-import java.security.KeyFactory
-import java.security.spec.PKCS8EncodedKeySpec
+
 
 /**
  * Represents a private key for the Ed25519 algorithm.
@@ -128,9 +133,17 @@ class Ed25519PrivateKey(nativeValue: ByteArray) : PrivateKey(), SignableKey, Sto
         get() = "ed25519+priv"
 
     override fun jca(): java.security.PrivateKey {
-        val privateKeyParams = Ed25519PrivateKeyParameters(raw, 0)
-        val pkcs8Encoded = privateKeyParams.encoded
-        val keyFactory = KeyFactory.getInstance("Ed25519", BouncyCastleProvider())
-        return keyFactory.generatePrivate(PKCS8EncodedKeySpec(pkcs8Encoded))
+        val algId: AlgorithmIdentifier = AlgorithmIdentifier(EdECObjectIdentifiers.id_Ed25519)
+        // Wrap the private key bytes in a DEROctetString
+        val privateKey: ASN1Encodable = DEROctetString(raw)
+        // Create the PrivateKeyInfo structure
+        val privateKeyInfo: PrivateKeyInfo = PrivateKeyInfo(algId, privateKey)
+        // Get the PKCS#8 encoded bytes
+        val pkcs8Bytes: ByteArray = privateKeyInfo.getEncoded()
+        val keySpec = PKCS8EncodedKeySpec(pkcs8Bytes)
+        // Get a KeyFactory for Ed25519 using Bouncy Castle
+        val keyFactory = KeyFactory.getInstance("ed25519", BouncyCastleProvider())
+        // Generate the PrivateKey object
+        return keyFactory.generatePrivate(keySpec)
     }
 }

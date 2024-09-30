@@ -12,18 +12,18 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.DIDCOMM_MESSAGING
-import org.hyperledger.identus.walletsdk.domain.models.AnoncredsInputFieldFilter
-import org.hyperledger.identus.walletsdk.domain.models.AnoncredsPresentationClaims
 import org.hyperledger.identus.walletsdk.domain.models.Credential
 import org.hyperledger.identus.walletsdk.domain.models.CredentialType
 import org.hyperledger.identus.walletsdk.domain.models.DID
 import org.hyperledger.identus.walletsdk.domain.models.DIDDocument
+import org.hyperledger.identus.walletsdk.domain.models.InputFieldFilter
 import org.hyperledger.identus.walletsdk.domain.models.Message
 import org.hyperledger.identus.walletsdk.domain.models.ProvableCredential
-import org.hyperledger.identus.walletsdk.domain.models.RequestedAttributes
+import org.hyperledger.identus.walletsdk.domain.models.SDJWTPresentationClaims
 import org.hyperledger.identus.walletsdk.edgeagent.DIDCOMM1
 import org.hyperledger.identus.walletsdk.edgeagent.EdgeAgentError
 import org.hyperledger.identus.walletsdk.edgeagent.protocols.ProtocolType
@@ -114,28 +114,46 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
 //                challenge = "challenge"
 //            )
 
-            // Anoncreds presentation request
+            // SD-JWT presentation request
             sdk.agent.initiatePresentationRequest(
-                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+                type = CredentialType.SDJWT,
                 toDID = DID(toDID),
-                presentationClaims = AnoncredsPresentationClaims(
-                    predicates = mapOf(
-                        "0_age" to AnoncredsInputFieldFilter(
+                presentationClaims = SDJWTPresentationClaims(
+                    claims = mapOf(
+                        "firstName" to InputFieldFilter(
                             type = "string",
-                            name = "age",
-                            gte = 18
-                        )
-                    ),
-                    attributes = mapOf(
-                        "0_name" to RequestedAttributes(
-                            "name",
-                            setOf("name"),
-                            emptyMap(),
-                            null
+                            pattern = "Wonderland"
+                        ),
+                        "emailAddress" to InputFieldFilter(
+                            type = "string",
+                            pattern = "alice@wonderland.com"
                         )
                     )
                 )
             )
+
+            // Anoncreds presentation request
+//            sdk.agent.initiatePresentationRequest(
+//                type = CredentialType.ANONCREDS_PROOF_REQUEST,
+//                toDID = DID(toDID),
+//                presentationClaims = AnoncredsPresentationClaims(
+//                    predicates = mapOf(
+//                        "0_age" to AnoncredsInputFieldFilter(
+//                            type = "string",
+//                            name = "age",
+//                            gte = 18
+//                        )
+//                    ),
+//                    attributes = mapOf(
+//                        "0_name" to RequestedAttributes(
+//                            "name",
+//                            setOf("name"),
+//                            emptyMap(),
+//                            null
+//                        )
+//                    )
+//                )
+//            )
         }
     }
 
@@ -193,11 +211,15 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch(handler) {
             messages.value?.find { it.id == uiMessage.id }?.let { message ->
                 val sdk = Sdk.getInstance()
-                val valid = sdk.agent.handlePresentation(message)
-                if (valid) {
-                    liveData.postValue("Valid!")
-                } else {
-                    liveData.postValue("Not valid!")
+                try {
+                    val valid = sdk.agent.handlePresentation(message)
+                    if (valid) {
+                        liveData.postValue("Valid!")
+                    } else {
+                        liveData.postValue("Not valid!")
+                    }
+                } catch (e: Exception) {
+                    liveData.postValue("Not valid. ${e.message}")
                 }
             }
         }
@@ -225,6 +247,9 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                         viewModelScope.launch {
                                             val offer = OfferCredential.fromMessage(message)
                                             val subjectDID = agent.createNewPrismDID()
+
+                                            val x = (agent.castor as CastorImpl).resolvers.first().resolve(subjectDID.toString())
+                                            val didDoc = agent.castor.resolveDID(subjectDID.toString())
                                             val request =
                                                 agent.prepareRequestCredentialWithIssuer(
                                                     subjectDID,

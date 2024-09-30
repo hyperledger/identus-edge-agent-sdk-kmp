@@ -44,6 +44,7 @@ import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Logger
 import org.hyperledger.identus.walletsdk.logger.LoggerImpl
+import pbandk.ByteArr
 
 /**
  * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
@@ -298,8 +299,8 @@ class ApolloImpl(
                         if (curvePointX != null && curvePointY != null) {
                             // Compressed key
                             val nativePublicKey = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(
-                                x = (curvePointX as String).base64UrlDecodedBytes,
-                                y = (curvePointY as String).base64UrlDecodedBytes
+                                x = (curvePointX as ByteArr).array,
+                                y = (curvePointY as ByteArr).array
                             )
                             return Secp256k1PublicKey(nativePublicKey.raw)
                         } else {
@@ -459,37 +460,6 @@ class ApolloImpl(
 
             else -> {
                 throw ApolloError.InvalidKeyType(key.kty)
-            }
-        }
-    }
-
-    /**
-     * Restores a private key from StorablePrivateKey.
-     *
-     * @param storablePrivateKey The StorablePrivateKey to restore the key from.
-     * @return The restored Key object.
-     */
-    @Deprecated(
-        "This method has been deprecated and should no longer be used.",
-        ReplaceWith("restorePrivateKey(restoreIdentifier, privateKeyData)"),
-        DeprecationLevel.ERROR
-    )
-    override fun restorePrivateKey(storablePrivateKey: StorablePrivateKey): PrivateKey {
-        return when (storablePrivateKey.restorationIdentifier) {
-            "secp256k1+priv" -> {
-                Secp256k1PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
-            }
-
-            "ed25519+priv" -> {
-                Ed25519PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
-            }
-
-            "x25519+priv" -> {
-                X25519PrivateKey(storablePrivateKey.data.base64UrlDecodedBytes)
-            }
-
-            else -> {
-                throw PlutoError.InvalidRestorationIdentifier()
             }
         }
     }
