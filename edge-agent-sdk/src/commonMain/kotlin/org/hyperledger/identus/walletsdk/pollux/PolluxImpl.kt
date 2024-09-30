@@ -18,6 +18,7 @@ import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSHeader
 import com.nimbusds.jose.crypto.ECDSASigner
 import com.nimbusds.jose.crypto.ECDSAVerifier
+import com.nimbusds.jose.crypto.Ed25519Signer
 import com.nimbusds.jose.crypto.bc.BouncyCastleProviderSingleton
 import com.nimbusds.jose.util.Base64URL
 import com.nimbusds.jwt.JWTClaimsSet
@@ -27,6 +28,7 @@ import eu.europa.ec.eudi.sdjwt.KeyBindingVerifier
 import eu.europa.ec.eudi.sdjwt.NoSignatureValidation
 import eu.europa.ec.eudi.sdjwt.SdJwtVerifier
 import eu.europa.ec.eudi.sdjwt.recreateClaimsAndDisclosuresPerClaim
+import eu.europa.ec.eudi.sdjwt.sub
 import io.iohk.atala.prism.didcomm.didpeer.core.toJsonElement
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
@@ -50,12 +52,15 @@ import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
+import org.bouncycastle.jcajce.interfaces.EdDSAPrivateKey
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.didcommx.didcomm.common.Typ
 import org.hyperledger.identus.apollo.base64.base64UrlDecoded
 import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
+import org.hyperledger.identus.apollo.base64.base64UrlEncoded
 import org.hyperledger.identus.apollo.utils.KMMECSecp256k1PublicKey
 import org.hyperledger.identus.walletsdk.apollo.helpers.gunzip
 import org.hyperledger.identus.walletsdk.apollo.utils.Secp256k1PrivateKey
@@ -721,7 +726,8 @@ open class PolluxImpl(
         if (privateKey !is ExportableKey) {
             throw PolluxError.PrivateKeyTypeNotSupportedError("The private key should be ${ExportableKey::class.simpleName}")
         }
-        val ecPrivateKey = parsePrivateKey(privateKey)
+
+//            parsePrivateKey(privateKey)
 
         val presentation: MutableMap<String, Collection<String>> = mutableMapOf(
             CONTEXT to setOf(CONTEXT_URL),
@@ -738,25 +744,78 @@ open class PolluxImpl(
             .claim(VP, presentation)
             .build()
 
+        println("DID: $subjectDID")
         val kid = getSigningKid(subjectDID)
 
         // Generate a JWS header with the ES256K algorithm
-        val header = JWSHeader.Builder(JWSAlgorithm.ES256K)
-            .keyID(kid)
-            .build()
+        if (privateKey is Secp256k1PrivateKey) {
+            val header = JWSHeader.Builder(JWSAlgorithm.ES256K)
+                .keyID(kid)
+                .build()
 
-        // Sign the JWT with the private key
-        val jwsObject = SignedJWT(header, claims)
-        val signer = ECDSASigner(
-            ecPrivateKey as java.security.PrivateKey,
-            com.nimbusds.jose.jwk.Curve.SECP256K1
-        )
-        val provider = BouncyCastleProviderSingleton.getInstance()
-        signer.jcaContext.provider = provider
-        jwsObject.sign(signer)
+            // Sign the JWT with the private key
+            var jwsObject = SignedJWT(header, claims)
 
-        // Serialize the JWS object to a string
-        return jwsObject.serialize()
+            val ecPrivateKey = privateKey.jca() as ECPrivateKey
+            val signer = ECDSASigner(
+                ecPrivateKey as java.security.PrivateKey,
+                com.nimbusds.jose.jwk.Curve.SECP256K1
+            )
+            val provider = BouncyCastleProviderSingleton.getInstance()
+            signer.jcaContext.provider = provider
+            jwsObject.sign(signer)
+            // Serialize the JWS object to a string
+            return jwsObject.serialize()
+        } else {
+            val header = JWSHeader.Builder(JWSAlgorithm.EdDSA)
+                .keyID(kid)
+                .build()
+
+            // Sign the JWT with the private key
+            var jwsObject = SignedJWT(header, claims)
+
+            val edPrivateKey = privateKey.jca() as EdDSAPrivateKey
+            val signer = org.bouncycastle.crypto.signers.Ed25519Signer()
+
+            // Convert the EdDSAPrivateKey to a Bouncy Castle private key parameter
+            val privateKeyParams = Ed25519PrivateKeyParameters(edPrivateKey.encoded, 0)
+            signer.init(true, privateKeyParams)
+
+            // Sign the data (message)
+            val messageBytes = jwsObject.signingInput
+            signer.update(messageBytes, 0, messageBytes.size)
+
+            // Generate the signature
+            val signature = signer.generateSignature()
+
+            // Now, set the signature on the JWS object
+            jwsObject = SignedJWT(
+                header.toBase64URL(),
+                claims.toPayload().toBase64URL(),
+                Base64URL(signature.base64UrlEncoded))
+            // Serialize the JWS object to a string
+            val jwt = jwsObject.serialize()
+
+
+
+            val vc = JWTCredential.fromJwtString(jwt)
+
+            val didDocHolder = castor.resolveDID(vc.issuer)
+            val authenticationMethodHolder =
+                didDocHolder.coreProperties.find { it::class == DIDDocument.Authentication::class }
+                    ?: throw PolluxError.VerificationUnsuccessful("Holder core properties must contain Authentication")
+            val ecPublicKeysHolder =
+                extractEcPublicKeyFromVerificationMethod(authenticationMethodHolder)
+            if (!verifyJWTSignatureWithEcPublicKey(
+                    vc.id,
+                    ecPublicKeysHolder
+                )
+            ) {
+                println("Stop")
+            }
+
+            return jwt
+        }
     }
 
     override suspend fun createPresentationDefinitionRequest(

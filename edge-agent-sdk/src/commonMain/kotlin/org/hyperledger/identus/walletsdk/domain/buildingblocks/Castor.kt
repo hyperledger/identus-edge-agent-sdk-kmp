@@ -34,7 +34,8 @@ interface Castor {
      */
     fun createPrismDID(
         masterPublicKey: PublicKey,
-        services: Array<DIDDocument.Service>?
+        services: Array<DIDDocument.Service>?,
+        authenticationKey: PublicKey
     ): DID
 
     /**

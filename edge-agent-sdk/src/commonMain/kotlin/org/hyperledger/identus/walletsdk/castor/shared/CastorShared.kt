@@ -92,7 +92,8 @@ internal class CastorShared {
         internal fun createPrismDID(
             apollo: Apollo,
             masterPublicKey: PublicKey,
-            services: Array<DIDDocument.Service>?
+            services: Array<DIDDocument.Service>?,
+            authenticationKey: PublicKey
         ): DID {
             val atalaOperation = AtalaOperation(
                 operation = AtalaOperation.Operation.CreateDid(
@@ -109,7 +110,7 @@ internal class CastorShared {
                                     apollo = apollo,
                                     id = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY.defaultId(),
                                     usage = PrismDIDPublicKey.Usage.AUTHENTICATION_KEY,
-                                    keyData = masterPublicKey
+                                    keyData = authenticationKey
                                 ).toProto()
                             ),
                             services = services?.map {

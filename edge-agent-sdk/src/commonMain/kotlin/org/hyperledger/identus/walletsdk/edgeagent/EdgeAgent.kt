@@ -16,7 +16,6 @@ import com.nimbusds.jose.crypto.X25519Decrypter
 import com.nimbusds.jose.crypto.X25519Encrypter
 import com.nimbusds.jose.jwk.OctetKeyPair
 import com.nimbusds.jose.util.Base64URL
-import eu.europa.ec.eudi.sdjwt.serialize
 import eu.europa.ec.eudi.sdjwt.vc.SD_JWT_VC_TYPE
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.http.ContentType
@@ -374,17 +373,18 @@ open class EdgeAgent {
     suspend fun createNewPrismDID(
         keyPathIndex: Int? = null,
         alias: String? = null,
-        services: Array<DIDDocument.Service> = emptyArray(),
-        format: String? = null
+        services: Array<DIDDocument.Service> = emptyArray()
     ): DID {
         val index = keyPathIndex ?: (pluto.getPrismLastKeyPathIndex().first() + 1)
-        val keyPair = if (format == "vc+sd-jwt") {
-            Ed25519KeyPair.generateKeyPair()
-        } else {
-            Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, index))
-        }
-        val did = castor.createPrismDID(masterPublicKey = keyPair.publicKey, services = services)
-        registerPrismDID(did, index, alias, keyPair.privateKey)
+        val masterKeyPair = Secp256k1KeyPair.generateKeyPair(seed, KeyCurve(Curve.SECP256K1, index))
+
+        val authenticationKey = Ed25519KeyPair.generateKeyPair()
+        val did = castor.createPrismDID(
+            masterPublicKey = masterKeyPair.publicKey,
+            services = services,
+            authenticationKey = authenticationKey.publicKey
+        )
+        registerPrismDID(did, index, alias, masterKeyPair.privateKey)
         return did
     }
 

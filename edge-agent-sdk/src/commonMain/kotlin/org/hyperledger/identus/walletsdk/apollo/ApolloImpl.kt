@@ -44,6 +44,7 @@ import org.hyperledger.identus.walletsdk.logger.LogComponent
 import org.hyperledger.identus.walletsdk.logger.LogLevel
 import org.hyperledger.identus.walletsdk.logger.Logger
 import org.hyperledger.identus.walletsdk.logger.LoggerImpl
+import pbandk.ByteArr
 
 /**
  * Apollo defines the set of cryptographic operations that are used in the Atala PRISM.
@@ -298,8 +299,8 @@ class ApolloImpl(
                         if (curvePointX != null && curvePointY != null) {
                             // Compressed key
                             val nativePublicKey = KMMECSecp256k1PublicKey.secp256k1FromByteCoordinates(
-                                x = (curvePointX as String).base64UrlDecodedBytes,
-                                y = (curvePointY as String).base64UrlDecodedBytes
+                                x = (curvePointX as ByteArr).array,
+                                y = (curvePointY as ByteArr).array
                             )
                             return Secp256k1PublicKey(nativePublicKey.raw)
                         } else {

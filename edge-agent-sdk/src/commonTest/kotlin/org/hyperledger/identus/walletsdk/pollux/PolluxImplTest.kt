@@ -13,6 +13,7 @@ import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
+import java.security.interfaces.ECPrivateKey
 import java.text.SimpleDateFormat
 import java.util.*
 import junit.framework.TestCase.assertFalse
@@ -1170,7 +1171,8 @@ class PolluxImplTest {
                   }"""
         )
 
-        val ecPrivateKey = pollux.parsePrivateKey(testCaseOptions.issuerPrv)
+        val ecPrivateKey = testCaseOptions.issuerPrv.jca() as ECPrivateKey
+//            pollux.parsePrivateKey(testCaseOptions.issuerPrv)
         val claims = JWTClaimsSet.Builder()
             .issuer(testCaseOptions.issuer.toString())
             .audience(testCaseOptions.domain)

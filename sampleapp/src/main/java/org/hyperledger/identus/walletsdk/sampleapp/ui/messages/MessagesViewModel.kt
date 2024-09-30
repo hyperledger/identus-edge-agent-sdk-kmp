@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import org.hyperledger.identus.walletsdk.castor.CastorImpl
 import org.hyperledger.identus.walletsdk.db.AppDatabase
 import org.hyperledger.identus.walletsdk.db.DatabaseClient
 import org.hyperledger.identus.walletsdk.domain.DIDCOMM_MESSAGING
@@ -245,8 +246,10 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                                         processedOffers.add(it)
                                         viewModelScope.launch {
                                             val offer = OfferCredential.fromMessage(message)
-                                            val format = message.attachments.first().format
-                                            val subjectDID = agent.createNewPrismDID(format = format)
+                                            val subjectDID = agent.createNewPrismDID()
+
+                                            val x = (agent.castor as CastorImpl).resolvers.first().resolve(subjectDID.toString())
+                                            val didDoc = agent.castor.resolveDID(subjectDID.toString())
                                             val request =
                                                 agent.prepareRequestCredentialWithIssuer(
                                                     subjectDID,

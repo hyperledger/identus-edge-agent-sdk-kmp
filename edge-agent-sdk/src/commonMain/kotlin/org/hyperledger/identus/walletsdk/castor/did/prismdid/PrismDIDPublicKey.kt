@@ -1,5 +1,7 @@
 package org.hyperledger.identus.walletsdk.castor.did.prismdid
 
+import org.hyperledger.identus.apollo.base64.base64DecodedBytes
+import org.hyperledger.identus.apollo.base64.base64UrlDecodedBytes
 import org.hyperledger.identus.protos.CompressedECKeyData
 import org.hyperledger.identus.protos.ECKeyData
 import org.hyperledger.identus.protos.KeyUsage
@@ -105,8 +107,8 @@ class PrismDIDPublicKey {
                 keyData = org.hyperledger.identus.protos.PublicKey.KeyData.EcKeyData(
                     ecKeyData = ECKeyData(
                         curve = keyData.getCurve(),
-                        x = ByteArr(x.encodeToByteArray()),
-                        y = ByteArr(y.encodeToByteArray())
+                        x = ByteArr(x.base64UrlDecodedBytes),
+                        y = ByteArr(y.base64UrlDecodedBytes)
                     )
                 )
             )
@@ -117,7 +119,7 @@ class PrismDIDPublicKey {
                 keyData = org.hyperledger.identus.protos.PublicKey.KeyData.CompressedEcKeyData(
                     compressedEcKeyData = CompressedECKeyData(
                         curve = Curve.ED25519.value,
-                        data = ByteArr(keyData.getEncoded())
+                        data = ByteArr(keyData.raw)
                     )
                 )
             )
