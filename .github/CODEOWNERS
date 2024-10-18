@@ -1,7 +1,1 @@
-@elribonazo @cristianIOHK
-
-# Test related:
-/tests/ @amagyar-iohk
-
-# Docs:
-*.md @petevielhaber
+* @hyperledger/identus-maintainers
